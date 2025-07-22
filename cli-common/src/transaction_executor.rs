@@ -25,22 +25,25 @@ pub fn send_batch_instructions(
 ) -> Result<Signature, Box<dyn Error>> {
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;
+
     let config = Config::load().map_err(|_| "Error when reading config file")?;
 
     println!("{LABEL} Program ID : {}", config.program_id);
     println!("{LABEL} Payer      : {}", payer.pubkey());
-    println!("{WAITING} Sending transaction {WAITING}");
+    println!("{WAITING} Sending transaction...");
 
     let rpc_client = RpcClient::new_with_commitment(config.rpc_url, CommitmentConfig::confirmed());
 
     // Fetch recent blockhash
-    let recent_block_hash = rpc_client.get_latest_blockhash().map_err(|_| "Error when getting latest block hash")?;
+    let recent_blockhash = rpc_client
+        .get_latest_blockhash()
+        .map_err(|_| "Error when getting latest block hash")?;
 
     let transaction = Transaction::new_signed_with_payer(
         &instructions,
         Some(&payer.pubkey()),
         &[&payer],
-        recent_block_hash
+        recent_blockhash
     );
 
     let signature = rpc_client
