@@ -8,10 +8,10 @@ This repository contains on-chain and off-chain implementation for DoubleZero Fe
 ```sh
 sh -c "$(curl -sSfL https://release.anza.xyz/v2.2.20/install)"
 ```
-#### Anchor - 0.30.1
+#### Anchor - 0.31.1
 Make sure you have avm (Anchor Version Manager) installed. Choose this version using this command.
 ```sh
-avm use 0.30.1
+avm use 0.31.1
 ```
 
 #### Rust - 1.88.0
@@ -31,6 +31,8 @@ solana-test-validator
 ```
 
 ## Deploy the Anchor Program
+Copy the both program keypair into the `.keys` directory.
+
 There are two ways to deploy your application.
 - Manual deployment using anchor CLI
 - Using `build_and_deploy.sh` script
@@ -44,7 +46,7 @@ You can mention required program name and keypair file in the command.
 anchor build && anchor deploy --program-name PROGRAM_NAME --program-keypair ..keys/KEYPAIR.json
 
 eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter_program-keypair.json
-anchor build && anchor deploy --program-name transfer-hook --program-keypair ./key/transfer-hook-keypair.json
+anchor build && anchor deploy --program-name integrating-contract --program-keypair ./keys/integrating_contract-keypair.json
 ```
 
 ## Subscribe to Solana Logs
