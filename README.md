@@ -143,3 +143,25 @@ cargo run -p admin-cli -- update-config
 cargo run -p admin-cli -- toggle-system-state --activate
 cargo run -p admin-cli -- toggle-system-state --pause
 ```
+
+## User CLI
+
+### Get Current Price
+Displays current configuration registry contents.
+```sh
+cargo run -p user-cli -- get-price
+```
+
+### Get Current Price
+Displays current configuration registry contents.
+```sh
+cargo run -p user-cli -- get-quantity
+```
+
+### Buy SOL
+Initiates SOL purchase. Trade executes at bid price if ask price ≤ bid price; otherwise cancels.
+```sh
+cargo run -p user-cli -- buy-sol -p <bid_price>
+```
+
+- `-p`: User's maximum acceptable purchase price
