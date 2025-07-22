@@ -30,6 +30,11 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             config_handler::update_config()
         }
 
+        Some(Commands::ViewSystemState) => {
+            system_state::view_system_state()
+        }
+
+        // Changing system state between active and pause
         Some(Commands::ToggleSystemState { activate: active, pause}) => {
             system_state::toggle_system_state(active, pause)
         }

@@ -11,15 +11,13 @@ pub enum Commands {
         #[arg(long)]
         set_admin: Option<String>,
     },
+    
     /// Displays current configuration registry contents.
     ViewConfig,
 
     /// Updates configuration parameters using values from root directory config.json.
     UpdateConfig,
 
-    /// View current system state.
-    ViewSystemState,
-    
     /// Toggles system between active and paused states.
     ToggleSystemState {
 
@@ -31,6 +29,8 @@ pub enum Commands {
         #[arg(long, action, required = false)]
         pause: bool,
     },
+
+
 
     /// Withdrawing from protocol treasury to designated account
     WithdrawTokens {
