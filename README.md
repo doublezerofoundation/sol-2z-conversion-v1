@@ -39,7 +39,7 @@ solana logs -ul
 
 ## Deploy the Anchor Program
 ### Keypair for the programs
-Create a "./keys" directory\
+Create "./keys" directory\
 Generate keypair for both the programs and copy keypairs into the `.keys` directory.
 
 ### Two ways of Deploying
@@ -55,8 +55,8 @@ You can mention required program name and keypair file in the command.
 ```sh
 anchor build && anchor deploy --program-name PROGRAM_NAME --program-keypair ..keys/KEYPAIR.json
 
-eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter_program-keypair.json
-anchor build && anchor deploy --program-name integrating-contract --program-keypair ./keys/integrating_contract-keypair.json
+eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
+anchor build && anchor deploy --program-name integrating-contract --program-keypair ./keys/integrating-contract-keypair.json
 ```
 
 ### Using `build_and_deploy.sh` script
@@ -65,12 +65,11 @@ deploy it to the environment.
 
 #### Options
 - `-h, --help` Display this help message and exit.
-- `--workspace <value>` Specify the workspace(s) to process. Use a comma-separated list for multiple workspaces (e.g., `programs/my_program,programs/another_program`). If no workspace is specified, all workspaces will be processed.
+- `--workspace <value>` Specify the workspace(s) to process. Use a comma-separated list for multiple workspaces (e.g., `programs/converter-program,programs/integrating-contract`). If no workspace is specified, all workspaces will be processed.
 - `--mode <value>` Set the mode of operation. Default will be `build_and_deploy`. Available modes:
     - `deploy_only`: Only deploy the specified workspace(s).
     - `build_only`: Only build the specified workspace(s).
     - `build_and_deploy`: Build and then deploy the specified workspace(s).
-    - `initialize_system`: Build and deploy all workspaces, then initialize the system by running seed_all.sh
 
 #### Example Usage
 Build and Deploy a Single Workspace
@@ -92,18 +91,3 @@ If you want to build and deploy all the workspaces, you can run the following co
 ```sh
 ./build_and_deploy.sh
 ```
-
-Initialize Complete System
-To build, deploy, and initialize the entire system in one command:
-```sh
-./build_and_deploy.sh --mode initialize_system
-```
-
-This will:
-1. Build all program workspaces
-2. Deploy all programs to the network
-3. Run the complete system initialization process using seed_all.sh
-
-After the program is deployed in the test validator, make note of the following items that will be displayed on the terminal.
-- `Deploying cluster`
-- `Program Id`
