@@ -35,7 +35,18 @@ If you need to check solana logs, run the following command in a separate termin
 ```sh
 solana logs -ul
 ```
+### Setting Up the Config Files
+Create a `config.json` file at the root directory. Both Admin CLI and User CLI refer to this config file.\
 
+The file should contain the following items.
+```json
+{
+    "rpc_url": "http://127.0.0.1:8899",
+    "program_id": "FsZxrms3iCqqRvyX536GYixU9sWiv9J4WTZbwxCMprHR",
+}
+```
+- `rpc_url`: The `Deploying cluster` from last step.
+- `program_id`: Public key of the anchor program.
 
 ## Deploy the Anchor Program
 ### Keypair for the programs
