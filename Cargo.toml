@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "programs/*",
+    "./on-chain/programs/*",
     "cli-common",
     "admin-cli",
     "user-cli"
