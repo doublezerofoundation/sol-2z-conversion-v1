@@ -20,11 +20,6 @@ variable "public_subnets" {
   type        = list(string)
 }
 
-variable "security_groups" {
-  description = "List of security group IDs (not used for NLB, but kept for module compatibility)"
-  type        = list(string)
-}
-
 # Load Balancer Configuration
 variable "internal" {
   description = "Whether the load balancer is internal or internet-facing"

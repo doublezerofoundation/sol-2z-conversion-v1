@@ -10,11 +10,6 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "vpc_id" {
-  description = "ID of the VPC where resources will be created"
-  type        = string
-}
-
 variable "private_subnets" {
   description = "List of private subnet IDs for the EC2 instances"
   type        = list(string)
@@ -96,13 +91,6 @@ variable "cpu_low_threshold" {
 # Additional Tags
 variable "additional_tags" {
   description = "Additional tags to add to resources"
-  type        = map(string)
-  default     = {}
-}
-
-# User Data Template Variables
-variable "user_data_vars" {
-  description = "Additional variables to pass to the user data template"
   type        = map(string)
   default     = {}
 }

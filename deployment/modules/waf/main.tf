@@ -1,10 +1,5 @@
 # WAF Module for DoubleZero infrastructure
 
-# Get current AWS region
-data "aws_region" "current" {}
-
-# Get current AWS caller identity
-data "aws_caller_identity" "current" {}
 
 # Create AWS WAF Web ACL
 resource "aws_wafv2_web_acl" "this" {
