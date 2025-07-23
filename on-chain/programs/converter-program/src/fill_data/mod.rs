@@ -1,1 +1,1 @@
-mod fills_registry;
+pub mod fills_registry;

@@ -1111,6 +1111,7 @@ name = "converter-program"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "shared",
 ]
 
 [[package]]

@@ -5,7 +5,7 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace, Debug)]
 pub struct DenyListRegistry {
     #[max_len(MAX_DENY_LIST_SIZE)]
-    denied_addresses: Vec<Pubkey>,
-    last_updated: i64,
-    update_count: u64,  // For audit purposes
+    pub denied_addresses: Vec<Pubkey>,
+    pub last_updated: i64,
+    pub update_count: u64,  // For audit purposes
 }
