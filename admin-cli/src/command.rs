@@ -6,11 +6,7 @@ pub enum Commands {
     Initializes the system by creating the configuration registry, vault,
     protocol treasury, and program state account.Init, Change the configs of the system
     **/
-    Init {
-        /// Optional: Set the admin as someone other than the program owner
-        #[arg(long)]
-        set_admin: Option<String>,
-    },
+    Init,
     /// Displays current configuration registry contents.
     ViewConfig,
 

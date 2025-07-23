@@ -9,10 +9,10 @@ mod fill_data;
 mod initialize;
 
 use anchor_lang::prelude::*;
-use crate::initialize::init_system::InitializeSystem;
+use initialize::init_system::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
-
+#[program]
 pub mod converter_program {
     use super::*;
 

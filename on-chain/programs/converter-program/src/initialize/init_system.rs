@@ -11,7 +11,7 @@ use crate::{
     deny_list::deny_list_registry::DenyListRegistry,
     fill_data::fills_registry::FillsRegistry,
     state::program_state::ProgramStateAccount,
-    program::ConverterProgram,
+    program::ConverterProgram
 };
 
 /// Only the current upgrade authority can call this

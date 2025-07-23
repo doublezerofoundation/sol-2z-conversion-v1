@@ -16,8 +16,8 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
     match cli.command {
 
         // Initializing the system
-        Some(Commands::Init { set_admin }) => {
-            init_handler::init(set_admin)
+        Some(Commands::Init) => {
+            init_handler::init()
         }
 
         // Displays current configuration registry contents.
