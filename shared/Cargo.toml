@@ -1,0 +1,8 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2021"
+description = "Shared data structures, constants, and utilities used across onchain programs and CLI"
+
+[dependencies]
+anchor-lang = { workspace = true }

@@ -2,6 +2,7 @@
 members = [
     "./on-chain/programs/*",
     "cli-common",
+    "shared",
     "admin-cli",
     "user-cli"
 ]
