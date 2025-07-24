@@ -16,8 +16,10 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# Create IAM role for EC2 instances
+# Create IAM role for EC2 instances (only if instance_profile_name is not provided)
 resource "aws_iam_role" "ec2_role" {
+  count = var.instance_profile_name == "" ? 1 : 0
+
   name = "${var.name_prefix}-ec2-role"
 
   assume_role_policy = jsonencode({
@@ -39,20 +41,26 @@ resource "aws_iam_role" "ec2_role" {
   }
 }
 
-# Create IAM instance profile
+# Create IAM instance profile (only if instance_profile_name is not provided)
 resource "aws_iam_instance_profile" "ec2_profile" {
+  count = var.instance_profile_name == "" ? 1 : 0
+
   name = "${var.name_prefix}-ec2-profile"
-  role = aws_iam_role.ec2_role.name
+  role = aws_iam_role.ec2_role[0].name
 }
 
-# Attach policies to IAM role
+# Attach policies to IAM role (only if instance_profile_name is not provided)
 resource "aws_iam_role_policy_attachment" "ssm_policy" {
-  role       = aws_iam_role.ec2_role.name
+  count = var.instance_profile_name == "" ? 1 : 0
+
+  role       = aws_iam_role.ec2_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_role_policy_attachment" "cloudwatch_policy" {
-  role       = aws_iam_role.ec2_role.name
+  count = var.instance_profile_name == "" ? 1 : 0
+
+  role       = aws_iam_role.ec2_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
@@ -64,7 +72,7 @@ resource "aws_launch_template" "this" {
   vpc_security_group_ids = var.security_groups
 
   iam_instance_profile {
-    name = aws_iam_instance_profile.ec2_profile.name
+    name = var.instance_profile_name != "" ? var.instance_profile_name : aws_iam_instance_profile.ec2_profile[0].name
   }
 
   monitoring {

@@ -11,19 +11,35 @@ The infrastructure follows a layered architecture:
 3. **Load Balancer** - Distributes traffic across multiple EC2 instances for high availability and scalability.
 4. **EC2 Instances** - Run the application code, with auto-scaling to handle varying loads.
 
+## Multi-Level Organization
+
+The infrastructure is organized into three levels:
+
+1. **Account Level**: Resources that are shared across all regions and environments (IAM roles, policies, etc.)
+2. **Regional Level**: Resources that are specific to a region but shared across environments (VPC, WAF, etc.)
+3. **Environment Level**: Resources that are specific to an environment (EC2 instances, etc.)
+
 ## Directory Structure
 
 ```
 deployment/
-├── main.tf                 # Main Terraform configuration
-├── variables.tf            # Variable definitions
-├── outputs.tf              # Output definitions
-├── environments/           # Environment-specific configurations
+├── account/                # Account-level resources
+│   ├── main.tf             # Main Terraform configuration
+│   ├── variables.tf        # Input variables
+│   └── outputs.tf          # Output values
+├── regional/               # Regional-level resources
+│   ├── main.tf             # Main Terraform configuration
+│   ├── variables.tf        # Input variables
+│   └── outputs.tf          # Output values
+├── environments/           # Environment-specific resources
 │   ├── dev/                # Development environment
-│   │   └── terraform.tfvars # Development environment variables
+│   │   ├── main.tf         # Main Terraform configuration
+│   │   ├── variables.tf    # Input variables
+│   │   ├── outputs.tf      # Output values
+│   │   └── terraform.tfvars # Variable values
 │   ├── staging/            # Staging environment (create as needed)
 │   └── prod/               # Production environment (create as needed)
-└── modules/                # Terraform modules
+└── modules/                # Reusable modules
     ├── vpc/                # VPC module
     ├── waf/                # WAF module
     ├── api_gateway/        # API Gateway module
@@ -40,61 +56,186 @@ deployment/
 
 ## Usage
 
-### Initialize Terraform
+The infrastructure should be deployed in the following order:
+
+1. Account-level resources
+2. Regional-level resources
+3. Environment-level resources
+
+### Account-Level Deployment
 
 ```bash
-cd deployment
+# Navigate to the account directory
+cd deployment/account
+
+# Initialize Terraform
 terraform init
+
+# Plan the deployment
+terraform plan
+
+# Apply the changes
+terraform apply
 ```
 
-If using remote state with S3:
+### Regional-Level Deployment
 
 ```bash
-terraform init \
-  -backend-config="bucket=your-terraform-state-bucket" \
-  -backend-config="key=doublezero/terraform.tfstate" \
-  -backend-config="region=us-east-1"
+# Navigate to the regional directory
+cd deployment/regional
+
+# Initialize Terraform
+terraform init
+
+# Plan the deployment
+terraform plan
+
+# Apply the changes
+terraform apply
 ```
 
-### Select Environment
-
-To use a specific environment configuration:
+### Environment-Level Deployment
 
 ```bash
-terraform plan -var-file=environments/dev/terraform.tfvars
+# Navigate to the environment directory
+cd deployment/environments/dev
+
+# Initialize Terraform
+terraform init
+
+# Plan the deployment
+terraform plan
+
+# Apply the changes
+terraform apply
 ```
 
-### Apply Changes
+### Destroying Infrastructure
+
+To destroy the infrastructure, follow the reverse order:
+
+1. Environment-level resources
+2. Regional-level resources
+3. Account-level resources
 
 ```bash
-terraform apply -var-file=environments/dev/terraform.tfvars
-```
+# Destroy environment-level resources
+cd deployment/environments/dev
+terraform destroy
 
-### Destroy Infrastructure
+# Destroy regional-level resources
+cd ../../regional
+terraform destroy
 
-```bash
-terraform destroy -var-file=environments/dev/terraform.tfvars
+# Destroy account-level resources
+cd ../account
+terraform destroy
 ```
 
 ## Environment Configuration
 
-Each environment (dev, staging, prod) can have its own configuration in the `environments/` directory. Create a `terraform.tfvars` file for each environment with appropriate values.
+Each environment (dev, staging, prod) has its own directory under `environments/` with its own Terraform configuration files and variable values.
 
 ### Example: Creating a New Environment
 
 1. Create a new directory for the environment:
 
 ```bash
-mkdir -p environments/staging
+mkdir -p deployment/environments/staging
 ```
 
-2. Create a `terraform.tfvars` file with environment-specific values:
+2. Copy the Terraform configuration files from an existing environment:
 
 ```bash
-cp environments/dev/terraform.tfvars environments/staging/terraform.tfvars
+cp deployment/environments/dev/main.tf deployment/environments/staging/
+cp deployment/environments/dev/variables.tf deployment/environments/staging/
+cp deployment/environments/dev/outputs.tf deployment/environments/staging/
+cp deployment/environments/dev/terraform.tfvars deployment/environments/staging/
 ```
 
-3. Edit the `terraform.tfvars` file to set appropriate values for the staging environment.
+3. Edit the `terraform.tfvars` file to set appropriate values for the staging environment:
+
+```bash
+# Update environment name
+environment = "staging"
+
+# Update other environment-specific values as needed
+instance_type = "t3.small"  # Example: use larger instances in staging
+asg_min_size = 2
+asg_max_size = 10
+asg_desired_capacity = 3
+```
+
+4. Deploy the new environment:
+
+```bash
+# Deploy account-level resources (if not already deployed)
+cd deployment/account
+terraform init
+terraform apply
+
+# Deploy regional-level resources (if not already deployed)
+cd ../regional
+terraform init
+terraform apply -var-file=../environments/staging/terraform.tfvars
+
+# Deploy environment-level resources
+cd ../environments/staging
+terraform init
+terraform apply
+```
+
+## Remote State and Data Sources
+
+Each level of the infrastructure uses a separate remote state file in the S3 bucket:
+
+- Account level: `account/terraform.tfstate`
+- Regional level: `regional/terraform.tfstate`
+- Environment level: `environments/dev/terraform.tfstate` (and similar for other environments)
+
+The regional and environment levels use data sources to access the outputs from the account level:
+
+```terraform
+# Data source to get account-level outputs
+data "terraform_remote_state" "account" {
+  backend = "s3"
+  config = {
+    bucket         = "doublezero-terraform-state-bucket"
+    key            = "account/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "doublezero-terraform-locks"
+    encrypt        = true
+  }
+}
+
+# Example: Using account-level outputs
+resource "example_resource" "example" {
+  instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name
+}
+```
+
+The environment level also uses data sources to access the outputs from the regional level:
+
+```terraform
+# Data source to get regional-level outputs
+data "terraform_remote_state" "regional" {
+  backend = "s3"
+  config = {
+    bucket         = "doublezero-terraform-state-bucket"
+    key            = "regional/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "doublezero-terraform-locks"
+    encrypt        = true
+  }
+}
+
+# Example: Using regional-level outputs
+resource "example_resource" "example" {
+  vpc_id = data.terraform_remote_state.regional.outputs.vpc_id
+}
+```
+
+This approach allows each level to be managed independently while still being able to reference resources from other levels.
 
 ## Modules
 

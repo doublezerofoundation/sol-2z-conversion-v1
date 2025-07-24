@@ -88,6 +88,13 @@ variable "cpu_low_threshold" {
   default     = 30
 }
 
+# IAM Configuration
+variable "instance_profile_name" {
+  description = "Name of the IAM instance profile to use (if not provided, one will be created)"
+  type        = string
+  default     = ""
+}
+
 # Additional Tags
 variable "additional_tags" {
   description = "Additional tags to add to resources"

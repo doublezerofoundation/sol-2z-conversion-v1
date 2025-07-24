@@ -57,7 +57,6 @@ module "load_balancer" {
   name_prefix     = "doublezero-${var.environment}"
   vpc_id          = module.vpc.vpc_id
   public_subnets  = module.vpc.public_subnet_ids
-  security_groups = [module.vpc.alb_security_group_id] # Not used by NLB, but kept for module compatibility
 }
 
 # EC2 Instances with Auto Scaling
@@ -66,7 +65,6 @@ module "ec2" {
 
   environment       = var.environment
   name_prefix       = "doublezero-${var.environment}"
-  vpc_id            = module.vpc.vpc_id
   private_subnets   = module.vpc.private_subnet_ids
   security_groups   = [module.vpc.ec2_security_group_id]
   target_group_arns = [module.load_balancer.target_group_arn]

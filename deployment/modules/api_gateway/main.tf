@@ -42,7 +42,7 @@ resource "aws_api_gateway_integration" "default" {
 
   integration_http_method = "ANY"
   type                    = "HTTP"
-  uri                     = "http://${var.nlb_dns_name}/{proxy}"
+  uri                     = "http://${var.nlb_dns_name}/{method.request.path.proxy}"
 
   # These will be set in the root module when connecting to the load balancer
   connection_type = var.connection_type
@@ -69,7 +69,7 @@ resource "aws_api_gateway_integration" "root" {
 
   integration_http_method = "ANY"
   type                    = "HTTP"
-  uri                     = "http://${var.nlb_dns_name}/{proxy}"  # Use NLB DNS name
+  uri                     = "http://${var.nlb_dns_name}/"  # Use NLB DNS name
 
   connection_type = var.connection_type
   connection_id   = var.connection_id
