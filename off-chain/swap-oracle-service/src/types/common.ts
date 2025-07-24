@@ -4,7 +4,8 @@ export enum ConfigField {
     PRICE_FEED_ID = 'priceFeedIds',
     PRICING_SERVICE = 'pricingService',
     HREMES_ENDPOINT = 'hermesEndpoint',
-    PRICING_SERVICE_TYPE = 'pricingServiceType'
+    PRICING_SERVICE_TYPE = 'pricingServiceType',
+    PRICING_SERVICES = 'pricingServices'
 
 }
 
@@ -18,13 +19,29 @@ export enum PriceFeed {
 export interface SwapRateResponce {
     swapRate: string;
     timestamp: string;
-    signature: string;
-    solPriceUsd: string;
-    twozPriceUsd: string;
+    signature: any;
+    solPriceUsd: any;
+    twozPriceUsd: any;
     cacheHit: boolean;
 }
 
 export enum PricingServiceType {
     PYTH = 'pyth',
     CHAINLINK = 'chainlink',
+}
+
+export interface PricingServicesConfig {
+    name: string;
+    type: PricingServiceType;
+    endpoint: string;
+    priceFeedIds: {
+        "SOL/USD": string
+        "BTC/USD": string
+    }
+}
+
+export interface PriceRate {
+    swapRate: number;
+    solPriceUsd: number;
+    twozPriceUsd: number;
 }
