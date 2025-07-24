@@ -7,9 +7,9 @@ use crate::{
         constant::DISCRIMINATOR_SIZE,
         events::init::SystemInitialized,
     },
-    configuration::configuration_registry::ConfigurationRegistry,
-    deny_list::deny_list_registry::DenyListRegistry,
-    fill_data::fills_registry::FillsRegistry,
+    configuration_registry::configuration_registry::ConfigurationRegistry,
+    deny_list_registry::deny_list_registry::DenyListRegistry,
+    fills_registry::fills_registry::FillsRegistry,
     state::program_state::ProgramStateAccount,
     program::ConverterProgram
 };
@@ -70,7 +70,7 @@ impl<'info> InitializeSystem<'info> {
         max_fills_storage: u64,
     ) -> Result<()> {
 
-        // Initialize configuration registry with provided values
+        // Initialize configuration_registry registry with provided values
         self.configuration_registry.initialize(
             oracle_pubkey,
             sol_quantity,

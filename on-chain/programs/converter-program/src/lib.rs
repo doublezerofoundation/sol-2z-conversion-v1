@@ -1,11 +1,11 @@
 #![allow(unexpected_cfgs)]
 
 mod common;
-mod configuration;
+mod configuration_registry;
 mod state;
 mod validator_deposit;
-mod deny_list;
-mod fill_data;
+mod deny_list_registry;
+mod fills_registry;
 mod initialize;
 
 use anchor_lang::prelude::*;
