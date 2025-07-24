@@ -33,6 +33,8 @@ version = "0.1.0"
 dependencies = [
  "anchor-client",
  "clap 4.5.41",
+ "cli-common",
+ "shared",
 ]
 
 [[package]]
@@ -1037,6 +1039,7 @@ dependencies = [
  "anchor-client",
  "serde",
  "serde_json",
+ "shared",
 ]
 
 [[package]]
@@ -1111,6 +1114,7 @@ name = "converter-program"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
+ "shared",
 ]
 
 [[package]]
@@ -3349,6 +3353,13 @@ checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
 dependencies = [
  "digest 0.10.7",
  "keccak",
+]
+
+[[package]]
+name = "shared"
+version = "0.1.0"
+dependencies = [
+ "anchor-lang",
 ]
 
 [[package]]

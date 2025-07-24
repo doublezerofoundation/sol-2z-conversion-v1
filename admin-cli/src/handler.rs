@@ -1,8 +1,8 @@
 use clap::Parser;
 use crate::command::Commands;
 use std::error::Error;
-use crate::core::error::COMMAND_NOT_SPECIFIED;
 use crate::core::functions::{config_handler, init_handler, system_state, withdraw_2z};
+use crate::core::common::error::COMMAND_NOT_SPECIFIED;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -16,8 +16,8 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
     match cli.command {
 
         // Initializing the system
-        Some(Commands::Init { set_admin }) => {
-            init_handler::init(set_admin)
+        Some(Commands::Init) => {
+            init_handler::init()
         }
 
         // Displays current configuration registry contents.

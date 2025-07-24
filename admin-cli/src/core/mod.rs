@@ -1,2 +1,3 @@
 pub mod functions;
-pub mod error;
+pub mod config;
+pub(crate) mod common;

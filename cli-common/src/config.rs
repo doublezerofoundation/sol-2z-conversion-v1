@@ -11,6 +11,11 @@ pub struct Config {
     // Common Configs
     pub rpc_url: String,
     pub program_id: String,
+    pub oracle_pubkey: Option<String>,
+    pub sol_quantity: Option<u64>,
+    pub slot_threshold: Option<u64>,
+    pub price_maximum_age: Option<u64>,
+    pub max_fills_storage: Option<u64>,
 }
 
 impl Config {
@@ -21,7 +26,7 @@ impl Config {
                 Ok(contents) => {
                     match serde_json::from_str(&contents) {
                         Ok(config) => Ok(config),
-                        Err(_) => Err(Box::from("Error Deserializing the config file"))
+                        Err(e) => Err(Box::from(format!("Error deserializing the config file: {}", e))),
                     }
                 }
                 Err(_) => Err(Box::from("Error Reading file"))
