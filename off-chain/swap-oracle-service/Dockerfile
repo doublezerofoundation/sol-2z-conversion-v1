@@ -4,5 +4,5 @@ FROM node:20-alpine
 WORKDIR /app
 
 COPY . /app
-EXPOSE 8022
-CMD bin/service
+EXPOSE 8080
+CMD ["node", "bin/service"]
