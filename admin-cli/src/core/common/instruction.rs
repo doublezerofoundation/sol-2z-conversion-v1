@@ -1,0 +1,1 @@
+pub const INITIALIZE_SYSTEM_INSTRUCTION: &[u8] = b"global:initialize_system";

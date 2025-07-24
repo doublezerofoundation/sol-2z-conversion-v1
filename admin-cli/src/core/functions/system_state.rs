@@ -1,5 +1,6 @@
 use std::error::Error;
-use crate::core::error::{INVALID_ARGUMENTS};
+use crate::core::common::error::INVALID_ARGUMENTS;
+
 pub fn view_system_state() -> Result<(), Box<dyn Error>> {
     println!("View System State");
     Ok(())

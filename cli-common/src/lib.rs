@@ -1,4 +1,4 @@
 pub mod utils;
 pub mod transaction_executor;
-mod config;
+pub mod config;
 mod constant;

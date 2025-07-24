@@ -13,15 +13,17 @@ resolver = "2"
 anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
 
+# Workspace members (internal dependencies)
+shared = { path = "shared" }
+cli-common = { path = "cli-common" }
+
+
 ### CLI Serialization
 serde="1.0.219"
 serde_json = "1.0.141"
 
 ### CLI
 clap = { version = "4.5.41", features = ["derive"] }
-
-# Workspace members (internal dependencies)
-shared = { path = "shared" }
 
 [profile.release]
 overflow-checks = true
