@@ -12,7 +12,7 @@ import {DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig} from "../utils
 export async function systemInitializeAndVerify(
     program,
     adminKeyPair: Keypair = getDefaultKeyPair(),
-    configRegistryValues: SystemConfig = DEFAULT_CONFIGS
+    inputConfigs: SystemConfig = DEFAULT_CONFIGS
 ) {
     // List of Accounts to be verified
     const pdas = await Promise.all([
@@ -22,7 +22,7 @@ export async function systemInitializeAndVerify(
         getDenyListRegistryPDA(program.programId),
     ]);
 
-    // Accounts to be initialized should not exists before initialization
+    // Accounts to be initialized should not exist before initialization
     let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))
     );
@@ -36,11 +36,11 @@ export async function systemInitializeAndVerify(
     const programDataAccount = await getProgramDataAccountPDA(program.programId);
     try {
         const tx = await program.methods.initializeSystem(
-            configRegistryValues.oraclePubkey,
-            configRegistryValues.solQuantity,
-            configRegistryValues.slotThreshold,
-            configRegistryValues.priceMaximumAge,
-            configRegistryValues.maxFillsStorage
+            inputConfigs.oraclePubkey,
+            inputConfigs.solQuantity,
+            inputConfigs.slotThreshold,
+            inputConfigs.priceMaximumAge,
+            inputConfigs.maxFillsStorage
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -67,11 +67,11 @@ export async function systemInitializeAndVerify(
 
     // Verify config values are initialized as given.
     const configInConfigRegistry = await fetchCurrentConfiguration(program);
-    assert.equal(configInConfigRegistry.oraclePubkey.toString(), configRegistryValues.oraclePubkey.toString());
-    assert.equal(configInConfigRegistry.maxFillsStorage.toString(), configRegistryValues.maxFillsStorage.toString());
-    assert.equal(configInConfigRegistry.priceMaximumAge.toString(), configRegistryValues.priceMaximumAge.toString());
-    assert.equal(configInConfigRegistry.slotThreshold.toString(), configRegistryValues.slotThreshold.toString());
-    assert.equal(configInConfigRegistry.solQuantity.toString(), configRegistryValues.solQuantity.toString());
+    assert.equal(configInConfigRegistry.oraclePubkey.toString(), inputConfigs.oraclePubkey.toString());
+    assert.equal(configInConfigRegistry.maxFillsStorage.toString(), inputConfigs.maxFillsStorage.toString());
+    assert.equal(configInConfigRegistry.priceMaximumAge.toString(), inputConfigs.priceMaximumAge.toString());
+    assert.equal(configInConfigRegistry.slotThreshold.toString(), inputConfigs.slotThreshold.toString());
+    assert.equal(configInConfigRegistry.solQuantity.toString(), inputConfigs.solQuantity.toString());
 }
 
 export async function systemInitializeFail(
