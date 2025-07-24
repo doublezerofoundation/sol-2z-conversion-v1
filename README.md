@@ -106,12 +106,10 @@ If you want to build and deploy all the workspaces, you can run the following co
 ## Admin CLI
 
 ### Initialize the system 
-This command Initializes the system by creating the configuration registry, vault, protocol treasury, and program state account.
+This command Initializes the system by creating the configuration registry, fills_registry, deny_list_registry and program state account.
 ```sh
-cargo run -p admin-cli -- init --set-admin <PUBLIC_KEY>
+cargo run -p admin-cli -- init
 ```
-Optionally, the caller can pass the `set-admin` argument to set the admin as someone other than themselves. If it is not provided, the caller is set as the admin.\
-**NOTE: Only the program owner (the keypair that was used to deploy the program) can call this instruction.**
 
 ### Withdraw 2Z Tokens 
 Transfers specified tokens from protocol treasury to designated account.

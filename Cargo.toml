@@ -1,0 +1,35 @@
+[workspace]
+members = [
+    "./on-chain/programs/*",
+    "cli-common",
+    "shared",
+    "admin-cli",
+    "user-cli"
+]
+resolver = "2"
+
+[workspace.dependencies]
+# Anchor framework
+anchor-lang = "0.31.1"
+anchor-client = "0.31.1"
+
+# Workspace members (internal dependencies)
+shared = { path = "shared" }
+cli-common = { path = "cli-common" }
+
+
+### CLI Serialization
+serde="1.0.219"
+serde_json = "1.0.141"
+
+### CLI
+clap = { version = "4.5.41", features = ["derive"] }
+
+[profile.release]
+overflow-checks = true
+lto = "fat"
+codegen-units = 1
+[profile.release.build-override]
+opt-level = 3
+incremental = false
+codegen-units = 1
