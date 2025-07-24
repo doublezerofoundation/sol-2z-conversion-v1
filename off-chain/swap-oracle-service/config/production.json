@@ -1,11 +1,14 @@
 {
   "applicationPort": 8080,
-  "priceFeedId": {
-    "sol": "",
-    "btc": "0xe62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
-    "2z": ""
-  },
-  "pricingService" : {
-    "hermesEndpoint": "https://hermes.pyth.network/"
-  }
+  "pricingServices": [
+    {
+      "name": "pyth",
+      "type": "pyth",
+      "endpoint": "https://hermes.pyth.network/",
+      "priceFeedIds": {
+        "SOL/USD": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        "2Z/USD": "0x879551021853eec7a7dc827578e8e69da7e4fa8148339aa0d3d5296405be4b1a"
+      }
+    }
+  ]
 }
