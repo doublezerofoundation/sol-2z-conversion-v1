@@ -1,4 +1,4 @@
-# Outputs for DoubleZero infrastructure
+ # Outputs for DoubleZero infrastructure
 
 # VPC Outputs
 output "vpc_id" {

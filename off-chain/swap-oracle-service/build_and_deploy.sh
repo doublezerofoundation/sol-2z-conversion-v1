@@ -2,83 +2,85 @@
 
 set -e
 
+SERVICE_NAME="swap-oracle-service"
+AWS_REGION="${AWS_REGION:-us-east-1}"
+ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
+BUILD_TAG="${BUILD_TAG:-latest}"
 
-log_info() {
-    echo -e "${BLUE}  $1${NC}"
-}
-log_success() {
-    echo -e "${GREEN}✅ $1${NC}"
-}
-
-log_warning() {
-    echo -e "${YELLOW}⚠️  $1${NC}"
-}
-
-log_error() {
-    echo -e "${RED}❌ $1${NC}"
-}
-
-log_step() {
-    echo -e "${YELLOW} $1${NC}"
-}
-
-
-# Default values
-IMAGE_NAME="oracle-pricing-service"
-TAG="latest"
-
-cd "$(dirname "$0")"
-repo=$(pwd | rev | cut -d '/' -f 1 | rev)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
 
 
-echo "================================================================================================"
-echo "         					BUILD_AND_DEPLOY ($repo) "
-echo "================================================================================================"
-echo " input $@"
+check_aws_cli() {
+    if ! command -v aws &> /dev/null; then
+        log_error "AWS CLI is not installed. Please install it first."
+        exit 1
+    fi
+}
 
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -t|--tag)
-            TAG="$2"
-            shift 2
-            ;;
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-    esac
-done
+check_docker() {
+    if ! command -v docker &> /dev/null; then
+        log_error "Docker is not installed. Please install it first."
+        exit 1
+    fi
+
+    if ! docker info &> /dev/null; then
+        log_error "Docker daemon is not running. Please start Docker."
+        exit 1
+    fi
+}
+
+get_account_id() {
+    aws sts get-caller-identity --query Account --output text
+}
+
+check_aws_credentials() {
+    log_info "Checking AWS credentials..."
+
+    if [[ -z "$AWS_ACCESS_KEY_ID" ]]; then
+        log_error "AWS_ACCESS_KEY_ID is not set"
+        exit 1
+    else
+        log_info "AWS_ACCESS_KEY_ID is set (starts with: ${AWS_ACCESS_KEY_ID:0:4}...)"
+    fi
+
+    if [[ -z "$AWS_SECRET_ACCESS_KEY" ]]; then
+        log_error "AWS_SECRET_ACCESS_KEY is not set"
+        exit 1
+    else
+        log_info "AWS_SECRET_ACCESS_KEY is set (length: ${#AWS_SECRET_ACCESS_KEY})"
+    fi
+
+    if [[ -z "$AWS_REGION" ]]; then
+        log_warn "AWS_REGION is not set, using default: $AWS_REGION"
+    else
+        log_info "AWS_REGION is set to: $AWS_REGION"
+    fi
+}
 
 
-show_help() {
-  echo "Usage: $0 [OPTIONS]"
-  echo ""
-  echo "Build and deploy script for $repo project"
-  echo ""
-  echo "OPTIONS:"
-  echo "  -t, --tag TAG        Set Docker image tag (default: latest)"
-  echo "  -h, --help          Show this help message"
-  echo ""
-  echo "DESCRIPTION:"
-  echo "  This script performs the following operations:"
-  echo "  1. Clean project artifacts (node_modules, dist)"
-  echo "  2. Install npm dependencies"
-  echo "  3. Build TypeScript project"
-  echo "  4. Build Docker image"
-  echo ""
-  echo "EXAMPLES:"
-  echo "  $0                           # Build with default settings"
-  echo "  $0 --tag v1.0.0             # Build with specific tag"
-  echo ""
+ecr_login() {
+    log_info "Logging into Amazon ECR..."
+    aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $1
 }
 
 clean_project() {
-    log_step "Cleaning build artifacts..."
+    log_info "Cleaning build artifacts..."
 
     if [ -d "node_modules" ]; then
         rm -rf node_modules
@@ -90,89 +92,105 @@ clean_project() {
         log_info "Removed dist"
     fi
 
-    log_success "Clean completed"
+    log_info "Clean completed"
 }
 
 npm_install() {
-    log_step "Installing dependencies..."
+    log_info "Installing dependencies..."
     if [ -f "package-lock.json" ]; then
         npm ci
     else
         npm install
     fi
-    log_success "Dependencies installed successfully"
+    log_info "Dependencies installed successfully"
 }
 
 build_project() {
-    log_step "Building TypeScript project..."
+    log_info "Building TypeScript project..."
     npm run build
-    log_success "Project built successfully"
+    log_info "Project built successfully"
 }
-build_docker() {
-    FULL_IMAGE_NAME="$IMAGE_NAME:$TAG"
-    log_step "Building Docker image: $FULL_IMAGE_NAME"
 
-    # Build the image with proper context
-    docker buildx build -t "$FULL_IMAGE_NAME" .
+build_image() {
+    local image_tag=$1
+    log_info "Building Docker image..."
 
+    docker build -t $SERVICE_NAME:$BUILD_TAG .
+    docker tag $SERVICE_NAME:$BUILD_TAG $image_tag
 
-    # Check if build was successful
-    if [ $? -eq 0 ]; then
-        log_success "Successfully built Docker image: $FULL_IMAGE_NAME"
-        # Show image info
-        echo ""
-        log_info "Image information:"
-        docker images | head -1
-        docker images | grep "$IMAGE_NAME" | head -5
-
-    else
-        log_error "Failed to build Docker image"
-        exit 1
-    fi
+    log_info "Image built successfully: $image_tag"
 }
-run_docker() {
-    local CONTAINER_NAME="oracle-pricing-service-container"
-    local HOST_PORT=8080
-    local CONTAINER_PORT=8080
-    local FULL_IMAGE_NAME="$IMAGE_NAME:$TAG"
 
-    log_step "Running Docker container: $CONTAINER_NAME"
+push_image() {
+    local image_tag=$1
+    log_info "Pushing image to ECR..."
 
-    # Stop and remove existing container if it exists
-    if docker ps -a --format 'table {{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
-        log_info "Stopping and removing existing container: $CONTAINER_NAME"
-        docker stop "$CONTAINER_NAME" >/dev/null 2>&1 || true
-        docker rm "$CONTAINER_NAME" >/dev/null 2>&1 || true
-    fi
+    docker push $image_tag
 
-    # Run the container
-    docker run -d \
-        --name "$CONTAINER_NAME" \
-        -p "${HOST_PORT}:${CONTAINER_PORT}" \
-        --restart unless-stopped \
-        "$FULL_IMAGE_NAME"
-
-    # Check if container started successfully
-    if [ $? -eq 0 ]; then
-        log_success "Container started successfully: $CONTAINER_NAME"
-        log_info "Application is accessible at: http://localhost:$HOST_PORT"
-
-        # Show container status
-        echo ""
-        log_info "Container information:"
-        docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | head -1
-        docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | grep "$CONTAINER_NAME"
-    else
-        log_error "Failed to start container"
-        exit 1
-    fi
+    log_info "Image pushed successfully: $image_tag"
 }
 
 
-#clean_project
-#npm_install
-build_project
-build_docker
-run_docker
+main() {
+    log_info "Starting build and deploy process for $SERVICE_NAME"
+
+    check_aws_cli
+    check_docker
+    check_aws_credentials
 
 
+    ACCOUNT_ID=$(get_account_id)
+    ECR_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
+    IMAGE_TAG="$ECR_URI/$ECR_REPOSITORY_NAME:$BUILD_TAG"
+
+    log_info "AWS Account ID: $ACCOUNT_ID"
+    log_info "ECR URI: $ECR_URI"
+    log_info "Image Tag: $IMAGE_TAG"
+
+
+    ecr_login $ECR_URI
+
+    clean_project
+    npm_install
+    build_project
+
+    build_image $IMAGE_TAG
+
+    push_image $IMAGE_TAG
+
+    log_info "Build and deploy completed successfully!"
+    log_info "Image URI: $IMAGE_TAG"
+}
+
+# Handle script arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --region)
+            AWS_REGION="$2"
+            shift 2
+            ;;
+        --repository)
+            ECR_REPOSITORY_NAME="$2"
+            shift 2
+            ;;
+        --tag)
+            BUILD_TAG="$2"
+            shift 2
+            ;;
+        --help)
+            echo "Usage: $0 [options]"
+            echo "Options:"
+            echo "  --region REGION        AWS region (default: us-east-1)"
+            echo "  --repository NAME      ECR repository name (default: swap-oracle-service)"
+            echo "  --tag TAG             Build tag (default: latest)"
+            echo "  --help                Show this help message"
+            exit 0
+            ;;
+        *)
+            log_error "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+main
