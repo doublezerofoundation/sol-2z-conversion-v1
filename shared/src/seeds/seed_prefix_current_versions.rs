@@ -18,7 +18,7 @@ impl SeedPrefixVersions {
             SeedPrefixVersions::ProtocolTreasury => b"token_vault", // this cannot be upgraded
             SeedPrefixVersions::ConfigurationRegistry => b"system_config_v1",
             SeedPrefixVersions::ProgramState => b"state_v1",
-            SeedPrefixVersions::DenyListRegistry => b"deny_listt_v1",
+            SeedPrefixVersions::DenyListRegistry => b"deny_list_v1",
             SeedPrefixVersions::FillsRegistry => b"fills_registry_v1",
         }
     }
