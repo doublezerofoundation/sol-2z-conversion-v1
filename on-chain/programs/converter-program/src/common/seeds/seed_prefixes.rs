@@ -1,4 +1,4 @@
-use crate::seeds::seed_prefix_current_versions::SeedPrefixVersions;
+use crate::common::seeds::seed_prefix_current_versions::SeedPrefixVersions;
 
 #[derive(Debug, Clone, Copy)]
 pub enum SeedPrefixes {

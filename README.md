@@ -72,7 +72,6 @@ You can mention required program name and keypair file in the command.
 anchor build && anchor deploy --program-name PROGRAM_NAME --program-keypair ..keys/KEYPAIR.json
 
 eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
-anchor build && anchor deploy --program-name integrating-contract --program-keypair ./keys/integrating-contract-keypair.json
 ```
 
 ### Using `build_and_deploy.sh` script
