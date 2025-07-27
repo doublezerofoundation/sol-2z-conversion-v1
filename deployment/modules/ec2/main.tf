@@ -41,6 +41,7 @@ resource "aws_iam_role" "ec2_role" {
   }
 }
 
+
 # Create IAM instance profile (only if instance_profile_name is not provided)
 resource "aws_iam_instance_profile" "ec2_profile" {
   count = var.instance_profile_name == "" ? 1 : 0
@@ -64,6 +65,57 @@ resource "aws_iam_role_policy_attachment" "cloudwatch_policy" {
   policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
 
+
+data "aws_caller_identity" "current" {}
+
+# Derive ECR registry URL automatically
+locals {
+  ecr_registry = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
+}
+
+
+# Create ECR policy for pulling images
+resource "aws_iam_policy" "ecr_policy" {
+  count = var.instance_profile_name == "" ? 1 : 0
+
+  name        = "${var.name_prefix}-ecr-policy"
+  description = "Policy for ECR access"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach ECR policy to EC2 role
+resource "aws_iam_role_policy_attachment" "ecr_policy" {
+  count = var.instance_profile_name == "" ? 1 : 0
+
+  role       = aws_iam_role.ec2_role[0].name
+  policy_arn = aws_iam_policy.ecr_policy[0].arn
+}
+
+resource "aws_cloudwatch_log_group" "docker_logs" {
+  name              = "/ec2/${var.environment}/docker"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "application_logs" {
+  name              = "/ec2/${var.environment}/application"
+  retention_in_days = 7
+}
+
 # Create Launch Template
 resource "aws_launch_template" "this" {
   name_prefix            = "${var.name_prefix}-lt-"
@@ -81,9 +133,16 @@ resource "aws_launch_template" "this" {
 
   # User data script to install and configure the application
   user_data = base64encode(templatefile("${path.module}/templates/user_data.sh.tpl", {
-    environment = var.environment
-    region      = var.region
+    environment                = var.environment
+    region                    = var.region
+    ecr_registry             = local.ecr_registry
+    ecr_repository           = var.ecr_repository
+    image_tag                = var.image_tag
+    container_name           = var.container_name
+    container_port           = var.container_port
+    container_environment_vars = var.container_environment_vars
   }))
+
 
   block_device_mappings {
     device_name = "/dev/xvda"
