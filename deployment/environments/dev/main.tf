@@ -11,7 +11,7 @@ terraform {
   # Backend configuration for environment-level state
   backend "s3" {
     bucket         = "doublezero-terraform-state-bucket"
-    key            = "environments/dev3-test/terraform.tfstate"
+    key            = "environments/dev2/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
     encrypt        = true
