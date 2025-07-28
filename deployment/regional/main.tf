@@ -140,7 +140,7 @@ resource "aws_route_table_association" "private" {
 }
 
 module "ssm_param" {
-  source = "./modules/ssm"
+  source = "../modules/ssm"
   name   = "/ml/oracle-pricing-key"
   value  = var.oracle_pricing_key
   type   = "SecureString"
@@ -150,7 +150,7 @@ module "ssm_param" {
 }
 
 module "ecr" {
-  source = "./modules/ecr"
+  source = "../modules/ecr"
   ecr_repository_name       = var.ecr_repository_name
   ecr_image_tag_mutability  = var.ecr_image_tag_mutability
   ecr_scan_on_push          = var.ecr_scan_on_push
