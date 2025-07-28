@@ -98,3 +98,6 @@ target/
 .terraform.lock.hcl
 deployment/.terraform/
 .idea/
+
+# solana 
+test-ledger/
