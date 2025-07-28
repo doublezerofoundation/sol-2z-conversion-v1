@@ -41,8 +41,13 @@ Create a `config.json` file at the root directory. Both Admin CLI and User CLI r
 The file should contain the following items.
 ```json
 {
-    "rpc_url": "http://127.0.0.1:8899",
-    "program_id": "FsZxrms3iCqqRvyX536GYixU9sWiv9J4WTZbwxCMprHR",
+  "rpc_url": "http://127.0.0.1:8899",
+  "program_id": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
+  "oracle_pubkey": "3fgp23WcdX4Sex6jRG444b3fZZXtgS4go8XaA8is3FSc",
+  "sol_quantity": 2121,
+  "slot_threshold": 134,
+  "price_maximum_age": 324,
+  "max_fills_storage": 234
 }
 ```
 - `rpc_url`: The `Deploying cluster` from last step.
