@@ -73,11 +73,11 @@ if [ "$SKIP_BUILD" = false ]; then
 fi
 
 # Run deployment
-#echo "Running Ansible deployment..."
-#pushd ansible > /dev/null
-#ansible-playbook -i inventory.yml deploy.yml \
-#    -e "version=$VERSION" \
-#    -e "env=$ENVIRONMENT"
-#popd > /dev/null
+echo "Running Ansible deployment..."
+pushd ansible > /dev/null
+ansible-playbook -i inventory.aws_ec2.yml deploy.yml \
+    -e "version=$VERSION" \
+    -e "env=$ENVIRONMENT"
+popd > /dev/null
 
 echo "Deployment completed successfully!"
