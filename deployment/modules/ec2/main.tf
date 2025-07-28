@@ -74,38 +74,6 @@ locals {
 }
 
 
-# Create ECR policy for pulling images
-resource "aws_iam_policy" "ecr_policy" {
-  count = var.instance_profile_name == "" ? 1 : 0
-
-  name        = "${var.name_prefix}-ecr-policy"
-  description = "Policy for ECR access"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ecr:GetAuthorizationToken",
-          "ecr:BatchCheckLayerAvailability",
-          "ecr:GetDownloadUrlForLayer",
-          "ecr:BatchGetImage"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
-# Attach ECR policy to EC2 role
-resource "aws_iam_role_policy_attachment" "ecr_policy" {
-  count = var.instance_profile_name == "" ? 1 : 0
-
-  role       = aws_iam_role.ec2_role[0].name
-  policy_arn = aws_iam_policy.ecr_policy[0].arn
-}
-
 resource "aws_cloudwatch_log_group" "docker_logs" {
   name              = "/ec2/${var.environment}/docker"
   retention_in_days = 7

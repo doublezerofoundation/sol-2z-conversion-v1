@@ -151,7 +151,7 @@ module "ssm_param" {
 
 module "ecr" {
   source = "../modules/ecr"
-  ecr_repository_name       = var.ecr_repository_name
+  ecr_repository_name       = "double-zero-oracle-pricing-service"
   ecr_image_tag_mutability  = var.ecr_image_tag_mutability
   ecr_scan_on_push          = var.ecr_scan_on_push
   ecr_encryption_type       = var.ecr_encryption_type

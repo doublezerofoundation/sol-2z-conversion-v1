@@ -105,13 +105,13 @@ variable "additional_tags" {
 variable "ecr_repository" {
   description = "ECR repository name"
   type        = string
-  default = "double-zero-repository"
+  default = "double-zero-oracle-pricing-service"
 }
 
 variable "image_tag" {
   description = "Docker image tag to pull from ECR"
   type        = string
-  default     = "v1.2.0"
+  default     = "dev3-v1.0.0" // TODO need to get from arg
 }
 
 variable "container_name" {
