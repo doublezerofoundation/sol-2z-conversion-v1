@@ -1,22 +1,15 @@
 use std::{
-    error::Error
+    error::Error, fmt::Debug, rc::Rc
 };
 use anchor_client::{
-    solana_client::rpc_client::RpcClient,
-    solana_sdk::{
-        commitment_config::CommitmentConfig,
-        instruction::Instruction,
-        signature::{Keypair, Signature},
-        signer::Signer,
-        transaction::Transaction
-    },
+    anchor_lang::AccountDeserialize, solana_client::rpc_client::RpcClient, solana_sdk::{
+        commitment_config::CommitmentConfig, instruction::Instruction, pubkey::Pubkey, signature::{Keypair, Signature}, signer::Signer, transaction::Transaction
+    }, Client
 };
 use crate::{
     config::Config,
     utils::{
-        error_handler,
-        ui::{LABEL, WAITING, OK},
-        env_var::load_private_key
+        env_var::{get_cluster_type, load_private_key}, error_handler, ui::{LABEL, OK, WAITING}
     }
 };
 
@@ -61,3 +54,19 @@ pub fn send_batch_instructions(
     }
 }
 
+pub fn get_account_data<T: AccountDeserialize + Debug>(account: Pubkey) -> Result<T, Box<dyn Error>> {
+    let private_key = load_private_key()?;
+    let payer = Keypair::from_bytes(&private_key)?;
+
+    let cluster = get_cluster_type()?;
+    let client = Client::new_with_options(
+        cluster,
+        Rc::new(payer.insecure_clone()),
+        CommitmentConfig::confirmed()
+    );
+
+    let program = client.program(converter_program::ID)?;
+
+    let account: T = program.account(account)?;
+    Ok(account)
+}
