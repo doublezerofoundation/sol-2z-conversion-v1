@@ -40,15 +40,17 @@ resource "aws_api_gateway_integration" "default" {
   resource_id = aws_api_gateway_resource.proxy.id
   http_method = aws_api_gateway_method.proxy.http_method
 
-  integration_http_method = "ANY"
-  type                    = "HTTP"
-  uri                     = "http://${var.nlb_dns_name}/{method.request.path.proxy}"
+  # Conditional configuration based on integration type
+  integration_http_method = var.integration_type == "LAMBDA" ? "POST" : "ANY"
+  type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP"
+  uri                     = var.integration_type == "LAMBDA" ? var.lambda_invoke_arn : "http://${var.nlb_dns_name}/{method.request.path.proxy}"
 
-  # These will be set in the root module when connecting to the load balancer
-  connection_type = var.connection_type
-  connection_id   = var.connection_id
+  # Connection settings only apply to HTTP integration
+  connection_type = var.integration_type == "LAMBDA" ? null : var.connection_type
+  connection_id   = var.integration_type == "LAMBDA" ? null : var.connection_id
 
-  request_parameters = {
+  # Request parameters only apply to HTTP integration
+  request_parameters = var.integration_type == "LAMBDA" ? null : {
     "integration.request.path.proxy" = "method.request.path.proxy"
   }
 }
@@ -67,12 +69,14 @@ resource "aws_api_gateway_integration" "root" {
   resource_id = aws_api_gateway_rest_api.this.root_resource_id
   http_method = aws_api_gateway_method.root.http_method
 
-  integration_http_method = "ANY"
-  type                    = "HTTP"
-  uri                     = "http://${var.nlb_dns_name}/"  # Use NLB DNS name
+  # Conditional configuration based on integration type
+  integration_http_method = var.integration_type == "LAMBDA" ? "POST" : "ANY"
+  type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP"
+  uri                     = var.integration_type == "LAMBDA" ? var.lambda_invoke_arn : "http://${var.nlb_dns_name}/"
 
-  connection_type = var.connection_type
-  connection_id   = var.connection_id
+  # Connection settings only apply to HTTP integration
+  connection_type = var.integration_type == "LAMBDA" ? null : var.connection_type
+  connection_id   = var.integration_type == "LAMBDA" ? null : var.connection_id
 }
 
 # Enable CORS for the proxy resource
