@@ -11,7 +11,7 @@ terraform {
   # Uncomment to use a remote backend for state management
   backend "s3" {
     bucket         = "doublezero-terraform-state-bucket"
-    key            = "terraform.tfstate"
+    key            = "environments/dev3/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
     encrypt        = true
@@ -32,7 +32,7 @@ provider "aws" {
 
 # VPC and Networking
 module "vpc" {
-  source = "./modules/vpc"
+  source = "../../modules/vpc"
 
   environment         = var.environment
   vpc_cidr            = var.vpc_cidr
@@ -43,7 +43,7 @@ module "vpc" {
 
 # Web Application Firewall (WAF)
 module "waf" {
-  source = "./modules/waf"
+  source = "../../modules/waf"
 
   environment = var.environment
   name_prefix = "doublezero-${var.environment}"
@@ -51,7 +51,7 @@ module "waf" {
 
 # Network Load Balancer
 module "load_balancer" {
-  source = "./modules/load_balancer"
+  source = "../../modules/load_balancer"
 
   environment     = var.environment
   name_prefix     = "doublezero-${var.environment}"
@@ -61,7 +61,7 @@ module "load_balancer" {
 
 # EC2 Instances with Auto Scaling
 module "ec2" {
-  source = "./modules/ec2"
+  source = "../../modules/ec2"
 
   environment       = var.environment
   name_prefix       = "doublezero-${var.environment}"
@@ -87,7 +87,7 @@ resource "aws_api_gateway_vpc_link" "this" {
 
 # API Gateway
 module "api_gateway" {
-  source = "./modules/api_gateway"
+  source = "../../modules/api_gateway"
 
   environment = var.environment
   name_prefix = "doublezero-${var.environment}"

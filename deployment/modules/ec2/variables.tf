@@ -101,3 +101,33 @@ variable "additional_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "ecr_repository" {
+  description = "ECR repository name"
+  type        = string
+  default = "double-zero-repository"
+}
+
+variable "image_tag" {
+  description = "Docker image tag to pull from ECR"
+  type        = string
+  default     = "v1.2.0"
+}
+
+variable "container_name" {
+  description = "Name for the Docker container"
+  type        = string
+  default     = "swap-oracle-service"
+}
+
+variable "container_port" {
+  description = "Port that the container exposes"
+  type        = number
+  default     = 8080
+}
+
+variable "container_environment_vars" {
+  description = "Additional environment variables for the container"
+  type        = map(string)
+  default     = {}
+}
