@@ -10,6 +10,7 @@ mod initialize;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
+use configuration_registry::configuration_registry::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -41,5 +42,26 @@ pub mod converter_program {
             price_maximum_age,
             max_fills_storage
         )
+    }
+
+    pub fn update_configuration_registry(
+        ctx: Context<ConfigurationRegistryUpdate>,
+        input: ConfigurationRegistryInput
+    ) -> Result<()> {
+        ctx.accounts.process_update(input)
+    }
+
+    pub fn add_authorized_dequeuer(
+        ctx: Context<ConfigurationRegistryUpdate>,
+        account: Pubkey
+    ) -> Result<()> {
+        ctx.accounts.process_add_dequeuer(account)
+    }
+
+    pub fn remove_authorized_dequeuer(
+        ctx: Context<ConfigurationRegistryUpdate>,
+        account: Pubkey
+    ) -> Result<()> {
+        ctx.accounts.process_remove_dequeuer(account)
     }
 }
