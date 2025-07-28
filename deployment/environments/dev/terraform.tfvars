@@ -1,7 +1,7 @@
 # Development Environment Configuration
 
 # General
-environment = "dev4"
+environment = "dev2"
 aws_region  = "us-east-1"
 
 # VPC Configuration
