@@ -1,0 +1,26 @@
+{
+  "address": "DBopoT6ddxmWtNhVpef73mwT2zJr6L8KskNAtrt89LnW",
+  "metadata": {
+    "name": "interacting_contract",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Contract for integration"
+  },
+  "instructions": [
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [],
+      "args": []
+    }
+  ]
+}
