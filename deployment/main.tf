@@ -46,7 +46,15 @@ module "waf" {
   source = "./modules/waf"
 
   environment = var.environment
-  name_prefix = "doublezero-${var.environment}"
+  name_prefix = "pricing-service-${var.environment}"
+}
+
+# Web Application Firewall (WAF) for Metrics Service
+module "metrics_waf" {
+  source = "./modules/waf"
+
+  environment = var.environment
+  name_prefix = "metrics-service-${var.environment}"
 }
 
 # Network Load Balancer
@@ -85,13 +93,25 @@ resource "aws_api_gateway_vpc_link" "this" {
   }
 }
 
-# API Gateway
-module "api_gateway" {
+# API Gateway for Pricing Service
+module "pricing_api_gateway" {
   source = "./modules/api_gateway"
 
   environment = var.environment
-  name_prefix = "doublezero-${var.environment}"
+  name_prefix = "pricing-service-${var.environment}"
   waf_acl_arn = module.waf.web_acl_arn
+  nlb_dns_name    = module.load_balancer.load_balancer_dns
+  connection_type         = "VPC_LINK"
+  connection_id           = aws_api_gateway_vpc_link.this.id
+}
+
+# API Gateway for Metrics Service
+module "metrics_api_gateway" {
+  source = "./modules/api_gateway"
+
+  environment = var.environment
+  name_prefix = "metrics-service-${var.environment}"
+  waf_acl_arn = module.metrics_waf.web_acl_arn
   nlb_dns_name    = module.load_balancer.load_balancer_dns
   connection_type         = "VPC_LINK"
   connection_id           = aws_api_gateway_vpc_link.this.id
