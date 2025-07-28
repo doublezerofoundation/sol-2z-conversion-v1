@@ -190,6 +190,7 @@ resource "aws_autoscaling_group" "this" {
       {
         Name        = "${var.name_prefix}-asg"
         Environment = var.environment
+        Service = var.ecr_repository
       },
       var.additional_tags
     )
