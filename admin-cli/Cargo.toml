@@ -8,3 +8,6 @@ description = "Admin CLI for Double Zero Fee Converter System"
 anchor-client = { workspace = true }
 clap = { workspace = true }
 cli-common = { workspace = true }
+
+[dependencies.converter-program]
+path = "../on-chain/programs/converter-program"

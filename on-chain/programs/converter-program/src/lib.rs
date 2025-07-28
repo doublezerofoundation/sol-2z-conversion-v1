@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 
 mod common;
-mod configuration_registry;
+pub mod configuration_registry;
 mod state;
 mod validator_deposit;
 mod deny_list_registry;
