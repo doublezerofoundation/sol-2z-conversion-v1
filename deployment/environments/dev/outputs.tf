@@ -32,19 +32,57 @@ output "internet_gateway_id" {
 }
 
 # WAF Outputs
-output "web_acl_id" {
-  description = "The ID of the WAF Web ACL"
-  value       = module.waf.web_acl_id
+# Pricing Service WAF
+output "pricing_web_acl_id" {
+  description = "The ID of the Pricing Service WAF Web ACL"
+  value       = module.pricing_waf.web_acl_id
 }
 
-output "web_acl_arn" {
-  description = "The ARN of the WAF Web ACL"
-  value       = module.waf.web_acl_arn
+output "pricing_web_acl_arn" {
+  description = "The ARN of the Pricing Service WAF Web ACL"
+  value       = module.pricing_waf.web_acl_arn
 }
 
-output "web_acl_name" {
-  description = "The name of the WAF Web ACL"
-  value       = module.waf.web_acl_name
+output "pricing_web_acl_name" {
+  description = "The name of the Pricing Service WAF Web ACL"
+  value       = module.pricing_waf.web_acl_name
+}
+
+# Metrics Service WAF
+output "metrics_web_acl_id" {
+  description = "The ID of the Metrics Service WAF Web ACL"
+  value       = module.metrics_waf.web_acl_id
+}
+
+output "metrics_web_acl_arn" {
+  description = "The ARN of the Metrics Service WAF Web ACL"
+  value       = module.metrics_waf.web_acl_arn
+}
+
+output "metrics_web_acl_name" {
+  description = "The name of the Metrics Service WAF Web ACL"
+  value       = module.metrics_waf.web_acl_name
+}
+
+# Metrics Lambda Outputs
+output "metrics_lambda_function_name" {
+  description = "The name of the Metrics Lambda function"
+  value       = module.metrics_lambda.function_name
+}
+
+output "metrics_lambda_function_arn" {
+  description = "The ARN of the Metrics Lambda function"
+  value       = module.metrics_lambda.function_arn
+}
+
+output "metrics_lambda_invoke_arn" {
+  description = "The invoke ARN of the Metrics Lambda function"
+  value       = module.metrics_lambda.invoke_arn
+}
+
+output "metrics_lambda_role_arn" {
+  description = "The ARN of the IAM role for the Metrics Lambda function"
+  value       = module.metrics_lambda.role_arn
 }
 
 # EC2 Outputs
@@ -69,14 +107,26 @@ output "launch_template_arn" {
 }
 
 # API Gateway Outputs
-output "api_id" {
-  description = "The ID of the API Gateway"
-  value       = module.api_gateway.api_id
+# Pricing Service API Gateway
+output "pricing_api_id" {
+  description = "The ID of the Pricing Service API Gateway"
+  value       = module.pricing_api_gateway.api_id
 }
 
-output "api_endpoint" {
-  description = "The endpoint URL of the API Gateway"
-  value       = module.api_gateway.api_endpoint
+output "pricing_api_endpoint" {
+  description = "The endpoint URL of the Pricing Service API Gateway"
+  value       = module.pricing_api_gateway.api_endpoint
+}
+
+# Metrics Service API Gateway
+output "metrics_api_id" {
+  description = "The ID of the Metrics Service API Gateway"
+  value       = module.metrics_api_gateway.api_id
+}
+
+output "metrics_api_endpoint" {
+  description = "The endpoint URL of the Metrics Service API Gateway"
+  value       = module.metrics_api_gateway.api_endpoint
 }
 
 output "vpc_link_id" {
@@ -106,17 +156,34 @@ output "target_group_arn" {
 }
 
 # Custom Domain Outputs (if configured)
-output "custom_domain_name" {
-  description = "The custom domain name for the API Gateway"
-  value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.env_domain[0].domain_name : null
+# Pricing Service Custom Domain
+output "pricing_domain_name" {
+  description = "The custom domain name for the Pricing Service API Gateway"
+  value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.pricing_domain[0].domain_name : null
 }
 
-output "custom_domain_api_mapping_id" {
-  description = "The ID of the API mapping for the custom domain"
-  value       = var.custom_domain_name != "" ? aws_api_gateway_base_path_mapping.env_mapping[0].id : null
+output "pricing_domain_api_mapping_id" {
+  description = "The ID of the API mapping for the Pricing Service custom domain"
+  value       = var.custom_domain_name != "" ? aws_api_gateway_base_path_mapping.pricing_mapping[0].id : null
 }
 
-output "custom_domain_target_domain_name" {
-  description = "The target domain name for the custom domain"
-  value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.env_domain[0].regional_domain_name : null
+output "pricing_domain_target_domain_name" {
+  description = "The target domain name for the Pricing Service custom domain"
+  value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.pricing_domain[0].regional_domain_name : null
+}
+
+# Metrics Service Custom Domain
+output "metrics_domain_name" {
+  description = "The custom domain name for the Metrics Service API Gateway"
+  value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.metrics_domain[0].domain_name : null
+}
+
+output "metrics_domain_api_mapping_id" {
+  description = "The ID of the API mapping for the Metrics Service custom domain"
+  value       = var.custom_domain_name != "" ? aws_api_gateway_base_path_mapping.metrics_mapping[0].id : null
+}
+
+output "metrics_domain_target_domain_name" {
+  description = "The target domain name for the Metrics Service custom domain"
+  value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.metrics_domain[0].regional_domain_name : null
 }
