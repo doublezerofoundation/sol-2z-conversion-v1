@@ -50,18 +50,4 @@ pub mod converter_program {
     ) -> Result<()> {
         ctx.accounts.process_update(input)
     }
-
-    pub fn add_authorized_dequeuer(
-        ctx: Context<ConfigurationRegistryUpdate>,
-        account: Pubkey
-    ) -> Result<()> {
-        ctx.accounts.process_add_dequeuer(account)
-    }
-
-    pub fn remove_authorized_dequeuer(
-        ctx: Context<ConfigurationRegistryUpdate>,
-        account: Pubkey
-    ) -> Result<()> {
-        ctx.accounts.process_remove_dequeuer(account)
-    }
 }

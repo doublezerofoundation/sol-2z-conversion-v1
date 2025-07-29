@@ -1,5 +1,5 @@
 use crate::{
-    common::{constant::MAX_AUTHORIZED_DEQUEUERS, seeds::seed_prefixes::SeedPrefixes},
+    common::{constant::MAX_AUTHORIZED_DEQUEUERS, errors::ConverterError, seeds::seed_prefixes::SeedPrefixes},
     deny_list_registry::deny_list_registry::DenyListRegistry,
     state::program_state::ProgramStateAccount,
 };
@@ -105,18 +105,14 @@ pub struct ConfigurationRegistryUpdate<'info> {
 
 impl<'info> ConfigurationRegistryUpdate<'info> {
     pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
-        // TODO: Authentication and authorization
+        // Authentication and authorization
+        if self.program_state.admin != self.authority.key() {
+            return err!(ConverterError::UnauthorizedUser);
+        }
+        if self.deny_list_registry.denied_addresses.contains(self.authority.key) {
+            return err!(ConverterError::DenyListedUser);
+        }
+
         self.configuration_registry.update(input)
-    }
-
-    pub fn process_add_dequeuer(&mut self, account: Pubkey) -> Result<()> {
-        // TODO: Authentication and authorization
-        self.configuration_registry.add_authorized_dequeuer(account)
-    }
-
-    pub fn process_remove_dequeuer(&mut self, account: Pubkey) -> Result<()> {
-        // TODO: Authentication and authorization
-        self.configuration_registry
-            .remove_authorized_dequeuer(account)
     }
 }
