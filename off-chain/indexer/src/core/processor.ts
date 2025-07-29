@@ -1,17 +1,18 @@
-import { Connection, PublicKey, TransactionError } from '@solana/web3.js';
+import { Connection, TransactionError } from '@solana/web3.js';
 import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
+import idlJson from '../../idl/converter_program.json';
 import { saveLastSignature } from './state';
-import { RPC_URL } from './config';
+import { RPC_URL, PROGRAM_ID } from './config';
 import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb';
 
 const connection = new Connection(RPC_URL, 'confirmed');
+const idl        = idlJson as Idl;
+const coder      = new BorshCoder(idl);
+const parser     = new EventParser(PROGRAM_ID, coder);
 
-export async function processTx(sig: string, programId: PublicKey, idl: Idl) {
+export async function processTx(sig: string) {
      const tx = await connection.getTransaction(sig, { commitment: 'confirmed' });
      if (!tx || !tx.meta) return;
-
-     const coder      = new BorshCoder(idl);
-     const parser     = new EventParser(programId, coder);
 
      const slot      = tx.slot ?? 0;
      const secs      = tx.blockTime ?? (await connection.getBlockTime(slot));
@@ -20,7 +21,8 @@ export async function processTx(sig: string, programId: PublicKey, idl: Idl) {
      const { err } = tx.meta;
 
      if (err) {
-          const errorName = handleTxError(sig, idl, err);
+          const errorName = handleTxError(sig, err);
+          // TODO: write to solana-error DDB 
           // await writeSolanaError(sig, errorName, slot, timestamp);
           return;
      }
@@ -48,7 +50,7 @@ export async function processTx(sig: string, programId: PublicKey, idl: Idl) {
  * Extracts Anchor custom error codes from a TransactionError
  * and logs a human‑readable message (falling back to raw error).
  */
-function handleTxError(sig: string, idl: Idl, err: TransactionError): string | undefined {
+function handleTxError(sig: string, err: TransactionError): string | undefined {
 
      // pull out the Custom code if present
      let customCode: number | undefined;

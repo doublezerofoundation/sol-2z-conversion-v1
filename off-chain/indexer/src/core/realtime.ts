@@ -1,5 +1,5 @@
 import { Connection, Logs } from '@solana/web3.js';
-import { RPC_URL, PROGRAMS } from './config';
+import { RPC_URL, PROGRAM_ID } from './config';
 import { processTx } from './processor';
 import { getHighestSlot, saveHighestSlot } from './state';
 
@@ -10,23 +10,22 @@ import { getHighestSlot, saveHighestSlot } from './state';
  * processes the transaction, and updates highestSlot to prevent duplicates.
  */
 export function tailRealTime() {
+     console.log(`📡 Subscribing to logs for ${PROGRAM_ID.toBase58()}`);
      const connection = new Connection(RPC_URL, 'confirmed');
-     for (const { id, idl } of PROGRAMS) {
-          console.log(`📡 Subscribing to logs for ${id.toBase58()}`);
-          connection.onLogs(
-               // calls logsSubscribe under the hood
-               id,
-               async (logResponse: Logs, ctx) => {
-                    const slot = (ctx as any).slot as number;
-                    const highest = await getHighestSlot();
-                    if (slot <= highest) return;
 
-                    const sig = logResponse.signature;
-                    await processTx(sig, id, idl);
+     connection.onLogs(
+          // calls logsSubscribe under the hood
+          PROGRAM_ID,
+          async (logResponse: Logs, ctx) => {
+               const slot = (ctx as any).slot as number;
+               const highest = await getHighestSlot();
+               if (slot <= highest) return;
 
-                    await saveHighestSlot(slot);
-               },
-               'confirmed'
-          );
-     }
+               const sig = logResponse.signature;
+               await processTx(sig);
+
+               await saveHighestSlot(slot);
+          },
+          'confirmed'
+     );
 }

@@ -8,7 +8,7 @@ let state: IndexerStateConfig = {
      highestSlot: 0,
 };
 
-export async function getLastSignature(id: unknown): Promise<string | null> {
+export async function getLastSignature(): Promise<string | null> {
      return state.lastProcessedSignature;
 }
 export async function saveLastSignature(sig: string) {
