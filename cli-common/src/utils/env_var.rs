@@ -1,5 +1,6 @@
 use std::env;
 use std::error::Error;
+
 use crate::constant::PRIVATE_KEY_ENV_VAR;
 
 /// Loads the private key from the environment variable as a vector of bytes.
