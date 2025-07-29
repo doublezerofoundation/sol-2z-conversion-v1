@@ -39,7 +39,7 @@ show_help() {
   echo "Build and deploy script for Converter Program"
   echo ""
   echo "OPTIONS:"
-  echo "  -m, --mode TAG        Set the mode of operation (deploy_only, build_only, build_and_deploy)."
+  echo "  -m, --mode Mode      Set the mode of operation (deploy_only, build_only, build_and_deploy)."
   echo "  -r, --restart-validator Start/ Restart validator (Only in the local net)"
   echo "  -h, --help          Show this help message"
   echo ""
