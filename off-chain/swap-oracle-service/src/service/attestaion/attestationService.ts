@@ -15,14 +15,14 @@ export class AttestationService {
 
         const keys = await this.keyManager.getKeys();
         const message = getUtf8Encoder().encode(messageString);
-        console.log("private key: ", keys.keyPair.privateKey)
-        console.log("public key: ", keys.address)
-
-        const signedBytes = await signBytes(keys.keyPair.privateKey, message);
+        console.log("private key: ", keys.secretKey)
+        console.log("public key: ", keys.publicKey)
+        const cryptokey = cr
+        const signedBytes = await signBytes(keys.secretKey, message);
 
         return {
             signature: signedBytes,
-            publicKey: keys.address
+            publicKey: keys.publicKey
         };
 
     }
