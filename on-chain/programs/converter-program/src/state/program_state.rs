@@ -1,7 +1,10 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    common::constant::MAX_FIFO_QUEUE_SIZE_FOR_EPOCH_TAGGING,
+    common::constant::{
+        MAX_FIFO_QUEUE_SIZE_FOR_EPOCH_TAGGING,
+        MAX_TRADE_HISTORY_SIZE
+    },
     state::bump_registry::BumpRegistry,
     validator_deposit::epoch_chunk::EpochChunk,
 };
@@ -13,5 +16,13 @@ pub struct ProgramStateAccount {
     pub is_halted: bool,  // Indicates whether the system accepts conversion requests
     #[max_len(MAX_FIFO_QUEUE_SIZE_FOR_EPOCH_TAGGING)]
     pub fifo_queue: Vec<EpochChunk>,  // Used for epoch tagging
-    pub bump_registry: BumpRegistry
+    pub bump_registry: BumpRegistry,
+    #[max_len(MAX_TRADE_HISTORY_SIZE)]
+    pub trade_history_list: Vec<TradeHistory>
+}
+
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, InitSpace)]
+pub struct TradeHistory {
+    pub epoch: u64,
+    pub num_of_trades: u64,
 }

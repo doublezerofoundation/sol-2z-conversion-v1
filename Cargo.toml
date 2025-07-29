@@ -2,7 +2,6 @@
 members = [
     "./on-chain/programs/*",
     "cli-common",
-    "shared",
     "admin-cli",
     "user-cli"
 ]
@@ -14,7 +13,6 @@ anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
 
 # Workspace members (internal dependencies)
-shared = { path = "shared" }
 cli-common = { path = "cli-common" }
 
 

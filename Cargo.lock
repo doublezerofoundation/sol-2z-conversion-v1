@@ -34,7 +34,6 @@ dependencies = [
  "anchor-client",
  "clap 4.5.41",
  "cli-common",
- "shared",
 ]
 
 [[package]]
@@ -1039,7 +1038,6 @@ dependencies = [
  "anchor-client",
  "serde",
  "serde_json",
- "shared",
 ]
 
 [[package]]
@@ -1114,7 +1112,6 @@ name = "converter-program"
 version = "0.1.0"
 dependencies = [
  "anchor-lang",
- "shared",
 ]
 
 [[package]]
@@ -2090,13 +2087,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "879f10e63c20629ecabbb64a8010319738c66a5cd0c29b02d63d272b03751d01"
 dependencies = [
  "generic-array",
-]
-
-[[package]]
-name = "integrating_contract"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
 ]
 
 [[package]]
@@ -3353,13 +3343,6 @@ checksum = "75872d278a8f37ef87fa0ddbda7802605cb18344497949862c0d4dcb291eba60"
 dependencies = [
  "digest 0.10.7",
  "keccak",
-]
-
-[[package]]
-name = "shared"
-version = "0.1.0"
-dependencies = [
- "anchor-lang",
 ]
 
 [[package]]
