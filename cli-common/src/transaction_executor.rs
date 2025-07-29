@@ -14,13 +14,11 @@ use crate::{
 
 pub fn send_batch_instructions(
     rpc_url: String,
-    program_id: Pubkey,
     instructions: Vec<Instruction>
 ) -> Result<Signature, Box<dyn Error>> {
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;
 
-    println!("{LABEL} Program ID : {}", program_id);
     println!("{LABEL} Payer      : {}", payer.pubkey());
     println!("{WAITING} Sending transaction...");
 
