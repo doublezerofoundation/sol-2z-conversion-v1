@@ -34,7 +34,6 @@ dependencies = [
  "anchor-client",
  "clap 4.5.41",
  "cli-common",
- "converter-program",
 ]
 
 [[package]]
@@ -1037,7 +1036,6 @@ name = "cli-common"
 version = "0.1.0"
 dependencies = [
  "anchor-client",
- "converter-program",
  "serde",
  "serde_json",
 ]

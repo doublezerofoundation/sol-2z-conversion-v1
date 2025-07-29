@@ -11,12 +11,12 @@ use cli_common::{
     utils::{env_var::load_private_key, pda_helper, ui},
 };
 
-use converter_program::configuration_registry::configuration_registry::{
-    ConfigurationRegistry, ConfigurationRegistryInput,
-};
-
 use crate::core::{
-    common::instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION, config::AdminConfig,
+    common::{
+        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION,
+        structs::{ConfigurationRegistry, ConfigurationRegistryInput},
+    },
+    config::AdminConfig,
 };
 
 pub fn view_config() -> Result<(), Box<dyn Error>> {
@@ -24,7 +24,7 @@ pub fn view_config() -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
     let config_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
-    let config_registry: ConfigurationRegistry = get_account_data(config_registry_pda)?;
+    let config_registry: ConfigurationRegistry = get_account_data(program_id, config_registry_pda)?;
 
     println!("{:#?}", config_registry);
     Ok(())

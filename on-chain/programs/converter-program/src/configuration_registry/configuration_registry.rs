@@ -52,24 +52,6 @@ impl ConfigurationRegistry {
         }
         Ok(())
     }
-
-    pub fn add_authorized_dequeuer(&mut self, account: Pubkey) -> Result<()> {
-        if self.authorized_dequeuers.contains(&account) {
-            msg!("Dequeuer account is already authorized");
-        } else {
-            self.authorized_dequeuers.push(account);
-        }
-        Ok(())
-    }
-
-    pub fn remove_authorized_dequeuer(&mut self, account: Pubkey) -> Result<()> {
-        if self.authorized_dequeuers.contains(&account) {
-            self.authorized_dequeuers.retain(|x| x != &account);
-        } else {
-            msg!("The given dequeuer account is not in the authorized list")
-        }
-        Ok(())
-    }
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize)]

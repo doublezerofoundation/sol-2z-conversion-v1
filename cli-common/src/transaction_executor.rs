@@ -54,7 +54,7 @@ pub fn send_batch_instructions(
     }
 }
 
-pub fn get_account_data<T: AccountDeserialize + Debug>(account: Pubkey) -> Result<T, Box<dyn Error>> {
+pub fn get_account_data<T: AccountDeserialize + Debug>(program_id: Pubkey, account: Pubkey) -> Result<T, Box<dyn Error>> {
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;
 
@@ -65,7 +65,7 @@ pub fn get_account_data<T: AccountDeserialize + Debug>(account: Pubkey) -> Resul
         CommitmentConfig::confirmed()
     );
 
-    let program = client.program(converter_program::ID)?;
+    let program = client.program(program_id)?;
 
     let account: T = program.account(account)?;
     Ok(account)
