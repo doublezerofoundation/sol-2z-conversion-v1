@@ -241,7 +241,7 @@ resource "aws_s3_bucket_policy" "waf_logs" {
         Sid = "AWSLogDeliveryAclCheck",
         Effect = "Allow",
         Principal = {
-          Service = "waf.amazonaws.com"
+          Service = ["waf.amazonaws.com", "delivery.logs.amazonaws.com"]
         },
         Action = "s3:GetBucketAcl",
         Resource = aws_s3_bucket.waf_logs[0].arn

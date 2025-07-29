@@ -26,7 +26,7 @@ resource "aws_lb" "this" {
 # Create Target Group for TCP traffic
 resource "aws_lb_target_group" "http" {
   name     = "${var.name_prefix}-tg-tcp"
-  port     = 80
+  port     = 8080
   protocol = "TCP"
   vpc_id   = var.vpc_id
 
@@ -36,7 +36,7 @@ resource "aws_lb_target_group" "http" {
   health_check {
     enabled             = true
     interval            = var.health_check_interval
-    port                = "traffic-port"
+    port                = 8080
     healthy_threshold   = var.health_check_healthy_threshold
     unhealthy_threshold = var.health_check_unhealthy_threshold
     protocol            = "TCP"

@@ -61,8 +61,20 @@ variable "log_retention_days" {
 }
 
 # Integration Configuration
+variable "integration_type" {
+  description = "Type of integration for API Gateway (HTTP or LAMBDA)"
+  type        = string
+  default     = "HTTP"
+}
+
 variable "nlb_dns_name" {
-  description = "DNS name of the Network Load Balancer"
+  description = "DNS name of the Network Load Balancer (for HTTP integration)"
+  type        = string
+  default     = ""
+}
+
+variable "lambda_invoke_arn" {
+  description = "Invoke ARN of the Lambda function (for LAMBDA integration)"
   type        = string
   default     = ""
 }
