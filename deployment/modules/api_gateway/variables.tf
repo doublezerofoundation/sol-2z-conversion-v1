@@ -103,3 +103,15 @@ variable "certificate_arn" {
   type        = string
   default     = ""
 }
+
+variable "enable_pricing_service" {
+  description = "Enable pricing service API resources"
+  type        = bool
+  default     = true
+}
+
+variable "enable_metrics_api" {
+  description = "Enable metrics API resources"
+  type        = bool
+  default     = false
+}
