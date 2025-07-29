@@ -45,7 +45,24 @@ show_help() {
   echo "  -h, --help          Show this help message"
   echo ""
   echo "Example:"
-  echo "  ./build_and_deploy.sh --mode build_and_deploy --restart-validator"
+  echo "  ./build_and_deploy.sh -w on-chain --mode build_and_deploy --restart-validator"
+}
+
+handle_on_chain() {
+  cmd=(./on-chain/build_and_deploy.sh)
+  [[ "$restart_validator" == true ]] && cmd+=("--restart-validator")
+  [[ -n "$mode" ]] && cmd+=("-m" "$mode")
+  "${cmd[@]}"
+}
+
+handle_cli_build() {
+  local cli_name="$1"
+  log_section "Building ${cli_name^} CLI..."
+  if [[ -n "$mode" ]]; then
+    log_info "Ignoring Mode Input as ${cli_name^} CLI only supports build_only mode"
+  fi
+  cargo build --package "$cli_name-cli"
+  log_info "Successfully built the $cli_name-cli program"
 }
 
 
@@ -81,33 +98,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Handle modes
+# Handle workspaces
 case "$workspace" in
   converter-program|on-chain)
-    cmd=(./on-chain/build_and_deploy.sh)
-    [[ "$restart_validator" == true ]] && cmd+=("--restart-validator")
-    [[ -n "$mode" ]] && cmd+=("-m" "$mode")
-
-    "${cmd[@]}"
+    handle_on_chain
     ;;
   admin-cli)
-    log_section "Building Admin CLI..."
-    if [[ -n "$mode" ]]; then
-        log_info "Ignoring Mode Input as Admin CLI has build_only mode"
-    fi
-    cargo build --package admin-cli
-    log_info "Successfully built the admin-cli program"
+    handle_cli_build "admin"
     ;;
   user-cli)
-    log_section "Building User CLI..."
-    if [[ -n "$mode" ]]; then
-        log_info "Ignoring Mode Input as Admin CLI has build_only mode"
-    fi
-    cargo build --package user-cli
-    log_info "Successfully built the user-cli program"
+    handle_cli_build "user"
     ;;
   *)
-    log_error "Invalid workspace specified. Please use 'converter-program', 'build_only', or 'build_and_deploy'."
+    log_error "Invalid workspace specified. Please use 'converter-program', 'admin-cli', or 'user-cli'."
     exit 1
     ;;
 esac
