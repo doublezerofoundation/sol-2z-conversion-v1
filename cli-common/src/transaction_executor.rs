@@ -1,31 +1,30 @@
 use std::{
-    error::Error, fmt::Debug, rc::Rc
+    error::Error, fmt::Debug
 };
 use anchor_client::{
-    anchor_lang::AccountDeserialize, solana_client::rpc_client::RpcClient, solana_sdk::{
+    anchor_lang::{AccountDeserialize, AnchorDeserialize}, solana_client::rpc_client::RpcClient, solana_sdk::{
         commitment_config::CommitmentConfig, instruction::Instruction, pubkey::Pubkey, signature::{Keypair, Signature}, signer::Signer, transaction::Transaction
-    }, Client
+    }
 };
 use crate::{
-    config::Config,
     utils::{
-        env_var::{get_cluster_type, load_private_key}, error_handler, ui::{LABEL, OK, WAITING}
+        env_var::load_private_key, error_handler, ui::{LABEL, OK, WAITING}
     }
 };
 
 pub fn send_batch_instructions(
+    rpc_url: String,
+    program_id: Pubkey,
     instructions: Vec<Instruction>
 ) -> Result<Signature, Box<dyn Error>> {
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;
 
-    let config = Config::load().map_err(|_| "Error when reading config file")?;
-
-    println!("{LABEL} Program ID : {}", config.program_id);
+    println!("{LABEL} Program ID : {}", program_id);
     println!("{LABEL} Payer      : {}", payer.pubkey());
     println!("{WAITING} Sending transaction...");
 
-    let rpc_client = RpcClient::new_with_commitment(config.rpc_url, CommitmentConfig::confirmed());
+    let rpc_client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
 
     // Fetch recent blockhash
     let recent_blockhash = rpc_client
@@ -54,19 +53,10 @@ pub fn send_batch_instructions(
     }
 }
 
-pub fn get_account_data<T: AccountDeserialize + Debug>(program_id: Pubkey, account: Pubkey) -> Result<T, Box<dyn Error>> {
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+pub fn get_account_data<T: AccountDeserialize + AnchorDeserialize + Debug>(rpc_url: String, account: Pubkey) -> Result<T, Box<dyn Error>> {
+    let client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    let data = client.get_account_data(&account)?;
 
-    let cluster = get_cluster_type()?;
-    let client = Client::new_with_options(
-        cluster,
-        Rc::new(payer.insecure_clone()),
-        CommitmentConfig::confirmed()
-    );
-
-    let program = client.program(program_id)?;
-
-    let account: T = program.account(account)?;
+    let account = T::try_deserialize(&mut data.as_slice())?;
     Ok(account)
 }

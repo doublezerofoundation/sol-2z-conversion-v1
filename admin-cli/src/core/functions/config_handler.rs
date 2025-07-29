@@ -24,7 +24,8 @@ pub fn view_config() -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
     let config_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
-    let config_registry: ConfigurationRegistry = get_account_data(program_id, config_registry_pda)?;
+    let config_registry: ConfigurationRegistry =
+        get_account_data(admin_config.rpc_url, config_registry_pda)?;
 
     println!("{:#?}", config_registry);
     Ok(())
@@ -64,7 +65,7 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
         data: account_data,
     };
 
-    send_batch_instructions(vec![ix])?;
+    send_batch_instructions(admin_config.rpc_url, program_id, vec![ix])?;
     println!("{} Configuration registry updated", ui::OK);
     Ok(())
 }

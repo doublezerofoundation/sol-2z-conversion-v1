@@ -25,9 +25,10 @@ pub struct ConfigurationRegistry {
 
 impl AccountDeserialize for ConfigurationRegistry {
     fn try_deserialize(buf: &mut &[u8]) -> Result<Self> {
+        *buf = &buf[8..];
         ConfigurationRegistry::try_deserialize_unchecked(buf)
     }
     fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
-        ConfigurationRegistry::try_from_slice(buf).map_err(|e| anchor_client::anchor_lang::error::Error::from(e))
+        ConfigurationRegistry::deserialize(buf).map_err(Into::into)
     }
 }
