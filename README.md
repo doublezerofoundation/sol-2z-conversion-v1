@@ -47,11 +47,13 @@ The file should contain the following items.
   "sol_quantity": 2121,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "max_fills_storage": 234
+  "max_fills_storage": 234,
+  "skip_preflight": true
 }
 ```
 - `rpc_url`: The `Deploying cluster` from last step.
 - `program_id`: Public key of the anchor program.
+- `skip_preflight`: Setting this to `true` will disable transaction preflight checks (which normally simulate the transaction and catch errors before sending) and enable error logging in the database.
 
 ## Deploy the Anchor Program
 ### Keypair for the programs

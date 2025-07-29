@@ -2,7 +2,10 @@ use std::{
     error::Error
 };
 use anchor_client::{
-    solana_client::rpc_client::RpcClient,
+    solana_client::{
+        rpc_client::RpcClient, 
+        rpc_config::RpcSendTransactionConfig
+    },
     solana_sdk::{
         commitment_config::CommitmentConfig,
         instruction::Instruction,
@@ -39,6 +42,12 @@ pub fn send_batch_instructions(
         .get_latest_blockhash()
         .map_err(|_| "Error when getting latest block hash")?;
 
+    let tx_config = RpcSendTransactionConfig {
+        skip_preflight: config.skip_preflight,
+        preflight_commitment: Some(CommitmentConfig::confirmed().commitment),
+        ..RpcSendTransactionConfig::default()
+    };
+
     let transaction = Transaction::new_signed_with_payer(
         &instructions,
         Some(&payer.pubkey()),
@@ -47,7 +56,11 @@ pub fn send_batch_instructions(
     );
 
     let signature = rpc_client
-        .send_and_confirm_transaction(&transaction);
+        .send_and_confirm_transaction_with_spinner_and_config(
+            &transaction,
+            CommitmentConfig::confirmed(),
+            tx_config,
+        );
 
     match signature {
         Ok(tx) => {
