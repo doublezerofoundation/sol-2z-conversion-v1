@@ -167,6 +167,7 @@ module "pricing_api_gateway" {
   source = "../../modules/api_gateway"
 
   name_prefix = "pricing-service-${var.environment}"
+  enable_pricing_service = true
   environment = var.environment
   waf_acl_arn = module.pricing_waf.web_acl_arn
 
@@ -194,6 +195,7 @@ module "metrics_api_gateway" {
   source = "../../modules/api_gateway"
 
   name_prefix = "metrics-service-${var.environment}"
+  enable_pricing_service = false
   environment = var.environment
   waf_acl_arn = module.metrics_waf.web_acl_arn
 
