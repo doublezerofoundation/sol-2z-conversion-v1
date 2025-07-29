@@ -95,6 +95,8 @@ terraform apply
 ```
 
 ### Environment-Level Deployment
+#### Pre request
+You have to publish off-chain component images to ECR. (image tag <env-name>-<version>)
 
 ```bash
 # Navigate to the environment directory
