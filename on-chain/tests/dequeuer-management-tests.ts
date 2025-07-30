@@ -12,6 +12,11 @@ import {
 } from "./core/test-flow/dequeuer-management";
 
 describe("Dequeuer Management Tests", () => {
+
+  before(async () => {
+    await systemInitializeAndVerify(program, adminKeyPair);
+  });
+    
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
   const adminKeyPair = getDefaultKeyPair();

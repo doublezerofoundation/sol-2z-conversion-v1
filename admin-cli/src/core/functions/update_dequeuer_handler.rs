@@ -1,7 +1,6 @@
 use std::{error::Error, str::FromStr};
 
 use anchor_client::solana_sdk::{
-    commitment_config::CommitmentConfig,
     hash::hash,
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
@@ -18,8 +17,6 @@ use crate::core::{
     common::instruction::{ADD_DEQUEUER_INSTRUCTION, REMOVE_DEQUEUER_INSTRUCTION},
     config::AdminConfig,
 };
-use anchor_client::solana_client::rpc_client::RpcClient;
-use cli_common::config::Config;
     
 
 pub fn add_dequeuer(dequeuer: &str) -> Result<(), Box<dyn Error>> {
