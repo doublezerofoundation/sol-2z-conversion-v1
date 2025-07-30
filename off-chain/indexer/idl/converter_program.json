@@ -1,0 +1,445 @@
+{
+  "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
+  "metadata": {
+    "name": "converter_program",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Core program managing all on-chain operations, including 2Z-to-SOL conversions"
+  },
+  "instructions": [
+    {
+      "name": "initialize_system",
+      "discriminator": [
+        50,
+        173,
+        248,
+        140,
+        202,
+        35,
+        141,
+        150
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fills_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  105,
+                  108,
+                  108,
+                  115,
+                  95,
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program",
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+        },
+        {
+          "name": "program_data",
+          "docs": [
+            "PDA holding upgrade authority info."
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "current upgrade have to sign"
+          ],
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_pubkey",
+          "type": "pubkey"
+        },
+        {
+          "name": "sol_quantity",
+          "type": "u64"
+        },
+        {
+          "name": "slot_threshold",
+          "type": "u64"
+        },
+        {
+          "name": "price_maximum_age",
+          "type": "u64"
+        },
+        {
+          "name": "max_fills_storage",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ConfigurationRegistry",
+      "discriminator": [
+        207,
+        237,
+        144,
+        146,
+        162,
+        228,
+        133,
+        243
+      ]
+    },
+    {
+      "name": "DenyListRegistry",
+      "discriminator": [
+        94,
+        220,
+        13,
+        180,
+        204,
+        100,
+        43,
+        215
+      ]
+    },
+    {
+      "name": "FillsRegistry",
+      "discriminator": [
+        13,
+        155,
+        1,
+        212,
+        199,
+        69,
+        251,
+        112
+      ]
+    },
+    {
+      "name": "ProgramStateAccount",
+      "discriminator": [
+        111,
+        193,
+        164,
+        135,
+        94,
+        159,
+        101,
+        67
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "SystemInitialized",
+      "discriminator": [
+        63,
+        16,
+        185,
+        12,
+        47,
+        160,
+        126,
+        15
+      ]
+    }
+  ],
+  "types": [
+    {
+      "name": "BumpRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "configuration_registry_bump",
+            "type": "u8"
+          },
+          {
+            "name": "program_state_bump",
+            "type": "u8"
+          },
+          {
+            "name": "fills_registry_bump",
+            "type": "u8"
+          },
+          {
+            "name": "deny_list_registry_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigurationRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oracle_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_quantity",
+            "type": "u64"
+          },
+          {
+            "name": "slot_threshold",
+            "type": "u64"
+          },
+          {
+            "name": "price_maximum_age",
+            "type": "u64"
+          },
+          {
+            "name": "max_fills_storage",
+            "type": "u64"
+          },
+          {
+            "name": "authorized_dequeuers",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "denied_addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "last_updated",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "EpochChunk",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "lamports",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Fill",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_in",
+            "type": "u64"
+          },
+          {
+            "name": "token_2z_out",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FillsRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "fills",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Fill"
+                }
+              }
+            }
+          },
+          {
+            "name": "total_sol_pending",
+            "type": "u64"
+          },
+          {
+            "name": "total_2z_pending",
+            "type": "u64"
+          },
+          {
+            "name": "lifetime_sol_processed",
+            "type": "u64"
+          },
+          {
+            "name": "lifetime_2z_processed",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProgramStateAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_halted",
+            "type": "bool"
+          },
+          {
+            "name": "fifo_queue",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "EpochChunk"
+                }
+              }
+            }
+          },
+          {
+            "name": "bump_registry",
+            "type": {
+              "defined": {
+                "name": "BumpRegistry"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "SystemInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    }
+  ]
+}
