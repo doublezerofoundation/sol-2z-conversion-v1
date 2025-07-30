@@ -15,8 +15,12 @@ pub struct ConfigurationRegistry {
     pub max_fills_storage: u64, // Maximum number of fills to store
     #[max_len(MAX_AUTHORIZED_DEQUEUERS)]
     pub authorized_dequeuers: Vec<Pubkey>, // Contracts authorized to dequeue fills
-}
 
+    // Price calculation
+    pub steepness: u64, // Steepness of the discount function in basis points (0 <= steepness <= 10_000)
+    pub max_discount_rate: u64, // Maximum discount rate in basis points (0 <= max_discount_rate <= 10_000)
+}
+    
 impl ConfigurationRegistry {
     pub fn initialize(
         &mut self,

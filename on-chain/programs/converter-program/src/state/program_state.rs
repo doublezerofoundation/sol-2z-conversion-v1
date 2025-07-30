@@ -19,6 +19,9 @@ pub struct ProgramStateAccount {
     pub bump_registry: BumpRegistry,
     #[max_len(MAX_TRADE_HISTORY_SIZE)]
     pub trade_history_list: Vec<TradeHistory>,
+
+    // Price calculation
+    pub ask_price_bps: u64, // Ask price in basis points. Ex: 10000 = 1.0000
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, InitSpace)]

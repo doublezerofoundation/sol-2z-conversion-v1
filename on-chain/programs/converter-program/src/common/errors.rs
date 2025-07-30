@@ -19,4 +19,16 @@ pub enum ConverterError {
 
     #[msg("Invalid ask price")]
     InvalidAskPrice,
+
+    #[msg("Invalid max discount rate")]
+    InvalidMaxDiscountRate,
+
+    #[msg("Invalid sol demand")]
+    InvalidSolDemand,
+
+    #[msg("Invalid steepness")]
+    InvalidSteepness,
+
+    #[msg("Discount calculation error")]
+    DiscountCalculationError,
 }

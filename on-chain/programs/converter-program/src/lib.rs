@@ -12,7 +12,7 @@ mod discount_rate;
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
-use discount_rate::calculate_discount::*;
+use discount_rate::calculate_ask_price::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -53,7 +53,10 @@ pub mod converter_program {
         ctx.accounts.process_update(input)
     }
 
-    pub fn calculate_discount_rate(ctx: Context<CalculateDiscountRate>) -> Result<()> {
-        ctx.accounts.process()
+    pub fn calculate_ask_price(
+        ctx: Context<CalculateAskPrice>,
+        oracle_swap_rate_bps: u64
+    ) -> Result<()> {
+        ctx.accounts.process(oracle_swap_rate_bps)
     }
 }
