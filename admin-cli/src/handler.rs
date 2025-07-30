@@ -1,7 +1,7 @@
 use clap::Parser;
 use crate::command::Commands;
 use std::error::Error;
-use crate::core::functions::{config_handler, init_handler, system_state, withdraw_2z};
+use crate::core::functions::{config_handler, init_handler, system_state, update_dequeuer_handler, withdraw_2z};
 use crate::core::common::error::COMMAND_NOT_SPECIFIED;
 
 #[derive(Parser)]
@@ -43,6 +43,17 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         Some(Commands::WithdrawTokens { token_amount, to_account }) => {
             withdraw_2z::withdraw_2z_tokens(token_amount, to_account)
         }
+
+
+        Some(Commands::AddDequeuer { dequeuer }) => {
+            update_dequeuer_handler::add_dequeuer(&dequeuer)
+        }
+
+
+        Some(Commands::RemoveDequeuer { dequeuer }) => {
+            update_dequeuer_handler::remove_dequeuer(&dequeuer)
+        }
+                  
 
         // Toggles system between active and paused states.
         None => {

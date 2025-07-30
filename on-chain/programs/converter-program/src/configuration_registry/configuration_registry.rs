@@ -29,4 +29,21 @@ impl ConfigurationRegistry {
         self.max_fills_storage = max_fills_storage;
         Ok(())
     }
+
+    pub fn add_dequeuer(&mut self,  new_pubkey: Pubkey) -> Result<bool> {
+        // Add only if not already present
+        if !self.authorized_dequeuers.contains(&new_pubkey) {
+            self.authorized_dequeuers.push(new_pubkey);
+            Ok(true)  // return true if added
+        } else {
+            Ok(false) // already present, no change
+        }
+    }
+
+    pub fn remove_dequeuer(&mut self, remove_pubkey: Pubkey) -> Result<bool> {
+        let before_len = self.authorized_dequeuers.len();
+        self.authorized_dequeuers.retain(|pk| pk != &remove_pubkey);
+        Ok(before_len != self.authorized_dequeuers.len()) // true if something was removed
+    }
+
 }

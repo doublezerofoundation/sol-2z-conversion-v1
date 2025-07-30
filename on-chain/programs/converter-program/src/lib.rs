@@ -7,9 +7,11 @@ mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
+mod error;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
+use configuration_registry::update_dequeuers::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -42,4 +44,20 @@ pub mod converter_program {
             max_fills_storage
         )
     }
+
+
+    pub fn add_dequeuer(
+        ctx: Context<UpdateDequeuers>,
+        new_pubkey: Pubkey,
+    ) -> Result<()> {
+        ctx.accounts.add_dequeuer(new_pubkey)
+    }
+
+    pub fn remove_dequeuer(
+        ctx: Context<UpdateDequeuers>,
+        remove_pubkey: Pubkey,
+    ) -> Result<()> {
+        ctx.accounts.remove_dequeuer(remove_pubkey)
+    }    
+
 }
