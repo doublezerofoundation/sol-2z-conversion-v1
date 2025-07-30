@@ -5,4 +5,7 @@ use anchor_lang::prelude::*;
 pub enum DoubleZeroError {
     #[msg("User is blocked in the DenyList")]
     UserInsideDenyList, // 6000 0x1796
+
+    #[msg("Unauthorized user")]
+    UnauthorizedUser, // 6001
 }

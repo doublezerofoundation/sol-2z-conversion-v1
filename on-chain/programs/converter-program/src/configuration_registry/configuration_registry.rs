@@ -1,5 +1,5 @@
 use crate::{
-    common::{constant::MAX_AUTHORIZED_DEQUEUERS, errors::ConverterError, seeds::seed_prefixes::SeedPrefixes},
+    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes},
     deny_list_registry::deny_list_registry::DenyListRegistry,
     state::program_state::ProgramStateAccount,
 };
@@ -89,10 +89,10 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
     pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
         // Authentication and authorization
         if self.program_state.admin != self.authority.key() {
-            return err!(ConverterError::UnauthorizedUser);
+            return err!(DoubleZeroError::UnauthorizedUser);
         }
         if self.deny_list_registry.denied_addresses.contains(self.authority.key) {
-            return err!(ConverterError::DenyListedUser);
+            return err!(DoubleZeroError::UserInsideDenyList);
         }
 
         self.configuration_registry.update(input)
