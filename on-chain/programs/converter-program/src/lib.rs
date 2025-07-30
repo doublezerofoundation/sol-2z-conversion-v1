@@ -10,6 +10,7 @@ mod initialize;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
+use deny_list_registry::deny_list_registry::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -41,5 +42,13 @@ pub mod converter_program {
             price_maximum_age,
             max_fills_storage
         )
+    }
+
+    pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.process(address)
+    }
+
+    pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.process(address)
     }
 }

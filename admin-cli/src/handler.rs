@@ -1,7 +1,7 @@
 use clap::Parser;
 use crate::command::Commands;
 use std::error::Error;
-use crate::core::functions::{config_handler, init_handler, system_state, withdraw_2z};
+use crate::core::functions::{config_handler, init_handler, system_state, withdraw_2z, deny_list};
 use crate::core::common::error::COMMAND_NOT_SPECIFIED;
 
 #[derive(Parser)]
@@ -42,6 +42,21 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         // Withdrawing from protocol treasury to designated account
         Some(Commands::WithdrawTokens { token_amount, to_account }) => {
             withdraw_2z::withdraw_2z_tokens(token_amount, to_account)
+        }
+
+        // Adding an address to the deny list
+        Some(Commands::AddToDenyList { address }) => {
+            deny_list::add_to_deny_list(address)
+        }
+
+        // Removing an address from the deny list
+        Some(Commands::RemoveFromDenyList { address }) => {
+            deny_list::remove_from_deny_list(address)
+        }
+
+        // Viewing the deny list
+        Some(Commands::ViewDenyList) => {
+            deny_list::view_deny_list()
         }
 
         // Toggles system between active and paused states.
