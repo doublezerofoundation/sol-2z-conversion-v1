@@ -6,3 +6,5 @@ description = "Shared utilities and common functionality for Double Zero command
 
 [dependencies]
 anchor-client = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }

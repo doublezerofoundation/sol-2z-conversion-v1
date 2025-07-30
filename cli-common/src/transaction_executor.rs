@@ -1,28 +1,41 @@
 use std::{
-    error::Error, fmt::Debug
+    error::Error,
+    fmt::Debug
 };
 use anchor_client::{
-    anchor_lang::{AccountDeserialize, AnchorDeserialize}, solana_client::rpc_client::RpcClient, solana_sdk::{
-        commitment_config::CommitmentConfig, instruction::Instruction, pubkey::Pubkey, signature::{Keypair, Signature}, signer::Signer, transaction::Transaction
+    anchor_lang::{AccountDeserialize, AnchorDeserialize},
+    solana_client::rpc_client::RpcClient, 
+    solana_sdk::{
+        commitment_config::CommitmentConfig, 
+        instruction::Instruction,
+        pubkey::Pubkey, 
+        signature::{Keypair, Signature},
+        signer::Signer, 
+        transaction::Transaction
     }
 };
 use crate::{
+    config::Config,
     utils::{
-        env_var::load_private_key, error_handler, ui::{LABEL, OK, WAITING}
+        env_var::load_private_key, 
+        error_handler, 
+        ui::{LABEL, OK, WAITING}
     }
 };
 
 pub fn send_batch_instructions(
-    rpc_url: String,
     instructions: Vec<Instruction>
 ) -> Result<Signature, Box<dyn Error>> {
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;
 
+    let config = Config::load().map_err(|_| "Error when reading config file")?;
+
+    println!("{LABEL} Program ID : {}", config.program_id);
     println!("{LABEL} Payer      : {}", payer.pubkey());
     println!("{WAITING} Sending transaction...");
 
-    let rpc_client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    let rpc_client = RpcClient::new_with_commitment(config.rpc_url, CommitmentConfig::confirmed());
 
     // Fetch recent blockhash
     let recent_blockhash = rpc_client

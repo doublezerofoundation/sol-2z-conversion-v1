@@ -65,7 +65,7 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
         data: account_data,
     };
 
-    send_batch_instructions(admin_config.rpc_url, vec![ix])?;
+    send_batch_instructions(vec![ix])?;
     println!("{} Configuration registry updated", ui::OK);
     Ok(())
 }

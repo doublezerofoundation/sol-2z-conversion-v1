@@ -62,7 +62,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         accounts,
     };
 
-    transaction_executor::send_batch_instructions(admin_config.rpc_url, vec![initialization_ix])?;
+    transaction_executor::send_batch_instructions(vec![initialization_ix])?;
     println!("{} System has been successfully initialized", ui::OK);
     Ok(())
 }
