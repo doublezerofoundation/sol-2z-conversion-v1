@@ -8,5 +8,4 @@ description = "Admin CLI for Double Zero Fee Converter System"
 anchor-client = { workspace = true }
 clap = { workspace = true }
 cli-common = { workspace = true }
-serde = { workspace = true }
-serde_json = { workspace = true }
+reqwest = { workspace = true }
