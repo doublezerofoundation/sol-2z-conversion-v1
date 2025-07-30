@@ -1,33 +1,90 @@
 import {CacheService} from "./cacheService";
-import { createClient } from "redis";
+import { createClient, RedisClientType } from "redis";
+import process from "node:process";
+
 const REDIS_URL = process.env.REDIS_URL;
+
 export class RedisCacheService implements CacheService {
-    private redisClient: any;
+    private redisClient: RedisClientType;
+    private isConnected: boolean = false;
     static instance: RedisCacheService;
+
     private constructor() {
         this.redisClient = createClient({
             url: REDIS_URL,
-
         });
+
+        this.redisClient.on("error", (err) => {
+            console.error("Redis Client Error", err);
+            this.isConnected = false;
+        });
+
+        this.redisClient.on("connect", () => {
+            console.log("Redis client connected");
+            this.isConnected = true;
+        });
+
+        this.redisClient.on("disconnect", () => {
+            console.log("Redis client disconnected");
+            this.isConnected = false;
+        });
+
+        // Initialize connection
+        this.connect();
     }
+
+    private async connect(): Promise<void> {
+        try {
+            await this.redisClient.connect();
+        } catch (error) {
+            console.error("Failed to connect to Redis:", error);
+        }
+    }
+
     static getInstance(): CacheService {
         if(!RedisCacheService.instance) {
             RedisCacheService.instance = new RedisCacheService();
         }
         return RedisCacheService.instance as CacheService;
     }
-    add(key: string, value: any): any {
-        this.redisClient.set(key, value ,{
-            EX: 60 * 60 * 24 * 30,
-            NX: true,
-        });
+
+    private async ensureConnection(): Promise<void> {
+        if (!this.isConnected) {
+            try {
+                await this.connect();
+            } catch (error) {
+                throw new Error(`Redis connection failed: ${error}`);
+            }
+        }
     }
 
-    get(key: string): any {
-        this.redisClient.get(key);
-    }
-    remove(key: string): any {
-        this.redisClient.del(key);
+    async add(key: string, value: any): Promise<any> {
+        try {
+            await this.ensureConnection();
+            const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
+            return await this.redisClient.set(key, stringValue, {
+                EX: 10,
+                NX: true,
+            });
+        } catch (error) {
+            console.error(`Error adding key ${key}:`, error);
+            return null;
+        }
     }
 
+    async get(key: string): Promise<any> {
+        try {
+            await this.ensureConnection();
+            const value: string | {} = await this.redisClient.get(key);
+            if (value === null) return null;
+            try {
+                return JSON.parse(value as string);
+            } catch {
+                return value;
+            }
+        } catch (error) {
+            console.error(`Error getting key ${key}:`, error);
+            return null;
+        }
+    }
 }
