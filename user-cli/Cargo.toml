@@ -7,7 +7,7 @@ description = "Admin CLI for Double Zero Fee Converter System"
 [dependencies]
 anchor-client = { workspace = true }
 clap = { workspace = true }
-tokio = { workspace = true, features = ["rt", "rt-multi-thread", "macros"] }
+tokio = { workspace = true }
 cli-common = { workspace = true }
 reqwest = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true }
