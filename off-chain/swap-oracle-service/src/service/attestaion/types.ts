@@ -4,7 +4,7 @@ export interface AttestationData {
 }
 
 export interface AttestationResult {
-    signature: Uint8Array;
+    signature: string;
     publicKey: string;
 }
 

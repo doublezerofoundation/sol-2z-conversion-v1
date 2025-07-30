@@ -33,14 +33,16 @@ export default class SwapRateController {
             const swapRate = priceRate.swapRate.toString();
 
             const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
+            console.log("signedBytes: ", signedBytes)
+
 
             console.log(signedBytes)
             const result = {
-                swapRate : swapRate,
+                swapRate : swapRate.toString(),
                 timestamp: timestamp,
                 signature: signedBytes,
-                solPriceUsd: priceRate.solPriceUsd,
-                twozPriceUsd: priceRate.twozPriceUsd,
+                solPriceUsd: priceRate.solPriceUsd.toString(),
+                twozPriceUsd: priceRate.twozPriceUsd.toString(),
                 cacheHit: false
 
             }
