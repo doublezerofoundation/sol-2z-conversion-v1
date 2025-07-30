@@ -1,19 +1,20 @@
 import {CacheService} from "./cacheService";
 import { createClient, RedisClientType } from "redis";
 import process from "node:process";
-
-const REDIS_URL = process.env.REDIS_URL;
+// TODO need export to env
+const REDIS_URL = process.env.REDIS_URL || "rediss://master.doublezero-redis.m3emep.use1.cache.amazonaws.com:6379";
 
 export class RedisCacheService implements CacheService {
     private redisClient: RedisClientType;
     private isConnected: boolean = false;
     static instance: RedisCacheService;
 
+
     private constructor() {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
-
+        console.log("Redis initialized");
         this.redisClient.on("error", (err) => {
             console.error("Redis Client Error", err);
             this.isConnected = false;
@@ -28,13 +29,15 @@ export class RedisCacheService implements CacheService {
             console.log("Redis client disconnected");
             this.isConnected = false;
         });
+        console.log("Redis client configured (not connected yet)");
 
-        // Initialize connection
-        this.connect();
+
     }
+
 
     private async connect(): Promise<void> {
         try {
+            console.log("Connecting to Redis...");
             await this.redisClient.connect();
         } catch (error) {
             console.error("Failed to connect to Redis:", error);

@@ -27,15 +27,18 @@ export default class SwapRateController {
 
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
+            console.log("swapRateHandler called")
             let priceRate: PriceRate;
             let isCacheHit:boolean
             const cachedSwapRate: PriceRate = await this.redisService.get(`${ENV}-swapRate`)
+            console.log("after qet")
             if (cachedSwapRate) {
                 priceRate = cachedSwapRate;
                 isCacheHit = true;
                 console.log("cache hit")
 
             } else {
+                console.log("cache miss")
                 const pricePromises = this.priceServices.map(async (priceService) => {
                     return await priceService.retrieveSwapRate();
                 });

@@ -5,10 +5,8 @@ import {
 import {GetParameterCommand, GetParameterCommandInput, SSMClient} from "@aws-sdk/client-ssm";
 import * as process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
-const ENV:string = process.env.ENV || 'dev3';
 import bs58 from 'bs58';
 export class KeyManager {
-    private cachedKeys: KeyPairSigner = null;
     private awsSSM: any;
     constructor() {
         this.awsSSM = new SSMClient({
@@ -17,12 +15,7 @@ export class KeyManager {
     }
 
     async getKeys(): Promise<KeyPairSigner> {
-        console.log("ENV: ", ENV)
-        console.log("AWS_REGION: ", AWS_REGION)
-        if (!this.cachedKeys) {
-            this.cachedKeys = await this.loadKeysFromParameterStore();
-        }
-        return this.cachedKeys;
+        return await this.loadKeysFromParameterStore();
     }
 
     async loadKeysFromParameterStore(): Promise<KeyPairSigner> {
