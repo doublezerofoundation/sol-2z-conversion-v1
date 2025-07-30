@@ -5,5 +5,8 @@ edition = "2021"
 description = "Admin CLI for Double Zero Fee Converter System"
 
 [dependencies]
-anchor-client = { workspace = true }
 clap = { workspace = true }
+tokio = { workspace = true, version = "1.46.1", features = ["rt", "rt-multi-thread", "macros"] }
+cli-common = { workspace = true }
+reqwest = { workspace = true }
+serde = { version = "1.0.219", features = ["derive"] }

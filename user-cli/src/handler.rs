@@ -18,13 +18,13 @@ struct Cli {
     command: Option<Commands>,
 }
 
-pub fn handle() -> Result<(), Box<dyn Error>> {
+pub async fn handle() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     match cli.command {
 
         // Triggering SOL transaction
         Some(Commands::BuySol { bid_price }) => {
-            buy_sol(bid_price)
+            buy_sol(bid_price).await
         }
 
         // Displays SOL quantity available per transaction

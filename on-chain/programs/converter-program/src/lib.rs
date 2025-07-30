@@ -7,6 +7,7 @@ mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
+mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
