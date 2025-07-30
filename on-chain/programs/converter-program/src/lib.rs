@@ -56,7 +56,7 @@ pub mod converter_program {
     pub fn calculate_ask_price(
         ctx: Context<CalculateAskPrice>,
         oracle_swap_rate_bps: u64
-    ) -> Result<()> {
+    ) -> Result<u64> {
         ctx.accounts.process(oracle_swap_rate_bps)
     }
 }

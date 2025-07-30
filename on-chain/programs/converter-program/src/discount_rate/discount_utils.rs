@@ -9,9 +9,20 @@ use crate::{
     state::program_state::TradeHistory,
 };
 
-pub fn calculate_sol_demand(_trade_history: Vec<TradeHistory>) -> Result<u64> {
-    // TODO: Implement the calculation of sol demand
-    Ok(100_000)
+/// Calculate the sol demand
+///
+/// ### Arguments
+/// * `trade_history` - The trade history
+/// * `sol_quantity_bps` - The sol quantity in basis points
+///
+/// ### Returns
+/// * `Result<u64>` - The sol demand in basis points
+pub fn calculate_sol_demand(trade_history: Vec<TradeHistory>, sol_quantity_bps: u64) -> Result<u64> {
+    let mut sol_demand = 0;
+    for trade in trade_history {
+        sol_demand += trade.num_of_trades * sol_quantity_bps;
+    }
+    Ok(sol_demand)
 }
 
 /// Discount function
@@ -144,19 +155,3 @@ pub fn calculate_ask_price_with_discount(
 
     Ok(ask_price_u64)
 }
-
-// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-// pub struct Attestation {
-//     swap_rate: String,
-//     timestamp: u64,
-//     sol_price_usd: u64,
-//     twoz_price_usd: u64,
-//     cache_hit: bool,
-//     signature: SignatureWrapper,
-// }
-
-// #[derive(Debug, AnchorSerialize, AnchorDeserialize)]
-// pub struct SignatureWrapper {
-//     pub signature: HashMap<String, u8>,
-//     pub public_key: String,
-// }

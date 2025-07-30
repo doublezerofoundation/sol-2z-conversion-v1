@@ -30,18 +30,21 @@ pub struct CalculateAskPrice<'info> {
 }
 
 impl<'info> CalculateAskPrice<'info> {
-    pub fn process(&mut self, oracle_swap_rate_bps: u64) -> Result<()> {
-        let sol_demand = calculate_sol_demand(self.program_state.trade_history_list.clone())?;
+    pub fn process(&mut self, oracle_swap_rate_bps: u64) -> Result<u64> {
+        let sol_demand_bps = calculate_sol_demand(
+            self.program_state.trade_history_list.clone(),
+            self.configuration_registry.sol_quantity,
+        )?;
         let discount_rate = calculate_discount_rate(
-            sol_demand,
+            sol_demand_bps,
             self.configuration_registry.steepness,
             self.configuration_registry.max_discount_rate,
         )?;
-        self.program_state.ask_price_bps = calculate_ask_price_with_discount(
+        let ask_price_bps = calculate_ask_price_with_discount(
             self.configuration_registry.sol_quantity,
             oracle_swap_rate_bps,
             discount_rate,
         )?;
-        Ok(())
+        Ok(ask_price_bps)
     }
 }
