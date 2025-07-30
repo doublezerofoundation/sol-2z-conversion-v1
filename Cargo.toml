@@ -2,7 +2,6 @@
 members = [
     "./on-chain/programs/*",
     "cli-common",
-    "shared",
     "admin-cli",
     "user-cli"
 ]
@@ -14,7 +13,6 @@ anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
 
 # Workspace members (internal dependencies)
-shared = { path = "shared" }
 cli-common = { path = "cli-common" }
 
 
@@ -24,6 +22,9 @@ serde_json = "1.0.141"
 
 ### CLI
 clap = { version = "4.5.41", features = ["derive"] }
+solana-loader-v3-interface = "5.0.0"
+## CLI Rest
+reqwest = { version = "0.12.22", features = ["json"] }
 
 [profile.release]
 overflow-checks = true

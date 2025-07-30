@@ -1,22 +1,25 @@
 use std::{
-    error::Error
+    error::Error,
+    fmt::Debug
 };
 use anchor_client::{
-    solana_client::rpc_client::RpcClient,
+    anchor_lang::{AccountDeserialize, AnchorDeserialize},
+    solana_client::rpc_client::RpcClient, 
     solana_sdk::{
-        commitment_config::CommitmentConfig,
+        commitment_config::CommitmentConfig, 
         instruction::Instruction,
+        pubkey::Pubkey, 
         signature::{Keypair, Signature},
-        signer::Signer,
+        signer::Signer, 
         transaction::Transaction
-    },
+    }
 };
 use crate::{
     config::Config,
     utils::{
-        error_handler,
-        ui::{LABEL, WAITING, OK},
-        env_var::load_private_key
+        env_var::load_private_key, 
+        error_handler, 
+        ui::{LABEL, OK, WAITING}
     }
 };
 
@@ -61,3 +64,10 @@ pub fn send_batch_instructions(
     }
 }
 
+pub fn get_account_data<T: AccountDeserialize + AnchorDeserialize + Debug>(rpc_url: String, account: Pubkey) -> Result<T, Box<dyn Error>> {
+    let client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
+    let data = client.get_account_data(&account)?;
+
+    let account = T::try_deserialize(&mut data.as_slice())?;
+    Ok(account)
+}

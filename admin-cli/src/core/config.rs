@@ -1,6 +1,7 @@
 use std::error::Error;
 use cli_common::config::Config;
 pub struct AdminConfig {
+    pub rpc_url: String,
     pub program_id: String,
     pub oracle_pubkey: String,
     pub sol_quantity: u64,
@@ -13,6 +14,7 @@ impl AdminConfig {
     pub fn load_admin_config() -> Result<Self, Box<dyn Error>> {
         let raw_config = Config::load()?;
         Ok(AdminConfig {
+            rpc_url: raw_config.rpc_url,
             program_id: raw_config.program_id,
             oracle_pubkey: raw_config.oracle_pubkey.ok_or("Missing oracle_pubkey")?,
             sol_quantity: raw_config.sol_quantity.ok_or("Missing sol_quantity")?,
