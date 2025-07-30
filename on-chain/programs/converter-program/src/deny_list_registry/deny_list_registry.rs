@@ -42,6 +42,10 @@ impl<'info> AddToDenyList<'info> {
             return Err(anchor_lang::error::ErrorCode::ConstraintRaw.into());
         }
 
+        if self.deny_list_registry.denied_addresses.len() >= MAX_DENY_LIST_SIZE as usize {
+            return Err(DenyListRegistryError::DenyListFull.into());
+        }
+
         self.deny_list_registry.denied_addresses.push(address);
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
         self.deny_list_registry.update_count += 1;
@@ -65,4 +69,10 @@ impl<'info> RemoveFromDenyList<'info> {
 
         Ok(())
     }
+}
+
+#[error_code]
+pub enum DenyListRegistryError {
+    #[msg("Deny list is full")]
+    DenyListFull,
 }

@@ -140,34 +140,6 @@ pub fn view_deny_list() -> Result<(), Box<dyn Error>> {
                     }
                 }
             }
-
-            // Try to parse timestamp and update count if available
-            let remaining_data = &data[4 + (vec_len * 32)..];
-            if remaining_data.len() >= 16 {
-                let last_updated = i64::from_le_bytes([
-                    remaining_data[0],
-                    remaining_data[1],
-                    remaining_data[2],
-                    remaining_data[3],
-                    remaining_data[4],
-                    remaining_data[5],
-                    remaining_data[6],
-                    remaining_data[7],
-                ]);
-                let update_count = u64::from_le_bytes([
-                    remaining_data[8],
-                    remaining_data[9],
-                    remaining_data[10],
-                    remaining_data[11],
-                    remaining_data[12],
-                    remaining_data[13],
-                    remaining_data[14],
-                    remaining_data[15],
-                ]);
-
-                println!("Last updated: {} (timestamp)", last_updated);
-                println!("Update count: {}", update_count);
-            }
         }
         Err(e) => {
             println!("Error fetching deny list registry: {}", e);

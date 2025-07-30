@@ -191,36 +191,6 @@ describe("Deny List Tests", () => {
     });
 
     describe("Edge Cases and Constraints", () => {
-        it("Should handle adding addresses up to the maximum limit", async () => {
-            // First, clear the deny list by removing existing addresses
-            const currentDenyList = await fetchDenyListRegistry(program);
-            
-            // Remove all existing addresses
-            for (const address of currentDenyList.deniedAddresses) {
-                try {
-                    await removeFromDenyListAndVerify(program, address, adminKeyPair);
-                } catch {
-                    // Continue even if removal fails - this is expected in cleanup
-                }
-            }
-            
-            // Add addresses up to near the limit (leave some buffer for other tests)
-            const maxAddresses = 10; // Much less than MAX_DENY_LIST_SIZE (50) to avoid conflicts
-            const testAddresses: PublicKey[] = [];
-            
-            for (let i = 0; i < maxAddresses; i++) {
-                // Generate valid 32-byte public keys
-                const keyBytes = new Uint8Array(32);
-                keyBytes.fill(i + 1); // Fill with a pattern based on index
-                const address = new PublicKey(keyBytes);
-                testAddresses.push(address);
-                await addToDenyListAndVerify(program, address, adminKeyPair);
-            }
-            
-            // Verify all addresses are in the list
-            await verifyDenyListState(program, testAddresses);
-        });
-
         it("Should maintain list integrity after multiple operations", async () => {
             // Clear the deny list first to ensure clean state
             const currentDenyList = await fetchDenyListRegistry(program);
@@ -260,6 +230,66 @@ describe("Deny List Tests", () => {
             
             // Verify all are back
             await verifyDenyListState(program, [addr1, addr2, addr3]);
+        });
+
+        it("Should fail to add address when deny list reaches maximum capacity", async () => {
+            // Clear the deny list first to start fresh
+            const currentDenyList = await fetchDenyListRegistry(program);
+            
+            for (const address of currentDenyList.deniedAddresses) {
+                try {
+                    await removeFromDenyListAndVerify(program, address, adminKeyPair);
+                } catch {
+                    // Continue even if removal fails - this is expected in cleanup
+                }
+            }
+            
+            // Fill deny list to maximum capacity (MAX_DENY_LIST_SIZE = 50)
+            const maxCapacity = 50;
+            
+            console.log(`Filling deny list to maximum capacity (${maxCapacity} addresses)...`);
+            
+            for (let i = 0; i < maxCapacity; i++) {
+                // Generate unique valid 32-byte public keys
+                const keyBytes = new Uint8Array(32);
+                keyBytes[0] = Math.floor(i / 256);
+                keyBytes[1] = i % 256;
+                // Fill remaining bytes with a pattern to ensure uniqueness
+                for (let j = 2; j < 32; j++) {
+                    keyBytes[j] = (i + j) % 256;
+                }
+                
+                const address = new PublicKey(keyBytes);
+                await addToDenyListAndVerify(program, address, adminKeyPair);
+            }
+            
+            // Verify deny list is at maximum capacity
+            const denyListAtCapacity = await fetchDenyListRegistry(program);
+            assert.equal(denyListAtCapacity.deniedAddresses.length, maxCapacity, `Deny list should be at maximum capacity (${maxCapacity})`);
+            
+            // Try to add one more address - this should fail
+            const extraKeyBytes = new Uint8Array(32);
+            extraKeyBytes.fill(255); // Use a different pattern to ensure uniqueness
+            const extraAddress = new PublicKey(extraKeyBytes);
+            
+            console.log("Attempting to add address beyond maximum capacity...");
+            
+            await addToDenyListShouldFail(
+                program,
+                extraAddress,
+                "Deny list is full",
+                adminKeyPair
+            );
+            
+            // Verify deny list size didn't change
+            const denyListAfterFailure = await fetchDenyListRegistry(program);
+            assert.equal(denyListAfterFailure.deniedAddresses.length, maxCapacity, "Deny list size should remain at maximum capacity");
+            
+            // Verify the extra address was not added
+            const extraAddressExists = denyListAfterFailure.deniedAddresses.some(addr => addr.equals(extraAddress));
+            assert.isFalse(extraAddressExists, "Extra address should not be in deny list");
+            
+            console.log("Successfully verified deny list maximum capacity constraint!");
         });
 
         it("Should correctly handle empty deny list operations", async () => {
