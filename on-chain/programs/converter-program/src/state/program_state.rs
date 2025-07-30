@@ -18,7 +18,7 @@ pub struct ProgramStateAccount {
     pub fifo_queue: Vec<EpochChunk>,  // Used for epoch tagging
     pub bump_registry: BumpRegistry,
     #[max_len(MAX_TRADE_HISTORY_SIZE)]
-    pub trade_history_list: Vec<TradeHistory>
+    pub trade_history_list: Vec<TradeHistory>,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, InitSpace)]

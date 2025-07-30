@@ -19,3 +19,5 @@ idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = { workspace = true }
+rust_decimal = "1.37.2"
+

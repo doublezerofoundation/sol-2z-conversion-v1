@@ -7,10 +7,12 @@ mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
+mod discount_rate;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
+use discount_rate::calculate_discount::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -49,5 +51,9 @@ pub mod converter_program {
         input: ConfigurationRegistryInput
     ) -> Result<()> {
         ctx.accounts.process_update(input)
+    }
+
+    pub fn calculate_discount_rate(ctx: Context<CalculateDiscountRate>) -> Result<()> {
+        ctx.accounts.process()
     }
 }

@@ -6,5 +6,17 @@ pub enum ConverterError {
     UnauthorizedUser,
 
     #[msg("Deny listed user")]
-    DenyListedUser
+    DenyListedUser,
+
+    #[msg("Invalid discount rate")]
+    InvalidDiscountRate,
+
+    #[msg("Invalid oracle swap rate")]
+    InvalidOracleSwapRate,
+
+    #[msg("Invalid sol quantity")]
+    InvalidSolQuantity,
+
+    #[msg("Invalid ask price")]
+    InvalidAskPrice,
 }
