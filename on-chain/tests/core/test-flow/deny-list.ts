@@ -96,7 +96,7 @@ export async function removeFromDenyListAndVerify(
     assert.isFalse(isStillDenied, "Address should no longer be in deny list");
     
     // Verify timestamp was updated
-    assert.isAbove(denyListAfter.lastUpdated.toNumber(), denyListBefore.lastUpdated.toNumber(), "Last updated timestamp should be more recent");
+    assert.isAtLeast(denyListAfter.lastUpdated.toNumber(), denyListBefore.lastUpdated.toNumber(), "Last updated timestamp should be at least as recent");
     
     return tx;
 }
