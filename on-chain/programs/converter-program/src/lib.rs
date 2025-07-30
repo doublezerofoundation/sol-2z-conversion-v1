@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 
 mod common;
-mod configuration_registry;
+pub mod configuration_registry;
 mod state;
 mod validator_deposit;
 mod deny_list_registry;
@@ -11,6 +11,7 @@ mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
+use configuration_registry::configuration_registry::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -42,5 +43,12 @@ pub mod converter_program {
             price_maximum_age,
             max_fills_storage
         )
+    }
+
+    pub fn update_configuration_registry(
+        ctx: Context<ConfigurationRegistryUpdate>,
+        input: ConfigurationRegistryInput
+    ) -> Result<()> {
+        ctx.accounts.process_update(input)
     }
 }
