@@ -53,9 +53,14 @@ impl ConfigurationRegistry {
         Ok(())
     }
 
-    pub fn add_dequeuer(&mut self,  new_pubkey: Pubkey) -> Result<bool> {
+    pub fn add_dequeuer(&mut self, new_pubkey: Pubkey) -> Result<bool> {
+
         // Add only if not already present
         if !self.authorized_dequeuers.contains(&new_pubkey) {
+            // Enforce the maximum limit
+            if self.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
+                return Err(error!(ConverterError::MaxAuthorizedDequeuersReached));
+            }
             self.authorized_dequeuers.push(new_pubkey);
             Ok(true)  // return true if added
         } else {

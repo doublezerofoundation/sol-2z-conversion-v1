@@ -3,8 +3,6 @@ use anchor_lang::prelude::*;
 use crate::state::program_state::ProgramStateAccount;
 use crate::configuration_registry::configuration_registry::ConfigurationRegistry;
 use crate::common::events::dequeuer::*;
-use crate::common::constant::MAX_AUTHORIZED_DEQUEUERS;
-use crate::common::errors::ConverterError;
 
 
 /// Only the current upgrade authority can call this
@@ -28,11 +26,6 @@ impl<'info> UpdateDequeuers<'info> {
     ) -> Result<()> {
         // Ensure only admin can modify
         self.program_state.assert_admin(&self.authority)?;
-
-        // Enforce the maximum limit
-        if self.configuration_registry.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
-            return Err(error!(ConverterError::MaxAuthorizedDequeuersReached));
-        }
 
         if self.configuration_registry.add_dequeuer(new_pubkey)? {
             emit!(DequeuerAdded {
