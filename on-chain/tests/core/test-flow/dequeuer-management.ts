@@ -202,3 +202,43 @@ export async function removeDequeuerExpectUnauthorized(
         assert.equal(anchorErr.error.errorCode.code, "Unauthorized");
     }
 }
+
+export async function addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerList) {
+    let txSig;
+    try {
+        const programStateAccount = await getProgramStatePDA(program.programId);
+        const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
+        // Add up to the max limit
+        for (let i = 0; i < dequeuerList.length; i++) {
+            await program.methods
+                .addDequeuer(dequeuerList[i])
+                .accounts({
+                    configurationRegistry: configRegistryAccount,
+                    programState: programStateAccount,
+                    authority: adminKeyPair.publicKey,
+                })
+                .signers([adminKeyPair])
+                .rpc();
+                process.stdout.write('.'); 
+        }
+        console.log("");
+        //Try to add one more, should fail
+        const extraDequeuer = anchor.web3.Keypair.generate().publicKey;
+        txSig = await program.methods
+            .addDequeuer(extraDequeuer)
+            .accounts({
+                configurationRegistry: configRegistryAccount,
+                programState: programStateAccount,
+                authority: adminKeyPair.publicKey,
+            })
+            .signers([adminKeyPair])
+            .rpc();
+
+        console.log("Test failed: Added more than max authorized dequeuers");
+        assert.fail("Expected MaxAuthorizedDequeuersReached error but transaction succeeded");
+    } catch (e) {
+        // Check for custom error code
+        const anchorErr = e as anchor.AnchorError;
+        assert.equal(anchorErr.error.errorCode.code, "MaxAuthorizedDequeuersReached");
+    }
+}

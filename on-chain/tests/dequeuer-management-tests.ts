@@ -9,14 +9,14 @@ import {
   removeDequeuerAndVerify,
   addDequeuerExpectUnauthorized,
   removeDequeuerExpectUnauthorized,
+  addDequeuerExpectMaxLimit,
 } from "./core/test-flow/dequeuer-management";
 
 describe("Dequeuer Management Tests", () => {
-
   before(async () => {
     await systemInitializeAndVerify(program, adminKeyPair);
   });
-    
+
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
   const adminKeyPair = getDefaultKeyPair();
@@ -50,5 +50,11 @@ describe("Dequeuer Management Tests", () => {
       anchor.web3.Keypair.generate().publicKey,
       false
     );
+  });
+
+  it("Cannot add more than the maximum number of authorized dequeuers", async () => {
+    // MAX_AUTHORIZED_DEQUEUERS is 20 in Rust, so use 20 unique pubkeys
+    const dequeuerList = Array.from({ length: 20 }, () => anchor.web3.Keypair.generate().publicKey);
+    await addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerList);
   });
 });
