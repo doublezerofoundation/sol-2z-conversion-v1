@@ -1,10 +1,10 @@
 use anchor_lang::prelude::*;
-
 use crate::{
     common::{
         events::init::SystemInitialized,
         seeds::seed_prefixes::SeedPrefixes,
-        error::DoubleZeroError
+        error::DoubleZeroError,
+        utils::attestation_utils::verify_attestation
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
@@ -42,18 +42,28 @@ pub struct BuySol<'info> {
 }
 
 impl<'info> BuySol<'info> {
-    pub fn buy_sol(
+    pub fn process(
         &mut self,
         bid_price: u64,
+        swap_rate: u64,
         timestamp: u64,
+        attestation: String
     ) -> Result<()> {
 
         // Checking whether address is inside the deny list
-        let signer_key = self.signer.key();
+        let signer_key = self.signer.key;
         require!(
-            !self.deny_list_registry.denied_addresses.contains(&signer_key),
+            !self.deny_list_registry.denied_addresses.contains(signer_key),
             DoubleZeroError::UserInsideDenyList
         );
+
+        // checking attestation
+        verify_attestation(
+            swap_rate,
+            timestamp,
+            attestation,
+            self.configuration_registry.oracle_pubkey
+        )?;
 
 
         msg!("System is Initialized");

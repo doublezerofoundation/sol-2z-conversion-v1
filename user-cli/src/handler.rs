@@ -3,11 +3,11 @@ use std::error::Error;
 use crate::{
     command::Commands,
     core::{
-        error::COMMAND_NOT_SPECIFIED,
         function::{
             buy_sol::buy_sol,
             query_handler
-        }
+        },
+        common::error::COMMAND_NOT_SPECIFIED
     }
 };
 

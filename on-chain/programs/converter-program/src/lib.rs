@@ -12,12 +12,15 @@ mod user_flow;
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
+use user_flow::buy_sol::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
 pub mod converter_program {
     use super::*;
 
+
+    // Admin Flow
     pub fn initialize_system(
         ctx: Context<InitializeSystem>,
         oracle_pubkey: Pubkey,
@@ -50,5 +53,21 @@ pub mod converter_program {
         input: ConfigurationRegistryInput
     ) -> Result<()> {
         ctx.accounts.process_update(input)
+    }
+
+    // User Flow
+    pub fn buy_sol(
+        ctx: Context<BuySol>,
+        bid_price: u64,
+        swap_rate: u64,
+        timestamp: u64,
+        attestation: String
+    ) -> Result<()> {
+        ctx.accounts.process(
+            bid_price,
+            swap_rate,
+            timestamp,
+            attestation
+        )
     }
 }

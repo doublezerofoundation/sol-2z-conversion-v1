@@ -12,6 +12,9 @@ resolver = "2"
 anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
 
+## on-chain
+base64 = "0.22.1"
+
 # Workspace members (internal dependencies)
 cli-common = { path = "cli-common" }
 
@@ -23,6 +26,7 @@ serde_json = "1.0.141"
 ### CLI
 clap = { version = "4.5.42", features = ["derive"] }
 solana-loader-v3-interface = "5.0.0"
+ed25519-dalek = "1.0.1"
 ## CLI Rest
 tokio = { version = "1.47.0", features = ["full"] }
 reqwest = { version = "0.12.22", features = ["json"] }

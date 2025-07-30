@@ -8,4 +8,13 @@ pub enum DoubleZeroError {
 
     #[msg("Unauthorized user")]
     UnauthorizedUser, // 6001
+
+    #[msg("Provided Attestation is Invalid")]
+    InvalidAttestation, // 6002
+
+    #[msg("Oracle Public Key is Invalid")]
+    InvalidOraclePublicKey, // 6003
+
+    #[msg("Provided Attestation is not Authentic")]
+    AttestationVerificationError, // 6004
 }

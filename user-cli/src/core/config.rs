@@ -3,7 +3,7 @@ use reqwest::Url;
 use cli_common::config::Config;
 pub struct UserConfig {
     pub program_id: String,
-    pub price_oracle_end_point: Url
+    pub price_oracle_end_point: Url,
 }
 
 impl UserConfig {
