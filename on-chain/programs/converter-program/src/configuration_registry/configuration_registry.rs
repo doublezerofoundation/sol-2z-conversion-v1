@@ -29,12 +29,16 @@ impl ConfigurationRegistry {
         slot_threshold: u64,
         price_maximum_age: u64,
         max_fills_storage: u64,
+        steepness: u64,
+        max_discount_rate: u64
     ) -> Result<()> {
         self.oracle_pubkey = oracle_pubkey;
         self.sol_quantity = sol_quantity;
         self.slot_threshold = slot_threshold;
         self.price_maximum_age = price_maximum_age;
         self.max_fills_storage = max_fills_storage;
+        self.steepness = steepness;
+        self.max_discount_rate = max_discount_rate;
         Ok(())
     }
 
@@ -54,6 +58,12 @@ impl ConfigurationRegistry {
         if let Some(max_fills_storage) = input.max_fills_storage {
             self.max_fills_storage = max_fills_storage;
         }
+        if let Some(steepness) = input.steepness {
+            self.steepness = steepness;
+        }
+        if let Some(max_discount_rate) = input.max_discount_rate {
+            self.max_discount_rate = max_discount_rate;
+        }
         Ok(())
     }
 }
@@ -65,6 +75,8 @@ pub struct ConfigurationRegistryInput {
     pub slot_threshold: Option<u64>,
     pub price_maximum_age: Option<u64>,
     pub max_fills_storage: Option<u64>,
+    pub steepness: Option<u64>,
+    pub max_discount_rate: Option<u64>,
 }
 
 #[derive(Accounts)]

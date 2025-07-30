@@ -16,7 +16,9 @@ pub struct Config {
     pub slot_threshold: Option<u64>,
     pub price_maximum_age: Option<u64>,
     pub max_fills_storage: Option<u64>,
-    pub price_oracle_end_point: Option<String>
+    pub price_oracle_end_point: Option<String>,
+    pub steepness: Option<u64>,
+    pub max_discount_rate: Option<u64>,
 }
 
 impl Config {

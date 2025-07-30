@@ -8,7 +8,9 @@ export interface SystemConfig {
     solQuantity: BN,
     slotThreshold: BN,
     priceMaximumAge: BN,
-    maxFillsStorage: BN
+    maxFillsStorage: BN,
+    steepness: BN,
+    maxDiscountRate: BN,
 }
 
 // Default Configurations
@@ -18,6 +20,8 @@ export const DEFAULT_CONFIGS: SystemConfig = {
     slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),
     maxFillsStorage: new anchor.BN(234),
+    steepness: new anchor.BN(9000),
+    maxDiscountRate: new anchor.BN(5000),
 };
 
 export async function fetchCurrentConfiguration(program): Promise<SystemConfig> {
@@ -29,5 +33,7 @@ export async function fetchCurrentConfiguration(program): Promise<SystemConfig> 
         slotThreshold: configurationRegistry.slotThreshold,
         priceMaximumAge: configurationRegistry.priceMaximumAge,
         maxFillsStorage: configurationRegistry.maxFillsStorage,
+        steepness: configurationRegistry.steepness,
+        maxDiscountRate: configurationRegistry.maxDiscountRate,
     }
 }

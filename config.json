@@ -6,5 +6,7 @@
   "slot_threshold": 134,
   "price_maximum_age": 324,
   "max_fills_storage": 234,
-  "price_oracle_end_point": "https://lmcewkjl26.execute-api.us-east-1.amazonaws.com/dev3/api/v1/swap-rate"
+  "price_oracle_end_point": "https://lmcewkjl26.execute-api.us-east-1.amazonaws.com/dev3/api/v1/swap-rate",
+  "steepness": 9000,
+  "max_discount_rate": 5000
 }
