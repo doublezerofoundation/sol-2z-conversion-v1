@@ -161,7 +161,7 @@ export async function addDequeuerExpectUnauthorized(
         }
         // AnchorError includes error logs and errorCode
         const anchorErr = e as anchor.AnchorError;
-        assert.equal(anchorErr.error.errorCode.code, "Unauthorized");
+        assert.equal(anchorErr.error.errorCode.code, "UnauthorizedUser");
     }
 }
 
@@ -199,7 +199,7 @@ export async function removeDequeuerExpectUnauthorized(
         }
         // AnchorError includes error logs and errorCode
         const anchorErr = e as anchor.AnchorError;
-        assert.equal(anchorErr.error.errorCode.code, "Unauthorized");
+        assert.equal(anchorErr.error.errorCode.code, "UnauthorizedUser");
     }
 }
 
