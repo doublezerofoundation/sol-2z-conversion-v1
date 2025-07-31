@@ -1,11 +1,47 @@
-use std::error::Error;
+use std::{error::Error, str::FromStr};
+
+use anchor_client::{anchor_lang::{prelude::AccountMeta, AnchorSerialize}, solana_sdk::{hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer}};
+use cli_common::{constant::DECIMAL_PRECISION, transaction_executor::send_instruction_with_return_data, utils::{env_var::load_private_key, pda_helper::{get_configuration_registry_pda, get_program_state_pda}, ui}};
+
+use crate::core::{
+    common::instruction::GET_PRICE_INSTRUCTION, config::UserConfig,
+    utils::price_utils::fetch_oracle_price,
+};
 
 pub fn get_quantity() -> Result<(), Box<dyn Error>> {
     println!("Getting Quantity");
     Ok(())
 }
 
-pub fn get_price() -> Result<(), Box<dyn Error>> {
-    println!("Getting Price");
+pub async fn get_price() -> Result<(), Box<dyn Error>> {
+    let private_key = load_private_key()?;
+    let payer = Keypair::from_bytes(&private_key)?;
+    let user_config = UserConfig::load_user_config()?;
+
+    let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;
+
+    let mut data = hash(GET_PRICE_INSTRUCTION).to_bytes()[..8].to_vec();
+    data = [data, oracle_price_data.try_to_vec()?].concat();
+
+    let program_id = Pubkey::from_str(&user_config.program_id)?;
+    let program_state_pda = get_program_state_pda(program_id).0;
+    let condifuration_reg_pda = get_configuration_registry_pda(program_id).0;
+
+    let accounts = vec![
+        AccountMeta::new(payer.pubkey(), true),
+        AccountMeta::new(program_state_pda, false),
+        AccountMeta::new(condifuration_reg_pda, false),
+    ];
+
+    let ix = Instruction {
+        program_id,
+        accounts,
+        data,
+    };
+
+    let result_bps: u64 = send_instruction_with_return_data(ix)?;
+    let result = result_bps as f64 / DECIMAL_PRECISION as f64;
+
+    println!("{} Current estimated ask price: {}", ui::OK, result);
     Ok(())
 }

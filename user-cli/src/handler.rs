@@ -34,7 +34,7 @@ pub async fn handle() -> Result<(), Box<dyn Error>> {
 
         // Displays current 2Z-to-SOL conversion price
         Some(Commands::GetPrice) => {
-            query_handler::get_price()
+            query_handler::get_price().await
         }
 
         // Toggles system between active and paused states.

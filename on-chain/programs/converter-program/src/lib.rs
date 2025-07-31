@@ -15,6 +15,7 @@ use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
 use discount_rate::calculate_ask_price::*;
 use user_flow::buy_sol::*;
+use common::structs::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -63,9 +64,9 @@ pub mod converter_program {
 
     pub fn calculate_ask_price(
         ctx: Context<CalculateAskPrice>,
-        oracle_swap_rate_bps: u64
+        oracle_price_data: OraclePriceData,
     ) -> Result<u64> {
-        ctx.accounts.process(oracle_swap_rate_bps)
+        ctx.accounts.process(oracle_price_data)
     }
 
     // User Flow
