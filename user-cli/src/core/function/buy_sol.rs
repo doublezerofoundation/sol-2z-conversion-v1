@@ -3,7 +3,6 @@ use std::error::Error;
 
 // External crates
 use anchor_client::solana_sdk::hash::hash;
-
 // Internal modules
 use crate::core::common::instruction::BUY_SOL_INSTRUCTION;
 use crate::core::config::UserConfig;
@@ -21,7 +20,6 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
         oracle_price_data.timestamp.to_le_bytes().to_vec(),
         oracle_price_data.signature.as_bytes().to_vec(),
     ].concat();
-
 
     println!("Buying SOL for {}", bid_price);
     Ok(())

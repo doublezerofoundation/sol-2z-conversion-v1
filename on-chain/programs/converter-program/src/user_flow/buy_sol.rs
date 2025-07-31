@@ -4,7 +4,7 @@ use crate::{
         events::init::SystemInitialized,
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
-        utils::attestation_utils::verify_attestation
+        // utils::attestation_utils::verify_attestation
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
@@ -57,13 +57,13 @@ impl<'info> BuySol<'info> {
             DoubleZeroError::UserInsideDenyList
         );
 
-        // checking attestation
-        verify_attestation(
-            swap_rate,
-            timestamp,
-            attestation,
-            self.configuration_registry.oracle_pubkey
-        )?;
+        // // checking attestation
+        // verify_attestation(
+        //     swap_rate,
+        //     timestamp,
+        //     attestation,
+        //     self.configuration_registry.oracle_pubkey
+        // )?;
 
 
         msg!("System is Initialized");

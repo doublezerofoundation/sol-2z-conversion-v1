@@ -30,7 +30,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let mut data_initialize = hash(INITIALIZE_SYSTEM_INSTRUCTION).to_bytes()[..8].to_vec();
     data_initialize = [
         data_initialize,
-        admin_config.oracle_pubkey.as_bytes().to_vec(),
+        admin_config.oracle_pubkey.to_bytes().to_vec(),
         admin_config.sol_quantity.to_le_bytes().to_vec(),
         admin_config.slot_threshold.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
