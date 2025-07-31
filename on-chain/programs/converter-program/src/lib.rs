@@ -8,17 +8,21 @@ mod deny_list_registry;
 mod fills_registry;
 mod initialize;
 mod discount_rate;
+mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
 use discount_rate::calculate_ask_price::*;
+use user_flow::buy_sol::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
 pub mod converter_program {
     use super::*;
 
+
+    // Admin Flow
     pub fn initialize_system(
         ctx: Context<InitializeSystem>,
         oracle_pubkey: Pubkey,
@@ -62,5 +66,21 @@ pub mod converter_program {
         oracle_swap_rate_bps: u64
     ) -> Result<u64> {
         ctx.accounts.process(oracle_swap_rate_bps)
+    }
+
+    // User Flow
+    pub fn buy_sol(
+        ctx: Context<BuySol>,
+        bid_price: u64,
+        swap_rate: u64,
+        timestamp: u64,
+        attestation: String
+    ) -> Result<()> {
+        ctx.accounts.process(
+            bid_price,
+            swap_rate,
+            timestamp,
+            attestation
+        )
     }
 }

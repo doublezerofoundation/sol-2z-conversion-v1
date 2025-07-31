@@ -5,7 +5,7 @@ use cli_common::config::Config;
 #[allow(dead_code)]
 pub struct UserConfig {
     pub program_id: String,
-    pub price_oracle_end_point: Url
+    pub price_oracle_end_point: Url,
 }
 
 #[allow(dead_code)]
