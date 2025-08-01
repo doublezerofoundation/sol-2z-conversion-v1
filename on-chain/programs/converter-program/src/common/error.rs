@@ -41,4 +41,10 @@ pub enum DoubleZeroError {
 
     #[msg("Invalid oracle swap rate")]
     InvalidOracleSwapRate, // 6012
+    
+    #[msg("Invalid Timestamp")]
+    InvalidTimestamp, // 6013
+    
+    #[msg("Provided Attestation is not Authentic")]
+    StalePrice, // 6014
 }

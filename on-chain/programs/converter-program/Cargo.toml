@@ -19,5 +19,6 @@ idl-build = ["anchor-lang/idl-build"]
 
 [dependencies]
 anchor-lang = { workspace = true }
-rust_decimal = "1.37.2"
-
+rust_decimal = { workspace = true }
+base64 = { workspace = true }
+brine-ed25519 = {workspace = true}

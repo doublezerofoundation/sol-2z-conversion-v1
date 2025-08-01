@@ -8,7 +8,7 @@ pub struct AdminConfig {
     pub oracle_pubkey: Pubkey,
     pub sol_quantity: u64,
     pub slot_threshold: u64,
-    pub price_maximum_age: u64,
+    pub price_maximum_age: i64,
     pub max_fills_storage: u64,
     pub steepness: u64,
     pub max_discount_rate: u64,

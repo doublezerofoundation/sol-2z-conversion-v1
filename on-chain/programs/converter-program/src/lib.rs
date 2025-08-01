@@ -29,7 +29,7 @@ pub mod converter_program {
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
         slot_threshold: u64,
-        price_maximum_age: u64,
+        price_maximum_age: i64,
         max_fills_storage: u64,
         steepness: u64,
         max_discount_rate: u64
@@ -73,8 +73,8 @@ pub mod converter_program {
     pub fn buy_sol(
         ctx: Context<BuySol>,
         bid_price: u64,
-        swap_rate: u64,
-        timestamp: u64,
+        swap_rate: String,
+        timestamp: i64,
         attestation: String
     ) -> Result<()> {
         ctx.accounts.process(
