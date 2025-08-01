@@ -1,21 +1,18 @@
 import { Connection } from '@solana/web3.js';
 import { RPC_URL, PROGRAM_ID, CONCURRENCY } from './config';
-import { getLastSignature } from './state';
+import { getLastSignature, startRecovery, endRecovery } from './state';
 import { promisePool } from '../utils/concurrency';
 import { processTx } from './processor';
 
-/**
- * Recovers and processes all historical transactions for the program.
- *
- * Fetches batches of signatures starting from the lastProcessedSignature,
- * processes each transaction in chronological order with bounded concurrency,
- * and advances the cursor until there are no more historical signatures.
- */
 export async function recoverHistory() {
-  let before = await getLastSignature() || undefined;
-  console.log(`⏳ Recovering history since: ${before ?? 'genesis'}`);
+  
+  startRecovery();
 
-  const connection = new Connection(RPC_URL!, 'confirmed');
+  const lastSig = await getLastSignature();
+  console.log(`⏳ Catching up from tip down to last saved sig: ${lastSig || 'genesis'}`);
+
+  const connection = new Connection(RPC_URL, 'confirmed');
+  let before: string | undefined;
 
   while (true) {
     const sigInfos = await connection.getSignaturesForAddress(
@@ -24,12 +21,22 @@ export async function recoverHistory() {
     );
     if (sigInfos.length === 0) break;
 
-    const newBefore = sigInfos[sigInfos.length - 1].signature;
-    const toProcess = [...sigInfos].reverse().map(i => i.signature);
+    const sigs = sigInfos.map(i => i.signature);
+    const idx  = lastSig ? sigs.indexOf(lastSig) : -1;
+    // if we found lastSig, only process everything before it
+    const toProcess = idx >= 0 ? sigs.slice(0, idx) : sigs;
 
-    await promisePool(toProcess, processTx, CONCURRENCY);
-    before = newBefore;
+    await promisePool(
+      toProcess,
+      sig => processTx(sig),
+      CONCURRENCY
+    );
+
+    if (idx >= 0) break;
+    before = sigs[sigs.length - 1];
   }
 
-  console.log('✅ History recovery complete');
+  // enable real-time cursor 
+  endRecovery();
+  console.log('✅ History catch-up complete—now live logs will advance the cursor.');
 }

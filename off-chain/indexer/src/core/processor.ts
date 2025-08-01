@@ -1,7 +1,6 @@
 import { Connection, TransactionError } from '@solana/web3.js';
 import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
 import idlJson from '../../idl/converter_program.json';
-import { saveLastSignature } from './state';
 import { RPC_URL, PROGRAM_ID } from './config';
 import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb';
 
@@ -32,18 +31,16 @@ export async function processTx(sig: string) {
           console.log(`✅ [${timestamp}] Event ${e.name} @${sig}`, e.data);
           const eventId = `${slot}-${sig}-${e.name}`;
           switch (e.name) {
-            case 'FillDequeued':
-          //     await writeFillDequeue(sig, eventId, e.data, slot, timestamp);
-              break;
-            case 'DenyListModified':
-          //     await writeDenyListAction(sig, eventId, e.data, slot, timestamp);
-              break;
-            default:
-          //     await writeSolanaEvent(sig, eventId, e.name, e.data, slot, timestamp);
+               case 'FillDequeued':
+                    // await writeFillDequeue(sig, eventId, e.data, slot, timestamp);
+                    break;
+               case 'DenyListModified':
+                    // await writeDenyListAction(sig, eventId, e.data, slot, timestamp);
+                    break;
+               default:
+                    // await writeSolanaEvent(sig, eventId, e.name, e.data, slot, timestamp);
           }
-        }
-
-     await saveLastSignature(sig);
+     }
 }
 
 /**
@@ -71,6 +68,6 @@ function handleTxError(sig: string, err: TransactionError): string | undefined {
           }
      } else {
           console.info(`Failed tx ${sig}:`, err);
-          return undefined; // No custom error found, log raw error
+          return 'RawError'; // No custom error found, log raw error
      }
 }

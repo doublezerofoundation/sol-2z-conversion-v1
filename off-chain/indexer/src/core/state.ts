@@ -8,6 +8,8 @@ let state: IndexerStateConfig = {
      highestSlot: 0,
 };
 
+let recovering = false;
+
 export async function getLastSignature(): Promise<string | null> {
      return state.lastProcessedSignature;
 }
@@ -19,4 +21,16 @@ export async function getHighestSlot(): Promise<number> {
 }
 export async function saveHighestSlot(slot: number) {
      state.highestSlot = slot;
+}
+
+export function isRecovering() {
+  return recovering;
+}
+
+export function startRecovery() {
+  recovering = true;
+}
+
+export function endRecovery() {
+  recovering = false;
 }
