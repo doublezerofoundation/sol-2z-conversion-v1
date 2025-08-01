@@ -52,6 +52,28 @@ impl ConfigurationRegistry {
         }
         Ok(())
     }
+
+    pub fn add_dequeuer(&mut self, new_pubkey: Pubkey) -> Result<bool> {
+
+        // Add only if not already present
+        if !self.authorized_dequeuers.contains(&new_pubkey) {
+            // Enforce the maximum limit
+            if self.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
+                return Err(error!(ConverterError::MaxAuthorizedDequeuersReached));
+            }
+            self.authorized_dequeuers.push(new_pubkey);
+            Ok(true)  // return true if added
+        } else {
+            Ok(false) // already present, no change
+        }
+    }
+
+    pub fn remove_dequeuer(&mut self, remove_pubkey: Pubkey) -> Result<bool> {
+        let before_len = self.authorized_dequeuers.len();
+        self.authorized_dequeuers.retain(|pk| pk != &remove_pubkey);
+        Ok(before_len != self.authorized_dequeuers.len()) // true if something was removed
+    }
+
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
@@ -98,3 +120,7 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
         self.configuration_registry.update(input)
     }
 }
+
+
+
+
