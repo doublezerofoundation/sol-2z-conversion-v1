@@ -18,21 +18,18 @@ pub fn verify_attestation(
     let message_bytes = message_string.as_bytes();
 
     // Decode base64
-    let attestation_vec = STANDARD
+    let signature_vec = STANDARD
         .decode(&signature)
         .map_err(|_| error!(DoubleZeroError::InvalidAttestation))?;
 
     // ed25519 signature verification
-    sig_verify(&oracle_public_key.to_bytes(), &attestation_vec, message_bytes)
+    sig_verify(&oracle_public_key.to_bytes(), &signature_vec, message_bytes)
             .map_err(|_| error!(DoubleZeroError::AttestationVerificationError))?;
     msg!("Signature Verified Successfully");
 
     // timestamp verification
     let current_timestamp = Clock::get()?.unix_timestamp;
-    msg!("current timestamp: {}", current_timestamp);
-    msg!("attestation_timestamp: {}", attestation_timestamp);
     let difference = current_timestamp - attestation_timestamp;
-    msg!("Timestamp difference: {}", difference);
 
     require!(
         difference <= price_maximum_age,

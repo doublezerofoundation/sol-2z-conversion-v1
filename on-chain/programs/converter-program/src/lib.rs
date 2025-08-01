@@ -85,13 +85,13 @@ pub mod converter_program {
         bid_price: u64,
         swap_rate: String,
         timestamp: i64,
-        attestation: String
+        signature: String
     ) -> Result<()> {
         ctx.accounts.process(
             bid_price,
             swap_rate,
             timestamp,
-            attestation
+            signature
         )
     }
 }

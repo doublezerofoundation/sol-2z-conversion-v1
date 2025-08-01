@@ -46,11 +46,13 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
+    let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(deny_list_registry_pda, false),
+        AccountMeta::new(fills_registry_pda, false),
         AccountMeta::new(payer.pubkey(), true),
     ];
 
