@@ -4,7 +4,10 @@ use base64::{
     engine::general_purpose::STANDARD
 };
 use brine_ed25519::sig_verify;
-use crate::common::error::DoubleZeroError;
+use crate::common::{
+    error::DoubleZeroError,
+    events::system::AttestationInvalid
+};
 
 pub fn verify_attestation(
     swap_rate: String,
@@ -24,7 +27,10 @@ pub fn verify_attestation(
 
     // ed25519 signature verification
     sig_verify(&oracle_public_key.to_bytes(), &signature_vec, message_bytes)
-            .map_err(|_| error!(DoubleZeroError::AttestationVerificationError))?;
+            .map_err(|_| {
+                emit!(AttestationInvalid {});
+                error!(DoubleZeroError::AttestationVerificationError)
+            })?;
     msg!("Signature Verified Successfully");
 
     // timestamp verification

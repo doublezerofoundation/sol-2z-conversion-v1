@@ -37,14 +37,14 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
 
     let amount_input = Decimal::from_str(&bid_price)?;
     let bid_price_parsed = (amount_input * token_decimals).to_u64()
-        .expect("Depost amount Overflow or conversion failed");
+        .expect("Deposit amount Overflow or conversion failed");
 
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;
-    let mut data_initialize = hash(BUY_SOL_INSTRUCTION).to_bytes()[..8].to_vec();
-    data_initialize = [
-        data_initialize,
+    let mut data = hash(BUY_SOL_INSTRUCTION).to_bytes()[..8].to_vec();
+    data = [
+        data,
         bid_price_parsed.to_le_bytes().to_vec(),
         oracle_price_data.swap_rate.try_to_vec().expect("Error in serializing Swap Rate"),
         oracle_price_data.timestamp.to_le_bytes().to_vec(),
@@ -65,13 +65,13 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
         AccountMeta::new(payer.pubkey(), true),
     ];
 
-    let initialization_ix = Instruction {
+    let buy_sol_ix = Instruction {
         program_id,
-        data: data_initialize,
+        data,
         accounts,
     };
 
-    transaction_executor::send_batch_instructions(vec![initialization_ix])?;
+    transaction_executor::send_batch_instructions(vec![buy_sol_ix])?;
 
     println!("Buying SOL for {}", bid_price);
     Ok(())

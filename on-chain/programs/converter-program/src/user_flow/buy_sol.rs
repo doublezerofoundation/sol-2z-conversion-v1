@@ -5,7 +5,10 @@ use crate::{
         error::DoubleZeroError,
         utils::attestation_utils::verify_attestation,
         constant::TOKEN_DECIMALS,
-        events::trade::TradeEvent
+        events::{
+            trade::{TradeEvent, BidTooLowEvent},
+            system::{AccessByDeniedPerson, AccessDuringSystemHalt}
+        }
     },
     state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -49,12 +52,18 @@ impl<'info> BuySol<'info> {
         signature: String
     ) -> Result<()> {
 
+        // System Halt validation
+        if self.program_state.is_halted {
+            emit!(AccessDuringSystemHalt { accessed_by: self.signer.key() });
+            return err!(DoubleZeroError::SystemIsHalted);
+        }
+
         // Checking whether address is inside the deny list
         let signer_key = self.signer.key;
-        require!(
-            !self.deny_list_registry.denied_addresses.contains(signer_key),
-            DoubleZeroError::UserInsideDenyList
-        );
+        if self.deny_list_registry.denied_addresses.contains(signer_key) {
+            emit!(AccessByDeniedPerson { accessed_by: self.signer.key() });
+            return err!(DoubleZeroError::UserInsideDenyList);
+        }
 
         // checking attestation
         verify_attestation(
@@ -69,12 +78,24 @@ impl<'info> BuySol<'info> {
         let ask_price = 21 * TOKEN_DECIMALS;
         let sol_quantity = 21 * TOKEN_DECIMALS;
         let tokens_required = 21 * TOKEN_DECIMALS;
+
+        let clock = Clock::get()?;
+
         // Check if bid meets ask
+        if bid_price < ask_price {
+            emit!(BidTooLowEvent {
+                sol_amount: sol_quantity,
+                bid_amount: tokens_required,
+                ask_price,
+                timestamp: clock.unix_timestamp,
+                buyer: self.signer.key(),
+                epoch: clock.epoch,
+            })
+        }
         require!(bid_price >= ask_price, DoubleZeroError::BidTooLow);
 
         // settlement
 
-        let clock = Clock::get()?;
 
         // Add it to fills registry
         let fill = Fill {
@@ -96,7 +117,6 @@ impl<'info> BuySol<'info> {
         self.fills_registry.fills.push(fill);
         self.fills_registry.total_sol_pending += sol_quantity;
         self.fills_registry.total_2z_pending += tokens_required;
-
 
         msg!("Buy SOL is successful");
         emit!(TradeEvent {
