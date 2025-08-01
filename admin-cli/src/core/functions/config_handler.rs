@@ -7,14 +7,14 @@ use anchor_client::{
     },
 };
 use cli_common::{
+    structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_batch_instructions},
     utils::{env_var::load_private_key, pda_helper, ui},
 };
 
 use crate::core::{
     common::{
-        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION,
-        structs::{ConfigurationRegistry, ConfigurationRegistryInput},
+        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION, structs::ConfigurationRegistryInput,
     },
     config::AdminConfig,
 };

@@ -6,6 +6,7 @@ use cli_common::config::Config;
 pub struct UserConfig {
     pub program_id: String,
     pub price_oracle_end_point: Url,
+    pub rpc_url: String,
 }
 
 #[allow(dead_code)]
@@ -16,6 +17,7 @@ impl UserConfig {
         Ok(UserConfig {
             program_id: raw_config.program_id,
             price_oracle_end_point: Url::parse(&oracle_price_end_point)?,
+            rpc_url: raw_config.rpc_url,
         })
     }
 }
