@@ -1,5 +1,5 @@
 use crate::{
-    common::{constant::MAX_AUTHORIZED_DEQUEUERS, errors::ConverterError, seeds::seed_prefixes::SeedPrefixes},
+    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes},
     deny_list_registry::deny_list_registry::DenyListRegistry,
     state::program_state::ProgramStateAccount,
 };
@@ -11,7 +11,7 @@ pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey, // Public key of the swap oracle service
     pub sol_quantity: u64,
     pub slot_threshold: u64,
-    pub price_maximum_age: u64, // Maximum acceptable age for oracle price data
+    pub price_maximum_age: i64, // Maximum acceptable age for oracle price data
     pub max_fills_storage: u64, // Maximum number of fills to store
     #[max_len(MAX_AUTHORIZED_DEQUEUERS)]
     pub authorized_dequeuers: Vec<Pubkey>, // Contracts authorized to dequeue fills
@@ -23,7 +23,7 @@ impl ConfigurationRegistry {
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
         slot_threshold: u64,
-        price_maximum_age: u64,
+        price_maximum_age: i64,
         max_fills_storage: u64,
     ) -> Result<()> {
         self.oracle_pubkey = oracle_pubkey;
@@ -59,7 +59,7 @@ impl ConfigurationRegistry {
         if !self.authorized_dequeuers.contains(&new_pubkey) {
             // Enforce the maximum limit
             if self.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
-                return Err(error!(ConverterError::MaxAuthorizedDequeuersReached));
+                return Err(error!(DoubleZeroError::MaxAuthorizedDequeuersReached));
             }
             self.authorized_dequeuers.push(new_pubkey);
             Ok(true)  // return true if added
@@ -81,7 +81,7 @@ pub struct ConfigurationRegistryInput {
     pub oracle_pubkey: Option<Pubkey>,
     pub sol_quantity: Option<u64>,
     pub slot_threshold: Option<u64>,
-    pub price_maximum_age: Option<u64>,
+    pub price_maximum_age: Option<i64>, //in seconds
     pub max_fills_storage: Option<u64>,
 }
 
@@ -111,10 +111,10 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
     pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
         // Authentication and authorization
         if self.program_state.admin != self.authority.key() {
-            return err!(ConverterError::UnauthorizedUser);
+            return err!(DoubleZeroError::UnauthorizedUser);
         }
         if self.deny_list_registry.denied_addresses.contains(self.authority.key) {
-            return err!(ConverterError::DenyListedUser);
+            return err!(DoubleZeroError::UserInsideDenyList);
         }
 
         self.configuration_registry.update(input)

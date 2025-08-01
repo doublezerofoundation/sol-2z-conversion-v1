@@ -40,7 +40,7 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
 
     let mut account_data = hash(UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION).to_bytes()[..8].to_vec();
     let input = ConfigurationRegistryInput {
-        oracle_pubkey: Some(Pubkey::from_str(admin_config.oracle_pubkey.as_str())?),
+        oracle_pubkey: Some(admin_config.oracle_pubkey),
         sol_quantity: Some(admin_config.sol_quantity),
         slot_threshold: Some(admin_config.slot_threshold),
         price_maximum_age: Some(admin_config.price_maximum_age),

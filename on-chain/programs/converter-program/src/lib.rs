@@ -7,10 +7,12 @@ mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
+mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
+use user_flow::buy_sol::*;
 use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;
 
@@ -19,12 +21,14 @@ declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 pub mod converter_program {
     use super::*;
 
+
+    // Admin Flow
     pub fn initialize_system(
         ctx: Context<InitializeSystem>,
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
         slot_threshold: u64,
-        price_maximum_age: u64,
+        price_maximum_age: i64,
         max_fills_storage: u64
     ) -> Result<()> {
 
@@ -53,7 +57,6 @@ pub mod converter_program {
         ctx.accounts.process_update(input)
     }
 
-
     pub fn add_dequeuer(
         ctx: Context<UpdateDequeuers>,
         new_pubkey: Pubkey,
@@ -66,7 +69,7 @@ pub mod converter_program {
         remove_pubkey: Pubkey,
     ) -> Result<()> {
         ctx.accounts.remove_dequeuer(remove_pubkey)
-    }    
+    }
 
     pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
         ctx.accounts.process(address)
@@ -74,5 +77,21 @@ pub mod converter_program {
 
     pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
         ctx.accounts.process(address)
+    }
+
+    // User Flow
+    pub fn buy_sol(
+        ctx: Context<BuySol>,
+        bid_price: u64,
+        swap_rate: String,
+        timestamp: i64,
+        attestation: String
+    ) -> Result<()> {
+        ctx.accounts.process(
+            bid_price,
+            swap_rate,
+            timestamp,
+            attestation
+        )
     }
 }
