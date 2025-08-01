@@ -11,6 +11,7 @@ mod initialize;
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
+use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
@@ -51,7 +52,21 @@ pub mod converter_program {
     ) -> Result<()> {
         ctx.accounts.process_update(input)
     }
-}
+
+
+    pub fn add_dequeuer(
+        ctx: Context<UpdateDequeuers>,
+        new_pubkey: Pubkey,
+    ) -> Result<()> {
+        ctx.accounts.add_dequeuer(new_pubkey)
+    }
+
+    pub fn remove_dequeuer(
+        ctx: Context<UpdateDequeuers>,
+        remove_pubkey: Pubkey,
+    ) -> Result<()> {
+        ctx.accounts.remove_dequeuer(remove_pubkey)
+    }    
 
     pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
         ctx.accounts.process(address)

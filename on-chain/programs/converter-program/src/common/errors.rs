@@ -6,5 +6,8 @@ pub enum ConverterError {
     UnauthorizedUser,
 
     #[msg("Deny listed user")]
-    DenyListedUser
+    DenyListedUser,
+
+    #[msg("Maximum number of authorized dequeuers reached")]
+    MaxAuthorizedDequeuersReached,
 }

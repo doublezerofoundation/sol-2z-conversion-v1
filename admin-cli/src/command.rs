@@ -36,6 +36,20 @@ pub enum Commands {
         to_account: String,
     },
 
+    /// Add a dequeuer address to the authorized list
+    AddDequeuer {
+        /// Address to add
+        #[arg(short = 'a', long, required = true)]
+        dequeuer: String,
+    },
+
+    /// Remove a dequeuer address from the authorized list
+    RemoveDequeuer {
+        /// Address to remove
+        #[arg(short = 'a', long, required = true)]
+        dequeuer: String,
+    },    
+
     /// Adds an address to the deny list registry
     AddToDenyList {
         #[arg(short = 'a', required = true)]
