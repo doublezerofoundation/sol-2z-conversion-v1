@@ -5,8 +5,9 @@ mode=""
 amount=""
 DOUBLE_ZERO_MINT_KEYPAIR_PATH="./.keys/2z_token_mint.json"
 DOUBLE_ZERO_MINT_AUTHORITY_KEYPAIR_PATH="./.keys/2z_token_mint_authority.json"
-DOUBLE_ZERO_PROTOCOL_WALLET_KEYPAIR_PATH="./.keys/2z_protocol_treasury.json"
+DOUBLE_ZERO_PROTOCOL_WALLET_KEYPAIR_PATH="./.keys/2z_protocol_wallet.json"
 PROTOCOL_TREASURY_TOKEN_ACCOUNT_KEYPAIR_PATH="./.keys/2z_protocol_treasury_token_account.json"
+VAULT_PATH="./.keys/vault_account.json"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -75,12 +76,15 @@ setup_2z_mint_and_vault_and_protocol_treasury_account() {
   generate_key_pair "2Z Token Mint" $DOUBLE_ZERO_MINT_KEYPAIR_PATH
   generate_key_pair "2Z Token Mint Authority" $DOUBLE_ZERO_MINT_AUTHORITY_KEYPAIR_PATH
   generate_key_pair "2Z Protocol Treasury Token Account" $PROTOCOL_TREASURY_TOKEN_ACCOUNT_KEYPAIR_PATH
+  generate_key_pair "Vault Account" $VAULT_PATH
 
   MINT_ADDRESS=$(solana-keygen pubkey "$DOUBLE_ZERO_MINT_KEYPAIR_PATH")
   DOUBLE_ZERO_PROTOCOL_WALLET_ADDRESS=$(solana-keygen pubkey "$DOUBLE_ZERO_PROTOCOL_WALLET_KEYPAIR_PATH")
   PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS=$(solana-keygen pubkey "$PROTOCOL_TREASURY_TOKEN_ACCOUNT_KEYPAIR_PATH")
+  VAULT_ADDRESS=$(solana-keygen pubkey "$VAULT_PATH")
 
   solana airdrop 500 "$DOUBLE_ZERO_PROTOCOL_WALLET_ADDRESS" > /dev/null
+  solana airdrop 500 "$VAULT_ADDRESS" > /dev/null
 
   # Check if mint account already exists
   if solana account "$MINT_ADDRESS" > /dev/null 2>&1; then
@@ -112,6 +116,7 @@ setup_2z_mint_and_vault_and_protocol_treasury_account() {
   log_info "🧾 Mint Address         : $MINT_ADDRESS"
   log_info "💼 Double Zero Protocol Wallet      : $DOUBLE_ZERO_PROTOCOL_WALLET_ADDRESS"
   log_info "🏦 Token Account (2Z Protocol Treasury): $PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS"
+  log_info "🏦 Vault Address: $VAULT_ADDRESS"
 }
 
 setup_user_2Z_associated_token_account() {
