@@ -7,6 +7,8 @@ use crate::{
     },
     state::bump_registry::BumpRegistry,
     validator_deposit::epoch_chunk::EpochChunk,
+    common::errors::ConverterError,
+    common::events::system::UnauthorizedUser
 };
 
 #[account]
@@ -19,6 +21,16 @@ pub struct ProgramStateAccount {
     pub bump_registry: BumpRegistry,
     #[max_len(MAX_TRADE_HISTORY_SIZE)]
     pub trade_history_list: Vec<TradeHistory>,
+}
+
+impl ProgramStateAccount {
+    pub fn assert_admin(&self, signer: &Signer) -> Result<()> {
+        if self.admin != signer.key() {
+            emit!(UnauthorizedUser { attempted_by: signer.key() });
+            return err!(ConverterError::UnauthorizedUser);
+        }
+        Ok(())
+    }
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, InitSpace)]

@@ -47,4 +47,7 @@ pub enum DoubleZeroError {
     
     #[msg("Provided Attestation is not Authentic")]
     StalePrice, // 6014
+
+    #[msg("Maximum number of authorized dequeuers reached")]
+    MaxAuthorizedDequeuersReached,
 }
