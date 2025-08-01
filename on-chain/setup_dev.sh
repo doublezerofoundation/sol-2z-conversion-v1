@@ -2,7 +2,12 @@
 set -e  # Exit immediately if any command fails
 
 mode=""
+amount=""
 restart_validator=false
+MINT_KEYPAIR_PATH="./.keys/2z_token_mint.json"
+MINT_AUTHORITY_KEYPAIR_PATH="./.keys/2z_token_mint_authority.json"
+PROTOCOL_TREASURY_KEYPAIR_PATH="./.keys/2z_protocol_treasury.json"
+PROTOCOL_TREASURY_TOKEN_ACCOUNT_KEYPAIR_PATH="./.keys/2z_protocol_treasury_token_account.json"
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -36,79 +41,15 @@ log_section() {
 show_help() {
   echo "Usage: $0 [OPTIONS]"
   echo ""
-  echo "Build and deploy script for Converter Program"
+  echo "Setup Dev script for Converter Program"
   echo ""
   echo "OPTIONS:"
-  echo "  -m, --mode Mode      Set the mode of operation (deploy_only, build_only, build_and_deploy)."
-  echo "  -r, --restart-validator Start/ Restart validator (Only in the local net)"
+  echo "  -m, --mode Mode      Set the mode of operation ('setup_mint', 'setup_ata', or 'mint')."
+  echo "  -a, --amount Amount      Set the amount for mint operation."
   echo "  -h, --help          Show this help message"
   echo ""
   echo "Example:"
   echo "  ./build_and_deploy.sh --mode build_and_deploy --restart-validator"
-}
-
-restart_validator() {
-    log_section "Restarting or starting the validator..."
-
-    if pgrep -f "solana-test-validator" > /dev/null; then
-        log_warning "Validator is already running. Stopping it..."
-        kill_validator
-    fi
-
-    log_info "Starting solana-test-validator..."
-    solana-test-validator -r --quiet &
-
-    local pid=$!
-    log_info "Validator started with PID: $pid"
-
-    log_info "Waiting for validator to initialize (20 seconds)..."
-    sleep 20
-
-    if ! kill -0 "$pid" 2>/dev/null; then
-        log_error "Validator failed to start properly"
-        return 1
-    fi
-
-    log_success "Validator started successfully"
-}
-
-kill_validator() {
-    log_info "Stopping Solana test validator..."
-
-    local pids
-    pids=$(pgrep -f "solana-test-validator")
-
-    if [ -n "$pids" ]; then
-        log_info "Killing validator process(es): $pids"
-        kill -9 "$pids" 2>/dev/null || true
-        sleep 2
-        log_success "Validator stopped"
-    else
-        log_info "No running validator found."
-    fi
-}
-
-build_program() {
-    log_section "Building program..."
-
-    if ! anchor build; then
-        log_error "Program build failed"
-        return 1
-    fi
-
-    log_success "Program built successfully"
-}
-
-deploy_program() {
-    log_section "Deploying Anchor program..."
-    if ! anchor deploy \
-        --program-name converter-program \
-        --program-keypair .keys/converter-program-keypair.json; then
-        log_error "Program deployment failed"
-        return 1
-    fi
-
-    log_success "Program deployed successfully"
 }
 
 generate_key_pair() {
@@ -126,16 +67,13 @@ generate_key_pair() {
   log_success "Public Key of $1: $PUBKEY"
 }
 
-setup_dev() {
+setup_mint_and_token_account() {
   log_section "Token Setup"
   # setting to local net
   solana config set --url localhost
-  MINT_KEYPAIR_PATH="./.keys/2z_token_mint.json"
-  PROTOCOL_TREASURY_KEYPAIR_PATH="./.keys/2z_protocol_treasury.json"
-  PROTOCOL_TREASURY_TOKEN_ACCOUNT_KEYPAIR_PATH="./.keys/2z_protocol_treasury_token_account.json"
-
   generate_key_pair "2Z Protocol Treasury wallet" $PROTOCOL_TREASURY_KEYPAIR_PATH
   generate_key_pair "2Z Token Mint" $MINT_KEYPAIR_PATH
+  generate_key_pair "2Z Token Mint Authority" $MINT_AUTHORITY_KEYPAIR_PATH
   generate_key_pair "2Z Protocol Treasury Token Account" $PROTOCOL_TREASURY_TOKEN_ACCOUNT_KEYPAIR_PATH
 
   MINT_ADDRESS=$(solana-keygen pubkey "$MINT_KEYPAIR_PATH")
@@ -149,7 +87,7 @@ setup_dev() {
     log_info "2Z Mint already exists at $MINT_ADDRESS. Skipping creation."
   else
     log_info "2Z Mint not found. Creating new token mint..."
-    spl-token --program-2022 create-token $MINT_KEYPAIR_PATH  > /dev/null
+    spl-token --program-2022 create-token $MINT_KEYPAIR_PATH --mint-authority "$MINT_AUTHORITY_KEYPAIR_PATH"> /dev/null
     log_success "2Z Mint is created at $MINT_KEYPAIR_PATH."
   fi
 
@@ -165,7 +103,7 @@ setup_dev() {
   TOKEN_BALANCE=$(spl-token balance --address "$PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS" | tr -d '\n')
   if [ "$TOKEN_BALANCE" -lt 500 ]; then
     log_info "💸 Minting 500 2Z tokens to the treasury..."
-    spl-token mint "$MINT_ADDRESS" 500 "$PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS" > /dev/null
+    spl-token mint "$MINT_ADDRESS" 500 "$PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS" --mint-authority "$MINT_AUTHORITY_KEYPAIR_PATH" > /dev/null
     TOKEN_BALANCE=$(spl-token balance --address "$PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS" | tr -d '\n')
   fi
   log_info "TOKEN BALANCE OF 2Z PROTOCOL TREASURY $TOKEN_BALANCE"
@@ -174,13 +112,38 @@ setup_dev() {
   log_info "🧾 Mint Address         : $MINT_ADDRESS"
   log_info "💼 Treasury Wallet      : $PROTOCOL_TREASURY_ADDRESS"
   log_info "🏦 Token Account (2Z Protocol Treasury): $PROTOCOL_TREASURY_TOKEN_ACCOUNT_ADDRESS"
+}
 
+setup_user_token_account() {
+  MINT_KEYPAIR_PATH="./.keys/2z_token_mint.json"
+  MINT_ADDRESS=$(solana-keygen pubkey "$MINT_KEYPAIR_PATH")
+  ATA_ADDRESS=$(spl-token address --token "$MINT_ADDRESS" --verbose | awk '/Associated token address:/ { print $NF }')
+
+  # Check if ATA exists or not
+  if solana account "$ATA_ADDRESS" > /dev/null 2>&1; then
+    log_info "User 2Z ATA already exists at ATA_ADDRESS. Skipping creation."
+  else
+    log_info "User 2Z ATA not found. Creating new ATA..."
+    ATA_ADDRESS=$(spl-token create-account $MINT_ADDRESS | grep -oP '(?<=Creating account )\w+')
+    log_success "User 2Z ATA successfully created at $ATA_ADDRESS."
+  fi
+}
+
+mint_user_ata_account() {
+  MINT_ADDRESS=$(solana-keygen pubkey "$MINT_KEYPAIR_PATH")
+  ATA_ADDRESS=$(spl-token address --token "$MINT_ADDRESS" --verbose | awk '/Associated token address:/ { print $NF }')
+  if [[ -z "$amount" ]]; then
+    log_warning "No mint amount specified. Defaulting to 5 2Z Tokens"
+    amount="5"
+  fi
+  spl-token mint "$MINT_ADDRESS" "$amount" "$ATA_ADDRESS" --mint-authority "$MINT_AUTHORITY_KEYPAIR_PATH"
+  log_success "Minted $amount Tokens to $ATA_ADDRESS"
 }
 
 cd "$(dirname "$0")" || exit 1
 
 echo "================================================================================================"
-echo "         					BUILD_AND_DEPLOY (CONVERTER PROGRAM) "
+echo "         					SETUP DEV (CONVERTER PROGRAM) "
 echo "================================================================================================"
 
 while [[ $# -gt 0 ]]; do
@@ -189,10 +152,10 @@ while [[ $# -gt 0 ]]; do
             mode="$2"
             shift 2
             ;;
-        -r|--restart-validator)
-            restart_validator=true
-            shift
-            ;;
+        -a|--amount)
+          amount="$2"
+          shift 2
+          ;;
         -h|--help)
             show_help
             exit 0
@@ -205,36 +168,19 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -z "$mode" ]]; then
-  echo "No mode specified, defaulting to 'build_and_deploy'."
-  mode="build_and_deploy"
-fi
-
-if [ "$restart_validator" = true ]; then
-  restart_validator
-  log_info "Successfully restarted the validator!"
-fi
-
 # Handle modes
 case "$mode" in
-  setup_dev)
-    setup_dev
+  setup_mint)
+    setup_mint_and_token_account
     ;;
-  deploy_only)
-    deploy_program
-    log_info "Successfully deployed the converter program into the network!"
+  setup_ata)
+    setup_user_token_account
     ;;
-  build_only)
-    build_program
-    log_info "Successfully built the converter program"
-    ;;
-  build_and_deploy)
-    build_program
-    deploy_program
-    log_info "Successfully built and deployed the converter program into the network!"
+  mint)
+    mint_user_ata_account
     ;;
   *)
-    log_error "Invalid mode specified. Please use 'deploy_only', 'build_only', or 'build_and_deploy'."
+    log_error "Invalid mode specified. Please use 'setup_mint', 'setup_ata', or 'mint'."
     exit 1
     ;;
 esac

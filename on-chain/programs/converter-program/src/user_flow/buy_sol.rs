@@ -28,7 +28,6 @@ pub struct BuySol<'info> {
         bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
-    /// current upgrade have to sign
     #[account(mut)]
     pub signer: Signer<'info>
 }
