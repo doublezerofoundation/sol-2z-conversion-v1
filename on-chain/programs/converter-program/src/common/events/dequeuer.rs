@@ -1,6 +1,5 @@
 use anchor_lang::prelude::*;
 
-
 #[event]
 pub struct DequeuerAdded {
     pub added_by: Pubkey,

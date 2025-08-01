@@ -3,7 +3,6 @@
 mod common;
 pub mod configuration_registry;
 mod state;
-mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
@@ -11,7 +10,7 @@ mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
-use configuration_registry::configuration_registry::*;
+use configuration_registry::update_configuration::*;
 use user_flow::buy_sol::*;
 use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;

@@ -1,4 +1,8 @@
-use crate::common::{constant::MAX_DENY_LIST_SIZE, seeds::seed_prefixes::SeedPrefixes};
+use crate::common::{
+    constant::MAX_DENY_LIST_SIZE, 
+    seeds::seed_prefixes::SeedPrefixes,
+    error::DoubleZeroError
+};
 use anchor_lang::prelude::*;
 
 #[account]
@@ -39,11 +43,11 @@ pub struct RemoveFromDenyList<'info> {
 impl<'info> AddToDenyList<'info> {
     pub fn process(&mut self, address: Pubkey) -> Result<()> {
         if self.deny_list_registry.denied_addresses.contains(&address) {
-            return Err(anchor_lang::error::ErrorCode::ConstraintRaw.into());
+            return Err(ErrorCode::ConstraintRaw.into());
         }
 
         if self.deny_list_registry.denied_addresses.len() >= MAX_DENY_LIST_SIZE as usize {
-            return Err(DenyListRegistryError::DenyListFull.into());
+            return err!(DoubleZeroError::DenyListFull);
         }
 
         self.deny_list_registry.denied_addresses.push(address);
@@ -61,7 +65,7 @@ impl<'info> RemoveFromDenyList<'info> {
             .denied_addresses
             .iter()
             .position(|&x| x == address)
-            .ok_or(anchor_lang::error::ErrorCode::ConstraintRaw)?;
+            .ok_or(ErrorCode::ConstraintRaw)?;
 
         self.deny_list_registry.denied_addresses.remove(position);
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
@@ -69,10 +73,4 @@ impl<'info> RemoveFromDenyList<'info> {
 
         Ok(())
     }
-}
-
-#[error_code]
-pub enum DenyListRegistryError {
-    #[msg("Deny list is full")]
-    DenyListFull,
 }

@@ -1,7 +1,6 @@
 use crate::{
-    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes},
-    deny_list_registry::deny_list_registry::DenyListRegistry,
-    state::program_state::ProgramStateAccount,
+    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError},
+    configuration_registry::update_configuration::ConfigurationRegistryInput
 };
 use anchor_lang::prelude::*;
 
@@ -59,7 +58,7 @@ impl ConfigurationRegistry {
         if !self.authorized_dequeuers.contains(&new_pubkey) {
             // Enforce the maximum limit
             if self.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
-                return Err(error!(DoubleZeroError::MaxAuthorizedDequeuersReached));
+                return err!(DoubleZeroError::MaxAuthorizedDequeuersReached);
             }
             self.authorized_dequeuers.push(new_pubkey);
             Ok(true)  // return true if added
@@ -73,54 +72,7 @@ impl ConfigurationRegistry {
         self.authorized_dequeuers.retain(|pk| pk != &remove_pubkey);
         Ok(before_len != self.authorized_dequeuers.len()) // true if something was removed
     }
-
 }
-
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct ConfigurationRegistryInput {
-    pub oracle_pubkey: Option<Pubkey>,
-    pub sol_quantity: Option<u64>,
-    pub slot_threshold: Option<u64>,
-    pub price_maximum_age: Option<i64>, //in seconds
-    pub max_fills_storage: Option<u64>,
-}
-
-#[derive(Accounts)]
-pub struct ConfigurationRegistryUpdate<'info> {
-    #[account(
-        mut,
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
-        bump,
-    )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,
-    #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
-        bump,
-    )]
-    pub program_state: Account<'info, ProgramStateAccount>,
-    #[account(
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump,
-    )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-}
-
-impl<'info> ConfigurationRegistryUpdate<'info> {
-    pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
-        // Authentication and authorization
-        if self.program_state.admin != self.authority.key() {
-            return err!(DoubleZeroError::UnauthorizedUser);
-        }
-        if self.deny_list_registry.denied_addresses.contains(self.authority.key) {
-            return err!(DoubleZeroError::UserInsideDenyList);
-        }
-
-        self.configuration_registry.update(input)
-    }
-}
-
 
 
 

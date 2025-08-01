@@ -1,11 +1,11 @@
-
 use anchor_lang::prelude::*;
-use crate::state::program_state::ProgramStateAccount;
-use crate::configuration_registry::configuration_registry::ConfigurationRegistry;
-use crate::common::events::dequeuer::*;
+use crate::{
+    state::program_state::ProgramStateAccount,
+    configuration_registry::configuration_registry::ConfigurationRegistry,
+    common::events::dequeuer::*
+};
 
-
-/// Only the current upgrade authority can call this
+/// Only the admin can call this
 #[derive(Accounts)]
 pub struct UpdateDequeuers<'info> {
     #[account(mut)]
@@ -16,10 +16,8 @@ pub struct UpdateDequeuers<'info> {
     pub authority: Signer<'info>,
 }
 
-
 impl<'info> UpdateDequeuers<'info> {
-
-
+    
     pub fn add_dequeuer(
         &mut self,
         new_pubkey: Pubkey,

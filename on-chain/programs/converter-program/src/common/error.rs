@@ -50,4 +50,7 @@ pub enum DoubleZeroError {
 
     #[msg("Maximum number of authorized dequeuers reached")]
     MaxAuthorizedDequeuersReached, // 6015
+
+    #[msg("Deny list is full")]
+    DenyListFull, // 6016
 }
