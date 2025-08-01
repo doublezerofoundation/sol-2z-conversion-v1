@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../build_utils.sh"
 
-SERVICE_NAME="swap-oracle-service"
+SERVICE_NAME="indexer"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
 BUILD_TAG="${BUILD_TAG:-latest}"
@@ -18,7 +18,6 @@ main() {
     check_docker
     check_aws_credentials
 
-
     ACCOUNT_ID=$(get_account_id)
     ECR_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
     IMAGE_TAG="$ECR_URI/$ECR_REPOSITORY_NAME:$BUILD_TAG"
@@ -26,7 +25,6 @@ main() {
     log_info "AWS Account ID: $ACCOUNT_ID"
     log_info "ECR URI: $ECR_URI"
     log_info "Image Tag: $IMAGE_TAG"
-
 
     ecr_login $ECR_URI
 
