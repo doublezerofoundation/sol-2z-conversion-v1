@@ -21,7 +21,7 @@ impl ProgramStateAccount {
     pub fn assert_admin(&self, signer: &Signer) -> Result<()> {
         if self.admin != signer.key() {
             emit!(UnauthorizedUser { attempted_by: signer.key() });
-            return err!(DoubleZeroError::UnauthorizedUser);
+            return err!(DoubleZeroError::UnauthorizedAdmin);
         }
         Ok(())
     }

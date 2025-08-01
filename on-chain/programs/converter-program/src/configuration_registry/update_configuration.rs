@@ -3,10 +3,7 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     state::program_state::ProgramStateAccount,
-    common::{
-        error::DoubleZeroError,
-        seeds::seed_prefixes::SeedPrefixes
-    },
+    common::seeds::seed_prefixes::SeedPrefixes,
     AccountInfo
 };
 
@@ -24,33 +21,27 @@ pub struct ConfigurationRegistryUpdate<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.configuration_registry_bump
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub admin: Signer<'info>,
 }
 
 impl<'info> ConfigurationRegistryUpdate<'info> {
-    pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> anchor_lang::Result<()> {
+    pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
         // Authentication and authorization
-        if self.program_state.admin != self.authority.key() {
-            return err!(DoubleZeroError::UnauthorizedUser);
-        }
-        if self.deny_list_registry.denied_addresses.contains(self.authority.key) {
-            return err!(DoubleZeroError::UserInsideDenyList);
-        }
-
+        self.program_state.assert_admin(&self.admin)?;
         self.configuration_registry.update(input)
     }
 }

@@ -7,7 +7,7 @@ pub enum DoubleZeroError {
     UserInsideDenyList, // 6000 0x1796
 
     #[msg("Unauthorized user")]
-    UnauthorizedUser, // 6001
+    UnauthorizedAdmin, // 6001
 
     #[msg("Provided Attestation is Invalid")]
     InvalidAttestation, // 6002

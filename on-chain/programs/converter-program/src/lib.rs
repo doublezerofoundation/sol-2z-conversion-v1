@@ -70,12 +70,12 @@ pub mod converter_program {
         ctx.accounts.remove_dequeuer(remove_pubkey)
     }
 
-    pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn add_to_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.add_to_deny_list(address)
     }
 
-    pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn remove_from_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.remove_from_deny_list(address)
     }
 
     // User Flow

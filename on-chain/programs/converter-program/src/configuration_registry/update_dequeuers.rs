@@ -2,32 +2,42 @@ use anchor_lang::prelude::*;
 use crate::{
     state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    common::events::dequeuer::*
+    common::{
+        seeds::seed_prefixes::SeedPrefixes,
+        events::dequeuer::*
+    }
 };
 
 /// Only the admin can call this
 #[derive(Accounts)]
 pub struct UpdateDequeuers<'info> {
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        bump = program_state.bump_registry.configuration_registry_bump
+    )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,  
     // Program state, to verify admin
-    #[account(mut)]
+    #[account(
+        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        bump = program_state.bump_registry.program_state_bump,
+    )]
     pub program_state: Account<'info, ProgramStateAccount>,
-    pub authority: Signer<'info>,
+    pub admin: Signer<'info>,
 }
 
 impl<'info> UpdateDequeuers<'info> {
-    
+
     pub fn add_dequeuer(
         &mut self,
         new_pubkey: Pubkey,
     ) -> Result<()> {
         // Ensure only admin can modify
-        self.program_state.assert_admin(&self.authority)?;
+        self.program_state.assert_admin(&self.admin)?;
 
         if self.configuration_registry.add_dequeuer(new_pubkey)? {
             emit!(DequeuerAdded {
-                added_by: self.authority.key(),
+                added_by: self.admin.key(),
                 dequeuer: new_pubkey,
             });
         }
@@ -37,10 +47,10 @@ impl<'info> UpdateDequeuers<'info> {
 
     pub fn remove_dequeuer(&mut self, remove_pubkey: Pubkey) -> Result<()> {
         // Ensure only admin can modify
-        self.program_state.assert_admin(&self.authority)?;
+        self.program_state.assert_admin(&self.admin)?;
         if self.configuration_registry.remove_dequeuer(remove_pubkey)? {
             emit!(DequeuerRemoved {
-                removed_by: self.authority.key(),
+                removed_by: self.admin.key(),
                 dequeuer: remove_pubkey,
             });
         }

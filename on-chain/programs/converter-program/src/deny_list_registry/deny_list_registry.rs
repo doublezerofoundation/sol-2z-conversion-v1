@@ -1,7 +1,10 @@
-use crate::common::{
-    constant::MAX_DENY_LIST_SIZE, 
-    seeds::seed_prefixes::SeedPrefixes,
-    error::DoubleZeroError
+use crate::{
+    state::program_state::ProgramStateAccount,
+    common::{
+        constant::MAX_DENY_LIST_SIZE,
+        seeds::seed_prefixes::SeedPrefixes,
+        error::DoubleZeroError,
+    }
 };
 use anchor_lang::prelude::*;
 
@@ -15,36 +18,27 @@ pub struct DenyListRegistry {
 }
 
 #[derive(Accounts)]
-pub struct AddToDenyList<'info> {
+pub struct UpdateDenyList<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump
+        bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
-
-    #[account(mut)]
-    pub authority: Signer<'info>,
-}
-
-#[derive(Accounts)]
-pub struct RemoveFromDenyList<'info> {
+    // Program state, to verify admin
     #[account(
-        mut,
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump
+        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        bump = program_state.bump_registry.program_state_bump,
     )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
-
+    pub program_state: Account<'info, ProgramStateAccount>,
     #[account(mut)]
-    pub authority: Signer<'info>,
+    pub admin: Signer<'info>,
 }
 
-impl<'info> AddToDenyList<'info> {
-    pub fn process(&mut self, address: Pubkey) -> Result<()> {
-        if self.deny_list_registry.denied_addresses.contains(&address) {
-            return Err(ErrorCode::ConstraintRaw.into());
-        }
+impl<'info> UpdateDenyList<'info> {
+    pub fn add_to_deny_list(&mut self, address: Pubkey) -> Result<()> {
+        // Ensure only admin can modify
+        self.program_state.assert_admin(&self.admin)?;
 
         if self.deny_list_registry.denied_addresses.len() >= MAX_DENY_LIST_SIZE as usize {
             return err!(DoubleZeroError::DenyListFull);
@@ -56,10 +50,11 @@ impl<'info> AddToDenyList<'info> {
 
         Ok(())
     }
-}
 
-impl<'info> RemoveFromDenyList<'info> {
-    pub fn process(&mut self, address: Pubkey) -> Result<()> {
+    pub fn remove_from_deny_list(&mut self, address: Pubkey) -> Result<()> {
+        // Ensure only admin can modify
+        self.program_state.assert_admin(&self.admin)?;
+
         let position = self
             .deny_list_registry
             .denied_addresses
