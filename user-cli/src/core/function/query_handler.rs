@@ -1,7 +1,7 @@
 use std::{error::Error, str::FromStr};
 
 use anchor_client::{anchor_lang::{prelude::AccountMeta, AnchorSerialize}, solana_sdk::{hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer}};
-use cli_common::{constant::DECIMAL_PRECISION, transaction_executor::send_instruction_with_return_data, utils::{env_var::load_private_key, pda_helper::{get_configuration_registry_pda, get_program_state_pda}, ui}};
+use cli_common::{constant::DECIMAL_PRECISION, transaction_executor::send_instruction_with_return_data, utils::{env_var::load_private_key, pda_helper::{get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda}, ui}};
 
 use crate::core::{
     common::instruction::GET_PRICE_INSTRUCTION, config::UserConfig,
@@ -26,11 +26,13 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&user_config.program_id)?;
     let program_state_pda = get_program_state_pda(program_id).0;
     let condifuration_reg_pda = get_configuration_registry_pda(program_id).0;
+    let deny_list_reg_pda = get_deny_list_registry_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(payer.pubkey(), true),
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(condifuration_reg_pda, false),
+        AccountMeta::new_readonly(deny_list_reg_pda, false),
     ];
 
     let ix = Instruction {

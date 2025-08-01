@@ -1,12 +1,9 @@
 use anchor_lang::{prelude::*, solana_program::program::set_return_data};
 
 use crate::{
-    common::{seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData},
-    configuration_registry::configuration_registry::ConfigurationRegistry,
-    discount_rate::discount_utils::{
+    common::{error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData}, configuration_registry::configuration_registry::ConfigurationRegistry, deny_list_registry::deny_list_registry::DenyListRegistry, discount_rate::discount_utils::{
         calculate_ask_price_with_discount, calculate_discount_rate, calculate_sol_demand,
-    },
-    state::program_state::ProgramStateAccount,
+    }, state::program_state::ProgramStateAccount
 };
 
 #[derive(Accounts)]
@@ -27,10 +24,21 @@ pub struct CalculateAskPrice<'info> {
         bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
+
+    #[account(
+        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
+        bump,
+    )]
+    pub deny_list_registry: Account<'info, DenyListRegistry>,
 }
 
 impl<'info> CalculateAskPrice<'info> {
     pub fn process(&mut self, oracle_price_data: OraclePriceData) -> Result<u64> {
+        // check if the signer is in the deny list
+        if self.deny_list_registry.denied_addresses.contains(&self.signer.key()) {
+            return Err(error!(DoubleZeroError::UserInsideDenyList));
+        }
+
         // // checking attestation
         // verify_attestation(
         //     oracle_price_data.swap_rate,
