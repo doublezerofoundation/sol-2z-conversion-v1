@@ -6,6 +6,7 @@ import { getConversionPriceAndVerify, getConversionPriceToFail } from "./core/te
 import { getOraclePriceData, OraclePriceData } from "./core/utils/price-oracle";
 import { getDefaultKeyPair } from "./core/utils/accounts";
 import { Keypair } from "@solana/web3.js";
+import { addToDenyListAndVerify, removeFromDenyListAndVerify } from "./core/test-flow/deny-list";
 
 describe("Conversion Price Tests", async () => {
     // Configure the client to use the local cluster.
@@ -18,8 +19,13 @@ describe("Conversion Price Tests", async () => {
 
     it("should fail to get conversion price for deny listed user", async () => {
         const keypair = Keypair.generate()
-        // TODO: when deny list is implemented, add the expected error message
-        // await getConversionPriceToFail(program, await getOraclePriceData(), keypair, "");
+
+        // Add user to deny list
+        await addToDenyListAndVerify(program, keypair.publicKey);
+        await getConversionPriceToFail(program, await getOraclePriceData(), keypair, "User is blocked in the DenyList");
+
+        // Revert: Remove user from deny list
+        await removeFromDenyListAndVerify(program, keypair.publicKey);
     });
 
     it("should fail to get conversion price for invalid signature", async () => {
