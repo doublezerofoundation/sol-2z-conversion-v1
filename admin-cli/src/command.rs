@@ -50,6 +50,18 @@ pub enum Commands {
         dequeuer: String,
     },    
 
+    /// Adds an address to the deny list registry
+    AddToDenyList {
+        #[arg(short = 'a', required = true)]
+        address: String,
+    },
 
+    /// Removes an address from the deny list registry
+    RemoveFromDenyList {
+        #[arg(short = 'a', required = true)]
+        address: String,
+    },
 
+    /// Displays all addresses in the deny list registry
+    ViewDenyList,
 }
