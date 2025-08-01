@@ -59,7 +59,7 @@ impl ConfigurationRegistry {
         if !self.authorized_dequeuers.contains(&new_pubkey) {
             // Enforce the maximum limit
             if self.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
-                return Err(error!(ConverterError::MaxAuthorizedDequeuersReached));
+                return Err(error!(DoubleZeroError::MaxAuthorizedDequeuersReached));
             }
             self.authorized_dequeuers.push(new_pubkey);
             Ok(true)  // return true if added

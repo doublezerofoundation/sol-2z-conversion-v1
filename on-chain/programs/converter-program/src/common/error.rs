@@ -18,9 +18,36 @@ pub enum DoubleZeroError {
     #[msg("Provided Attestation is not Authentic")]
     AttestationVerificationError, // 6004
 
-    #[msg("Invalid Timestamp")]
-    InvalidTimestamp, // 6005 
+    #[msg("Invalid discount rate")]
+    InvalidDiscountRate, // 6005
+
+    #[msg("Invalid sol quantity")]
+    InvalidSolQuantity, // 6006
+
+    #[msg("Invalid ask price")]
+    InvalidAskPrice, // 6007
+
+    #[msg("Invalid max discount rate")]
+    InvalidMaxDiscountRate, // 6008
+
+    #[msg("Invalid sol demand")]
+    InvalidSolDemand, // 6009
+
+    #[msg("Invalid steepness")]
+    InvalidSteepness, // 6010
+
+    #[msg("Discount calculation error")]
+    DiscountCalculationError, // 6011
+
+    #[msg("Invalid oracle swap rate")]
+    InvalidOracleSwapRate, // 6012
+    
+    #[msg("Provided bid is too low")]
+    BidTooLow, // 6013
     
     #[msg("Provided Attestation is not Authentic")]
-    StalePrice, // 6005
+    StalePrice, // 6014
+
+    #[msg("Maximum number of authorized dequeuers reached")]
+    MaxAuthorizedDequeuersReached, // 6015
 }
