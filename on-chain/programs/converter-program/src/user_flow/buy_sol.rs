@@ -3,15 +3,15 @@ use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
-        utils::attestation_utils::verify_attestation
+        utils::attestation_utils::verify_attestation,
+        constant::TOKEN_DECIMALS,
+        events::trade::TradeEvent
     },
     state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry
+    deny_list_registry::deny_list_registry::DenyListRegistry,
+    fills_registry::fills_registry::{Fill, FillsRegistry}
 };
-use crate::common::constant::TOKEN_DECIMALS;
-use crate::common::events::trade::TradeEvent;
-use crate::fills_registry::fills_registry::{Fill, FillsRegistry};
 
 #[derive(Accounts)]
 pub struct BuySol<'info> {

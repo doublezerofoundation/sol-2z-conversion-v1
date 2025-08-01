@@ -1,25 +1,34 @@
-// Standard library
-use std::error::Error;
-use std::str::FromStr;
-use anchor_client::anchor_lang::AnchorSerialize;
-use anchor_client::anchor_lang::prelude::{AccountMeta, Pubkey};
-// External crates
-use anchor_client::solana_sdk::hash::hash;
-use anchor_client::solana_sdk::instruction::Instruction;
-use anchor_client::solana_sdk::signature::{Keypair, Signer};
-use anchor_client::solana_sdk::system_program;
+use std::{
+    error::Error,
+    str::FromStr
+};
+use anchor_client::{
+    solana_sdk::{
+        hash::hash,
+        instruction::Instruction,
+        signature::{Keypair, Signer}
+    },
+    anchor_lang::{
+        AnchorSerialize,
+        prelude::{AccountMeta, Pubkey}
+    }
+};
 use rust_decimal::{
     Decimal,
     prelude::ToPrimitive
 };
-use cli_common::constant::TOKEN_DECIMALS;
-use cli_common::transaction_executor;
-use cli_common::utils::env_var::load_private_key;
-use cli_common::utils::{pda_helper, ui};
+use cli_common::{
+    constant::TOKEN_DECIMALS,
+    transaction_executor,
+    utils::{env_var::load_private_key, pda_helper, ui},
+};
+
 // Internal modules
-use crate::core::common::instruction::BUY_SOL_INSTRUCTION;
-use crate::core::config::UserConfig;
-use crate::core::utils::price_utils::fetch_oracle_price;
+use crate::core::{
+    common::instruction::BUY_SOL_INSTRUCTION,
+    config::UserConfig,
+    utils::price_utils::fetch_oracle_price,
+};
 
 pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
     let user_config = UserConfig::load_user_config()?;
