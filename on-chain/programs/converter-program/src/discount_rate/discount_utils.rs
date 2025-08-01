@@ -45,7 +45,6 @@ pub fn calculate_sol_demand(
 ///
 /// ### Returns
 /// * `Result<Decimal>` - The discount rate
-#[allow(dead_code)]
 pub fn calculate_discount_rate(
     sol_demand_bps: u64,
     steepness_bps: u64,
@@ -110,22 +109,20 @@ pub fn calculate_discount_rate(
 ///
 /// ### Returns
 /// * `Result<u64>` - The ask price in basis points
-#[allow(dead_code)]
 pub fn calculate_ask_price_with_discount(
-    sol_quantity_bps: u64,
+    sol_quantity: u64,
     oracle_swap_rate_string: String,
     discount_rate: Decimal,
 ) -> Result<u64> {
     let oracle_swap_rate_decimal = Decimal::from_str(&oracle_swap_rate_string)
         .map_err(|_| error!(DoubleZeroError::InvalidOracleSwapRate))?;
-    let sol_quantity_decimal = Decimal::from_u64(sol_quantity_bps)
-        .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?
-        .checked_div(
-            Decimal::from_u64(DECIMAL_PRECISION)
-                .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?,
-        )
+    let sol_quantity_decimal = Decimal::from_u64(sol_quantity)
         .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
     let one_decimal = Decimal::from_u64(1).unwrap();
+
+    msg!("Sol quantity: {}", sol_quantity);
+    msg!("Oracle swap rate: {}", oracle_swap_rate_decimal);
+    msg!("Discount rate: {}", discount_rate);
 
     // Calculate the ask price
     // P = Q * R
@@ -144,6 +141,8 @@ pub fn calculate_ask_price_with_discount(
         .checked_mul(discount_inverse_decimal)
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
 
+    msg!("Ask price: {}", ask_price);
+
     // Convert to basis points
     let ask_price_u64 = ask_price
         .checked_mul(
@@ -153,5 +152,6 @@ pub fn calculate_ask_price_with_discount(
         .to_u64()
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
 
+    msg!("Ask price u64: {}", ask_price_u64);
     Ok(ask_price_u64)
 }

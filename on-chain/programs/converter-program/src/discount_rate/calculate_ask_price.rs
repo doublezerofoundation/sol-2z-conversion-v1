@@ -31,7 +31,13 @@ pub struct CalculateAskPrice<'info> {
 
 impl<'info> CalculateAskPrice<'info> {
     pub fn process(&mut self, oracle_price_data: OraclePriceData) -> Result<u64> {
-        // TODO: Validate attestation
+        // // checking attestation
+        // verify_attestation(
+        //     oracle_price_data.swap_rate,
+        //     oracle_price_data.timestamp,
+        //     oracle_price_data.signature,
+        //     self.configuration_registry.oracle_pubkey
+        // )?;
 
         // Calculate sol demand
         let sol_demand_bps = calculate_sol_demand(
