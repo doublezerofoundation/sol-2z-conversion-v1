@@ -28,7 +28,6 @@ pub struct BuySol<'info> {
         bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
-    /// current upgrade have to sign
     #[account(mut)]
     pub signer: Signer<'info>
 }
@@ -57,6 +56,12 @@ impl<'info> BuySol<'info> {
             self.configuration_registry.oracle_pubkey,
             self.configuration_registry.price_maximum_age
         )?;
+
+        // call util function to get current ask price
+        let ask_price = 21;
+        // Check if bid meets ask
+        require!(bid_price >= ask_price, DoubleZeroError::BidTooLow);
+
 
 
         msg!("System is Initialized");
