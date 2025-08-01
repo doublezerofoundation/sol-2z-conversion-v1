@@ -1,49 +1,33 @@
-// // Anchor framework prelude
-// use anchor_lang::prelude::*;
-// use ring::signature::{self, UnparsedPublicKey};
-//
-// // Base64 decoding
-// use base64::engine::general_purpose::STANDARD;
-// use base64::Engine;
-//
-// // Ed25519 signature verification
-// // use ed25519_dalek::{PublicKey, Signature, Verifier};
-//
-// use crate::common::error::DoubleZeroError;
-//
-// pub fn verify_attestation(
-//     swap_rate: u64,
-//     timestamp: u64,
-//     attestation: String,
-//     oracle_public_key: Pubkey
-// ) -> Result<()> {
-//     let pub_key = UnparsedPublicKey::new(&signature::ED25519, oracle_public_key.to_bytes());
-//     let message_string = format!("{}|{}", swap_rate, timestamp);
-//
-//     let attestation_vec = STANDARD
-//         .decode(&attestation)
-//         .map_err(|_| error!(DoubleZeroError::InvalidAttestation))?;
-//
-//     let _ = pub_key.verify(message_string.as_ref(), &attestation_vec).is_ok();
-//     // match result {
-//     //     true => {}
-//     //     false => {}
-//     // }
-//
-//     // let message_string = format!("{}|{}", swap_rate, timestamp);
-//     // let dalek_pubkey = PublicKey::from_bytes(oracle_public_key.as_ref())
-//     //     .map_err(|_| error!(DoubleZeroError::InvalidOraclePublicKey))?;
-//     //
-//     // // Parse the signature
-//     // let attestation_vec = STANDARD
-//     //     .decode(&attestation)
-//     //     .map_err(|_| error!(DoubleZeroError::InvalidAttestation))?;
-//
-//     // let signature = Signature::from_bytes(&attestation_vec)
-//     //     .map_err(|_| error!(DoubleZeroError::InvalidAttestation))?;
-//     //
-//     // dalek_pubkey.verify(message_string.as_ref(), &signature)
-//     //     .map_err(|_| error!(DoubleZeroError::AttestationVerificationError))?;
-//
-//     Ok(())
-// }
+use anchor_lang::{
+    prelude::*,
+    solana_program::secp256k1_recover::secp256k1_recover
+};
+use base64::{
+    Engine,
+    engine::general_purpose::STANDARD
+};
+use brine_ed25519::sig_verify;
+use crate::common::error::DoubleZeroError;
+
+pub fn verify_attestation(
+    swap_rate: String,
+    timestamp: u64,
+    attestation: String,
+    oracle_public_key: Pubkey
+) -> Result<()> {
+
+    // Rebuild the message
+    let message_string = format!("{}|{}", swap_rate, timestamp);
+    let message_bytes = message_string.as_bytes();
+
+    // Decode base64
+    let attestation_vec = STANDARD
+        .decode(&attestation)
+        .map_err(|_| error!(DoubleZeroError::InvalidAttestation))?;
+
+    // ed25519 signature verification
+    sig_verify(&oracle_public_key.to_bytes(), &attestation_vec, message_bytes)
+        .map_err(|_| error!(DoubleZeroError::AttestationVerificationError))?;
+
+    Ok(())
+}

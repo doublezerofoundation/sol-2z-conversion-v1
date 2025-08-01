@@ -14,6 +14,7 @@ anchor-client = "0.31.1"
 
 ## on-chain
 base64 = "0.22.1"
+brine-ed25519 = "0.2.0"
 
 # Workspace members (internal dependencies)
 cli-common = { path = "cli-common" }
