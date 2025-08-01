@@ -7,7 +7,7 @@ use crate::{
     },
     state::bump_registry::BumpRegistry,
     validator_deposit::epoch_chunk::EpochChunk,
-    common::errors::ConverterError,
+    common::error::DoubleZeroError,
     common::events::system::UnauthorizedUser
 };
 
@@ -27,7 +27,7 @@ impl ProgramStateAccount {
     pub fn assert_admin(&self, signer: &Signer) -> Result<()> {
         if self.admin != signer.key() {
             emit!(UnauthorizedUser { attempted_by: signer.key() });
-            return err!(ConverterError::UnauthorizedUser);
+            return err!(DoubleZeroError::UnauthorizedUser);
         }
         Ok(())
     }
