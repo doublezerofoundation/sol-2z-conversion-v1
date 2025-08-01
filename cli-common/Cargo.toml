@@ -8,4 +8,4 @@ description = "Shared utilities and common functionality for Double Zero command
 anchor-client = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
-shared = { workspace = true }
+solana-loader-v3-interface = { workspace = true }

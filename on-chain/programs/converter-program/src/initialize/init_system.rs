@@ -1,11 +1,10 @@
 use anchor_lang::prelude::*;
 
-use shared::seeds::seed_prefixes::SeedPrefixes;
-
 use crate::{
     common::{
         constant::DISCRIMINATOR_SIZE,
         events::init::SystemInitialized,
+        seeds::seed_prefixes::SeedPrefixes
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
@@ -66,7 +65,7 @@ impl<'info> InitializeSystem<'info> {
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
         slot_threshold: u64,
-        price_maximum_age: u64,
+        price_maximum_age: i64,
         max_fills_storage: u64,
     ) -> Result<()> {
 

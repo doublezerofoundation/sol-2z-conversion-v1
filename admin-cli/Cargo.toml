@@ -7,5 +7,4 @@ description = "Admin CLI for Double Zero Fee Converter System"
 [dependencies]
 anchor-client = { workspace = true }
 clap = { workspace = true }
-shared = { workspace = true }
 cli-common = { workspace = true }

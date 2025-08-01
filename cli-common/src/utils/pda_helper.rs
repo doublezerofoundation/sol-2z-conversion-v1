@@ -1,37 +1,39 @@
 use anchor_client::anchor_lang::prelude::Pubkey;
-use anchor_client::solana_sdk::bpf_loader_upgradeable;
-use shared::seeds::seed_prefixes::SeedPrefixes;
+use solana_loader_v3_interface::get_program_data_address;
+use crate::seeds::{
+    CONFIGURATION_REGISTRY_SEEDS,
+    DENY_LIST_REGISTRY_SEEDS,
+    FILLS_REGISTRY_SEEDS,
+    PROGRAM_STATE_SEEDS
+};
 
 pub fn get_configuration_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        &[CONFIGURATION_REGISTRY_SEEDS],
         &program_id,
     )
 }
 pub fn get_program_state_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[SeedPrefixes::ProgramState.as_bytes()],
+        &[PROGRAM_STATE_SEEDS],
         &program_id,
     )
 }
 
 pub fn get_fills_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[SeedPrefixes::FillsRegistry.as_bytes()],
+        &[FILLS_REGISTRY_SEEDS],
         &program_id,
     )
 }
 
 pub fn get_deny_list_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[SeedPrefixes::DenyListRegistry.as_bytes()],
+        &[DENY_LIST_REGISTRY_SEEDS],
         &program_id,
     )
 }
 
-pub fn get_program_data_account_pda(program_id: Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(
-        &[&program_id.as_ref()],
-        &bpf_loader_upgradeable::ID,
-    )
+pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
+    get_program_data_address(&program_id)
 }

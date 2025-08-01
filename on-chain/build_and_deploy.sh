@@ -1,240 +1,174 @@
 #!/bin/bash
 set -e  # Exit immediately if any command fails
 
-workspace=()
 mode=""
-instance_id=""
+restart_validator=false
+
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+log_info() {
+    echo -e "${BLUE}ℹ️ INFO:${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}✅ SUCCESS:${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}⚠️ WARNING:${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}❌ ERROR:${NC} $1"
+}
+
+log_section() {
+    echo ""
+    echo -e "${BLUE}=============================================${NC}"
+    echo -e "${BLUE}$1${NC}"
+    echo -e "${BLUE}=============================================${NC}"
+}
+
+show_help() {
+  echo "Usage: $0 [OPTIONS]"
+  echo ""
+  echo "Build and deploy script for Converter Program"
+  echo ""
+  echo "OPTIONS:"
+  echo "  -m, --mode Mode      Set the mode of operation (deploy_only, build_only, build_and_deploy)."
+  echo "  -r, --restart-validator Start/ Restart validator (Only in the local net)"
+  echo "  -h, --help          Show this help message"
+  echo ""
+  echo "Example:"
+  echo "  ./build_and_deploy.sh --mode build_and_deploy --restart-validator"
+}
+
+restart_validator() {
+    log_section "Restarting or starting the validator..."
+
+    if pgrep -f "solana-test-validator" > /dev/null; then
+        log_warning "Validator is already running. Stopping it..."
+        kill_validator
+    fi
+
+    log_info "Starting solana-test-validator..."
+    solana-test-validator -r --quiet &
+
+    local pid=$!
+    log_info "Validator started with PID: $pid"
+
+    log_info "Waiting for validator to initialize (20 seconds)..."
+    sleep 10
+
+    if ! kill -0 "$pid" 2>/dev/null; then
+        log_error "Validator failed to start properly"
+        return 1
+    fi
+
+    log_success "Validator started successfully"
+}
+
+kill_validator() {
+    log_info "Stopping Solana test validator..."
+
+    local pids
+    pids=$(pgrep -f "solana-test-validator")
+
+    if [ -n "$pids" ]; then
+        log_info "Killing validator process(es): $pids"
+        kill -9 "$pids" 2>/dev/null || true
+        sleep 2
+        log_success "Validator stopped"
+    else
+        log_info "No running validator found."
+    fi
+}
+
+build_program() {
+    log_section "Building program..."
+
+    if ! anchor build; then
+        log_error "Program build failed"
+        return 1
+    fi
+
+    log_success "Program built successfully"
+}
+
+deploy_program() {
+    log_section "Deploying Anchor program..."
+
+    if ! anchor deploy \
+        --program-name converter-program \
+        --program-keypair .keys/converter-program-keypair.json; then
+        log_error "Program deployment failed"
+        return 1
+    fi
+
+    log_success "Program deployed successfully"
+}
 
 cd "$(dirname "$0")" || exit 1
 
 echo "================================================================================================"
-echo "         					BUILD_AND_DEPLOY (DoubleZero) "
+echo "         					BUILD_AND_DEPLOY (CONVERTER PROGRAM) "
 echo "================================================================================================"
-echo " input $*"
 
-function print_title() {
-	echo -e "\033[1;34m$1\033[0m"
-}
-
-function print_message() {
-	echo -e "\033[0;35m $1\033[0m"
-}
-
-function print_error() {
-	echo -e "\033[0;31mERROR: $1\033[0m"
-	exit 1
-}
-
-function print_warning() {
-	echo -e "\033[0;33mWARNING: $1\033[0m"
-}
-
-function print_yellow() {
-	echo -e "\033[0;33m$1\033[0m"
-}
-
-function print_alert() {
-	echo -e "\033[2;33m$1\033[0m"
-}
-
-function show_help() {
-    echo "Usage: build_and_deploy.sh [options]"
-    echo ""
-    echo "Options:"
-    echo "  -h, --help           Show this help message and exit."
-    echo "  --workspace <value>  Specify the workspace(s) to process (comma-separated)."
-    echo "  --mode <value>       Set the mode of operation (deploy_only, build_only, build_and_deploy)."
-    echo ""
-    echo "Example:"
-    echo "  ./build_and_deploy.sh --workspace programs/my_program --mode build_and_deploy"
-    exit 0
-}
-
-while [[ -n "$1" ]]; do
-  case "$1" in
-    -h | --help)
-      show_help
-      ;;
-    --workspace)
-      if [[ -z "$2" ]]; then
-        echo "workspace empty"
-        workspace=("all")
-        echo "workspace: ${workspace[*]}"
-      else
-        IFS=',' read -r -a workspace <<< "$2"
-        shift
-        echo "workspace: ${workspace[*]}"
-      fi
-      ;;
-    --mode)
-      if [[ -z "$2" ]]; then
-        print_error "--mode needs a value"
-      else
-        mode="$2"
-        shift
-      fi
-      ;;
-    *)
-      print_warning "Unknown argument: $1"
-      show_help
-      exit 1
-      ;;
-  esac
-  shift
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -m|--mode)
+            mode="$2"
+            shift 2
+            ;;
+        -r|--restart-validator)
+            restart_validator=true
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
 done
-
-# Default values outside the loop
-if [[ ${#workspace[@]} -eq 0 ]]; then
-  echo "No workspace specified, defaulting to 'all'."
-  workspace=("all")
-fi
 
 if [[ -z "$mode" ]]; then
   echo "No mode specified, defaulting to 'build_and_deploy'."
   mode="build_and_deploy"
 fi
 
-
-function build_only() {
-	for w in "${workspace[@]}"; do
-    if [[ "$w" == "all" ]]; then
-      echo "'all' detected for workspace, extracting all workspaces from ./Cargo.toml..."
-      workspace_array=($(extract_workspaces "true"))
-
-      echo "workspaces detected: ${workspace_array[*]}"
-
-      if [[ ${#workspace_array[@]} -eq 0 ]]; then
-        print_error "No workspaces extracted from Cargo.toml."
-      fi
-
-      anchor build || print_error "Anchor build failed."
-      for workspace_id in "${workspace_array[@]}"; do
-              if [[ "$workspace_id" != programs/* ]]; then
-                cargo build -p "$workspace_id" || print_error "Cargo build failed for $workspace_id."
-              fi
-            done
-    elif [[ "$w" == programs/* ]]; then
-      program_id="${w#programs/}"
-      anchor build --program-name "$program_id" || print_error "Anchor build failed for $program_id."
-    else
-      cargo build -p "$w" || print_error "Cargo build failed for $w."
-    fi
-  done
-}
-
-function build_and_deploy() {
-  if [[ ${#workspace[@]} -eq 0 ]]; then
-    echo "No workspaces detected. Exiting..."
-    exit 1
-  fi
-
-  for w in "${workspace[@]}"; do
-    if [[ "$w" == "all" ]]; then
-      echo "'all' detected for workspace, extracting all workspaces from ./Cargo.toml..."
-      workspace_array=($(extract_workspaces "true"))
-
-      echo "workspaces detected: ${workspace_array[*]}"
-
-      if [[ ${#workspace_array[@]} -eq 0 ]]; then
-        print_error "No workspaces extracted from Cargo.toml."
-      fi
-
-      anchor build || print_error "Anchor build failed."
-      for workspace_id in "${workspace_array[@]}"; do
-        if [[ "$workspace_id" != programs/* ]]; then
-          cargo build -p "$workspace_id" || print_error "Cargo build failed for $workspace_id."
-        fi
-      done
-
-      for program_id in "${workspace_array[@]}"; do
-        if [[ "$program_id" == programs/* ]]; then
-          anchor deploy --program-name "${program_id#programs/}" --program-keypair ./.keys/${program_id#programs/}-keypair.json || {
-            print_error "Failed to deploy program ${program_id#programs/}."
-          }
-        fi
-      done
-    elif [[ "$w" == programs/* ]]; then
-      program_id="${w#programs/}"
-      RUSTUP_TOOLCHAIN=nightly-2025-03-18 anchor build --program-name "$program_id" || print_error "Anchor build failed for $program_id."
-      anchor deploy --program-name "$program_id" --program-keypair ./.keys/${program_id}-keypair.json || print_error "Anchor deploy failed for $program_id."
-    else
-      cargo build -p "$w" || print_error "Cargo build failed for $w."
-    fi
-  done
-}
-
-
-function deploy_only() {
-	for w in "${workspace[@]}"; do
-    if [[ "$w" == "all" ]]; then
-      echo "'all' detected for workspace, extracting workspaces starting with 'programs/' from ./Cargo.toml..."
-      workspace_array=($(extract_workspaces "false"))
-      echo "workspaces detected: ${workspace_array[*]}"
-
-      if [[ ${#workspace_array[@]} -eq 0 ]]; then
-        echo "No workspaces detected. Exiting..."
-        exit 1
-      fi
-
-      for program_id in "${workspace_array[@]}"; do
-          anchor deploy --program-name "${program_id#programs/}" --program-keypair ./.keys/${program_id#programs/}-keypair.json || print_error "Anchor deploy failed for ${program_id#programs/}."
-      done
-
-    elif [[ "$w" == programs/* ]]; then
-      program_id="${w#programs/}"
-      anchor deploy --program-name "$program_id" --program-keypair ./.keys/${program_id}-keypair.json || print_error "Anchor deploy failed for $program_id."
-    fi
-  done
-}
-
-function extract_workspaces() {
-    local get_all=$1  # First argument to the function
-
-    if [[ ! -f ./Cargo.toml ]]; then
-        echo "Error: Cargo.toml file not found!"
-        return 1
-    fi
-
-    if [[ "$get_all" == "true" ]]; then
-        # Extract all workspaces without filtering
-        awk '/\[workspace\]/,/resolver/ {
-            if ($1 ~ /members/) {
-                getline
-                while ($0 !~ /\]/) {
-                    print $0
-                    getline
-                }
-            }
-        }' ./Cargo.toml | tr -d ' ",'
-    else
-        # Extract only workspaces starting with "programs/"
-        awk '/\[workspace\]/,/resolver/ {
-            if ($1 ~ /members/) {
-                getline
-                while ($0 !~ /\]/) {
-                    if ($0 ~ /programs\//) {
-                        print $0
-                    }
-                    getline
-                }
-            }
-        }' ./Cargo.toml | tr -d ' ",'
-    fi
-}
-
-if [ "$mode" == "deploy_only" ]; then
-    deploy_only
-    print_title "Successfully deployed the programs ${workspace[*]} into the network!"
-    exit 0
-elif [ "$mode" == "build_only" ]; then
-    build_only
-    print_title "Successfully built the programs ${workspace[*]}"
-    exit 0
-elif [ "$mode" == "build_and_deploy" ]; then
-    build_and_deploy
-    print_title "Successfully built and deployed the programs ${workspace[*]} into the network!"
-    exit 0
-else
-    print_title "Invalid mode specified. Please use 'deploy_only', 'build_only' or 'build_and_deploy'"
-    exit 1
+if [ "$restart_validator" = true ]; then
+  restart_validator
+  log_info "Successfully restarted the validator!"
 fi
+
+# Handle modes
+case "$mode" in
+  deploy_only)
+    deploy_program
+    log_info "Successfully deployed the converter program into the network!"
+    ;;
+  build_only)
+    build_program
+    log_info "Successfully built the converter program"
+    ;;
+  build_and_deploy)
+    build_program
+    deploy_program
+    log_info "Successfully built and deployed the converter program into the network!"
+    ;;
+  *)
+    log_error "Invalid mode specified. Please use 'deploy_only', 'build_only', or 'build_and_deploy'."
+    exit 1
+    ;;
+esac
+
+exit 0

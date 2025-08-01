@@ -30,7 +30,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let mut data_initialize = hash(INITIALIZE_SYSTEM_INSTRUCTION).to_bytes()[..8].to_vec();
     data_initialize = [
         data_initialize,
-        admin_config.oracle_pubkey.as_bytes().to_vec(),
+        admin_config.oracle_pubkey.to_bytes().to_vec(),
         admin_config.sol_quantity.to_le_bytes().to_vec(),
         admin_config.slot_threshold.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
@@ -44,7 +44,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
-    let program_data_account_pda = pda_helper::get_program_data_account_pda(program_id).0;
+    let program_data_account_pda = pda_helper::get_program_data_account_pda(program_id);
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),

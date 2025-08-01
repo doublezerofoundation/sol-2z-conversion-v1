@@ -14,9 +14,10 @@ pub struct Config {
     pub oracle_pubkey: Option<String>,
     pub sol_quantity: Option<u64>,
     pub slot_threshold: Option<u64>,
-    pub price_maximum_age: Option<u64>,
+    pub price_maximum_age: Option<i64>,
     pub max_fills_storage: Option<u64>,
     pub skip_preflight: bool,
+    pub price_oracle_end_point: Option<String>
 }
 
 impl Config {

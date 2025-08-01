@@ -74,7 +74,6 @@ You can mention required program name and keypair file in the command.
 anchor build && anchor deploy --program-name PROGRAM_NAME --program-keypair ..keys/KEYPAIR.json
 
 eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
-anchor build && anchor deploy --program-name integrating-contract --program-keypair ./keys/integrating-contract-keypair.json
 ```
 
 ### Using `build_and_deploy.sh` script
@@ -83,26 +82,22 @@ deploy it to the environment.
 
 #### Options
 - `-h, --help` Display this help message and exit.
-- `--workspace <value>` Specify the workspace(s) to process. Use a comma-separated list for multiple workspaces (e.g., `programs/converter-program,programs/integrating-contract`). If no workspace is specified, all workspaces will be processed.
-- `--mode <value>` Set the mode of operation. Default will be `build_and_deploy`. Available modes:
-    - `deploy_only`: Only deploy the specified workspace(s).
-    - `build_only`: Only build the specified workspace(s).
-    - `build_and_deploy`: Build and then deploy the specified workspace(s).
+- `--w <value>` Specify the workspace to process. Available workspaces
+  - on-chain 
+  - admin-cli
+  - user-cli
+- `--restart-validator` If it is on-chain local deployment, then start/ restart the validator.
+- `--m <value>` Set the mode of operation.
+  - For on-chain workspace
+      - `deploy_only`: Only deploy the specified workspace(s).
+      - `build_only`: Only build the specified workspace(s).
+      - `build_and_deploy`: Build and then deploy the specified workspace(s).
+  - For CLI workspaces, there are no mode
 
 #### Example Usage
 Build and Deploy a Single Workspace
 ```sh
-./build_and_deploy.sh --workspace programs/my_program --mode build_and_deploy
-```
-
-Deploy Multiple Workspaces
-```sh
-./build_and_deploy.sh --workspace programs/my_program,programs/another_program --mode deploy_only
-```
-
-Build all workspaces
-```sh
-./build_and_deploy.sh --mode build_only
+./build_and_deploy.sh -w on-chain --restart-validator
 ```
 
 If you want to build and deploy all the workspaces, you can run the following command.
