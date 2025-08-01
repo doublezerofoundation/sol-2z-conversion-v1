@@ -1,5 +1,5 @@
 use anchor_client::{
-    anchor_lang::prelude::{borsh::BorshDeserialize, *},
+    anchor_lang::prelude::*,
     solana_sdk::pubkey::Pubkey,
 };
 

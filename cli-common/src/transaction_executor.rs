@@ -9,7 +9,7 @@ use anchor_client::{
         commitment_config::CommitmentConfig, 
         instruction::Instruction,
         pubkey::Pubkey, 
-        signature::{Keypair, Signature},
+        signature::Signature,
         signer::Signer, 
         transaction::Transaction
     }
@@ -17,7 +17,7 @@ use anchor_client::{
 use crate::{
     config::Config,
     utils::{
-        env_var::load_private_key, 
+        env_var::load_payer_from_env, 
         error_handler, 
         ui::{LABEL, OK, WAITING}
     }
@@ -26,9 +26,8 @@ use crate::{
 pub fn send_batch_instructions(
     instructions: Vec<Instruction>
 ) -> Result<Signature, Box<dyn Error>> {
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
-
+    let payer = load_payer_from_env()?;
+    
     let config = Config::load().map_err(|_| "Error when reading config file")?;
 
     println!("{LABEL} Program ID : {}", config.program_id);
