@@ -1,7 +1,7 @@
 use anchor_lang::{prelude::*, solana_program::program::set_return_data};
 
 use crate::{
-    common::{error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData}, configuration_registry::configuration_registry::ConfigurationRegistry, deny_list_registry::deny_list_registry::DenyListRegistry, discount_rate::discount_utils::{
+    common::{error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData, utils::attestation_utils::verify_attestation}, configuration_registry::configuration_registry::ConfigurationRegistry, deny_list_registry::deny_list_registry::DenyListRegistry, discount_rate::discount_utils::{
         calculate_ask_price_with_discount, calculate_discount_rate, calculate_sol_demand,
     }, state::program_state::ProgramStateAccount
 };
@@ -39,13 +39,14 @@ impl<'info> CalculateAskPrice<'info> {
             return Err(error!(DoubleZeroError::UserInsideDenyList));
         }
 
-        // // checking attestation
-        // verify_attestation(
-        //     oracle_price_data.swap_rate,
-        //     oracle_price_data.timestamp,
-        //     oracle_price_data.signature,
-        //     self.configuration_registry.oracle_pubkey
-        // )?;
+        // checking attestation
+        verify_attestation(
+            oracle_price_data.swap_rate.clone(),
+            oracle_price_data.timestamp,
+            oracle_price_data.signature,
+            self.configuration_registry.oracle_pubkey,
+            self.configuration_registry.price_maximum_age
+        )?;
 
         // Calculate sol demand
         let sol_demand_bps = calculate_sol_demand(
