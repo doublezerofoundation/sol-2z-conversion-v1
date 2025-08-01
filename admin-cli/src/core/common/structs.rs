@@ -8,7 +8,7 @@ pub struct ConfigurationRegistryInput {
     pub oracle_pubkey: Option<Pubkey>,
     pub sol_quantity: Option<u64>,
     pub slot_threshold: Option<u64>,
-    pub price_maximum_age: Option<u64>,
+    pub price_maximum_age: Option<i64>,
     pub max_fills_storage: Option<u64>,
 }
 
@@ -18,7 +18,7 @@ pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey,
     pub sol_quantity: u64,
     pub slot_threshold: u64,
-    pub price_maximum_age: u64,
+    pub price_maximum_age: i64,
     pub max_fills_storage: u64,
     pub authorized_dequeuers: Vec<Pubkey>,
 }

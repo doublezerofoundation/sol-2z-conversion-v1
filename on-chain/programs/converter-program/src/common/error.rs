@@ -17,4 +17,10 @@ pub enum DoubleZeroError {
 
     #[msg("Provided Attestation is not Authentic")]
     AttestationVerificationError, // 6004
+
+    #[msg("Invalid Timestamp")]
+    InvalidTimestamp, // 6005 
+    
+    #[msg("Provided Attestation is not Authentic")]
+    StalePrice, // 6005
 }

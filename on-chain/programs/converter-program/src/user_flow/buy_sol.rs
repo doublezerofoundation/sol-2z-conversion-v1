@@ -6,10 +6,9 @@ use crate::{
         error::DoubleZeroError,
         utils::attestation_utils::verify_attestation
     },
-    configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
-    fills_registry::fills_registry::FillsRegistry,
     state::program_state::ProgramStateAccount,
+    configuration_registry::configuration_registry::ConfigurationRegistry,
+    deny_list_registry::deny_list_registry::DenyListRegistry
 };
 
 #[derive(Accounts)]
@@ -39,7 +38,7 @@ impl<'info> BuySol<'info> {
         &mut self,
         bid_price: u64,
         swap_rate: String,
-        timestamp: u64,
+        timestamp: i64,
         attestation: String
     ) -> Result<()> {
 
@@ -55,7 +54,8 @@ impl<'info> BuySol<'info> {
             swap_rate,
             timestamp,
             attestation,
-            self.configuration_registry.oracle_pubkey
+            self.configuration_registry.oracle_pubkey,
+            self.configuration_registry.price_maximum_age
         )?;
 
 

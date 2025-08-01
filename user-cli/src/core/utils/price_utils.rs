@@ -20,7 +20,7 @@ pub async fn fetch_oracle_price(price_oracle_end_point: Url) ->  Result<OraclePr
 #[serde(rename_all = "camelCase")]
 pub struct OraclePriceData {
     pub swap_rate: String,
-    pub timestamp: u64,
+    pub timestamp: i64,
     pub signature: String,
     // uncomment if needed
     // pub sol_price_usd: String,
