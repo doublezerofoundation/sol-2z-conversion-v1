@@ -15,11 +15,7 @@ export class RedisCacheService implements CacheService {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
-        console.log(REDIS_URL)
-        console.log(REDIS_ENDPOINT)
-        console.log("redis drive en",REDIS_URL)
-        console.log(REDIS_PORT)
-        console.log("Redis initialized");
+        console.log("redis drive url",REDIS_URL)
         this.redisClient.on("error", (err) => {
             console.error("Redis Client Error", err);
             this.isConnected = false;
