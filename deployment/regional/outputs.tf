@@ -62,7 +62,7 @@ output "ecr_registry_id" {
 }
 
 
-output "redis_url" {
+output "redis_endpoint" {
   description = "URL of the redis cluster"
   value       = module.redis.redis_endpoint
 }

@@ -6,7 +6,7 @@ import {AttestationService} from "../service/attestaion/attestationService";
 import {CacheService} from "../service/cache/cacheService";
 import {RedisCacheService} from "../service/cache/redisCacheService";
 
-const ENV:string = process.env.ENV || 'dev3';
+const ENV:string = process.env.ENV || 'dev';
 export default class SwapRateController {
     private priceServices: PricingService[];
     private attestationService: any;
@@ -27,18 +27,14 @@ export default class SwapRateController {
 
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
-            console.log("swapRateHandler called")
             let priceRate: PriceRate;
             let isCacheHit:boolean
             const cachedSwapRate: PriceRate = await this.redisService.get(`${ENV}-swapRate`)
-            console.log("after qet")
             if (cachedSwapRate) {
                 priceRate = cachedSwapRate;
                 isCacheHit = true;
-                console.log("cache hit")
 
             } else {
-                console.log("cache miss")
                 const pricePromises = this.priceServices.map(async (priceService) => {
                     return await priceService.retrieveSwapRate();
                 });
@@ -46,11 +42,10 @@ export default class SwapRateController {
                 const priceRates:PriceRate[] = await Promise.all(pricePromises);
                 priceRate = this.selectMostFavorableRate(priceRates);
                 await this.redisService.add(`${ENV}-swapRate`, priceRate);
-                console.log("cache miss")
                 isCacheHit = false;
             }
 
-            const timestamp = Date.now();
+            const timestamp = Math.floor(Date.now() / 1000);
             const swapRate = priceRate.swapRate.toString();
 
             const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
@@ -66,7 +61,7 @@ export default class SwapRateController {
                 cacheHit: isCacheHit,
 
             }
-            // TODO Audit log the Price
+            console.log("Result",result)
             res.json(result);
         } catch (error) {
             console.error('Error in priceRateHandler:', error);

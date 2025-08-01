@@ -5,7 +5,7 @@ export interface AttestationData {
 
 export interface AttestationResult {
     signature: string;
-    publicKey: string;
+    recovery_id: number;
 }
 
 export interface KeyPair {

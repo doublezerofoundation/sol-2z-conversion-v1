@@ -145,6 +145,8 @@ resource "aws_api_gateway_deployment" "this" {
       aws_api_gateway_integration.default.id,
       aws_api_gateway_method.root.id,
       aws_api_gateway_integration.root.id,
+      var.enable_pricing_service ? try(module.pricing_service[0], null) : null,
+
     ]))
   }
 
