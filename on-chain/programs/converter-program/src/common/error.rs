@@ -6,8 +6,8 @@ pub enum DoubleZeroError {
     #[msg("User is blocked in the DenyList")]
     UserInsideDenyList, // 6000 0x1796
 
-    #[msg("Unauthorized user")]
-    UnauthorizedUser, // 6001
+    #[msg("Unauthorized Admin")]
+    UnauthorizedAdmin, // 6001
 
     #[msg("Provided Attestation is Invalid")]
     InvalidAttestation, // 6002
@@ -53,4 +53,10 @@ pub enum DoubleZeroError {
 
     #[msg("Maximum number of authorized dequeuers reached")]
     MaxAuthorizedDequeuersReached, // 6016
+
+    #[msg("Deny list is full")]
+    DenyListFull, // 6017
+
+    #[msg("Address already added to Deny List")]
+    AlreadyExistsInDenyList, // 6018
 }

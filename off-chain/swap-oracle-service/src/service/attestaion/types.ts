@@ -4,8 +4,8 @@ export interface AttestationData {
 }
 
 export interface AttestationResult {
-    signature: Uint8Array;
-    publicKey: string;
+    signature: string;
+    recovery_id: number;
 }
 
 export interface KeyPair {

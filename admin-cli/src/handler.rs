@@ -1,8 +1,22 @@
-use clap::Parser;
-use crate::command::Commands;
 use std::error::Error;
-use crate::core::functions::{admin_handler, config_handler, deny_list, init_handler, system_state, update_dequeuer_handler, withdraw_2z};
-use crate::core::common::error::COMMAND_NOT_SPECIFIED;
+
+use clap::Parser;
+
+use crate::{
+    command::Commands,
+    core::{
+        common::error::COMMAND_NOT_SPECIFIED,
+        functions::{
+            admin_handler,
+            config_handler,
+            deny_list,
+            init_handler,
+            system_state,
+            update_dequeuer_handler,
+            withdraw_2z,
+        },
+    },
+};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -47,8 +61,7 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         Some(Commands::AddDequeuer { dequeuer }) => {
             update_dequeuer_handler::add_dequeuer(&dequeuer)
         }
-
-
+        
         Some(Commands::RemoveDequeuer { dequeuer }) => {
             update_dequeuer_handler::remove_dequeuer(&dequeuer)
         }

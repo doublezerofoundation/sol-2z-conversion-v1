@@ -9,12 +9,11 @@ mod fills_registry;
 mod initialize;
 mod state;
 mod user_flow;
-mod validator_deposit;
 
 use admin_change::set_admin::*;
 use anchor_lang::prelude::*;
 use common::structs::*;
-use configuration_registry::configuration_registry::*;
+use configuration_registry::update_configuration::*;
 use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;
 use discount_rate::calculate_ask_price::*;
@@ -65,26 +64,20 @@ pub mod converter_program {
         ctx.accounts.process_update(input)
     }
 
-    pub fn add_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        new_pubkey: Pubkey,
-    ) -> Result<()> {
+    pub fn add_dequeuer(ctx: Context<UpdateDequeuers>, new_pubkey: Pubkey) -> Result<()> {
         ctx.accounts.add_dequeuer(new_pubkey)
     }
 
-    pub fn remove_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        remove_pubkey: Pubkey,
-    ) -> Result<()> {
+    pub fn remove_dequeuer(ctx: Context<UpdateDequeuers>, remove_pubkey: Pubkey) -> Result<()> {
         ctx.accounts.remove_dequeuer(remove_pubkey)
     }
 
-    pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn add_to_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.add_to_deny_list(address)
     }
 
-    pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn remove_from_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.remove_from_deny_list(address)
     }
 
     pub fn set_admin(ctx: Context<SetAdmin>, new_admin: Pubkey) -> Result<()> {

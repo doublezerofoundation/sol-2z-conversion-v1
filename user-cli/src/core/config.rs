@@ -13,7 +13,7 @@ pub struct UserConfig {
 impl UserConfig {
     pub fn load_user_config() -> Result<Self, Box<dyn Error>> {
         let raw_config = Config::load()?;
-        let oracle_price_end_point = raw_config.price_oracle_end_point.ok_or("Missing oracle end point")?;
+        let oracle_price_end_point = raw_config.price_oracle_end_point.ok_or("Missing oracle end point in config file")?;
         Ok(UserConfig {
             program_id: raw_config.program_id,
             price_oracle_end_point: Url::parse(&oracle_price_end_point)?,

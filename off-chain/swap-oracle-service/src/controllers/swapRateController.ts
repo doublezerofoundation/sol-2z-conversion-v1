@@ -1,13 +1,16 @@
 import {Request, Response} from 'express';
 import {PricingService} from "../service/pricing/pricingService";
-import {PriceRate, SwapRateResponce} from "../types/common";
+import {PriceRate} from "../types/common";
 import {PricingServiceFactory} from "../factory/ServiceFactory";
 import {AttestationService} from "../service/attestaion/attestationService";
+import {CacheService} from "../service/cache/cacheService";
+import {RedisCacheService} from "../service/cache/redisCacheService";
 
-
+const ENV:string = process.env.ENV || 'dev';
 export default class SwapRateController {
     private priceServices: PricingService[];
     private attestationService: any;
+    private redisService: CacheService;
 
     constructor() {
         this.initializePricingService();
@@ -19,33 +22,46 @@ export default class SwapRateController {
             priceService.init();
         })
         this.attestationService = new AttestationService();
+        this.redisService = RedisCacheService.getInstance();
     }
 
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
-            const pricePromises = this.priceServices.map(async (priceService) => {
-                return await priceService.retrieveSwapRate();
-            });
+            let priceRate: PriceRate;
+            let isCacheHit:boolean
+            const cachedSwapRate: PriceRate = await this.redisService.get(`${ENV}-swapRate`)
+            if (cachedSwapRate) {
+                priceRate = cachedSwapRate;
+                isCacheHit = true;
 
-            const priceRates:PriceRate[] = await Promise.all(pricePromises);
-            const priceRate = this.selectMostFavorableRate(priceRates);
-            const timestamp = Date.now();
+            } else {
+                const pricePromises = this.priceServices.map(async (priceService) => {
+                    return await priceService.retrieveSwapRate();
+                });
+
+                const priceRates:PriceRate[] = await Promise.all(pricePromises);
+                priceRate = this.selectMostFavorableRate(priceRates);
+                await this.redisService.add(`${ENV}-swapRate`, priceRate);
+                isCacheHit = false;
+            }
+
+            const timestamp = Math.floor(Date.now() / 1000);
             const swapRate = priceRate.swapRate.toString();
 
             const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
+            console.log("signedBytes: ", signedBytes)
 
             console.log(signedBytes)
             const result = {
-                swapRate : swapRate,
+                swapRate : swapRate.toString(),
                 timestamp: timestamp,
                 signature: signedBytes,
-                solPriceUsd: priceRate.solPriceUsd,
-                twozPriceUsd: priceRate.twozPriceUsd,
-                cacheHit: false
+                solPriceUsd: priceRate.solPriceUsd.toString(),
+                twozPriceUsd: priceRate.twozPriceUsd.toString(),
+                cacheHit: isCacheHit,
 
             }
-            // TODO cache the price
-            // TODO Audit log the Price
+            console.log("Result",result)
             res.json(result);
         } catch (error) {
             console.error('Error in priceRateHandler:', error);

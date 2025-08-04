@@ -6,16 +6,15 @@ use anchor_client::anchor_lang::prelude::{AccountMeta, Pubkey};
 // External crates
 use anchor_client::solana_sdk::hash::hash;
 use anchor_client::solana_sdk::instruction::Instruction;
-use anchor_client::solana_sdk::signature::{Keypair, Signer};
-use anchor_client::solana_sdk::system_program;
+use anchor_client::solana_sdk::signature::{Signer};
 use rust_decimal::{
     Decimal,
     prelude::ToPrimitive
 };
 use cli_common::constant::TOKEN_DECIMALS;
 use cli_common::transaction_executor;
-use cli_common::utils::env_var::load_private_key;
-use cli_common::utils::{pda_helper, ui};
+use cli_common::utils::env_var::load_payer_from_env;
+use cli_common::utils::{pda_helper};
 // Internal modules
 use crate::core::common::instruction::BUY_SOL_INSTRUCTION;
 use crate::core::config::UserConfig;
@@ -30,8 +29,7 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
     let bid_price_parsed = (amount_input * token_decimals).to_u64()
         .expect("Depost amount Overflow or conversion failed");
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;
     let mut data_initialize = hash(BUY_SOL_INSTRUCTION).to_bytes()[..8].to_vec();
     data_initialize = [

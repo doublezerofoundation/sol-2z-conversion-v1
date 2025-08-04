@@ -8,12 +8,12 @@ use anchor_client::solana_sdk::{
     hash::hash,
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
-    signature::{Keypair, Signer},
+    signature::Signer,
 };
 use cli_common::{
     config::Config,
     transaction_executor,
-    utils::{env_var::load_private_key, pda_helper},
+    utils::{env_var::load_payer_from_env, pda_helper},
 };
 use std::{error::Error, str::FromStr};
 
@@ -25,8 +25,7 @@ pub fn add_to_deny_list(address: String) -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
     let address_pubkey = Pubkey::from_str(&address)?;
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
 
     // Building instruction data using Anchor discriminator
     let mut data = hash(ADD_TO_DENY_LIST_INSTRUCTION).to_bytes()[..8].to_vec();
@@ -59,8 +58,7 @@ pub fn remove_from_deny_list(address: String) -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
     let address_pubkey = Pubkey::from_str(&address)?;
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
 
     // Building instruction data using Anchor discriminator
     let mut data = hash(REMOVE_FROM_DENY_LIST_INSTRUCTION).to_bytes()[..8].to_vec();
