@@ -42,7 +42,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
-    let program_data_account_pda = pda_helper::get_program_data_account_pda(program_id);
+    let program_data_account_pda = pda_helper::get_program_data_account_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),

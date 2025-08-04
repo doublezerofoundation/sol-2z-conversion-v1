@@ -1,5 +1,5 @@
 use anchor_client::anchor_lang::prelude::Pubkey;
-use solana_loader_v3_interface::get_program_data_address;
+use anchor_client::anchor_lang::solana_program::bpf_loader_upgradeable;
 use crate::seeds::{
     CONFIGURATION_REGISTRY_SEEDS,
     DENY_LIST_REGISTRY_SEEDS,
@@ -34,6 +34,6 @@ pub fn get_deny_list_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
     )
 }
 
-pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
-    get_program_data_address(&program_id)
+pub fn get_program_data_account_pda(program_id: Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(&[&program_id.to_bytes()], &bpf_loader_upgradeable::ID)
 }
