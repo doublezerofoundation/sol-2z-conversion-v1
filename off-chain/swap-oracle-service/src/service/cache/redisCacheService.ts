@@ -3,7 +3,6 @@ import { createClient, RedisClientType } from "redis";
 import process from "node:process";
 const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT
 const REDIS_PORT =  process.env.REDIS_PORT
-// const REDIS_URL = "rediss://master.doublezero-redis.m3emep.use1.cache.amazonaws.com:6379";
 const REDIS_URL = `rediss://${REDIS_ENDPOINT}:${REDIS_PORT}`
 export class RedisCacheService implements CacheService {
     private redisClient: RedisClientType;
@@ -15,7 +14,7 @@ export class RedisCacheService implements CacheService {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
-        console.log("redis drive url",REDIS_URL)
+        console.log("redis derived url",REDIS_URL)
         this.redisClient.on("error", (err) => {
             console.error("Redis Client Error", err);
             this.isConnected = false;
