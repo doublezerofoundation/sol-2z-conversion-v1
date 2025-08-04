@@ -6,7 +6,7 @@ let state: IndexerStateConfig = {
      lastProcessedSignature: null
 };
 
-let recovering = false;
+let recovering = true; 
 
 export async function getLastSignature(): Promise<string | null> {
      return state.lastProcessedSignature;
@@ -17,10 +17,6 @@ export async function saveLastSignature(sig: string) {
 
 export function isRecovering() {
   return recovering;
-}
-
-export function startRecovery() {
-  recovering = true;
 }
 
 export function endRecovery() {

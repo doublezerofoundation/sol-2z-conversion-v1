@@ -1,12 +1,10 @@
 import { Connection } from '@solana/web3.js';
 import { RPC_URL, PROGRAM_ID, CONCURRENCY } from './config';
-import { getLastSignature, startRecovery, endRecovery } from './state';
+import { getLastSignature, endRecovery } from './state';
 import { promisePool } from '../utils/concurrency';
 import { processTx } from './processor';
 
 export async function recoverHistory() {
-  
-  startRecovery();
 
   const lastSig = await getLastSignature();
   console.log(`⏳ Catching up from tip down to last saved sig: ${lastSig || 'genesis'}`);
