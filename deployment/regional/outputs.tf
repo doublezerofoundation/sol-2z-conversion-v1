@@ -60,3 +60,14 @@ output "ecr_registry_id" {
   description = "Registry ID of the ECR repository"
   value       = module.ecr.ecr_registry_id
 }
+
+
+output "redis_endpoint" {
+  description = "URL of the redis cluster"
+  value       = module.redis.redis_endpoint
+}
+
+output "redis_port" {
+  description = "port of the redis cluster"
+  value       = module.redis.redis_port
+}

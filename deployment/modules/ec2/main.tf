@@ -105,6 +105,8 @@ resource "aws_launch_template" "this" {
     region                    = var.region
     ecr_registry             = local.ecr_registry
     ecr_repository           = var.ecr_repository
+    redis_enpoint            = var.redis_endpoint
+    redis_port               = var.redis_port
     image_tag                = var.image_tag
     container_name           = var.container_name
     container_port           = var.container_port

@@ -2,10 +2,7 @@
 
 set -e
 
-SERVICE_NAME="swap-oracle-service"
-AWS_REGION="${AWS_REGION:-us-east-1}"
-ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
-BUILD_TAG="${BUILD_TAG:-latest}"
+
 
 
 RED='\033[0;31m'
@@ -115,7 +112,7 @@ build_image() {
     local image_tag=$1
     log_info "Building Docker image..."
 
-    docker build -t $SERVICE_NAME:$BUILD_TAG .
+    docker build --build-arg AWS_REGION=$AWS_REGION --build-arg ENV=$ENV -t $SERVICE_NAME:$BUILD_TAG .
     docker tag $SERVICE_NAME:$BUILD_TAG $image_tag
 
     log_info "Image built successfully: $image_tag"
@@ -169,6 +166,10 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
+        --env)
+            ENV="$2"
+            shift 2
+            ;;
         --repository)
             ECR_REPOSITORY_NAME="$2"
             shift 2
@@ -192,5 +193,11 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+SERVICE_NAME="swap-oracle-service"
+AWS_REGION="${AWS_REGION:-us-east-1}"
+ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
+BUILD_TAG="${BUILD_TAG:-latest}"
+ENV="${ENV:-dev3}"
 
 main

@@ -95,7 +95,7 @@ publish() {
       exit 1
   fi
   pushd "../../off-chain/$SERVICE_NAME" > /dev/null
-  ./build_and_deploy.sh --region "$AWS_REGION" --repository "$ECR_REPOSITORY" --tag "$IMAGE_TAG"
+  ./build_and_deploy.sh --region "$AWS_REGION" --env "$ENV" --repository "$ECR_REPOSITORY" --tag "$IMAGE_TAG"
   popd > /dev/null
 
 
