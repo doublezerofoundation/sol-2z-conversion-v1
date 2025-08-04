@@ -7,7 +7,13 @@ import { processTx } from './processor';
 export async function recoverHistory() {
 
   const lastSig = await getLastSignature();
-  console.log(`⏳ Catching up from tip down to last saved sig: ${lastSig || 'genesis'}`);
+  if (!lastSig) {
+    console.log('No last signature found, skipping history recovery.');
+    endRecovery();
+    return;
+  }
+
+  console.log(`⏳ Catching up from head down to last processed sig: ${lastSig}`);
 
   const connection = new Connection(RPC_URL, 'confirmed');
   let before: string | undefined;
