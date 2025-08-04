@@ -39,3 +39,13 @@ variable "enable_indexer_service" {
   type        = bool
   default     = false
 }
+
+variable "redis_endpoint" {
+  description = "Redis primary endpoint"
+  type = string
+}
+
+variable "redis_port" {
+  description = "Redis port"
+  type = string
+}

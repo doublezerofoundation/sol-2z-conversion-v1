@@ -236,6 +236,8 @@ module "ec2" {
   # max_size          = var.asg_max_size
   # desired_capacity  = var.asg_desired_capacity
   region            = var.aws_region
+  redis_endpoint = data.terraform_remote_state.regional.outputs.redis_endpoint
+  redis_port = data.terraform_remote_state.regional.outputs.redis_port
 
   # # Use the IAM instance profile from the account level
   # # This requires modifying the EC2 module to accept an instance profile name

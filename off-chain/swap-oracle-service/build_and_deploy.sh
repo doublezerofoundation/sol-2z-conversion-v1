@@ -6,10 +6,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../build_utils.sh"
 
-SERVICE_NAME="swap-oracle-service"
-AWS_REGION="${AWS_REGION:-us-east-1}"
-ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
-BUILD_TAG="${BUILD_TAG:-latest}"
 
 main() {
     log_info "Starting build and deploy process for $SERVICE_NAME"
@@ -49,6 +45,10 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
+        --env)
+            ENV="$2"
+            shift 2
+            ;;
         --repository)
             ECR_REPOSITORY_NAME="$2"
             shift 2
@@ -72,5 +72,11 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+SERVICE_NAME="swap-oracle-service"
+AWS_REGION="${AWS_REGION:-us-east-1}"
+ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
+BUILD_TAG="${BUILD_TAG:-latest}"
+ENV="${ENV:-dev3}"
 
 main
