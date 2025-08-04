@@ -1,5 +1,5 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke;
+use anchor_lang::solana_program::program::invoke_signed;
 use anchor_lang::solana_program::system_instruction;
 use anchor_spl::token_interface;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked};
@@ -30,11 +30,12 @@ pub struct BuySol<'info> {
     )]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
+    pub system_program: Program<'info, System>,
     #[account(mut)]
     pub signer: Signer<'info>,
 }
 impl<'info> BuySol<'info> {
-    pub fn process(&mut self, amount_2z: u64, amount_sol: u64) -> Result<()> {
+    pub fn process(&mut self, amount_2z: u64, amount_sol: u64, vault_bump: u8) -> Result<()> {
         // Transfer 2Z from signer
         let cpi_accounts = TransferChecked {
             mint: self.double_zero_mint.to_account_info(),
@@ -49,14 +50,21 @@ impl<'info> BuySol<'info> {
 
         // Transfer SOL from vault
         let sol_transfer_ix = system_instruction::transfer(
-            &self.signer.key(),
             &self.vault_account.key(),
+            &self.signer.key(),
             amount_sol,
         );
 
-        invoke(
+        invoke_signed(
             &sol_transfer_ix,
-            &[self.signer.to_account_info(), self.vault_account.to_account_info()],
+            &[
+                self.signer.to_account_info(),
+                self.vault_account.to_account_info(),
+            ],
+            &[&[
+                b"vault",
+                &[vault_bump],
+            ]],
         )?;
         Ok(())
     }

@@ -1,12 +1,14 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { MockTransferProgram } from "../target/types/mock_transfer_program";
-import {airdrop, getDefaultKeyPair} from "./core/utils/account-utils";
-import {DEFAULT_CONFIGS} from "./core/utils/configuration-registry";
-import {systemInitializeAndVerify, systemInitializeFail} from "./core/test-flow/system-initialize";
-import {initializeMockTransferSystemAndVerify, mint2z} from "./core/test-flow/mock-transfer-program";
+import { airdrop, airdropToActivateAccount, getDefaultKeyPair} from "./core/utils/account-utils";
+import {
+    buySol,
+    initializeMockTransferSystemIfNeeded,
+    mint2z, withdraw_2z
+} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
-import {getMockDoubleZeroTokenMintPDA} from "./core/utils/pda-helper";
+import { getMockProgramPDAs} from "./core/utils/pda-helper";
 import {Keypair, PublicKey} from "@solana/web3.js";
 
 describe("System Initialization Tests", () => {
@@ -15,22 +17,38 @@ describe("System Initialization Tests", () => {
 
     const program = anchor.workspace.mockTransferProgram as Program<MockTransferProgram>;
     let adminKeyPair: Keypair = getDefaultKeyPair();
-    let doubleZeroMint: PublicKey;
+    let pdas;
     let tokenAccount: PublicKey;
+    let userKeyPair: Keypair
 
-    it.skip("Initializing the system!", async () => {
-        await initializeMockTransferSystemAndVerify(
+    it("Initializing the system!", async () => {
+        await initializeMockTransferSystemIfNeeded(
             program,
             adminKeyPair,
         )
     });
 
+    it("Initialize Token Account", async() => {
+        userKeyPair = anchor.web3.Keypair.generate();
+        await airdropToActivateAccount(program.provider.connection, userKeyPair.publicKey);
+        pdas = getMockProgramPDAs(program.programId);
+        tokenAccount = await createTokenAccount(program.provider.connection, pdas.tokenMint, userKeyPair.publicKey);
+    })
+
+    it("Mint 2Z!", async () => {
+        await mint2z( program, tokenAccount,500);
+    });
+
+    it("Airdrop vault", async () => {
+        await airdrop(program.provider.connection, pdas.vault, 500);
+    });
+
     it("Buy Sol!", async () => {
-        const nonAdminUserKeyPair = anchor.web3.Keypair.generate();
-        await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey);
-        doubleZeroMint = getMockDoubleZeroTokenMintPDA(program.programId)
-        tokenAccount = await createTokenAccount(program.provider.connection, doubleZeroMint, nonAdminUserKeyPair.publicKey);
-        await mint2z( program, tokenAccount,500)
+        await buySol(program, tokenAccount,500, 200, userKeyPair);
+    });
+
+    it("Buy Sol!", async () => {
+        await withdraw_2z(program, tokenAccount,500, userKeyPair);
     });
 
 });

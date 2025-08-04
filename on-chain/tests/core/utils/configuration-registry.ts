@@ -21,7 +21,7 @@ export const DEFAULT_CONFIGS: SystemConfig = {
 };
 
 export async function fetchCurrentConfiguration(program): Promise<SystemConfig> {
-    const configurationAccountPda = await getConfigurationRegistryPDA(program.programId);
+    const configurationAccountPda = getConfigurationRegistryPDA(program.programId);
     const configurationRegistry = await program.account.configurationRegistry.fetch(configurationAccountPda);
     return {
         oraclePubkey: configurationRegistry.oraclePubkey,

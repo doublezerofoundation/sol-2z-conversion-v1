@@ -15,12 +15,12 @@ export async function systemInitializeAndVerify(
     inputConfigs: SystemConfig = DEFAULT_CONFIGS
 ) {
     // List of Accounts to be verified
-    const pdas = await Promise.all([
+    const pdas = [
         getProgramStatePDA(program.programId),
         getConfigurationRegistryPDA(program.programId),
         getFillsRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
-    ]);
+    ];
 
     // Accounts to be initialized should not exist before initialization
     let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
@@ -33,7 +33,7 @@ export async function systemInitializeAndVerify(
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
 
     // Initialization
-    const programDataAccount = await getProgramDataAccountPDA(program.programId);
+    const programDataAccount = getProgramDataAccountPDA(program.programId);
     try {
         const tx = await program.methods.initializeSystem(
             inputConfigs.oraclePubkey,
@@ -80,7 +80,7 @@ export async function systemInitializeFail(
     configRegistryValues: SystemConfig = DEFAULT_CONFIGS,
     expectedError: string
 ) {
-    const programDataAccount = await getProgramDataAccountPDA(program.programId);
+    const programDataAccount = getProgramDataAccountPDA(program.programId);
     try {
         await program.methods.initializeSystem(
             configRegistryValues.oraclePubkey,

@@ -19,18 +19,26 @@ export async function accountExists(
     return (await connection.getAccountInfo(publicKey)) !== null;
 }
 
-export async function airdrop(
+export async function airdropToActivateAccount(
     connection: Connection,
     pubkey: PublicKey,
     amount = 10 * LAMPORTS_PER_SOL
 ): Promise<void> {
     const balance = await connection.getBalance(pubkey);
     if (balance < amount) {
-        const tx = await connection.requestAirdrop(pubkey, amount);
-        await connection.confirmTransaction({
-            signature: tx,
-            lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
-            blockhash: (await connection.getLatestBlockhash()).blockhash
-        });
+        await airdrop(connection, pubkey, amount);
     }
+}
+
+export async function airdrop(
+    connection: Connection,
+    pubkey: PublicKey,
+    amount = 10 * LAMPORTS_PER_SOL
+): Promise<void> {
+    const tx = await connection.requestAirdrop(pubkey, amount * LAMPORTS_PER_SOL);
+    await connection.confirmTransaction({
+        signature: tx,
+        lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
+        blockhash: (await connection.getLatestBlockhash()).blockhash
+    });
 }

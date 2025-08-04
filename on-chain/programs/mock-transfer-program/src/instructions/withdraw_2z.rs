@@ -32,7 +32,9 @@ pub struct Withdraw2Z<'info> {
     pub signer: Signer<'info>,
 }
 impl<'info> Withdraw2Z<'info> {
-    pub fn process(&mut self, amount: u64) -> Result<()> {
+    pub fn process(&mut self, amount: u64, protocol_treasury_bump: u8) -> Result<()> {
+        let signer_seeds: &[&[&[u8]]] =
+            &[&[b"protocol_treasury", &[protocol_treasury_bump]]];
         let cpi_accounts = TransferChecked {
             mint: self.double_zero_mint.to_account_info(),
             from: self.protocol_treasury_token_account.to_account_info(),
@@ -40,7 +42,7 @@ impl<'info> Withdraw2Z<'info> {
             authority: self.protocol_treasury_token_account.to_account_info(),
         };
         let cpi_program = self.token_program.to_account_info();
-        let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+        let cpi_context = CpiContext::new_with_signer(cpi_program, cpi_accounts, signer_seeds);
         token_interface::transfer_checked(cpi_context, amount, 6)?;
         Ok(())
     }

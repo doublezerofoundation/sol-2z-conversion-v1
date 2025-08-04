@@ -8,7 +8,7 @@ export async function addToDenyListAndVerify(
     addressToAdd: PublicKey,
     authorityKeyPair: Keypair = getDefaultKeyPair()
 ) {
-    const denyListRegistryPda = await getDenyListRegistryPDA(program.programId);
+    const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
     
     // Get deny list before adding
     const denyListBefore = await program.account.denyListRegistry.fetch(denyListRegistryPda);
@@ -67,7 +67,7 @@ export async function removeFromDenyListAndVerify(
     addressToRemove: PublicKey,
     authorityKeyPair: Keypair = getDefaultKeyPair()
 ) {
-    const denyListRegistryPda = await getDenyListRegistryPDA(program.programId);
+    const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
     
     // Get deny list before removing
     const denyListBefore = await program.account.denyListRegistry.fetch(denyListRegistryPda);
@@ -122,7 +122,7 @@ export async function removeFromDenyListShouldFail(
 }
 
 export async function fetchDenyListRegistry(program) {
-    const denyListRegistryPda = await getDenyListRegistryPDA(program.programId);
+    const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
     return await program.account.denyListRegistry.fetch(denyListRegistryPda);
 }
 

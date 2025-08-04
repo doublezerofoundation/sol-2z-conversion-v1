@@ -24,14 +24,15 @@ pub mod mock_transfer_program {
     ) -> Result<()> {
         ctx.accounts.process(
             amount_2z,
-            amount_sol
+            amount_sol,
+            ctx.bumps.vault_account
         )
     }
     pub fn withdraw_2z(
         ctx: Context<Withdraw2Z>,
         amount: u64
     ) -> Result<()> {
-        ctx.accounts.process(amount)
+        ctx.accounts.process(amount, ctx.bumps.protocol_treasury_token_account)
     }
     pub fn mint_2z(
         ctx: Context<Mint2Z>,

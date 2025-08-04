@@ -1,8 +1,8 @@
 import {
-    getMockDoubleZeroTokenMintPDA, getMockProtocolTreasuryAccount, getMockVaultPDA,
+    getMockDoubleZeroTokenMintPDA, getMockProgramPDAs, getMockProtocolTreasuryAccount, getMockVaultPDA,
 } from "../utils/pda-helper";
 import {assert} from "chai";
-import {Keypair, PublicKey} from "@solana/web3.js";
+import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {accountExists, getDefaultKeyPair} from "../utils/account-utils";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
@@ -54,6 +54,18 @@ export async function initializeMockTransferSystemAndVerify(
     assert.isTrue(mockProtocolTreasuryAccountExists, "Mock Protocol Treasury Account should exist after initialization");
 }
 
+export async function initializeMockTransferSystemIfNeeded(
+    program,
+    adminKeyPair: Keypair = getDefaultKeyPair(),
+) {
+    if(!await accountExists(program.provider.connection, getMockProtocolTreasuryAccount(program.programId))) {
+        await initializeMockTransferSystemAndVerify(
+            program,
+            adminKeyPair,
+        )
+    }
+}
+
 export async function mint2z(
     program,
     recipientTokenAccount: PublicKey,
@@ -75,4 +87,108 @@ export async function mint2z(
     const balanceAfterMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
 
     assert.equal(balanceAfterMint, balanceBeforeMint + amount, "Balance should increase by mint")
+}
+export async function buySol(
+    program,
+    senderTokenAccount: PublicKey,
+    amount2Z: number,
+    amountSol: number,
+    signer: Keypair
+) {
+    amountSol = amountSol * LAMPORTS_PER_SOL
+    const pdas = getMockProgramPDAs(program.programId);
+    const tokenBalanceBefore = await getTokenBalance(program.provider.connection, senderTokenAccount);
+    const protocolTreasuryBalanceBefore =
+        await getTokenBalance(program.provider.connection, pdas.protocolTreasury);
+    const solBalanceBefore = await program.provider.connection.getBalance(signer.publicKey);
+    const vaultBalanceBefore = await program.provider.connection.getBalance(pdas.vault);
+
+    try {
+        const tx = await program.methods.buySol(
+            new anchor.BN(amount2Z * TOKEN_DECIMAL),
+            new anchor.BN(amountSol)
+        )
+            .accounts({
+                tokenProgram: TOKEN_2022_PROGRAM_ID,
+                userTokenAccount: senderTokenAccount,
+                signer: signer.publicKey
+            })
+            .signers([signer])
+            .rpc();
+        console.log("Buy Sol is successful. Transaction Hash", tx);
+    } catch (e) {
+        console.error("Buy Sol  failed:", e);
+        assert.fail("Buy Sol  failed");
+    }
+
+    const tokenBalanceAfter = await getTokenBalance(program.provider.connection, senderTokenAccount);
+    const solBalanceAfter = await program.provider.connection.getBalance(signer.publicKey);
+    const protocolTreasuryBalanceAfter =
+        await getTokenBalance(program.provider.connection, pdas.protocolTreasury);
+    const vaultBalanceAfter = await program.provider.connection.getBalance(pdas.vault);
+
+    assert.equal(
+        tokenBalanceAfter,
+        tokenBalanceBefore - amount2Z,
+        "Token Balance should decrease by amount_2z"
+    )
+    assert.equal(
+        protocolTreasuryBalanceAfter,
+        protocolTreasuryBalanceBefore + amount2Z,
+        "Token Balance should increase by amount_2z"
+    )
+    assert.equal(
+        solBalanceAfter,
+        solBalanceBefore + amountSol,
+        "SOL Balance should increase by amount_sol"
+    )
+    assert.equal(
+        vaultBalanceAfter,
+        vaultBalanceBefore - amountSol,
+        "Vault SOL Balance should decrease by amount_sol"
+    )
+}
+
+export async function withdraw_2z(
+    program,
+    recipientTokenAccount: PublicKey,
+    amount2z: number,
+    signer: Keypair
+) {
+    const pdas = getMockProgramPDAs(program.programId);
+    const tokenBalanceBefore = await getTokenBalance(program.provider.connection, recipientTokenAccount);
+    const protocolTreasuryBalanceBefore =
+        await getTokenBalance(program.provider.connection, pdas.protocolTreasury);
+
+    try {
+        const tx = await program.methods.withdraw2Z(
+            new anchor.BN(amount2z * TOKEN_DECIMAL)
+        )
+            .accounts({
+                tokenProgram: TOKEN_2022_PROGRAM_ID,
+                recipientTokenAccount: recipientTokenAccount,
+                signer: signer.publicKey
+            })
+            .signers([signer])
+            .rpc();
+        console.log("Withdraw 2Z is successful. Transaction Hash", tx);
+    } catch (e) {
+        console.error("Withdraw 2Z failed:", e);
+        assert.fail("Withdraw 2Z failed");
+    }
+
+    const tokenBalanceAfter = await getTokenBalance(program.provider.connection, recipientTokenAccount);
+    const protocolTreasuryBalanceAfter =
+        await getTokenBalance(program.provider.connection, pdas.protocolTreasury);
+
+    assert.equal(
+        tokenBalanceAfter,
+        tokenBalanceBefore + amount2z,
+        "Token Balance of User should decrease by amount_2z"
+    )
+    assert.equal(
+        protocolTreasuryBalanceAfter,
+        protocolTreasuryBalanceBefore - amount2z,
+        "Token Balance of Protocol Treasury should increase by amount_2z"
+    )
 }

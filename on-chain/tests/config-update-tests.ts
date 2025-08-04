@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
-import { accountExists, airdrop, getDefaultKeyPair } from "./core/utils/account-utils";
+import { accountExists, airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/account-utils";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
 import { systemInitializeAndVerify } from "./core/test-flow/system-initialize";
@@ -16,14 +16,14 @@ describe("Config Update Tests", () => {
 
   // Initialize the system
   (async () => {
-    if (!await accountExists(program.provider.connection, await getConfigurationRegistryPDA(program.programId))) {
+    if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
       await systemInitializeAndVerify(program, adminKeyPair);
     }
   })();
 
   it("Non admin user should not be able to update config", async () => {
     const nonAdminUserKeyPair = anchor.web3.Keypair.generate();
-    await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey);
+    await airdropToActivateAccount(program.provider.connection, nonAdminUserKeyPair.publicKey);
     await updateConfigsAndVerifyFail(
         program,
         nonAdminUserKeyPair,
