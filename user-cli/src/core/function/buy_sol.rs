@@ -6,7 +6,7 @@ use anchor_client::{
     solana_sdk::{
         hash::hash,
         instruction::Instruction,
-        signature::{Keypair, Signer}
+        signature::{ Signer }
     },
     anchor_lang::{
         AnchorSerialize,
@@ -20,7 +20,7 @@ use rust_decimal::{
 use cli_common::{
     constant::TOKEN_DECIMALS,
     transaction_executor,
-    utils::{env_var::load_private_key, pda_helper, ui},
+    utils::{env_var::load_payer_from_env, pda_helper},
 };
 
 // Internal modules
@@ -39,8 +39,7 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
     let bid_price_parsed = (amount_input * token_decimals).to_u64()
         .expect("Deposit amount Overflow or conversion failed");
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;
     let mut data = hash(BUY_SOL_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [

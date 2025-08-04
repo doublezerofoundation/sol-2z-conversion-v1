@@ -2,7 +2,8 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
 import {  getDefaultKeyPair } from "./core/utils/account-utils";
-import { systemInitializeAndVerify } from "./core/test-flow/system-initialize";
+import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
+import {initializeSystemIfNeeded, systemInitializeAndVerify} from "./core/test-flow/system-initialize";
 import {
   addDequeuerAndVerify,
   removeDequeuerAndVerify,
@@ -12,8 +13,8 @@ import {
 } from "./core/test-flow/dequeuer-management";
 
 describe("Dequeuer Management Tests", () => {
-  before(async () => {
-    await systemInitializeAndVerify(program, adminKeyPair);
+  before("Initialize the system if needed", async () => {
+    await initializeSystemIfNeeded(program)
   });
 
   anchor.setProvider(anchor.AnchorProvider.env());

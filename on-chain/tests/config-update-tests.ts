@@ -1,11 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
-import { accountExists, airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/account-utils";
+import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
-import { systemInitializeAndVerify } from "./core/test-flow/system-initialize";
-import { getConfigurationRegistryPDA } from "./core/utils/pda-helper";
+import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 
 describe("Config Update Tests", () => {
   // Configure the client to use the local cluster.
@@ -14,12 +13,9 @@ describe("Config Update Tests", () => {
   const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
   const adminKeyPair = getDefaultKeyPair();
 
-  // Initialize the system
-  (async () => {
-    if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
-      await systemInitializeAndVerify(program, adminKeyPair);
-    }
-  })();
+  before("Initialize the system if needed", async () => {
+    await initializeSystemIfNeeded(program)
+  });
 
   it("Non admin user should not be able to update config", async () => {
     const nonAdminUserKeyPair = anchor.web3.Keypair.generate();
@@ -39,6 +35,8 @@ describe("Config Update Tests", () => {
         slotThreshold: new anchor.BN(100),
         priceMaximumAge: new anchor.BN(100),
         maxFillsStorage: new anchor.BN(100),
+        steepness: new anchor.BN(100),
+        maxDiscountRate: new anchor.BN(100),
     };
     await updateConfigsAndVerify(
         program,

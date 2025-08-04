@@ -12,4 +12,6 @@ export namespace Seeds {
     export const MOCK_PROTOCOL_TREASURY_SEED = "protocol_treasury";
     export const MOCK_2Z_TOKEN_MINT_SEED = "double_zero_mint";
 
-}
+export const DECIMAL_PRECISION = 10000;
+
+export const PRICE_ORACLE_END_POINT = "https://x5rmshrog9.execute-api.us-east-1.amazonaws.com/test/api/v1/swap-rate";

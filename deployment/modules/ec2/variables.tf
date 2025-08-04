@@ -131,3 +131,13 @@ variable "container_environment_vars" {
   type        = map(string)
   default     = {}
 }
+
+variable "redis_endpoint" {
+  description = "Redis primary endpoint"
+  type = string
+}
+
+variable "redis_port" {
+  description = "Redis port"
+  type = string
+}

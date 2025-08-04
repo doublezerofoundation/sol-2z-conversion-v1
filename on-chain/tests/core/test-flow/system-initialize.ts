@@ -104,3 +104,10 @@ export async function systemInitializeFail(
     }
     assert.fail("It was able to initialize system");
 }
+
+export async function initializeSystemIfNeeded(program) {
+    if (!await accountExists(program.provider.connection, await getConfigurationRegistryPDA(program.programId))) {
+        const adminKeypair: Keypair = getDefaultKeyPair();
+        await systemInitializeAndVerify(program, adminKeypair);
+    }
+}

@@ -7,6 +7,8 @@ const swapRateController = new SwapRateController()
 appRouter.get('/swap-rate', swapRateController.swapRateHandler);
 
 appRouter.get('/health', (req, res) => {
+
+    // TODO
     res.send('Hello World');
 });
 

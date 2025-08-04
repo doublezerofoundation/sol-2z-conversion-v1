@@ -1,22 +1,65 @@
-import {generateKeyPair, generateKeyPairSigner} from "@solana/kit";
-import {KeyPair} from "./types";
-import {KeyPairSigner} from "@solana/signers/dist/types/keypair-signer";
-
+import {
+    createKeyPairSignerFromPrivateKeyBytes,
+    KeyPairSigner
+} from "@solana/kit";
+import {GetParameterCommand, GetParameterCommandInput, SSMClient} from "@aws-sdk/client-ssm";
+import * as process from "node:process";
+const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
+import bs58 from 'bs58';
+import {Keypair} from "@solana/web3.js";
 export class KeyManager {
-    private cachedKeys: KeyPairSigner = null;
-
-    async getKeys(): Promise<KeyPairSigner> {
-        // TODO: Get from parameter store instead of generating new keys
-        if (!this.cachedKeys) {
-            this.cachedKeys = await generateKeyPairSigner();
-        }
-        return this.cachedKeys;
+    private awsSSM: any;
+    constructor() {
+        this.awsSSM = new SSMClient({
+            region: AWS_REGION
+        })
     }
 
-    // Method to load keys from parameter store (to be implemented)
-    async loadKeysFromParameterStore(): Promise<KeyPair> {
-        // TODO: Implement parameter store integration
-        throw new Error("Parameter store integration not implemented yet");
+    async getKeyPair(): Promise<Uint8Array> {
+        return await this.loadKeysFromParameterStore();
+    }
+    async getKeyPairSigner(): Promise<KeyPairSigner> {
+        return await this.loadKeyPairSignerFromParameterStore();
+    }
+
+    async loadKeysFromParameterStore(): Promise<Uint8Array> {
+        const params:GetParameterCommandInput = {
+            Name: `/ml/oracle-pricing-key`,
+            WithDecryption: true
+        }
+
+        const result = await this.awsSSM.send(new GetParameterCommand(params))
+        if (!result.Parameter?.Value) {
+            throw new Error("No value found in parameter store")
+        }
+        const value = result.Parameter.Value;
+        const privateKeyBytes = bs58.decode(value);
+        const keyPair = Keypair.fromSeed(privateKeyBytes);
+        console.log(keyPair.publicKey.toString())
+
+        return privateKeyBytes;
+
+
+    }
+
+    async loadKeyPairSignerFromParameterStore(): Promise<KeyPairSigner> {
+        const params:GetParameterCommandInput = {
+            Name: `/ml/oracle-pricing-key`,
+            WithDecryption: true
+        }
+
+        const result = await this.awsSSM.send(new GetParameterCommand(params))
+        if (!result.Parameter?.Value) {
+            throw new Error("No value found in parameter store")
+        }
+        const value = result.Parameter.Value;
+        const privateKeyBytes = bs58.decode(value);
+        const cryptoKeyPair = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
+        console.log(cryptoKeyPair.address)
+
+        return cryptoKeyPair;
+
+
     }
 
 }

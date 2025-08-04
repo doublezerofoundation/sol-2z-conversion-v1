@@ -3,16 +3,18 @@
 mod common;
 pub mod configuration_registry;
 mod state;
-mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
+mod discount_rate;
 mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
-use configuration_registry::configuration_registry::*;
+use configuration_registry::update_configuration::*;
 use user_flow::buy_sol::*;
+use discount_rate::calculate_ask_price::*;
+use common::structs::*;
 use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;
 
@@ -21,7 +23,6 @@ declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 pub mod converter_program {
     use super::*;
 
-
     // Admin Flow
     pub fn initialize_system(
         ctx: Context<InitializeSystem>,
@@ -29,7 +30,9 @@ pub mod converter_program {
         sol_quantity: u64,
         slot_threshold: u64,
         price_maximum_age: i64,
-        max_fills_storage: u64
+        max_fills_storage: u64,
+        steepness: u64,
+        max_discount_rate: u64
     ) -> Result<()> {
 
         // Setting bumps values
@@ -46,7 +49,9 @@ pub mod converter_program {
             sol_quantity,
             slot_threshold,
             price_maximum_age,
-            max_fills_storage
+            max_fills_storage,
+            steepness,
+            max_discount_rate
         )
     }
 
@@ -57,26 +62,11 @@ pub mod converter_program {
         ctx.accounts.process_update(input)
     }
 
-    pub fn add_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        new_pubkey: Pubkey,
-    ) -> Result<()> {
-        ctx.accounts.add_dequeuer(new_pubkey)
-    }
-
-    pub fn remove_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        remove_pubkey: Pubkey,
-    ) -> Result<()> {
-        ctx.accounts.remove_dequeuer(remove_pubkey)
-    }
-
-    pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
-    }
-
-    pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn calculate_ask_price(
+        ctx: Context<CalculateAskPrice>,
+        oracle_price_data: OraclePriceData,
+    ) -> Result<u64> {
+        ctx.accounts.process(oracle_price_data)
     }
 
     // User Flow
@@ -93,5 +83,27 @@ pub mod converter_program {
             timestamp,
             signature
         )
+    }
+
+    pub fn add_dequeuer(
+        ctx: Context<UpdateDequeuers>,
+        new_pubkey: Pubkey,
+    ) -> Result<()> {
+        ctx.accounts.add_dequeuer(new_pubkey)
+    }
+
+    pub fn remove_dequeuer(
+        ctx: Context<UpdateDequeuers>,
+        remove_pubkey: Pubkey,
+    ) -> Result<()> {
+        ctx.accounts.remove_dequeuer(remove_pubkey)
+    }
+
+    pub fn add_to_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.add_to_deny_list(address)
+    }
+
+    pub fn remove_from_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.remove_from_deny_list(address)
     }
 }

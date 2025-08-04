@@ -1,7 +1,6 @@
 use crate::{
-    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes},
-    deny_list_registry::deny_list_registry::DenyListRegistry,
-    state::program_state::ProgramStateAccount,
+    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError},
+    configuration_registry::update_configuration::ConfigurationRegistryInput
 };
 use anchor_lang::prelude::*;
 
@@ -15,6 +14,10 @@ pub struct ConfigurationRegistry {
     pub max_fills_storage: u64, // Maximum number of fills to store
     #[max_len(MAX_AUTHORIZED_DEQUEUERS)]
     pub authorized_dequeuers: Vec<Pubkey>, // Contracts authorized to dequeue fills
+
+    // Price calculation
+    pub steepness: u64, // Steepness of the discount function in basis points (0 <= steepness <= 10_000)
+    pub max_discount_rate: u64, // Maximum discount rate in basis points (0 <= max_discount_rate <= 10_000)
 }
 
 impl ConfigurationRegistry {
@@ -25,12 +28,16 @@ impl ConfigurationRegistry {
         slot_threshold: u64,
         price_maximum_age: i64,
         max_fills_storage: u64,
+        steepness: u64,
+        max_discount_rate: u64
     ) -> Result<()> {
         self.oracle_pubkey = oracle_pubkey;
         self.sol_quantity = sol_quantity;
         self.slot_threshold = slot_threshold;
         self.price_maximum_age = price_maximum_age;
         self.max_fills_storage = max_fills_storage;
+        self.steepness = steepness;
+        self.max_discount_rate = max_discount_rate;
         Ok(())
     }
 
@@ -50,6 +57,12 @@ impl ConfigurationRegistry {
         if let Some(max_fills_storage) = input.max_fills_storage {
             self.max_fills_storage = max_fills_storage;
         }
+        if let Some(steepness) = input.steepness {
+            self.steepness = steepness;
+        }
+        if let Some(max_discount_rate) = input.max_discount_rate {
+            self.max_discount_rate = max_discount_rate;
+        }
         Ok(())
     }
 
@@ -59,7 +72,7 @@ impl ConfigurationRegistry {
         if !self.authorized_dequeuers.contains(&new_pubkey) {
             // Enforce the maximum limit
             if self.authorized_dequeuers.len() as u64 >= MAX_AUTHORIZED_DEQUEUERS {
-                return Err(error!(DoubleZeroError::MaxAuthorizedDequeuersReached));
+                return err!(DoubleZeroError::MaxAuthorizedDequeuersReached);
             }
             self.authorized_dequeuers.push(new_pubkey);
             Ok(true)  // return true if added
@@ -72,52 +85,6 @@ impl ConfigurationRegistry {
         let before_len = self.authorized_dequeuers.len();
         self.authorized_dequeuers.retain(|pk| pk != &remove_pubkey);
         Ok(before_len != self.authorized_dequeuers.len()) // true if something was removed
-    }
-
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct ConfigurationRegistryInput {
-    pub oracle_pubkey: Option<Pubkey>,
-    pub sol_quantity: Option<u64>,
-    pub slot_threshold: Option<u64>,
-    pub price_maximum_age: Option<i64>, //in seconds
-    pub max_fills_storage: Option<u64>,
-}
-
-#[derive(Accounts)]
-pub struct ConfigurationRegistryUpdate<'info> {
-    #[account(
-        mut,
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
-        bump,
-    )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,
-    #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
-        bump,
-    )]
-    pub program_state: Account<'info, ProgramStateAccount>,
-    #[account(
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump,
-    )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
-    #[account(mut)]
-    pub authority: Signer<'info>,
-}
-
-impl<'info> ConfigurationRegistryUpdate<'info> {
-    pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
-        // Authentication and authorization
-        if self.program_state.admin != self.authority.key() {
-            return err!(DoubleZeroError::UnauthorizedUser);
-        }
-        if self.deny_list_registry.denied_addresses.contains(self.authority.key) {
-            return err!(DoubleZeroError::UserInsideDenyList);
-        }
-
-        self.configuration_registry.update(input)
     }
 }
 

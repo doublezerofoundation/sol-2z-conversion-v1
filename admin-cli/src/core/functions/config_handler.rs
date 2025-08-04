@@ -3,18 +3,17 @@ use std::{error::Error, str::FromStr};
 use anchor_client::{
     anchor_lang::{prelude::AccountMeta, AnchorSerialize},
     solana_sdk::{
-        hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer,
+        hash::hash, instruction::Instruction, pubkey::Pubkey, signer::Signer,
     },
 };
 use cli_common::{
+    structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_batch_instructions},
-    utils::{env_var::load_private_key, pda_helper, ui},
+    utils::{pda_helper, ui, env_var::load_payer_from_env},
 };
-
 use crate::core::{
     common::{
-        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION,
-        structs::{ConfigurationRegistry, ConfigurationRegistryInput},
+        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION, structs::ConfigurationRegistryInput,
     },
     config::AdminConfig,
 };
@@ -35,8 +34,7 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
 
     let mut account_data = hash(UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION).to_bytes()[..8].to_vec();
     let input = ConfigurationRegistryInput {
@@ -45,6 +43,8 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
         slot_threshold: Some(admin_config.slot_threshold),
         price_maximum_age: Some(admin_config.price_maximum_age),
         max_fills_storage: Some(admin_config.max_fills_storage),
+        steepness: Some(admin_config.steepness),
+        max_discount_rate: Some(admin_config.max_discount_rate),
     };
     account_data = [account_data, input.try_to_vec()?].concat();
 

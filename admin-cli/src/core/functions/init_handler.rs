@@ -1,19 +1,19 @@
 use std::{error::Error, str::FromStr};
-
-use anchor_client::solana_sdk::{
-    hash::hash,
-    instruction::{AccountMeta, Instruction},
-    pubkey::Pubkey,
-    signature::{Keypair, Signer},
-    system_program,
+use anchor_client::{
+    anchor_lang::system_program,
+    solana_sdk::{
+        hash::hash,
+        instruction::{AccountMeta, Instruction},
+        pubkey::Pubkey,
+        signature::Signer,
+    }
 };
 
 use cli_common::{
     utils::ui,
     transaction_executor,
-    utils::{env_var::load_private_key, pda_helper},
+    utils::{env_var::load_payer_from_env, pda_helper},
 };
-
 use crate::core::{
     common::instruction::INITIALIZE_SYSTEM_INSTRUCTION,
     config::AdminConfig,
@@ -23,8 +23,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
 
     // Building instruction data
     let mut data_initialize = hash(INITIALIZE_SYSTEM_INSTRUCTION).to_bytes()[..8].to_vec();
@@ -35,6 +34,8 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         admin_config.slot_threshold.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
         admin_config.max_fills_storage.to_le_bytes().to_vec(),
+        admin_config.steepness.to_le_bytes().to_vec(),
+        admin_config.max_discount_rate.to_le_bytes().to_vec(),
     ].concat();
 
 

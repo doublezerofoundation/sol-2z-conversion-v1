@@ -90,3 +90,11 @@ variable "ecr_tags" {
     Name = "double-zero-repository"
   }
 }
+
+variable "redis_tags" {
+  description = "Tags to apply to ECR repository"
+  type        = map(string)
+  default = {
+    Name = "double-zero-redis"
+  }
+}

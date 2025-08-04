@@ -8,7 +8,7 @@ IMAGE_TAG="dev3-v1.0.0"
 CONTAINER_NAME="swap-oracle-service"
 ECR_REGISTRY=""
 ECR_REPOSITORY="double-zero-oracle-pricing-service"
-
+TERRAFORM_DIR="../regional"
 successful_instances=()
 failed_instances=()
 
@@ -27,6 +27,44 @@ find_ec2_instance(){
     --output text)
   echo "instance $INSTANCE_IDS"
 
+}
+
+get_redis_url_from_terraform(){
+  echo "Retrieving Redis URL from Terraform outputs..."
+
+  if [[ ! -d "$TERRAFORM_DIR" ]]; then
+    echo "❌ Terraform directory not found: $TERRAFORM_DIR"
+    exit 1
+  fi
+
+  # Change to terraform directory and get the output
+  cd $TERRAFORM_DIR
+
+  REDIS_ENDPOINT=$(terraform output -raw redis_endpoint 2>/dev/null)
+  REDIS_PORT=$(terraform output -raw redis_port 2>/dev/null)
+
+  if [[ $? -ne 0 ]]; then
+    echo "❌ Failed to run terraform output. Make sure:"
+    echo "   - Terraform is initialized (run 'terraform init')"
+    echo "   - Infrastructure has been applied (run 'terraform apply')"
+    echo "   - You have the necessary permissions to access the state"
+    exit 1
+  fi
+
+
+  if [[ -z "$REDIS_ENDPOINT" || "$REDIS_ENDPOINT" == "null" ]]; then
+    echo "❌ Redis endpoint output is empty or null. Check your Terraform configuration."
+    exit 1
+  fi
+
+  if [[ -z "$REDIS_PORT" || "$REDIS_PORT" == "null" ]]; then
+    echo "❌ Redis port output is empty or null. Check your Terraform configuration."
+    exit 1
+  fi
+
+  echo "REDIS_ENDPOINT $REDIS_ENDPOINT"
+  echo "REDIS_PORT $REDIS_PORT"
+  cd - > /dev/null
 }
 
 verify_ecr_image(){
@@ -52,6 +90,8 @@ ECR_REGISTRY="$ECR_REGISTRY"
 ECR_REPOSITORY="$ECR_REPOSITORY"
 IMAGE_TAG="$IMAGE_TAG"
 CONTAINER_NAME="$CONTAINER_NAME"
+REDIS_PORT="$REDIS_PORT"
+REDIS_ENDPOINT="$REDIS_ENDPOINT"
 FULL_IMAGE_URI="\${ECR_REGISTRY}/\${ECR_REPOSITORY}:\${IMAGE_TAG}"
 
 echo "Starting container redeployment on \$(hostname)"
@@ -80,7 +120,8 @@ docker run -d \\
   --name \$CONTAINER_NAME \\
   --restart unless-stopped \\
   -p 8080:8080 \\
-  -e ENVIRONMENT=\$ENVIRONMENT \\
+  -e ENVIRONMENT=\$ENVIRONMENT -e AWS_REGION=$AWS_REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT\\
+  -v /opt/app/logs:/app/logs \\
   \$FULL_IMAGE_URI
 
 # Verify container is running
@@ -267,7 +308,7 @@ echo "================================"
 
 #./deploy.sh --env dev3 --region us-west-2 --image-tag dev3-v1.0.0  --ecr-repository double-zero-oracle-pricing-service  --container-name swap-oracle-service
 
-
+get_redis_url_from_terraform
 get_ecr_config
 find_ec2_instance
 verify_ecr_image
