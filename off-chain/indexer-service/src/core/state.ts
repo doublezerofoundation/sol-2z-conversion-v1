@@ -1,18 +1,13 @@
-export interface IndexerStateConfig {
-     lastProcessedSignature: string | null
-}
-
-let state: IndexerStateConfig = {
-     lastProcessedSignature: null
-};
+import { getLastProcessedSig, setLastProcessedSig } from "../utils/ddb";
 
 let recovering = true; 
 
 export async function getLastSignature(): Promise<string | null> {
-     return state.lastProcessedSignature;
+     return await getLastProcessedSig();
 }
-export async function saveLastSignature(sig: string) {
-     state.lastProcessedSignature = sig;
+
+export async function saveLastSignature(sig: string | null) {
+     await setLastProcessedSig(sig);
 }
 
 export function isRecovering() {

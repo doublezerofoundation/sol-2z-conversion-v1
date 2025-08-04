@@ -15,26 +15,25 @@ export async function recoverHistory() {
   while (true) {
     const sigInfos = await connection.getSignaturesForAddress(
       PROGRAM_ID,
-      { before, limit: 1000 }
+      { before,
+        limit: 1000,
+        until: lastSig ?? undefined,      // recovery will stop once it reaches this signature
+      }
     );
     if (sigInfos.length === 0) break;
 
-    const sigs = sigInfos.map(i => i.signature);
-    const idx  = lastSig ? sigs.indexOf(lastSig) : -1;
-    // if we found lastSig, only process everything before it
-    const toProcess = idx >= 0 ? sigs.slice(0, idx) : sigs;
-
+    // process all signatures
     await promisePool(
-      toProcess,
+      sigInfos.map(i => i.signature),
       sig => processTx(sig),
       CONCURRENCY
     );
 
-    if (idx >= 0) break;
-    before = sigs[sigs.length - 1];
+    // page backwards
+    before = sigInfos[sigInfos.length - 1].signature;
   }
 
   // enable real-time cursor 
   endRecovery();
-  console.log('✅ History catch-up complete—now live logs will advance the cursor.');
+  console.log('✅ History recovery complete!');
 }

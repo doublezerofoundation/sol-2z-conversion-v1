@@ -4,6 +4,25 @@ locals {
   )
 }
 
+# system-state
+resource "aws_dynamodb_table" "system_state" {
+  name         = "${var.name_prefix}-system-state"
+  billing_mode = "PAY_PER_REQUEST"
+
+  hash_key = "key"
+
+  attribute {
+    name = "key"
+    type = "S"
+  }
+  attribute {
+    name = "value"
+    type = "S"
+  }
+
+  tags = local.common_tags
+}
+
 # solana-event
 resource "aws_dynamodb_table" "solana_event" {
   name         = "${var.name_prefix}-solana-event"

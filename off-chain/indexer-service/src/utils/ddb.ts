@@ -3,12 +3,39 @@ import {
   DynamoDBDocumentClient,
   PutCommand,
   PutCommandInput,
+  GetCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { DDBTable } from "../common";
+import { DDBTable, SystemStateKey } from "../common";
 
-// Create a single, shared DynamoDB DocumentClient
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const table_prefix = `doublezero-${process.env.ENV!}`;
+
+// ---- System State ----
+
+export async function setLastProcessedSig(sig: string | null) {
+  await ddbDocClient.send(
+    new PutCommand({
+      TableName: `${table_prefix}-${DDBTable.SYSTEM_STATE}`,
+      Item: {
+        key: SystemStateKey.LAST_PROCESSED_SIGNATURE,
+        value: sig ?? "null",
+      },
+    })
+  );
+}
+
+export async function getLastProcessedSig(): Promise<string | null> {
+  const result = await ddbDocClient.send(
+    new GetCommand({
+      TableName: `${table_prefix}-${DDBTable.SYSTEM_STATE}`,
+      Key: { key: SystemStateKey.LAST_PROCESSED_SIGNATURE },
+    })
+  );
+  if (!result.Item || result.Item.value === "null") return null;
+  return result.Item.value;
+}
+
+// ---- Solana Event ----
 
 export async function writeSolanaEvent(
   txHash: string,
@@ -24,13 +51,15 @@ export async function writeSolanaEvent(
       tx_hash: txHash,
       event_id: eventId,
       event_type: eventType,
-      data,      
+      data,
       slot,
       timestamp,
     },
   };
   await ddbDocClient.send(new PutCommand(params));
 }
+
+// ---- Solana Error ----
 
 export async function writeSolanaError(
   txHash: string,
@@ -52,6 +81,8 @@ export async function writeSolanaError(
   await ddbDocClient.send(new PutCommand(params));
 }
 
+// ---- Fill Dequeue ----
+
 export async function writeFillDequeue(
   txHash: string,
   actionId: string,
@@ -63,14 +94,16 @@ export async function writeFillDequeue(
     TableName: `${table_prefix}-${DDBTable.FILL_DEQUEUE}`,
     Item: {
       tx_hash: txHash,
-      timestamp,       // sort key
-      action_id: actionId,  
-      data,         
+      timestamp, // sort key
+      action_id: actionId,
+      data,
       slot,
     },
   };
   await ddbDocClient.send(new PutCommand(params));
 }
+
+// ---- Deny List Action ----
 
 export async function writeDenyListAction(
   txHash: string,
@@ -83,9 +116,9 @@ export async function writeDenyListAction(
     TableName: `${table_prefix}-${DDBTable.DENY_LIST_ACTION}`,
     Item: {
       tx_hash: txHash,
-      timestamp,        // sort key
+      timestamp, // sort key
       action_id: actionId,
-      data,         
+      data,
       slot,
     },
   };
