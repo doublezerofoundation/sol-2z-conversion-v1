@@ -1,11 +1,15 @@
 use std::error::Error;
 use reqwest::Url;
 use cli_common::config::Config;
+
+#[allow(dead_code)]
 pub struct UserConfig {
     pub program_id: String,
     pub price_oracle_end_point: Url,
+    pub rpc_url: String,
 }
 
+#[allow(dead_code)]
 impl UserConfig {
     pub fn load_user_config() -> Result<Self, Box<dyn Error>> {
         let raw_config = Config::load()?;
@@ -13,6 +17,7 @@ impl UserConfig {
         Ok(UserConfig {
             program_id: raw_config.program_id,
             price_oracle_end_point: Url::parse(&oracle_price_end_point)?,
+            rpc_url: raw_config.rpc_url,
         })
     }
 }

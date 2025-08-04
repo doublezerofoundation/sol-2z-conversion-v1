@@ -14,7 +14,7 @@ pub struct ProgramStateAccount {
     pub is_halted: bool,  // Indicates whether the system accepts conversion requests
     pub bump_registry: BumpRegistry,
     #[max_len(MAX_TRADE_HISTORY_SIZE)]
-    pub trade_history_list: Vec<TradeHistory>
+    pub trade_history_list: Vec<TradeHistory>,
 }
 
 impl ProgramStateAccount {

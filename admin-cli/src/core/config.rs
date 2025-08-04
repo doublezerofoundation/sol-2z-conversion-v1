@@ -12,6 +12,8 @@ pub struct AdminConfig {
     pub slot_threshold: u64,
     pub price_maximum_age: i64,
     pub max_fills_storage: u64,
+    pub steepness: u64,
+    pub max_discount_rate: u64,
 }
 
 impl AdminConfig {
@@ -26,6 +28,8 @@ impl AdminConfig {
             slot_threshold: raw_config.slot_threshold.ok_or("Missing slot_threshold in config file")?,
             price_maximum_age: raw_config.price_maximum_age.ok_or("Missing price_maximum_age in config file")?,
             max_fills_storage: raw_config.max_fills_storage.ok_or("Missing max_fills_storage in config file")?,
+            steepness: raw_config.steepness.ok_or("Missing steepness in config file")?,
+            max_discount_rate: raw_config.max_discount_rate.ok_or("Missing max_discount_rate in config file")?,
         })
     }
 }

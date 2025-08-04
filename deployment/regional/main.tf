@@ -144,6 +144,7 @@ module "ssm_param" {
   name   = "/ml/oracle-pricing-key"
   value  = var.oracle_pricing_key
   type   = "SecureString"
+  aws_region = var.aws_region
   tags = {
     Environment = "Dev"
   }
@@ -157,4 +158,16 @@ module "ecr" {
   ecr_encryption_type       = var.ecr_encryption_type
   ecr_kms_key_arn          = var.ecr_kms_key_arn
   ecr_tags                 = var.ecr_tags
+}
+
+module "redis" {
+  source = "../modules/redis"
+  name_prefix         = var.name_prefix
+  vpc_id             = module.vpc.vpc_id
+  subnet_ids         = aws_subnet.private[*].id
+  allowed_cidr_blocks = var.private_subnet_cidrs
+  node_type          = "cache.t3.micro"
+  num_cache_clusters = 1
+
+  tags = var.redis_tags
 }

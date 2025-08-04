@@ -7,13 +7,13 @@ use anchor_client::{
     },
 };
 use cli_common::{
+    structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_batch_instructions},
     utils::{pda_helper, ui, env_var::load_payer_from_env},
 };
 use crate::core::{
     common::{
-        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION,
-        structs::{ConfigurationRegistry, ConfigurationRegistryInput},
+        instruction::UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION, structs::ConfigurationRegistryInput,
     },
     config::AdminConfig,
 };
@@ -43,6 +43,8 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
         slot_threshold: Some(admin_config.slot_threshold),
         price_maximum_age: Some(admin_config.price_maximum_age),
         max_fills_storage: Some(admin_config.max_fills_storage),
+        steepness: Some(admin_config.steepness),
+        max_discount_rate: Some(admin_config.max_discount_rate),
     };
     account_data = [account_data, input.try_to_vec()?].concat();
 
