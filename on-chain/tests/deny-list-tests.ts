@@ -105,7 +105,6 @@ describe("Deny List Tests", () => {
                 console.log("Note: Non-authority was able to add to deny list. Authority checking should be implemented.");
             } catch (error) {
                 // This is the expected behavior once authority checking is implemented
-                console.log(error.message);
                 assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
             }
         });
@@ -169,7 +168,6 @@ describe("Deny List Tests", () => {
                 console.log("Note: Non-authority was able to remove from deny list. Authority checking should be implemented.");
             } catch (error) {
                 // This is the expected behavior once authority checking is implemented
-                console.log(error.message)
                 assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
             }
         });
