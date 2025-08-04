@@ -3,3 +3,4 @@ pub mod events;
 pub mod seeds;
 pub mod error;
 pub mod utils;
+pub mod structs;

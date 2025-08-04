@@ -7,12 +7,15 @@ mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
+mod discount_rate;
 mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
 use configuration_registry::configuration_registry::*;
+use discount_rate::calculate_ask_price::*;
 use user_flow::buy_sol::*;
+use common::structs::*;
 use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;
 
@@ -21,7 +24,6 @@ declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 pub mod converter_program {
     use super::*;
 
-
     // Admin Flow
     pub fn initialize_system(
         ctx: Context<InitializeSystem>,
@@ -29,7 +31,9 @@ pub mod converter_program {
         sol_quantity: u64,
         slot_threshold: u64,
         price_maximum_age: i64,
-        max_fills_storage: u64
+        max_fills_storage: u64,
+        steepness: u64,
+        max_discount_rate: u64
     ) -> Result<()> {
 
         // Setting bumps values
@@ -46,7 +50,9 @@ pub mod converter_program {
             sol_quantity,
             slot_threshold,
             price_maximum_age,
-            max_fills_storage
+            max_fills_storage,
+            steepness,
+            max_discount_rate
         )
     }
 
@@ -55,6 +61,29 @@ pub mod converter_program {
         input: ConfigurationRegistryInput
     ) -> Result<()> {
         ctx.accounts.process_update(input)
+    }
+
+    pub fn calculate_ask_price(
+        ctx: Context<CalculateAskPrice>,
+        oracle_price_data: OraclePriceData,
+    ) -> Result<u64> {
+        ctx.accounts.process(oracle_price_data)
+    }
+
+    // User Flow
+    pub fn buy_sol(
+        ctx: Context<BuySol>,
+        bid_price: u64,
+        swap_rate: String,
+        timestamp: i64,
+        attestation: String
+    ) -> Result<()> {
+        ctx.accounts.process(
+            bid_price,
+            swap_rate,
+            timestamp,
+            attestation
+        )
     }
 
     pub fn add_dequeuer(
@@ -77,21 +106,5 @@ pub mod converter_program {
 
     pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
         ctx.accounts.process(address)
-    }
-
-    // User Flow
-    pub fn buy_sol(
-        ctx: Context<BuySol>,
-        bid_price: u64,
-        swap_rate: String,
-        timestamp: i64,
-        attestation: String
-    ) -> Result<()> {
-        ctx.accounts.process(
-            bid_price,
-            swap_rate,
-            timestamp,
-            attestation
-        )
     }
 }

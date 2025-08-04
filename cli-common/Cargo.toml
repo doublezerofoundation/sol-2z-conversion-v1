@@ -9,3 +9,5 @@ anchor-client = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 solana-loader-v3-interface = { workspace = true }
+solana-transaction-status = { workspace = true }
+base64 = { workspace = true }

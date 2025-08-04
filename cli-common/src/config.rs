@@ -17,7 +17,9 @@ pub struct Config {
     pub price_maximum_age: Option<i64>,
     pub max_fills_storage: Option<u64>,
     pub skip_preflight: bool,
-    pub price_oracle_end_point: Option<String>
+    pub price_oracle_end_point: Option<String>,
+    pub steepness: Option<u64>,
+    pub max_discount_rate: Option<u64>,
 }
 
 impl Config {

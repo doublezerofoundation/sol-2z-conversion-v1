@@ -41,13 +41,16 @@ pub enum DoubleZeroError {
 
     #[msg("Invalid oracle swap rate")]
     InvalidOracleSwapRate, // 6012
-    
+
+    #[msg("Invalid Timestamp")]
+    InvalidTimestamp, // 6013
+
     #[msg("Provided bid is too low")]
-    BidTooLow, // 6013
-    
+    BidTooLow, // 6014
+
     #[msg("Provided Attestation is not Authentic")]
-    StalePrice, // 6014
+    StalePrice, // 6015
 
     #[msg("Maximum number of authorized dequeuers reached")]
-    MaxAuthorizedDequeuersReached, // 6015
+    MaxAuthorizedDequeuersReached, // 6016
 }

@@ -10,6 +10,8 @@ pub struct ConfigurationRegistryInput {
     pub slot_threshold: Option<u64>,
     pub price_maximum_age: Option<i64>,
     pub max_fills_storage: Option<u64>,
+    pub steepness: Option<u64>,
+    pub max_discount_rate: Option<u64>,
 }
 
 #[allow(dead_code)]
@@ -21,6 +23,8 @@ pub struct ConfigurationRegistry {
     pub price_maximum_age: i64,
     pub max_fills_storage: u64,
     pub authorized_dequeuers: Vec<Pubkey>,
+    pub steepness: u64,
+    pub max_discount_rate: u64,
 }
 
 impl AccountDeserialize for ConfigurationRegistry {
