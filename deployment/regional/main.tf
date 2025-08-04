@@ -149,9 +149,19 @@ module "ssm_param" {
   }
 }
 
-module "ecr" {
+module "pricing_ecr" {
   source = "../modules/ecr"
   ecr_repository_name       = "double-zero-oracle-pricing-service"
+  ecr_image_tag_mutability  = var.ecr_image_tag_mutability
+  ecr_scan_on_push          = var.ecr_scan_on_push
+  ecr_encryption_type       = var.ecr_encryption_type
+  ecr_kms_key_arn          = var.ecr_kms_key_arn
+  ecr_tags                 = var.ecr_tags
+}
+
+module "indexer_ecr" {
+  source = "../modules/ecr"
+  ecr_repository_name       = "double-zero-indexer-service"
   ecr_image_tag_mutability  = var.ecr_image_tag_mutability
   ecr_scan_on_push          = var.ecr_scan_on_push
   ecr_encryption_type       = var.ecr_encryption_type
