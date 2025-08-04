@@ -6,7 +6,7 @@ pub enum DoubleZeroError {
     #[msg("User is blocked in the DenyList")]
     UserInsideDenyList, // 6000 0x1796
 
-    #[msg("Unauthorized user")]
+    #[msg("Unauthorized Admin")]
     UnauthorizedAdmin, // 6001
 
     #[msg("Provided Attestation is Invalid")]
