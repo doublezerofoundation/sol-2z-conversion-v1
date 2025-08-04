@@ -4,9 +4,11 @@ import {
   PutCommand,
   PutCommandInput,
 } from "@aws-sdk/lib-dynamodb";
+import { DDBTable } from "../common";
 
 // Create a single, shared DynamoDB DocumentClient
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
+const env = process.env.ENV!;
 
 export async function writeSolanaEvent(
   txHash: string,
@@ -17,7 +19,7 @@ export async function writeSolanaEvent(
   timestamp: number
 ) {
   const params: PutCommandInput = {
-    TableName: process.env.SOLANA_EVENT_TABLE_NAME!,
+    TableName: `${env}-${DDBTable.SOLANA_EVENT}`,
     Item: {
       tx_hash: txHash,
       event_id: eventId,
@@ -38,7 +40,7 @@ export async function writeSolanaError(
   timestamp: number
 ) {
   const params: PutCommandInput = {
-    TableName: process.env.SOLANA_ERROR_TABLE_NAME!,
+    TableName: `${env}-${DDBTable.SOLANA_ERROR}`,
     Item: {
       tx_hash: txHash,
       error_code: errorCode,
@@ -58,7 +60,7 @@ export async function writeFillDequeue(
   timestamp: number
 ) {
   const params: PutCommandInput = {
-    TableName: process.env.FILL_DEQUEUE_TABLE_NAME!,
+    TableName: `${env}-${DDBTable.FILL_DEQUEUE}`,
     Item: {
       tx_hash: txHash,
       timestamp,       // sort key
@@ -78,7 +80,7 @@ export async function writeDenyListAction(
   timestamp: number
 ) {
   const params: PutCommandInput = {
-    TableName: process.env.DENY_LIST_ACTION_TABLE_NAME!,
+    TableName: `${env}-${DDBTable.DENY_LIST_ACTION}`,
     Item: {
       tx_hash: txHash,
       timestamp,        // sort key

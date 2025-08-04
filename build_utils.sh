@@ -37,7 +37,7 @@ build_image() {
     local image_tag=$1
     log_info "Building Docker image..."
 
-    docker build -t "$SERVICE_NAME:$BUILD_TAG" .
+    docker build --build-arg AWS_REGION=$AWS_REGION --build-arg ENV=$ENV -t $SERVICE_NAME:$BUILD_TAG .
     docker tag "$SERVICE_NAME:$BUILD_TAG" "$image_tag"
 
     log_info "Image built successfully: $image_tag"

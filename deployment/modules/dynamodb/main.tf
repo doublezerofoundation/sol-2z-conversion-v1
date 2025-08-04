@@ -1,7 +1,6 @@
 locals {
   common_tags = merge(
-    { Environment = var.environment },
-    var.additional_tags,
+    { Environment = var.environment }
   )
 }
 

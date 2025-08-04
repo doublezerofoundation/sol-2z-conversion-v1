@@ -21,8 +21,7 @@ export async function processTx(sig: string) {
 
      if (err) {
           const errorName = handleTxError(sig, err);
-          // TODO: write to solana-error DDB 
-          // await writeSolanaError(sig, errorName, slot, timestamp);
+          await writeSolanaError(sig, errorName ?? 'UnknownError', logMessages, slot, timestamp);
           return;
      }
 
@@ -32,13 +31,13 @@ export async function processTx(sig: string) {
           const eventId = `${slot}-${sig}-${e.name}`;
           switch (e.name) {
                case 'FillDequeued':
-                    // await writeFillDequeue(sig, eventId, e.data, slot, timestamp);
+                    await writeFillDequeue(sig, eventId, e.data, slot, timestamp);
                     break;
                case 'DenyListModified':
-                    // await writeDenyListAction(sig, eventId, e.data, slot, timestamp);
+                    await writeDenyListAction(sig, eventId, e.data, slot, timestamp);
                     break;
                default:
-                    // await writeSolanaEvent(sig, eventId, e.name, e.data, slot, timestamp);
+                    await writeSolanaEvent(sig, eventId, e.name, e.data, slot, timestamp);
           }
      }
 }

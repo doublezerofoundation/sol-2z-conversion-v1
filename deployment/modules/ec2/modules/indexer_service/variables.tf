@@ -51,19 +51,19 @@ variable "region" {
 }
 
 # Auto Scaling Group Configuration
-variable "min_size" {
+variable "asg_min_size" {
   description = "Minimum size of the auto scaling group"
   type        = number
   default     = 2
 }
 
-variable "max_size" {
+variable "asg_max_size" {
   description = "Maximum size of the auto scaling group"
   type        = number
   default     = 10
 }
 
-variable "desired_capacity" {
+variable "asg_desired_capacity" {
   description = "Desired capacity of the auto scaling group"
   type        = number
   default     = 2
@@ -111,7 +111,7 @@ variable "ecr_repository" {
 variable "image_tag" {
   description = "Docker image tag to pull from ECR"
   type        = string
-  default     = "dev3-v1.0.0" // TODO need to get from arg
+  default     = "dev1-v1.0.0" // TODO need to get from arg
 }
 
 variable "container_name" {

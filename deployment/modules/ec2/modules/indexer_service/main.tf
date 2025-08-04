@@ -129,9 +129,9 @@ resource "aws_launch_template" "this" {
 # Auto Scaling Group
 resource "aws_autoscaling_group" "this" {
   name                      = "${local.full_prefix}-asg"
-  min_size                  = var.min_size
-  max_size                  = var.max_size
-  desired_capacity          = var.desired_capacity
+  min_size                  = var.asg_min_size
+  max_size                  = var.asg_max_size
+  desired_capacity          = var.asg_desired_capacity
   vpc_zone_identifier       = var.private_subnets
   health_check_type         = "ELB"
   health_check_grace_period = var.health_check_grace_period

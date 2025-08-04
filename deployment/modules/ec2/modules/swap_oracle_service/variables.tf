@@ -51,19 +51,19 @@ variable "region" {
 }
 
 # Auto Scaling Group Configuration
-variable "min_size" {
+variable "asg_min_size" {
   description = "Minimum size of the auto scaling group"
   type        = number
   default     = 2
 }
 
-variable "max_size" {
+variable "asg_max_size" {
   description = "Maximum size of the auto scaling group"
   type        = number
   default     = 10
 }
 
-variable "desired_capacity" {
+variable "asg_desired_capacity" {
   description = "Desired capacity of the auto scaling group"
   type        = number
   default     = 2
@@ -130,4 +130,15 @@ variable "container_environment_vars" {
   description = "Additional environment variables for the container"
   type        = map(string)
   default     = {}
+}
+
+variable "redis_endpoint" {
+  description = "Redis primary endpoint"
+  type        = string
+}
+
+variable "redis_port" {
+  description = "Redis port"
+  type        = string
+  default     = "6379"
 }

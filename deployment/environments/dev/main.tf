@@ -11,7 +11,7 @@ terraform {
   # Backend configuration for environment-level state
   backend "s3" {
     bucket         = "doublezero-terraform-state-bucket"
-    key            = "environments/dev2/terraform.tfstate"
+    key            = "environments/dev1/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
     encrypt        = true
@@ -231,10 +231,10 @@ module "ec2" {
   private_subnets   = module.network.private_subnet_ids
   security_groups   = [module.network.ec2_security_group_id]
   target_group_arns = [module.load_balancer.target_group_arn]
-  # instance_type     = var.instance_type
-  # min_size          = var.asg_min_size
-  # max_size          = var.asg_max_size
-  # desired_capacity  = var.asg_desired_capacity
+  instance_type     = var.instance_type
+  asg_min_size        = var.asg_min_size
+  asg_max_size          = var.asg_max_size
+  asg_desired_capacity  = var.asg_desired_capacity
   region            = var.aws_region
   redis_endpoint = data.terraform_remote_state.regional.outputs.redis_endpoint
   redis_port = data.terraform_remote_state.regional.outputs.redis_port
@@ -242,7 +242,7 @@ module "ec2" {
   # # Use the IAM instance profile from the account level
   # # This requires modifying the EC2 module to accept an instance profile name
   # # instead of creating one internally
-  # instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name
+  instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name
 }
 
 # Environment-specific domain names (if needed)
@@ -296,9 +296,8 @@ resource "aws_api_gateway_base_path_mapping" "metrics_mapping" {
 }
 
 module "dynamodb" {
-  source       = "../../../modules/dynamodb"
-  name_prefix  = var.name_prefix
+  source       = "../../modules/dynamodb"
+  name_prefix  = "doublezero-${var.environment}"
   environment  = var.environment
-  additional_tags = var.additional_tags
 }
 

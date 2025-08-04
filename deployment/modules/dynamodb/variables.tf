@@ -7,8 +7,3 @@ variable "name_prefix" {
   description = "Prefix to be used in the name of resources"
   type        = string
 }
-
-variable "additional_tags" {
-  type        = map(string)
-  default     = {}
-}

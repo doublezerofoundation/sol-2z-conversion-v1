@@ -30,12 +30,53 @@ variable "target_group_arns" {
   type        = list(string)
 }
 
+# EC2 Instance Configuration
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+}
+
+variable "instance_profile_name" {
+  description = "Name of the IAM instance profile to use (if not provided, one will be created)"
+  type        = string
+  default     = ""
+}
+
+variable "ami_id" {
+  description = "AMI ID for EC2 instances (defaults to latest Amazon Linux 2)"
+  type        = string
+  default     = ""
+}
+
+# Auto Scaling Group Configuration
+variable "asg_min_size" {
+  description = "Minimum size of the auto scaling group"
+  type        = number
+  default     = 2
+}
+
+variable "asg_max_size" {
+  description = "Maximum size of the auto scaling group"
+  type        = number
+  default     = 5
+}
+
+variable "asg_desired_capacity" {
+  description = "Desired capacity of the auto scaling group"
+  type        = number
+  default     = 2
+}
+
+
 variable "enable_swap_oracle_service" {
+  description = "Enable the Swap Oracle Service EC2 module"
   type        = bool
   default     = false
 }
 
 variable "enable_indexer_service" {
+  description = "Enable the Indexer Service EC2 module"
   type        = bool
   default     = false
 }
