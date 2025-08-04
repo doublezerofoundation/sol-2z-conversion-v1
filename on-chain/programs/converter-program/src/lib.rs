@@ -98,7 +98,7 @@ pub mod converter_program {
         remove_pubkey: Pubkey,
     ) -> Result<()> {
         ctx.accounts.remove_dequeuer(remove_pubkey)
-    }    
+    }
 
     pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
         ctx.accounts.process(address)
