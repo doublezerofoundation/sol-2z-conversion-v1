@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
-import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
+import {airdrop, getDefaultKeyPair} from "./core/utils/account-utils";
 import {DEFAULT_CONFIGS} from "./core/utils/configuration-registry";
 import {systemInitializeAndVerify, systemInitializeFail} from "./core/test-flow/system-initialize";
 
