@@ -1,7 +1,7 @@
 use clap::Parser;
 use crate::command::Commands;
 use std::error::Error;
-use crate::core::functions::{config_handler, init_handler, system_state, update_dequeuer_handler, withdraw_2z, deny_list};
+use crate::core::functions::{admin_handler, config_handler, deny_list, init_handler, system_state, update_dequeuer_handler, withdraw_2z};
 use crate::core::common::error::COMMAND_NOT_SPECIFIED;
 
 #[derive(Parser)]
@@ -68,7 +68,11 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             deny_list::view_deny_list()
         }
 
-        // Toggles system between active and paused states.
+        // Setting the admin of the system
+        Some(Commands::SetAdmin { admin }) => {
+            admin_handler::set_admin(admin)
+        }
+
         None => {
             // println!("No command specified. Use --help for available commands.");
             Err(Box::from(COMMAND_NOT_SPECIFIED))
