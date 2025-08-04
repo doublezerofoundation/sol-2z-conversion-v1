@@ -88,7 +88,7 @@ describe("Deny List Tests", () => {
             await addToDenyListShouldFail(
                 program,
                 testAddress1,
-                "A raw constraint was violated",
+                "Address already added to Deny List",
                 adminKeyPair
             );
         });

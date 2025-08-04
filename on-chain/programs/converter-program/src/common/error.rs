@@ -53,4 +53,7 @@ pub enum DoubleZeroError {
 
     #[msg("Deny list is full")]
     DenyListFull, // 6016
+    
+    #[msg("Address already added to Deny List")]
+    AlreadyExistsInDenyList, // 6017
 }
