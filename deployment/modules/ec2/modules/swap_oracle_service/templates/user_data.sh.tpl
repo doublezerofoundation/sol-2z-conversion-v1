@@ -41,7 +41,7 @@ ECR_REPOSITORY="${ecr_repository}"
 IMAGE_TAG="${image_tag}"
 CONTAINER_NAME="${container_name}"
 REDIS_PORT="${redis_port}"
-REDIS_ENDPOINT="${redis_enpoint}"
+REDIS_ENDPOINT="${redis_endpoint}"
 
 echo "Configuring ECR authentication..."
 
