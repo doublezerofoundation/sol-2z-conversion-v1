@@ -1035,7 +1035,6 @@ dependencies = [
  "anchor-client",
  "serde",
  "serde_json",
- "solana-loader-v3-interface",
 ]
 
 [[package]]
