@@ -8,7 +8,6 @@ skip-lint = false
 
 [programs.localnet]
 converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
-integrating_contract = "DBopoT6ddxmWtNhVpef73mwT2zJr6L8KskNAtrt89LnW"
 
 [registry]
 url = "https://api.apr.dev"

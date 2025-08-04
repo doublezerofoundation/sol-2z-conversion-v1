@@ -3,7 +3,6 @@
 mod common;
 pub mod configuration_registry;
 mod state;
-mod validator_deposit;
 mod deny_list_registry;
 mod fills_registry;
 mod initialize;
@@ -12,9 +11,9 @@ mod user_flow;
 
 use anchor_lang::prelude::*;
 use initialize::init_system::*;
-use configuration_registry::configuration_registry::*;
-use discount_rate::calculate_ask_price::*;
+use configuration_registry::update_configuration::*;
 use user_flow::buy_sol::*;
+use discount_rate::calculate_ask_price::*;
 use common::structs::*;
 use configuration_registry::update_dequeuers::*;
 use deny_list_registry::deny_list_registry::*;
@@ -100,11 +99,11 @@ pub mod converter_program {
         ctx.accounts.remove_dequeuer(remove_pubkey)
     }
 
-    pub fn add_to_deny_list(ctx: Context<AddToDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn add_to_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.add_to_deny_list(address)
     }
 
-    pub fn remove_from_deny_list(ctx: Context<RemoveFromDenyList>, address: Pubkey) -> Result<()> {
-        ctx.accounts.process(address)
+    pub fn remove_from_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
+        ctx.accounts.remove_from_deny_list(address)
     }
 }

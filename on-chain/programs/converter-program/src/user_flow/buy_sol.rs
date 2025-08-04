@@ -15,17 +15,17 @@ use crate::{
 pub struct BuySol<'info> {
     #[account(
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(mut)]

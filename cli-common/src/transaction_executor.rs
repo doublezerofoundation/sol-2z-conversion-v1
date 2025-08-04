@@ -1,35 +1,47 @@
-use crate::{
-    config::Config, constant::{RETRY_COUNT, RETRY_DELAY}, utils::{
-        env_var::load_private_key,
-        error_handler,
-        return_data::ReturnData,
-        ui::{LABEL, OK, WAITING},
-    }
+use std::{
+    error::Error,
+    fmt::Debug,
+    thread::sleep,
+    time::Duration
 };
 use anchor_client::{
     anchor_lang::{AccountDeserialize, AnchorDeserialize},
-    solana_client::{rpc_client::RpcClient, rpc_config::RpcTransactionConfig},
-    solana_sdk::{
-        commitment_config::CommitmentConfig,
-        instruction::Instruction,
-        pubkey::Pubkey,
-        signature::{Keypair, Signature},
-        signer::Signer,
-        transaction::Transaction,
+    solana_client::{
+        rpc_client::RpcClient,
+        rpc_config::RpcTransactionConfig
     },
+    solana_sdk::{
+        commitment_config::CommitmentConfig, 
+        instruction::Instruction,
+        pubkey::Pubkey, 
+        signature::{ Signature, Keypair },
+        signer::Signer, 
+        transaction::Transaction
+    }
 };
+use crate::{
+    config::Config,
+    utils::{
+        env_var::load_payer_from_env,
+        error_handler, 
+        ui::{LABEL, OK, WAITING}
+    }
+};
+
+
 use base64::Engine;
 use solana_transaction_status::{
     option_serializer::OptionSerializer, EncodedConfirmedTransactionWithStatusMeta,
     UiTransactionEncoding,
 };
-use std::{error::Error, fmt::Debug, thread::sleep, time::Duration};
+use crate::constant::{RETRY_COUNT, RETRY_DELAY};
+use crate::utils::env_var::load_private_key;
+use crate::utils::return_data::ReturnData;
 
 pub fn send_batch_instructions(
-    instructions: Vec<Instruction>,
+    instructions: Vec<Instruction>
 ) -> Result<Signature, Box<dyn Error>> {
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
 
     let config = Config::load().map_err(|_| "Error when reading config file")?;
 
@@ -48,7 +60,7 @@ pub fn send_batch_instructions(
         &instructions,
         Some(&payer.pubkey()),
         &[&payer],
-        recent_blockhash,
+        recent_blockhash
     );
 
     let signature = rpc_client.send_and_confirm_transaction(&transaction);
@@ -68,8 +80,7 @@ pub fn send_batch_instructions(
 pub fn send_instruction_with_return_data<T: ReturnData<T>>(
     instruction: Instruction,
 ) -> Result<T, Box<dyn Error>> {
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
 
     let config = Config::load().map_err(|_| "Error when reading config file")?;
 

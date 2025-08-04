@@ -7,11 +7,16 @@ import { getOraclePriceData, OraclePriceData } from "./core/utils/price-oracle";
 import { getDefaultKeyPair } from "./core/utils/accounts";
 import { Keypair } from "@solana/web3.js";
 import { addToDenyListAndVerify, removeFromDenyListAndVerify } from "./core/test-flow/deny-list";
+import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 
 describe("Conversion Price Tests", async () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
     const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
+
+    before("Initialize the system if needed", async () => {
+        await initializeSystemIfNeeded(program)
+    });
 
     it("should get conversion price", async () => {
         await getConversionPriceAndVerify(program, getDefaultKeyPair());

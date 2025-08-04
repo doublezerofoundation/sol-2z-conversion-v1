@@ -18,7 +18,7 @@ use cli_common::{
         ui,
     },
 };
-
+use cli_common::utils::env_var::load_payer_from_env;
 use crate::core::{
     common::instruction::GET_PRICE_INSTRUCTION, config::UserConfig,
     utils::price_utils::fetch_oracle_price,
@@ -41,8 +41,7 @@ pub fn get_quantity() -> Result<(), Box<dyn Error>> {
 }
 
 pub async fn get_price() -> Result<(), Box<dyn Error>> {
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
     let user_config = UserConfig::load_user_config()?;
 
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;

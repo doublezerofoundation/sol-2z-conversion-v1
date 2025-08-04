@@ -1,5 +1,8 @@
-use std::env;
-use std::error::Error;
+use std::{
+    env,
+    error::Error
+};
+use anchor_client::solana_sdk::signature::Keypair;
 use crate::constant::PRIVATE_KEY_ENV_VAR;
 
 /// Loads the private key from the environment variable as a vector of bytes.
@@ -23,4 +26,12 @@ pub fn load_private_key() -> Result<Vec<u8>, Box<dyn Error>> {
 
     // Convert Result<Vec<u8>, String> to Result<Vec<u8>, Box<dyn Error>>
     private_key.map_err(|e| e.into())
+}
+
+pub fn load_payer_from_env() -> Result<Keypair, Box<dyn Error>> {
+    let private_key = load_private_key()?;
+    let payer = Keypair::from_bytes(&private_key)?;
+    // above line is deprecated from solana 2.2.0. below line is the fix. skipping this for older version compatibility
+    // let payer = Keypair::try_from(&private_key[..])?;
+    Ok(payer)
 }
