@@ -11,6 +11,7 @@ export namespace Seeds {
     export const MOCK_VAULT_SEED = "vault";
     export const MOCK_PROTOCOL_TREASURY_SEED = "protocol_treasury";
     export const MOCK_2Z_TOKEN_MINT_SEED = "double_zero_mint";
+}
 
 export const DECIMAL_PRECISION = 10000;
 
