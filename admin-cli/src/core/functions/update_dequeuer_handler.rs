@@ -24,7 +24,7 @@ pub fn add_dequeuer(dequeuer: &str) -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
     let private_key = load_private_key()?;
-    let payer = Keypair::try_from(&private_key as &[u8])?;
+    let payer = Keypair::from_bytes(&private_key)?;
     let dequeuer_pk = Pubkey::from_str(dequeuer)?;
 
     // Building instruction data
@@ -60,7 +60,7 @@ pub fn remove_dequeuer(dequeuer: &str) -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
     let private_key = load_private_key()?;
-    let payer = Keypair::try_from(&private_key as &[u8])?;
+    let payer = Keypair::from_bytes(&private_key)?;
     let dequeuer_pk = Pubkey::from_str(dequeuer)?;
 
     // Building instruction data
