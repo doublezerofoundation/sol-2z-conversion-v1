@@ -1,7 +1,23 @@
 use std::{error::Error, str::FromStr};
 
-use anchor_client::{anchor_lang::{prelude::AccountMeta, AnchorSerialize}, solana_sdk::{hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer}};
-use cli_common::{constant::DECIMAL_PRECISION, transaction_executor::send_instruction_with_return_data, utils::{env_var::load_private_key, pda_helper::{get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda}, ui}};
+use anchor_client::{
+    anchor_lang::{prelude::AccountMeta, AnchorSerialize},
+    solana_sdk::{
+        hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer,
+    },
+};
+use cli_common::{
+    constant::DECIMAL_PRECISION,
+    structs::ConfigurationRegistry,
+    transaction_executor::{get_account_data, send_instruction_with_return_data},
+    utils::{
+        env_var::load_private_key,
+        pda_helper::{
+            self, get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
+        },
+        ui,
+    },
+};
 
 use crate::core::{
     common::instruction::GET_PRICE_INSTRUCTION, config::UserConfig,
@@ -9,7 +25,18 @@ use crate::core::{
 };
 
 pub fn get_quantity() -> Result<(), Box<dyn Error>> {
-    println!("Getting Quantity");
+    let user_config = UserConfig::load_user_config()?;
+    let program_id = Pubkey::from_str(&user_config.program_id)?;
+
+    println!("{}, Reading configuration registry...", ui::WAITING);
+    let config_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
+    let config_registry: ConfigurationRegistry =
+        get_account_data(user_config.rpc_url, config_registry_pda)?;
+    println!(
+        "{} Current tradable SOL quantity: {}",
+        ui::OK,
+        config_registry.sol_quantity
+    );
     Ok(())
 }
 
