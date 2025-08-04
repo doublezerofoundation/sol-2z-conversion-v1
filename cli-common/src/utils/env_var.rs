@@ -30,6 +30,8 @@ pub fn load_private_key() -> Result<Vec<u8>, Box<dyn Error>> {
 
 pub fn load_payer_from_env() -> Result<Keypair, Box<dyn Error>> {
     let private_key = load_private_key()?;
-    let payer = Keypair::try_from(&private_key[..])?;
+    let payer = Keypair::from_bytes(&private_key)?;
+    // above line is deprecated in anchor 0.31.1. below line is the fix. skipping this for 0.30.1 compatibility
+    // let payer = Keypair::try_from(&private_key[..])?;
     Ok(payer)
 }
