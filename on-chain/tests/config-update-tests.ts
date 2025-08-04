@@ -39,6 +39,8 @@ describe("Config Update Tests", () => {
         slotThreshold: new anchor.BN(100),
         priceMaximumAge: new anchor.BN(100),
         maxFillsStorage: new anchor.BN(100),
+        steepness: new anchor.BN(100),
+        maxDiscountRate: new anchor.BN(100),
     };
     await updateConfigsAndVerify(
         program,
