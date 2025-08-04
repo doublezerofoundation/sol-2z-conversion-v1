@@ -144,7 +144,6 @@ module "ssm_param" {
   name   = "/ml/oracle-pricing-key"
   value  = var.oracle_pricing_key
   type   = "SecureString"
-  aws_region = var.aws_region
   tags = {
     Environment = "Dev"
   }
