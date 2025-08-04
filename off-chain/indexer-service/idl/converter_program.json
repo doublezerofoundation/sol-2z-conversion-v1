@@ -8,6 +8,305 @@
   },
   "instructions": [
     {
+      "name": "add_dequeuer",
+      "discriminator": [
+        53,
+        130,
+        22,
+        119,
+        21,
+        220,
+        11,
+        234
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_pubkey",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "add_to_deny_list",
+      "discriminator": [
+        186,
+        25,
+        178,
+        60,
+        226,
+        155,
+        198,
+        32
+      ],
+      "accounts": [
+        {
+          "name": "deny_list_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "address",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "buy_sol",
+      "discriminator": [
+        206,
+        59,
+        125,
+        30,
+        202,
+        248,
+        111,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bid_price",
+          "type": "u64"
+        },
+        {
+          "name": "swap_rate",
+          "type": "string"
+        },
+        {
+          "name": "timestamp",
+          "type": "i64"
+        },
+        {
+          "name": "attestation",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "calculate_ask_price",
+      "discriminator": [
+        65,
+        225,
+        133,
+        159,
+        72,
+        56,
+        170,
+        162
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_price_data",
+          "type": {
+            "defined": {
+              "name": "OraclePriceData"
+            }
+          }
+        }
+      ],
+      "returns": "u64"
+    },
+    {
       "name": "initialize_system",
       "discriminator": [
         50,
@@ -163,11 +462,206 @@
         },
         {
           "name": "price_maximum_age",
-          "type": "u64"
+          "type": "i64"
         },
         {
           "name": "max_fills_storage",
           "type": "u64"
+        },
+        {
+          "name": "steepness",
+          "type": "u64"
+        },
+        {
+          "name": "max_discount_rate",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "remove_dequeuer",
+      "discriminator": [
+        104,
+        114,
+        245,
+        44,
+        116,
+        211,
+        172,
+        87
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "remove_pubkey",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "remove_from_deny_list",
+      "discriminator": [
+        101,
+        131,
+        177,
+        105,
+        217,
+        181,
+        234,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "deny_list_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "address",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "update_configuration_registry",
+      "discriminator": [
+        224,
+        131,
+        133,
+        54,
+        236,
+        119,
+        153,
+        223
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "input",
+          "type": {
+            "defined": {
+              "name": "ConfigurationRegistryInput"
+            }
+          }
         }
       ]
     }
@@ -228,6 +722,32 @@
   ],
   "events": [
     {
+      "name": "DequeuerAdded",
+      "discriminator": [
+        154,
+        40,
+        109,
+        32,
+        102,
+        242,
+        93,
+        178
+      ]
+    },
+    {
+      "name": "DequeuerRemoved",
+      "discriminator": [
+        66,
+        54,
+        251,
+        22,
+        102,
+        22,
+        229,
+        234
+      ]
+    },
+    {
       "name": "SystemInitialized",
       "discriminator": [
         63,
@@ -239,6 +759,26 @@
         126,
         15
       ]
+    },
+    {
+      "name": "UnauthorizedUser",
+      "discriminator": [
+        66,
+        93,
+        243,
+        166,
+        168,
+        14,
+        155,
+        229
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "DenyListFull",
+      "msg": "Deny list is full"
     }
   ],
   "types": [
@@ -285,7 +825,7 @@
           },
           {
             "name": "price_maximum_age",
-            "type": "u64"
+            "type": "i64"
           },
           {
             "name": "max_fills_storage",
@@ -295,6 +835,64 @@
             "name": "authorized_dequeuers",
             "type": {
               "vec": "pubkey"
+            }
+          },
+          {
+            "name": "steepness",
+            "type": "u64"
+          },
+          {
+            "name": "max_discount_rate",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigurationRegistryInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oracle_pubkey",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "sol_quantity",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "slot_threshold",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "price_maximum_age",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "max_fills_storage",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "steepness",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "max_discount_rate",
+            "type": {
+              "option": "u64"
             }
           }
         ]
@@ -318,6 +916,38 @@
           {
             "name": "update_count",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DequeuerAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "added_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "dequeuer",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DequeuerRemoved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "removed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "dequeuer",
+            "type": "pubkey"
           }
         ]
       }
@@ -401,6 +1031,26 @@
       }
     },
     {
+      "name": "OraclePriceData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "swap_rate",
+            "type": "string"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "signature",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
       "name": "ProgramStateAccount",
       "type": {
         "kind": "struct",
@@ -430,6 +1080,16 @@
                 "name": "BumpRegistry"
               }
             }
+          },
+          {
+            "name": "trade_history_list",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "TradeHistory"
+                }
+              }
+            }
           }
         ]
       }
@@ -439,6 +1099,34 @@
       "type": {
         "kind": "struct",
         "fields": []
+      }
+    },
+    {
+      "name": "TradeHistory",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "epoch",
+            "type": "u64"
+          },
+          {
+            "name": "num_of_trades",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "UnauthorizedUser",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attempted_by",
+            "type": "pubkey"
+          }
+        ]
       }
     }
   ]

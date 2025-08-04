@@ -9,10 +9,10 @@ use crate::{
 use anchor_client::{
     solana_client::{
         rpc_client::RpcClient, 
-        rpc_config::RpcSendTransactionConfig
+        rpc_config::RpcSendTransactionConfig,
+        rpc_config::RpcTransactionConfig
     },
     anchor_lang::{AccountDeserialize, AnchorDeserialize},
-    solana_client::{rpc_client::RpcClient, rpc_config::RpcTransactionConfig},
     solana_sdk::{
         commitment_config::CommitmentConfig,
         instruction::Instruction,
@@ -106,7 +106,18 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
         recent_blockhash,
     );
 
-    let signature = rpc_client.send_and_confirm_transaction(&transaction);
+    let tx_config = RpcSendTransactionConfig {
+        skip_preflight: config.skip_preflight,
+        preflight_commitment: Some(CommitmentConfig::confirmed().commitment),
+        ..RpcSendTransactionConfig::default()
+    };
+
+    let signature = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
+        &transaction,
+        CommitmentConfig::confirmed(),
+        tx_config,
+    );
+    
     match signature {
         Ok(_) => {
             println!("{OK} Transaction Completed!");
