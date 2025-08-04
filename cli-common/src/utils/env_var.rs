@@ -28,6 +28,7 @@ pub fn load_private_key() -> Result<Vec<u8>, Box<dyn Error>> {
     private_key.map_err(|e| e.into())
 }
 
+#[allow(deprecated)]
 pub fn load_payer_from_env() -> Result<Keypair, Box<dyn Error>> {
     let private_key = load_private_key()?;
     let payer = Keypair::from_bytes(&private_key)?;

@@ -1,4 +1,5 @@
 #![allow(unexpected_cfgs)]
+#![allow(deprecated)]
 
 mod admin_change;
 mod common;

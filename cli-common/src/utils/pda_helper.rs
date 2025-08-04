@@ -1,3 +1,4 @@
+#[allow(deprecated)]
 use anchor_client::{anchor_lang::prelude::Pubkey, solana_sdk::bpf_loader_upgradeable};
 use crate::seeds::{
     CONFIGURATION_REGISTRY_SEEDS,
@@ -40,3 +41,10 @@ pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
     )
     .0
 }
+
+// Commented due to backwards compatibility with anchor 0.30.1
+// TODO: Uncomment when upgrading to anchor 0.31.1
+// /// Get the program data account PDA for a program using the v3 loader
+// pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
+//     solana_loader_v3_interface::get_program_data_address(&program_id)
+// }

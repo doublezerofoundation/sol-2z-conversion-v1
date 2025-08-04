@@ -7,7 +7,14 @@ use crate::core::{common::instruction::SET_ADMIN_INSTRUCTION, config::AdminConfi
 
 pub fn set_admin(admin: String) -> Result<(), Box<dyn Error>> {
     let private_key = load_private_key()?;
+
+    // Added due to backwards compatibility with anchor 0.30.1
+    #[allow(deprecated)]
     let payer = Keypair::from_bytes(&private_key)?;
+
+    // TODO: Uncomment when upgrading to anchor 0.31.1
+    // let payer = Keypair::try_from(&private_key[..])?;
+
 
     let admin_config = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
