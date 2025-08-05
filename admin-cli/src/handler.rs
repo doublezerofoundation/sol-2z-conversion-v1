@@ -16,6 +16,7 @@ use crate::{
         },
     },
 };
+use crate::core::functions::mock_token_handler;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -78,6 +79,21 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         // Viewing the deny list
         Some(Commands::ViewDenyList) => {
             deny_list::view_deny_list()
+        }
+
+        // Initializing the mock transfer program
+        Some(Commands::InitMockProgram) => {
+            mock_token_handler::init()
+        }
+
+        // Mint Mock Tokens
+        Some(Commands::MockTokenMint { to_address, amount }) => {
+            mock_token_handler::mint(to_address, amount)
+        }
+
+        // Mock vault airdrop
+        Some(Commands::MockVaultAirdrop {  amount }) => {
+            mock_token_handler::airdrop_vault(amount)
         }
 
         // Toggles system between active and paused states.

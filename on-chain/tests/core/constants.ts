@@ -1,7 +1,7 @@
 import {PublicKey} from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
-export const TOKEN_DECIMAL = 10 ** 6
+export const TOKEN_DECIMAL = 10 ** 6;
 
 export namespace Seeds {
     export const CONFIGURATION_REGISTRY_SEED = "system_config_v1";

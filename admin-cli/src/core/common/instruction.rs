@@ -4,3 +4,12 @@ pub const REMOVE_DEQUEUER_INSTRUCTION: &[u8] = b"global:remove_dequeuer";
 pub const ADD_TO_DENY_LIST_INSTRUCTION: &[u8] = b"global:add_to_deny_list";
 pub const REMOVE_FROM_DENY_LIST_INSTRUCTION: &[u8] = b"global:remove_from_deny_list";
 pub const UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION: &[u8] = b"global:update_configuration_registry";
+
+
+
+
+
+
+// mock program
+pub const MOCK_SYSTEM_INITIALIZE: &[u8] = b"global:initialize";
+pub const MOCK_TOKEN_MINT_INSTRUCTION: &[u8] = b"global:mint_2z";

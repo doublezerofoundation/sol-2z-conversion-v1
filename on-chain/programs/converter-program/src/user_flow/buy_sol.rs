@@ -1,4 +1,8 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{
+    prelude::*,
+    solana_program::native_token::LAMPORTS_PER_SOL,
+};
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
@@ -14,6 +18,13 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::{Fill, FillsRegistry}
+};
+use mock_transfer_program::{
+    cpi::{
+        buy_sol as mock_buy_sol,
+        accounts::BuySol as BuySolCpi
+    },
+    program::MockTransferProgram
 };
 
 #[derive(Accounts)]
@@ -39,6 +50,16 @@ pub struct BuySol<'info> {
         bump,
     )]
     pub fills_registry: Account<'info, FillsRegistry>,
+    #[account(mut)]
+    pub user_token_account: InterfaceAccount<'info, TokenAccount>,
+    #[account(mut)]
+    pub vault_account: SystemAccount<'info>,
+    #[account(mut)]
+    pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
+    pub double_zero_mint: InterfaceAccount<'info, Mint>,
+    pub token_program: Interface<'info, TokenInterface>,
+    pub system_program: Program<'info, System>,
+    pub transfer_program: Program<'info, MockTransferProgram>,
     #[account(mut)]
     pub signer: Signer<'info>
 }
@@ -76,7 +97,7 @@ impl<'info> BuySol<'info> {
 
         // call util function to get current ask price
         let ask_price = 21 * TOKEN_DECIMALS;
-        let sol_quantity = 21 * TOKEN_DECIMALS;
+        let sol_quantity = 21 * LAMPORTS_PER_SOL;
         let tokens_required = 21 * TOKEN_DECIMALS;
 
         let clock = Clock::get()?;
@@ -94,9 +115,26 @@ impl<'info> BuySol<'info> {
         }
         require!(bid_price >= ask_price, DoubleZeroError::BidTooLow);
 
+        let cpi_accounts = BuySolCpi {
+            vault_account: self.vault_account.to_account_info(),
+            user_token_account: self.user_token_account.to_account_info(),
+            protocol_treasury_token_account: self.protocol_treasury_token_account.to_account_info(),
+            double_zero_mint: self.double_zero_mint.to_account_info(),
+            token_program: self.token_program.to_account_info(),
+            system_program: self.system_program.to_account_info(),
+            signer: self.signer.to_account_info(),
+        };
+
+        let cpi_program = self.transfer_program.to_account_info();
+        let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+
         // settlement
-
-
+        mock_buy_sol(
+            cpi_context,
+            tokens_required,
+            sol_quantity,
+        )?;
+        
         // Add it to fills registry
         let fill = Fill {
             sol_in: sol_quantity,

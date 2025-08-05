@@ -1,8 +1,6 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke;
-use anchor_lang::solana_program::system_instruction;
 use anchor_spl::token_interface;
-use anchor_spl::token_interface::{Mint, MintTo, TokenAccount, TokenInterface, TransferChecked};
+use anchor_spl::token_interface::{Mint, MintTo, TokenAccount, TokenInterface};
 
 #[derive(Accounts)]
 pub struct Mint2Z<'info> {

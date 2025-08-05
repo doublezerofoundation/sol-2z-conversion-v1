@@ -64,4 +64,20 @@ pub enum Commands {
 
     /// Displays all addresses in the deny list registry
     ViewDenyList,
+
+    InitMockProgram,
+
+    // Mints Mock 2Z token to specified address. If no address specified, defaults to ATA
+    MockTokenMint {
+        #[arg(short = 't')]
+        to_address: Option<String>,
+
+        #[arg(short = 'a', required = true)]
+        amount: String,
+    },
+    
+    MockVaultAirdrop{
+        #[arg(short = 'a', required = true)]
+        amount: String,
+    },
 }
