@@ -48,12 +48,14 @@ The file should contain the following items.
   "slot_threshold": 134,
   "price_maximum_age": 324,
   "max_fills_storage": 234,
+  "skip_preflight": true,
   "steepness": 9000,
   "max_discount_rate": 5000
 }
 ```
 - `rpc_url`: The `Deploying cluster` from last step.
 - `program_id`: Public key of the anchor program.
+- `skip_preflight`: Setting this to `true` will disable transaction preflight checks (which normally simulate the transaction and catch errors before sending) and enable error logging in the database.
 - `oracle_pubkey`: Public key of the oracle program.
 - `sol_quantity`: Quantity of SOL to be converted in a single transaction.
 - `slot_threshold`: Slot threshold for storing the trade history.
