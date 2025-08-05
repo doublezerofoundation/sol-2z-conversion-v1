@@ -109,7 +109,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
 pub fn airdrop_vault(amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
     let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
-    let payer = load_payer_from_env()?;
+    load_payer_from_env()?;
     let amount_parsed = parse_sol_value(&amount)?;
     let vault_account = pda_helper::get_vault_pda(mock_program_id).0;
     println!("Mock Vault Address {}", vault_account);
