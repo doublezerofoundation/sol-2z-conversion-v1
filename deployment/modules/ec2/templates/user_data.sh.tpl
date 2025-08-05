@@ -78,12 +78,11 @@ echo "Starting container: $CONTAINER_NAME"
 docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   -p ${container_port}:${container_port} \
   --log-driver=awslogs \
-  --log-opt awslogs-group="/ec2/${environment}/docker" \
+  --log-opt awslogs-group="/ec2/${environment}/${CONTAINER_NAME}" \
   --log-opt awslogs-region=$REGION \
   --log-opt awslogs-stream=$INSTANCE_ID \
   -v /opt/app/logs:/app/logs \
   -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT -e INSTANCE_ID=$INSTANCE_ID \
-  %{ for key, value in container_environment_vars ~}-e ${key}=${value} %{ endfor ~}\
   $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
 if [ $? -eq 0 ]; then

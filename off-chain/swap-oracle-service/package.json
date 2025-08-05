@@ -18,6 +18,7 @@
     "typescript": "^5.8.3"
   },
   "dependencies": {
+    "@aws-sdk/client-cloudwatch": "^3.859.0",
     "@aws-sdk/client-ssm": "^3.855.0",
     "@noble/secp256k1": "^2.3.0",
     "@pythnetwork/hermes-client": "^2.0.0",

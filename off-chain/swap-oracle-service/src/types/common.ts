@@ -44,4 +44,14 @@ export interface PriceRate {
     swapRate: number;
     solPriceUsd: number;
     twozPriceUsd: number;
+    last_price_update: string;
+}
+
+export type HealthCheckResult = PythHealthCheckResponse
+
+export interface PythHealthCheckResponse {
+    serviceType: string;
+    status: string;
+    hermes_connected: boolean;
+    last_price_update: string;
 }

@@ -79,6 +79,11 @@ resource "aws_cloudwatch_log_group" "docker_logs" {
   retention_in_days = 7
 }
 
+resource "aws_cloudwatch_log_group" "service_logs" {
+  name              = "/ec2/${var.environment}/${var.container_name}"
+  retention_in_days = 7
+}
+
 resource "aws_cloudwatch_log_group" "application_logs" {
   name              = "/ec2/${var.environment}/application"
   retention_in_days = 7

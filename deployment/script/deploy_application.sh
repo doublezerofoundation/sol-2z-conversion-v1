@@ -79,6 +79,7 @@ verify_ecr_image(){
 create_deployment_script() {
   local script_path="/tmp/container_deploy.sh"
 
+
   cat > "$script_path" << EOF
 #!/bin/bash
 set -e
@@ -93,7 +94,7 @@ CONTAINER_NAME="$CONTAINER_NAME"
 REDIS_PORT="$REDIS_PORT"
 REDIS_ENDPOINT="$REDIS_ENDPOINT"
 FULL_IMAGE_URI="\${ECR_REGISTRY}/\${ECR_REPOSITORY}:\${IMAGE_TAG}"
-
+INSTANCE_ID=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 echo "Starting container redeployment on \$(hostname)"
 echo "Image: \$FULL_IMAGE_URI"
 
@@ -120,7 +121,12 @@ docker run -d \\
   --name \$CONTAINER_NAME \\
   --restart unless-stopped \\
   -p 8080:8080 \\
-  -e ENVIRONMENT=\$ENVIRONMENT -e AWS_REGION=$AWS_REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT\\
+  --log-driver=awslogs \\
+  --log-opt awslogs-group="/ec2/\$ENVIRONMENT/\$CONTAINER_NAME" \\
+  --log-opt awslogs-region=\$AWS_REGION  \\
+  --log-opt awslogs-stream=\$INSTANCE_ID \\
+  --log-opt awslogs-create-group=true \\
+  -e ENVIRONMENT=\$ENVIRONMENT -e AWS_REGION=\$AWS_REGION -e REDIS_ENDPOINT=\$REDIS_ENDPOINT -e REDIS_PORT=\$REDIS_PORT\\
   -v /opt/app/logs:/app/logs \\
   \$FULL_IMAGE_URI
 
@@ -312,4 +318,6 @@ get_redis_url_from_terraform
 get_ecr_config
 find_ec2_instance
 verify_ecr_image
+echo "DEBUG: ENV variable is: '$ENV'"
+echo "DEBUG: Environment will be: '$ENV'"
 deploy_application

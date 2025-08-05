@@ -1,16 +1,19 @@
 import {Request, Response} from 'express';
 import {PricingService} from "../service/pricing/pricingService";
-import {PriceRate} from "../types/common";
+import {HealthCheckResult, PriceRate} from "../types/common";
 import {PricingServiceFactory} from "../factory/ServiceFactory";
 import {AttestationService} from "../service/attestaion/attestationService";
 import {CacheService} from "../service/cache/cacheService";
 import {RedisCacheService} from "../service/cache/redisCacheService";
+import MonitoringService from "../service/monitor/monitoringService";
+import CloudWatchMonitoringService from "../service/monitor/cloudWatchMonitoringService";
 
 const ENV:string = process.env.ENV || 'dev';
 export default class SwapRateController {
     private priceServices: PricingService[];
     private attestationService: any;
     private redisService: CacheService;
+    private monitoringService: MonitoringService;
 
     constructor() {
         this.initializePricingService();
@@ -22,6 +25,7 @@ export default class SwapRateController {
             priceService.init();
         })
         this.attestationService = new AttestationService();
+        this.monitoringService = new CloudWatchMonitoringService()
         this.redisService = RedisCacheService.getInstance();
     }
 
@@ -41,7 +45,9 @@ export default class SwapRateController {
 
                 const priceRates:PriceRate[] = await Promise.all(pricePromises);
                 priceRate = this.selectMostFavorableRate(priceRates);
-                await this.redisService.add(`${ENV}-swapRate`, priceRate);
+                await this.monitoringService.putMonitoringData("2Z/Sol-price-rate",priceRate.swapRate)
+
+                await this.redisService.add(`${ENV}-swapRate`, priceRate,true);
                 isCacheHit = false;
             }
 
@@ -65,6 +71,20 @@ export default class SwapRateController {
             res.json(result);
         } catch (error) {
             console.error('Error in priceRateHandler:', error);
+            res.status(500).json({error: 'Internal server error'});
+        }
+    }
+
+
+    healthCheckHandler = async (req: Request, res: Response): Promise<void> => {
+        try {
+            const HealthCheckPromise:Promise<HealthCheckResult>[] = this.priceServices.map(async (priceService:PricingService) => {
+                return await priceService.getHealth()
+            })
+            const HealthChecks:HealthCheckResult[] = await Promise.all(HealthCheckPromise)
+            res.json(HealthChecks);
+        } catch (error) {
+            console.error('Error in healthCheckHandler:', error);
             res.status(500).json({error: 'Internal server error'});
         }
     }
