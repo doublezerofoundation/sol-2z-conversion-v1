@@ -49,8 +49,8 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         }
 
         // Changing system state between active and pause
-        Some(Commands::ToggleSystemState { activate: active, pause}) => {
-            system_state::toggle_system_state(active, pause)
+        Some(Commands::ToggleSystemState { activate, pause}) => {
+            system_state::toggle_system_state(activate, pause)
         }
 
         // Withdrawing from protocol treasury to designated account

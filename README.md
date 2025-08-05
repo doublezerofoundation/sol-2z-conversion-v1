@@ -154,7 +154,7 @@ cargo run -p admin-cli -- toggle-system-state --pause
 ### Check System State
 Checks the current state of the system.
 ```sh
-cargo run -p admin-cli -- system-state
+cargo run -p admin-cli -- view-system-state
 ```
 
 ### Set Admin
