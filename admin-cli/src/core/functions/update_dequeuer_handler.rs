@@ -4,15 +4,14 @@ use anchor_client::solana_sdk::{
     hash::hash,
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
-    signature::{Keypair, Signer},
+    signature::Signer,
 };
 
 use cli_common::{
     utils::ui,
     transaction_executor,
-    utils::{env_var::load_private_key, pda_helper},
+    utils::{env_var::load_payer_from_env, pda_helper},
 };
-
 use crate::core::{
     common::instruction::{ADD_DEQUEUER_INSTRUCTION, REMOVE_DEQUEUER_INSTRUCTION},
     config::AdminConfig,
@@ -23,8 +22,7 @@ pub fn add_dequeuer(dequeuer: &str) -> Result<(), Box<dyn Error>> {
     let admin_config: AdminConfig = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
     let dequeuer_pk = Pubkey::from_str(dequeuer)?;
 
     // Building instruction data
@@ -59,8 +57,7 @@ pub fn remove_dequeuer(dequeuer: &str) -> Result<(), Box<dyn Error>> {
     let admin_config: AdminConfig = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
     let dequeuer_pk = Pubkey::from_str(dequeuer)?;
 
     // Building instruction data

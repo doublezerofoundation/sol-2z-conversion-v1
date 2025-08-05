@@ -1,14 +1,11 @@
 import {
     getConfigurationRegistryPDA,
-    getDenyListRegistryPDA,
-    getFillsRegistryPDA,
-    getProgramDataAccountPDA, getProgramStatePDA
+    getProgramStatePDA
 } from "../utils/pda-helper";
 
 import { assert, expect } from "chai";
 import { PublicKey, Keypair } from "@solana/web3.js";
-import { DEFAULT_CONFIGS } from "../utils/configuration-registry";
-import { BorshCoder, EventParser } from "@coral-xyz/anchor";
+import { BorshCoder } from "@coral-xyz/anchor";
 import * as anchor from "@coral-xyz/anchor";
 import { Buffer } from "buffer";
 
@@ -62,7 +59,7 @@ export async function addDequeuerAndVerify(
             .accounts({
                 configurationRegistry: configRegistryAccount,
                 programState: programStateAccount,
-                authority: adminKeyPair.publicKey,
+                admin: adminKeyPair.publicKey,
             })
             .signers([adminKeyPair])
             .rpc();
@@ -101,7 +98,7 @@ export async function removeDequeuerAndVerify(
             .accounts({
                 configurationRegistry: configRegistryAccount,
                 programState: programStateAccount,
-                authority: adminKeyPair.publicKey,
+                admin: adminKeyPair.publicKey,
             })
             .signers([adminKeyPair])
             .rpc();
@@ -131,17 +128,15 @@ export async function addDequeuerExpectUnauthorized(
     nonAdmin: Keypair,
     dequeuer: PublicKey
 ) {
-    let txSig: string | undefined;
-
     try {
         const programStateAccount = await getProgramStatePDA(program.programId);
         const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
-        txSig = await program.methods
+        await program.methods
             .addDequeuer(dequeuer)
             .accounts({
                 configurationRegistry: configRegistryAccount,
                 programState: programStateAccount,
-                authority: nonAdmin.publicKey,
+                admin: nonAdmin.publicKey,
             })
             .signers([nonAdmin])
             .rpc();
@@ -151,17 +146,18 @@ export async function addDequeuerExpectUnauthorized(
     } catch (e) {
         // Check for Unauthorized event in error logs
         if (e.logs) {
+            console.log(e.logs);
             const event = findAnchorEventInLogs(e.logs, program.idl, "unauthorizedUser");
             expect(event, "Unauthorized event should be emitted").to.exist;
             if (event) {
-                //console.log("Decoded event:", event);
+                // console.log("Decoded event:", event);
             }
         } else {
             console.log("No logs found in error object");
         }
         // AnchorError includes error logs and errorCode
         const anchorErr = e as anchor.AnchorError;
-        assert.equal(anchorErr.error.errorCode.code, "UnauthorizedUser");
+        assert.equal(anchorErr.error.errorCode.code, "UnauthorizedAdmin");
     }
 }
 
@@ -179,7 +175,7 @@ export async function removeDequeuerExpectUnauthorized(
             .accounts({
                 configurationRegistry: configRegistryAccount,
                 programState: programStateAccount,
-                authority: nonAdmin.publicKey,
+                admin: nonAdmin.publicKey,
             })
             .signers([nonAdmin])
             .rpc();
@@ -199,7 +195,7 @@ export async function removeDequeuerExpectUnauthorized(
         }
         // AnchorError includes error logs and errorCode
         const anchorErr = e as anchor.AnchorError;
-        assert.equal(anchorErr.error.errorCode.code, "UnauthorizedUser");
+        assert.equal(anchorErr.error.errorCode.code, "UnauthorizedAdmin");
     }
 }
 
@@ -215,7 +211,7 @@ export async function addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerL
                 .accounts({
                     configurationRegistry: configRegistryAccount,
                     programState: programStateAccount,
-                    authority: adminKeyPair.publicKey,
+                    admin: adminKeyPair.publicKey,
                 })
                 .signers([adminKeyPair])
                 .rpc();
@@ -229,7 +225,7 @@ export async function addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerL
             .accounts({
                 configurationRegistry: configRegistryAccount,
                 programState: programStateAccount,
-                authority: adminKeyPair.publicKey,
+                admin: adminKeyPair.publicKey,
             })
             .signers([adminKeyPair])
             .rpc();

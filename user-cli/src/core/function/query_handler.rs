@@ -3,7 +3,7 @@ use std::{error::Error, str::FromStr};
 use anchor_client::{
     anchor_lang::{prelude::AccountMeta, AnchorSerialize},
     solana_sdk::{
-        hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer,
+        hash::hash, instruction::Instruction, pubkey::Pubkey, signer::Signer,
     },
 };
 use cli_common::{
@@ -11,14 +11,13 @@ use cli_common::{
     structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_instruction_with_return_data},
     utils::{
-        env_var::load_private_key,
         pda_helper::{
             self, get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
         },
         ui,
     },
 };
-
+use cli_common::utils::env_var::load_payer_from_env;
 use crate::core::{
     common::instruction::GET_PRICE_INSTRUCTION, config::UserConfig,
     utils::price_utils::fetch_oracle_price,
@@ -41,8 +40,7 @@ pub fn get_quantity() -> Result<(), Box<dyn Error>> {
 }
 
 pub async fn get_price() -> Result<(), Box<dyn Error>> {
-    let private_key = load_private_key()?;
-    let payer = Keypair::from_bytes(&private_key)?;
+    let payer = load_payer_from_env()?;
     let user_config = UserConfig::load_user_config()?;
 
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;

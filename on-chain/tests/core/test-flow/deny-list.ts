@@ -22,7 +22,7 @@ export async function addToDenyListAndVerify(
     // Add to deny list
     const tx = await program.methods.addToDenyList(addressToAdd)
         .accounts({
-            authority: authorityKeyPair.publicKey,
+            admin: authorityKeyPair.publicKey,
         })
         .signers([authorityKeyPair])
         .rpc();
@@ -51,13 +51,14 @@ export async function addToDenyListShouldFail(
     try {
         await program.methods.addToDenyList(addressToAdd)
             .accounts({
-                authority: authorityKeyPair.publicKey,
+                admin: authorityKeyPair.publicKey,
             })
             .signers([authorityKeyPair])
             .rpc();
         
         assert.fail("Expected transaction to fail");
     } catch (error) {
+        console.log(error.message);
         assert.include(error.message, expectedError, `Expected error containing "${expectedError}"`);
     }
 }
@@ -81,7 +82,7 @@ export async function removeFromDenyListAndVerify(
     // Remove from deny list
     const tx = await program.methods.removeFromDenyList(addressToRemove)
         .accounts({
-            authority: authorityKeyPair.publicKey,
+            admin: authorityKeyPair.publicKey,
         })
         .signers([authorityKeyPair])
         .rpc();
@@ -110,7 +111,7 @@ export async function removeFromDenyListShouldFail(
     try {
         await program.methods.removeFromDenyList(addressToRemove)
             .accounts({
-                authority: authorityKeyPair.publicKey,
+                admin: authorityKeyPair.publicKey,
             })
             .signers([authorityKeyPair])
             .rpc();

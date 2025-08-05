@@ -21,14 +21,14 @@ export const updateConfigsAndVerify = async (
         pdas.map((pda) => accountExists(program.provider.connection, pda))
     );
 
-    assert.isTrue(programStateExists, "Program state should be initialzied");
-    assert.isTrue(configRegistryExists, "Config Registry should be initialzied");
-    assert.isTrue(denyRegistryExists, "Deny List should be initialzied");
+    assert.isTrue(programStateExists, "Program state should be initialized");
+    assert.isTrue(configRegistryExists, "Config Registry should be initialized");
+    assert.isTrue(denyRegistryExists, "Deny List should be initialized");
 
     try {
-        const tx = await program.methods.updateConfigurationRegistry(input)
+        await program.methods.updateConfigurationRegistry(input)
         .accounts({
-            authority: adminKeypair.publicKey,
+            admin: adminKeypair.publicKey,
         })
         .signers([adminKeypair])
         .rpc();
@@ -37,7 +37,7 @@ export const updateConfigsAndVerify = async (
         assert.fail("Config update failed");
     }
 
-    // verify whetherconfig values were updated
+    // verify whether config values were updated
     const updatedConfig = await fetchCurrentConfiguration(program);
     assert.equal(updatedConfig.oraclePubkey.toString(), input.oraclePubkey.toString());
     assert.equal(updatedConfig.maxFillsStorage.toString(), input.maxFillsStorage.toString());
@@ -62,14 +62,14 @@ export const updateConfigsAndVerifyFail = async (
         pdas.map((pda) => accountExists(program.provider.connection, pda))
     );
 
-    assert.isTrue(programStateExists, "Program state should be initialzied");
-    assert.isTrue(configRegistryExists, "Config Registry should be initialzied");
-    assert.isTrue(denyRegistryExists, "Deny List should be initialzied");
+    assert.isTrue(programStateExists, "Program state should be initialized");
+    assert.isTrue(configRegistryExists, "Config Registry should be initialized");
+    assert.isTrue(denyRegistryExists, "Deny List should be initialized");
 
     try {
-        const tx = await program.methods.updateConfigurationRegistry(input)
+        await program.methods.updateConfigurationRegistry(input)
         .accounts({
-            authority: adminKeypair.publicKey,
+            admin: adminKeypair.publicKey,
         })
         .signers([adminKeypair])
         .rpc();

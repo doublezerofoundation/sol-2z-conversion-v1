@@ -8,7 +8,6 @@ skip-lint = false
 
 [programs.localnet]
 converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
-integrating_contract = "DBopoT6ddxmWtNhVpef73mwT2zJr6L8KskNAtrt89LnW"
 
 [registry]
 url = "https://api.apr.dev"
@@ -23,3 +22,4 @@ config-update-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/conf
 dequeuer-management-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/dequeuer-management-tests.ts"
 deny-list-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/deny-list-tests.ts"
 conversion-price-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/conversion-price-tests.ts"
+admin-change-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/admin-change-tests.ts"
