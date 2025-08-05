@@ -112,11 +112,11 @@ pub fn airdrop_vault(amount: String) -> Result<(), Box<dyn Error>> {
     load_payer_from_env()?;
     let amount_parsed = parse_sol_value(&amount)?;
     let vault_account = pda_helper::get_vault_pda(mock_program_id).0;
-    println!("Mock Vault Address {}", vault_account);
+    println!("Mock Vault Address: {}", vault_account);
     println!("Requesting airdrop for amount: {}", amount_parsed);
 
     let client = RpcClient::new_with_commitment(admin_config.rpc_url, CommitmentConfig::confirmed());
     let sig = client.request_airdrop(&vault_account, amount_parsed).expect("Airdrop failed");
-    println!("{} Airdrop requested. Signature: {}", sig, ui::OK);
+    println!("{} Airdrop requested. Signature: {}",ui::OK , sig);
     Ok(())
 }

@@ -44,6 +44,7 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             config_handler::update_config()
         }
 
+        // Viewing current system state
         Some(Commands::ViewSystemState) => {
             system_state::view_system_state()
         }

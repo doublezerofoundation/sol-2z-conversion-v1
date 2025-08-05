@@ -62,13 +62,6 @@ pub mod converter_program {
         ctx.accounts.process_update(input)
     }
 
-    pub fn calculate_ask_price(
-        ctx: Context<CalculateAskPrice>,
-        oracle_price_data: OraclePriceData,
-    ) -> Result<u64> {
-        ctx.accounts.process(oracle_price_data)
-    }
-
     // User Flow
     pub fn buy_sol(
         ctx: Context<BuySol>,
@@ -105,5 +98,12 @@ pub mod converter_program {
 
     pub fn remove_from_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
         ctx.accounts.remove_from_deny_list(address)
+    }
+
+    pub fn calculate_ask_price(
+        ctx: Context<CalculateAskPrice>,
+        oracle_price_data: OraclePriceData,
+    ) -> Result<u64> {
+        ctx.accounts.process(oracle_price_data)
     }
 }
