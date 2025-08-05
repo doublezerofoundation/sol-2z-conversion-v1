@@ -107,20 +107,6 @@ pub mod converter_program {
         )
     }
 
-    pub fn add_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        new_pubkey: Pubkey,
-    ) -> Result<()> {
-        ctx.accounts.add_dequeuer(new_pubkey)
-    }
-
-    pub fn remove_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        remove_pubkey: Pubkey,
-    ) -> Result<()> {
-        ctx.accounts.remove_dequeuer(remove_pubkey)
-    }
-
     pub fn calculate_ask_price(
         ctx: Context<CalculateAskPrice>,
         oracle_price_data: OraclePriceData,

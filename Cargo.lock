@@ -1064,7 +1064,6 @@ dependencies = [
  "rust_decimal",
  "serde",
  "serde_json",
- "solana-loader-v3-interface",
  "solana-transaction-status",
  "spl-associated-token-account 7.0.0",
  "spl-token-2022 9.0.0",
