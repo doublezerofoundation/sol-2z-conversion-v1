@@ -23,3 +23,4 @@ dequeuer-management-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 test
 deny-list-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/deny-list-tests.ts"
 conversion-price-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/conversion-price-tests.ts"
 admin-change-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/admin-change-tests.ts"
+e2e-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/e2e/*"

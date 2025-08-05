@@ -52,7 +52,7 @@ export async function systemInitializeAndVerify(
             })
             .signers([adminKeyPair])
             .rpc();
-        console.log("System Initialization is successful. Transaction Hash", tx);
+        // console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
@@ -103,7 +103,7 @@ export async function systemInitializeFail(
             .rpc();
 
     } catch (error) {
-        console.log("System initialization is rejected as expected");
+        // console.log("System initialization is rejected as expected");
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "System initialization is rejected as expected");
         return; // Exit early — test passes
