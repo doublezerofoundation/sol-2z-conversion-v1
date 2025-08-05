@@ -1,6 +1,7 @@
 import express from 'express';
 import appRouter from "./route";
 import {configUtil, ConfigUtil} from "../utils/configUtil";
+import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 
 
 
@@ -8,6 +9,7 @@ import {configUtil, ConfigUtil} from "../utils/configUtil";
     public app: express.Application
     public config: ConfigUtil;
     public server: any;
+    private healthMonitoringService: HealthMonitoringService;
 
     constructor() {
         this.config = configUtil;
@@ -19,8 +21,17 @@ import {configUtil, ConfigUtil} from "../utils/configUtil";
         this.app.use('/', (req, res) => {
             res.send('Swap Oracle Service is running');
         });
-
+        this.startMonitoringService();
         this.server = await this.app.listen(this.config.get('applicationPort'));
+    }
+
+    startMonitoringService() {
+        setInterval(async () => {
+            console.log("Health monitoring started",Date.now())
+            await HealthMonitoringService.getInstance().startMonitoring();
+            console.log("Health monitoring completed",Date.now(),
+                HealthMonitoringService.getInstance().getHealthMonitoringData())
+        }, 60000)
     }
 
     public getApp(): express.Application {

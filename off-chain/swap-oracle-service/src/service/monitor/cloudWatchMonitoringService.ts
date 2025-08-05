@@ -1,9 +1,9 @@
-import MonitoringService from "./monitoringService";
+import MetricsMonitoringService from "./metricsMonitoringService";
 import {CloudWatchClient, PutMetricDataCommand, PutMetricDataCommandInput} from "@aws-sdk/client-cloudwatch";
 import process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
 const ENV:string = process.env.ENV || 'dev';
-export default class CloudWatchMonitoringService implements MonitoringService {
+export default class CloudWatchMonitoringService implements MetricsMonitoringService {
     private cloudWatchClient: CloudWatchClient;
     constructor() {
         this.cloudWatchClient = new CloudWatchClient({region: AWS_REGION});

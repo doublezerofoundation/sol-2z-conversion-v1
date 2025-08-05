@@ -1,9 +1,10 @@
 import {PricingServiceBase} from "./pricingService";
 import {HermesClient, PriceUpdate} from "@pythnetwork/hermes-client";
-import {HealthCheckResult, PriceFeed, PricingServicesConfig} from "../../types/common";
+import {HealthCheckResult, HealthStatus, PriceFeed, PricingServicesConfig} from "../../types/common";
 import {PythSwapRateService} from "../swap/PythSwapRateService";
 import {CacheService} from "../cache/cacheService";
 import {RedisCacheService} from "../cache/redisCacheService";
+
 const ENV:string = process.env.ENV || 'dev';
 
 export default class PythPricingService extends PricingServiceBase {
@@ -11,7 +12,7 @@ export default class PythPricingService extends PricingServiceBase {
     private priceServiceConnection: HermesClient;
     private solUsdFeedID;
     private twozUsdFeedID;
-    private isConnected: boolean;
+
 
     private cacheService: CacheService;
 
@@ -41,13 +42,11 @@ export default class PythPricingService extends PricingServiceBase {
                 exponent: priceData.parsed[0].price.expo,
                 timestamp: priceData.parsed[0].price.publish_time
             }
-            this.isConnected = true;
             await this.cacheService.add(`${this.getPricingServiceType()}-${ENV}-last-price-update`,new Date().toISOString(),false);
             return priceDataValue;
 
         } catch (error) {
             console.error("Error fetching price: ", error)
-            this.isConnected = false;
             throw error;
 
         }
@@ -67,24 +66,29 @@ export default class PythPricingService extends PricingServiceBase {
 
     async getHealth(): Promise<HealthCheckResult> {
         let lastPriceUpdate: string;
+        let isConnected: boolean;
         try {
             lastPriceUpdate = await this.cacheService.get(`${this.getPricingServiceType()}-${ENV}-last-price-update`);
             await this.priceServiceConnection.getLatestPriceUpdates(
                 [this.solUsdFeedID],
                 {encoding: "base64"}
             )
-            this.isConnected = true;
+            await this.priceServiceConnection.getLatestPriceUpdates(
+                [this.twozUsdFeedID],
+                {encoding: "base64"}
+            )
+            isConnected = true;
 
         } catch (error) {
             console.error("Error fetching price: ", error)
-            this.isConnected = false;
+            isConnected = false;
 
         }
 
         return {
             serviceType: this.getPricingServiceType(),
-            status : this.isConnected ? "Healthy" : "Service not available",
-            hermes_connected : this.isConnected,
+            status : isConnected ? HealthStatus.HEALTHY : HealthStatus.UN_HEALTHY,
+            hermes_connected : isConnected,
             last_price_update: lastPriceUpdate,
         }
     }

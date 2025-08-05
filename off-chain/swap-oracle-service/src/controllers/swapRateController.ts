@@ -5,15 +5,17 @@ import {PricingServiceFactory} from "../factory/ServiceFactory";
 import {AttestationService} from "../service/attestaion/attestationService";
 import {CacheService} from "../service/cache/cacheService";
 import {RedisCacheService} from "../service/cache/redisCacheService";
-import MonitoringService from "../service/monitor/monitoringService";
+import MetricsMonitoringService from "../service/monitor/metricsMonitoringService";
 import CloudWatchMonitoringService from "../service/monitor/cloudWatchMonitoringService";
+import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 
 const ENV:string = process.env.ENV || 'dev';
 export default class SwapRateController {
     private priceServices: PricingService[];
     private attestationService: any;
     private redisService: CacheService;
-    private monitoringService: MonitoringService;
+    private monitoringService: MetricsMonitoringService;
+    private healthCheckService: HealthMonitoringService;
 
     constructor() {
         this.initializePricingService();
@@ -27,10 +29,18 @@ export default class SwapRateController {
         this.attestationService = new AttestationService();
         this.monitoringService = new CloudWatchMonitoringService()
         this.redisService = RedisCacheService.getInstance();
+        this.healthCheckService = HealthMonitoringService.getInstance();
     }
 
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
+            if(!await this.healthCheckService.getHealthStatus()) {
+                console.log("Health check failed")
+                console.log(await this.healthCheckService.getHealthMonitoringData())
+                // TODO need to give proper error msg
+                res.status(500).json({error: 'Internal server error'});
+                return;
+            }
             let priceRate: PriceRate;
             let isCacheHit:boolean
             const cachedSwapRate: PriceRate = await this.redisService.get(`${ENV}-swapRate`)
@@ -78,11 +88,8 @@ export default class SwapRateController {
 
     healthCheckHandler = async (req: Request, res: Response): Promise<void> => {
         try {
-            const HealthCheckPromise:Promise<HealthCheckResult>[] = this.priceServices.map(async (priceService:PricingService) => {
-                return await priceService.getHealth()
-            })
-            const HealthChecks:HealthCheckResult[] = await Promise.all(HealthCheckPromise)
-            res.json(HealthChecks);
+            const HealthCheckPromise:HealthCheckResult[] = await this.healthCheckService.getHealthMonitoringData()
+            res.json(HealthCheckPromise);
         } catch (error) {
             console.error('Error in healthCheckHandler:', error);
             res.status(500).json({error: 'Internal server error'});

@@ -51,7 +51,12 @@ export type HealthCheckResult = PythHealthCheckResponse
 
 export interface PythHealthCheckResponse {
     serviceType: string;
-    status: string;
+    status: HealthStatus;
     hermes_connected: boolean;
     last_price_update: string;
+}
+
+export enum HealthStatus {
+    HEALTHY = 'HEALTHY',
+    UN_HEALTHY = 'UN_HEALTHY'
 }
