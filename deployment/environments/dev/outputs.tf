@@ -86,24 +86,50 @@ output "metrics_lambda_role_arn" {
 }
 
 # EC2 Outputs
-output "asg_name" {
-  description = "The name of the Auto Scaling Group"
-  value       = module.ec2.asg_name
+
+output "indexer_instance_id" {
+  description = "The ID of the Indexer EC2 instance"
+  value       = module.ec2.indexer_instance_id
 }
 
-output "asg_arn" {
-  description = "The ARN of the Auto Scaling Group"
-  value       = module.ec2.asg_arn
+output "indexer_instance_arn" {
+  description = "The ARN of the Indexer EC2 instance"
+  value       = module.ec2.indexer_instance_arn
 }
 
-output "launch_template_id" {
-  description = "The ID of the Launch Template"
-  value       = module.ec2.launch_template_id
+output "indexer_private_ip" {
+  description = "The private IP address of the Indexer EC2 instance"
+  value       = module.ec2.indexer_private_ip
 }
 
-output "launch_template_arn" {
-  description = "The ARN of the Launch Template"
-  value       = module.ec2.launch_template_arn
+output "indexer_public_ip" {
+  description = "The public IP address of the Indexer EC2 instance"
+  value       = module.ec2.indexer_public_ip
+}
+
+output "indexer_instance_profile_name" {
+  description = "The name of the IAM instance profile for the Indexer EC2 instance"
+  value       = module.ec2.indexer_instance_profile_name
+}
+
+output "swap_oracle_launch_template_arn" {
+  description = "The ARN of the Swap Oracle Launch Template"
+  value       = module.ec2.swap_oracle_launch_template_arn
+}
+
+output "swap_oracle_asg_name" {
+  description = "The name of the Swap Oracle Auto Scaling Group"
+  value       = module.ec2.swap_oracle_asg_name
+}
+
+output "swap_oracle_asg_arn" {
+  description = "The ARN of the Swap Oracle Auto Scaling Group"
+  value       = module.ec2.swap_oracle_asg_arn
+}
+
+output "swap_oracle_launch_template_id" {
+  description = "The ID of the Swap Oracle Launch Template"
+  value       = module.ec2.swap_oracle_launch_template_id
 }
 
 # API Gateway Outputs

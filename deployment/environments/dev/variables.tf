@@ -173,3 +173,15 @@ variable "certificate_arn" {
   type        = string
   default     = ""
 }
+
+variable "enable_swap_oracle_service" {
+  description = "Enable Swap Oracle Service EC2 module"
+  type        = bool
+  default     = false
+}
+
+variable "enable_indexer_service" {
+  description = "Enable Indexer Service EC2 module"
+  type        = bool
+  default     = false
+}

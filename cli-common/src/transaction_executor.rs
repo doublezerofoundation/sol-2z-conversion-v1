@@ -5,18 +5,19 @@ use std::{
     time::Duration
 };
 use anchor_client::{
-    anchor_lang::{AccountDeserialize, AnchorDeserialize},
     solana_client::{
         rpc_client::RpcClient,
+        rpc_config::RpcSendTransactionConfig,
         rpc_config::RpcTransactionConfig
     },
+    anchor_lang::{AccountDeserialize, AnchorDeserialize},
     solana_sdk::{
-        commitment_config::CommitmentConfig, 
+        commitment_config::CommitmentConfig,
         instruction::Instruction,
-        pubkey::Pubkey, 
-        signature::{ Signature },
-        signer::Signer, 
-        transaction::Transaction
+        pubkey::Pubkey,
+        signature::Signature,
+        signer::Signer,
+        transaction::Transaction,
     }
 };
 use crate::{
@@ -55,6 +56,12 @@ pub fn send_batch_instructions(
         .get_latest_blockhash()
         .map_err(|_| "Error when getting latest block hash")?;
 
+    let tx_config = RpcSendTransactionConfig {
+        skip_preflight: config.skip_preflight,
+        preflight_commitment: Some(CommitmentConfig::confirmed().commitment),
+        ..RpcSendTransactionConfig::default()
+    };
+
     let transaction = Transaction::new_signed_with_payer(
         &instructions,
         Some(&payer.pubkey()),
@@ -62,7 +69,12 @@ pub fn send_batch_instructions(
         recent_blockhash
     );
 
-    let signature = rpc_client.send_and_confirm_transaction(&transaction);
+    let signature = rpc_client
+        .send_and_confirm_transaction_with_spinner_and_config(
+            &transaction,
+            CommitmentConfig::confirmed(),
+            tx_config,
+        );
 
     match signature {
         Ok(tx) => {
@@ -101,7 +113,18 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
         recent_blockhash,
     );
 
-    let signature = rpc_client.send_and_confirm_transaction(&transaction);
+    let tx_config = RpcSendTransactionConfig {
+        skip_preflight: config.skip_preflight,
+        preflight_commitment: Some(CommitmentConfig::confirmed().commitment),
+        ..RpcSendTransactionConfig::default()
+    };
+
+    let signature = rpc_client.send_and_confirm_transaction_with_spinner_and_config(
+        &transaction,
+        CommitmentConfig::confirmed(),
+        tx_config,
+    );
+
     match signature {
         Ok(_) => {
             println!("{OK} Transaction Completed!");

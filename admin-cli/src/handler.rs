@@ -7,16 +7,17 @@ use crate::{
     core::{
         common::error::COMMAND_NOT_SPECIFIED,
         functions::{
+            admin_handler,
             config_handler,
             deny_list,
             init_handler,
             system_state,
             update_dequeuer_handler,
             withdraw_2z,
+            mock_token_handler
         },
     },
 };
-use crate::core::functions::mock_token_handler;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -82,6 +83,11 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             deny_list::view_deny_list()
         }
 
+        // Setting the admin of the system
+        Some(Commands::SetAdmin { admin }) => {
+            admin_handler::set_admin(admin)
+        }
+
         // Initializing the mock transfer program
         Some(Commands::InitMockProgram) => {
             mock_token_handler::init()
@@ -97,7 +103,6 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             mock_token_handler::airdrop_vault(amount)
         }
 
-        // Toggles system between active and paused states.
         None => {
             // println!("No command specified. Use --help for available commands.");
             Err(Box::from(COMMAND_NOT_SPECIFIED))
