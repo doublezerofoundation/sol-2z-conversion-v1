@@ -86,43 +86,49 @@ output "metrics_lambda_role_arn" {
 }
 
 # EC2 Outputs
-output "indexer_asg_name" {
-  description = "The name of the Indexer Auto Scaling Group"
-  value       = module.ec2.indexer_asg_name
+
+output "indexer_instance_id" {
+  description = "The ID of the Indexer EC2 instance"
+  value       = module.ec2.indexer_instance_id
 }
 
-output "indexer_asg_arn" {
-  description = "The ARN of the Indexer Auto Scaling Group"
-  value       = module.ec2.indexer_asg_arn
+output "indexer_instance_arn" {
+  description = "The ARN of the Indexer EC2 instance"
+  value       = module.ec2.indexer_instance_arn
 }
 
-output "indexer_launch_template_id" {
-  description = "The ID of the Indexer Launch Template"
-  value       = module.ec2.indexer_launch_template_id
+output "indexer_private_ip" {
+  description = "The private IP address of the Indexer EC2 instance"
+  value       = module.ec2.indexer_private_ip
 }
 
-output "indexer_launch_template_arn" {
-  description = "The ARN of the Indexer Launch Template"
-  value       = module.ec2.indexer_launch_template_arn
+output "indexer_public_ip" {
+  description = "The public IP address of the Indexer EC2 instance"
+  value       = module.ec2.indexer_public_ip
+}
+
+output "indexer_instance_profile_name" {
+  description = "The name of the IAM instance profile for the Indexer EC2 instance"
+  value       = module.ec2.indexer_instance_profile_name
 }
 
 output "swap_oracle_launch_template_arn" {
-  description = "The ARN of the Indexer Launch Template"
+  description = "The ARN of the Swap Oracle Launch Template"
   value       = module.ec2.swap_oracle_launch_template_arn
 }
 
 output "swap_oracle_asg_name" {
-  description = "The name of the Indexer Auto Scaling Group"
+  description = "The name of the Swap Oracle Auto Scaling Group"
   value       = module.ec2.swap_oracle_asg_name
 }
 
 output "swap_oracle_asg_arn" {
-  description = "The ARN of the Indexer Auto Scaling Group"
+  description = "The ARN of the Swap Oracle Auto Scaling Group"
   value       = module.ec2.swap_oracle_asg_arn
 }
 
 output "swap_oracle_launch_template_id" {
-  description = "The ID of the Indexer Launch Template"
+  description = "The ID of the Swap Oracle Launch Template"
   value       = module.ec2.swap_oracle_launch_template_id
 }
 

@@ -20,6 +20,12 @@ resource "aws_dynamodb_table" "system_state" {
     type = "S"
   }
 
+  global_secondary_index {
+    name            = "value_idx"
+    hash_key        = "value"
+    projection_type = "ALL"
+  }
+
   tags = local.common_tags
 }
 

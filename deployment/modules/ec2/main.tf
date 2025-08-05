@@ -11,6 +11,7 @@ module "swap_oracle_service_ec2" {
   security_groups   = var.security_groups
   target_group_arns = var.target_group_arns
   redis_endpoint    = var.redis_endpoint
+  instance_profile_name = var.instance_profile_name
 }
 
 module "indexer_service_ec2" {
@@ -23,4 +24,5 @@ module "indexer_service_ec2" {
   private_subnets   = var.private_subnets
   security_groups   = var.security_groups
   target_group_arns = var.target_group_arns
+  instance_profile_name = var.instance_profile_name
 }

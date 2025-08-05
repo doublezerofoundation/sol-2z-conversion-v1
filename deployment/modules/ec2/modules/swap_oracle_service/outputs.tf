@@ -30,24 +30,9 @@ output "asg_arn" {
   value       = aws_autoscaling_group.this.arn
 }
 
-output "iam_role_name" {
-  description = "The name of the IAM role for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_role.ec2_role[0].name : null
-}
-
-output "iam_role_arn" {
-  description = "The ARN of the IAM role for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_role.ec2_role[0].arn : null
-}
-
 output "instance_profile_name" {
   description = "The name of the IAM instance profile for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_instance_profile.ec2_profile[0].name : var.instance_profile_name
-}
-
-output "instance_profile_arn" {
-  description = "The ARN of the IAM instance profile for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_instance_profile.ec2_profile[0].arn : null
+  value       = var.instance_profile_name 
 }
 
 output "scale_up_policy_arn" {

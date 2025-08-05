@@ -22,51 +22,9 @@ locals {
   ecr_registry = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
 }
 
-# Create IAM role for EC2 instances (only if instance_profile_name is not provided)
-resource "aws_iam_role" "ec2_role" {
-  count = var.instance_profile_name == "" ? 1 : 0
-
-  name = "${local.full_prefix}-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "ec2.amazonaws.com" }
-    }]
-  })
-
-  tags = merge(
-    { Name = "${local.full_prefix}-role", Environment = var.environment },
-    var.additional_tags
-  )
-}
-
-# Create IAM instance profile (only if instance_profile_name is not provided)
-resource "aws_iam_instance_profile" "ec2_profile" {
-  count = var.instance_profile_name == "" ? 1 : 0
-
-  name = "${local.full_prefix}-profile"
-  role = aws_iam_role.ec2_role[0].name
-}
-
-# Attach policies to IAM role (only if instance_profile_name is not provided)
-resource "aws_iam_role_policy_attachment" "ssm_policy" {
-  count      = var.instance_profile_name == "" ? 1 : 0
-  role       = aws_iam_role.ec2_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
-}
-
-resource "aws_iam_role_policy_attachment" "cloudwatch_policy" {
-  count      = var.instance_profile_name == "" ? 1 : 0
-  role       = aws_iam_role.ec2_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
-}
-
 # CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "docker_logs" {
-  name              = "/ec2/${var.environment}/docker"
+  name              = "/ec2/${var.environment}/service"
   retention_in_days = 7
 }
 
@@ -83,7 +41,7 @@ resource "aws_launch_template" "this" {
   vpc_security_group_ids = var.security_groups
 
   iam_instance_profile {
-    name = var.instance_profile_name != "" ? var.instance_profile_name : aws_iam_instance_profile.ec2_profile[0].name
+    name = var.instance_profile_name
   }
 
   monitoring { enabled = true }
