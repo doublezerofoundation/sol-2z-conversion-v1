@@ -64,4 +64,10 @@ pub enum Commands {
 
     /// Displays all addresses in the deny list registry
     ViewDenyList,
+
+    /// Sets the admin of the system
+    SetAdmin {
+        #[arg(short = 'a', required = true)]
+        admin: String,
+    },
 }

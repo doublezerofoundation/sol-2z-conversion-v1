@@ -8,9 +8,11 @@ import {assert, expect} from "chai";
 import {Keypair} from "@solana/web3.js";
 import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import {DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig} from "../utils/configuration-registry";
+import { Program } from "@coral-xyz/anchor";
+import { ConverterProgram } from "../../../target/types/converter_program";
 
 export async function systemInitializeAndVerify(
-    program,
+    program: Program<ConverterProgram>,
     adminKeyPair: Keypair = getDefaultKeyPair(),
     inputConfigs: SystemConfig = DEFAULT_CONFIGS
 ) {
@@ -40,7 +42,9 @@ export async function systemInitializeAndVerify(
             inputConfigs.solQuantity,
             inputConfigs.slotThreshold,
             inputConfigs.priceMaximumAge,
-            inputConfigs.maxFillsStorage
+            inputConfigs.maxFillsStorage,
+            inputConfigs.steepness,
+            inputConfigs.maxDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -87,7 +91,9 @@ export async function systemInitializeFail(
             configRegistryValues.solQuantity,
             configRegistryValues.slotThreshold,
             configRegistryValues.priceMaximumAge,
-            configRegistryValues.maxFillsStorage
+            configRegistryValues.maxFillsStorage,
+            configRegistryValues.steepness,
+            configRegistryValues.maxDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,

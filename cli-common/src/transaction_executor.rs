@@ -14,7 +14,7 @@ use anchor_client::{
         commitment_config::CommitmentConfig, 
         instruction::Instruction,
         pubkey::Pubkey, 
-        signature::{ Signature, Keypair },
+        signature::Signature,
         signer::Signer, 
         transaction::Transaction
     }
@@ -35,7 +35,6 @@ use solana_transaction_status::{
     UiTransactionEncoding,
 };
 use crate::constant::{RETRY_COUNT, RETRY_DELAY};
-use crate::utils::env_var::load_private_key;
 use crate::utils::return_data::ReturnData;
 
 pub fn send_batch_instructions(

@@ -3,7 +3,7 @@ use std::{error::Error, str::FromStr};
 use anchor_client::{
     anchor_lang::{prelude::AccountMeta, AnchorSerialize},
     solana_sdk::{
-        hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer,
+        hash::hash, instruction::Instruction, pubkey::Pubkey, signer::Signer,
     },
 };
 use cli_common::{
@@ -11,7 +11,6 @@ use cli_common::{
     structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_instruction_with_return_data},
     utils::{
-        env_var::load_private_key,
         pda_helper::{
             self, get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
         },

@@ -150,6 +150,14 @@ cargo run -p admin-cli -- toggle-system-state --activate
 cargo run -p admin-cli -- toggle-system-state --pause
 ```
 
+### Set Admin
+Sets the admin of the system. Only the program deployer can set/change the admin.
+```sh
+cargo run -p admin-cli -- set-admin -a <ADMIN_ACCOUNT>
+```
+
+- `-a`: Admin account public key.
+
 ## User CLI
 
 ### Get Current Price
