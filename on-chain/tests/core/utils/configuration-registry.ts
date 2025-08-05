@@ -15,7 +15,7 @@ export interface SystemConfig {
 
 // Default Configurations
 export const DEFAULT_CONFIGS: SystemConfig = {
-    oraclePubkey: new PublicKey("3fgp23WcdX4Sex6jRG444b3fZZXtgS4go8XaA8is3FSc"),
+    oraclePubkey: new PublicKey("3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj"),
     solQuantity: new anchor.BN(2121),
     slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),

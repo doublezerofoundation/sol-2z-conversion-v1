@@ -37,7 +37,7 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
 
     let amount_input = Decimal::from_str(&bid_price)?;
     let bid_price_parsed = (amount_input * token_decimals).to_u64()
-        .expect("Deposit amount Overflow or conversion failed");
+        .expect("Bid Price Overflow or conversion failed");
 
     let payer = load_payer_from_env()?;
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;

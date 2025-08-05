@@ -24,7 +24,7 @@ describe("Config Update Tests", () => {
         program,
         nonAdminUserKeyPair,
         DEFAULT_CONFIGS,
-        "Unauthorized user"
+        "Unauthorized Admin"
     )
   });
 
