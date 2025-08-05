@@ -1,16 +1,16 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
 import { Keypair } from "@solana/web3.js";
-import { ConverterProgram } from "../target/types/converter_program";
 import { getDefaultKeyPair } from "./core/utils/accounts";
 import { setAdminAndVerify, setAdminAndVerifyFail } from "./core/test-flow/set-admin";
+import { setup } from "./core/setup";
+import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 
-describe("Admin Change Tests", () => {
-  // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
-
-  const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
+describe("Admin Change Tests", async () => {
+  const program = await setup();
   const adminKeyPair = getDefaultKeyPair();
+
+  before("Initialize the system if needed", async () => {
+    await initializeSystemIfNeeded(program)
+  });
 
   it("Program deployer can set admin", async () => {
     const newAdmin = Keypair.generate();

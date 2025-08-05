@@ -1,16 +1,18 @@
 import { describe } from "mocha";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../target/types/converter_program";
 import { toggleSystemStateAndVerify, toggleSystemStateAndVerifyFail } from "./core/test-flow/system-state";
 import * as anchor from "@coral-xyz/anchor";
 import { getDefaultKeyPair } from "./core/utils/accounts";
+import { setup } from "./core/setup";
+import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 
-describe("System State Tests", () => {
-    anchor.setProvider(anchor.AnchorProvider.env());
-
-    const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
+describe("System State Tests", async () => {
+    const program = await setup();
     const adminKeyPair = getDefaultKeyPair();
 
+    before("Initialize the system if needed", async () => {
+        await initializeSystemIfNeeded(program)
+    });
+    
     it("Admin should be able to toggle system state", async () => {
         try {
             await toggleSystemStateAndVerify(program, adminKeyPair, false);
