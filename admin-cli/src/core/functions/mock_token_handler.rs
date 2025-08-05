@@ -28,6 +28,44 @@ use crate::core::{
     config::AdminConfig,
 };
 
+pub fn init() -> Result<(), Box<dyn Error>> {
+    let admin_config = AdminConfig::load_admin_config()?;
+    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let payer = load_payer_from_env()?;
+
+    let vault_account_pda = pda_helper::get_vault_pda(mock_program_id).0;
+    let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
+    let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
+
+    println!("Mock Vault Address {}", vault_account_pda);
+    println!("Mock 2Z Token Mint {}", token_mint_account_pda);
+    println!("Mock Protocol Treasury Token Account {}", protocol_treasury_token_account_pda);
+
+    // Building instruction data
+    let data = hash(MOCK_SYSTEM_INITIALIZE).to_bytes()[..8].to_vec();
+
+    // necessary accounts
+    let accounts = vec![
+        AccountMeta::new(token_mint_account_pda, false),
+        AccountMeta::new(protocol_treasury_token_account_pda, false),
+        AccountMeta::new(vault_account_pda, false),
+        AccountMeta::new(spl_token_2022::id(), false),
+        AccountMeta::new(system_program::ID, false),
+        AccountMeta::new_readonly(rent::id(), false),    // rent
+        AccountMeta::new(payer.pubkey(), true),
+    ];
+
+    let mint_ix = Instruction {
+        program_id: mock_program_id,
+        data,
+        accounts,
+    };
+
+    transaction_executor::send_batch_instructions(vec![mint_ix])?;
+    println!("{} Mock Program Init is successful", ui::OK);
+    Ok(())
+}
+
 pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
     let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
@@ -65,44 +103,6 @@ pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Er
 
     transaction_executor::send_batch_instructions(vec![mint_ix])?;
     println!("{} Token mint is successful", ui::OK);
-    Ok(())
-}
-
-pub fn init() -> Result<(), Box<dyn Error>> {
-    let admin_config = AdminConfig::load_admin_config()?;
-    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
-    let payer = load_payer_from_env()?;
-
-    let vault_account_pda = pda_helper::get_vault_pda(mock_program_id).0;
-    let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
-    let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
-
-    println!("Mock Vault Address {}", vault_account_pda);
-    println!("Mock 2Z Token Mint {}", token_mint_account_pda);
-    println!("Mock Protocol Treasury Token Account {}", protocol_treasury_token_account_pda);
-
-    // Building instruction data
-    let data = hash(MOCK_SYSTEM_INITIALIZE).to_bytes()[..8].to_vec();
-
-    // necessary accounts
-    let accounts = vec![
-        AccountMeta::new(token_mint_account_pda, false),
-        AccountMeta::new(protocol_treasury_token_account_pda, false),
-        AccountMeta::new(vault_account_pda, false),
-        AccountMeta::new(spl_token_2022::id(), false),
-        AccountMeta::new(system_program::ID, false),
-        AccountMeta::new_readonly(rent::id(), false),    // rent
-        AccountMeta::new(payer.pubkey(), true),
-    ];
-
-    let mint_ix = Instruction {
-        program_id: mock_program_id,
-        data,
-        accounts,
-    };
-
-    transaction_executor::send_batch_instructions(vec![mint_ix])?;
-    println!("{} Mock Program Init is successful", ui::OK);
     Ok(())
 }
 
