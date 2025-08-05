@@ -145,9 +145,16 @@ cargo run -p admin-cli -- update-config
 The command reads the `config.json` file and updates the configuration of the system according to the values in the file.
 
 ### Activate or Pause the System
+This command activates or pauses the system. If the system is paused, no new trades can be executed.
 ```sh
 cargo run -p admin-cli -- toggle-system-state --activate
 cargo run -p admin-cli -- toggle-system-state --pause
+```
+
+### Check System State
+Checks the current state of the system.
+```sh
+cargo run -p admin-cli -- view-system-state
 ```
 
 ### Set Admin
