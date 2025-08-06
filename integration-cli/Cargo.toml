@@ -1,8 +1,8 @@
 [package]
-name = "user-cli"
+name = "integration-cli"
 version = "0.1.0"
 edition = "2021"
-description = "User CLI for Double Zero Fee Converter System"
+description = "Integration for Double Zero Fee Converter System"
 
 [dependencies]
 anchor-client = { workspace = true }
