@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
 import { toggleSystemStateAndVerify, toggleSystemStateAndVerifyFail } from "./core/test-flow/system-state";
 import * as anchor from "@coral-xyz/anchor";
-import { getDefaultKeyPair } from "./core/utils/accounts";
+import { getDefaultKeyPair } from "./core/utils/account-utils";
 
 describe("System State Tests", () => {
     anchor.setProvider(anchor.AnchorProvider.env());

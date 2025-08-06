@@ -1,6 +1,14 @@
 # DoubleZero Fee Conversion System #
 
-This repository contains on-chain and off-chain implementation for DoubleZero Fee Conversion System on solana.
+This repository contains on-chain and off-chain implementation for DoubleZero Fee Conversion System on solana. \
+This system consists of following components. 
+
+1) Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
+2) Mock Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
+It provides CPIs which is used by converter program to simulate actual transfer.  
+3) Admin CLI - CLI interface for admins to control the system.
+4) User CLI - CLI interface for user to interact with the system.
+5) Common CLI - Includes common functionalities for Admin CLI & User CLI 
 
 ### Setup Dependencies
 
@@ -67,7 +75,7 @@ The file should contain the following items.
 ## Deploy the Anchor Program
 ### Keypair for the programs
 Create "./keys" directory\
-Generate keypair for both the programs and copy keypairs into the `.keys` directory.
+Generate keypair for both the programs and copy keypair into the `.keys` directory.
 
 ### Two ways of Deploying
 There are two ways to deploy your application.
@@ -95,23 +103,24 @@ deploy it to the environment.
   - on-chain 
   - admin-cli
   - user-cli
+  - run-tests
 - `--restart-validator` If it is on-chain local deployment, then start/ restart the validator.
 - `--m <value>` Set the mode of operation.
-  - For on-chain workspace
-      - `deploy_only`: Only deploy the specified workspace(s).
-      - `build_only`: Only build the specified workspace(s).
-      - `build_and_deploy`: Build and then deploy the specified workspace(s).
+  - For on-chain workspace and run-tests
+    - For On-chain workspace
+        - `deploy_only`: Only deploy the specified workspace(s).
+        - `build_only`: Only build the specified workspace(s).
+        - `build_and_deploy`: Build and then deploy the specified workspace(s).
+    - For run-tests workspace
+      - `unit`: Running unit tests.
+      - `e2e`: Running e2e tests.
   - For CLI workspaces, there are no mode
 
 #### Example Usage
 Build and Deploy a Single Workspace
 ```sh
 ./build_and_deploy.sh -w on-chain --restart-validator
-```
-
-If you want to build and deploy all the workspaces, you can run the following command.
-```sh
-./build_and_deploy.sh
+./build_and_deploy.sh -w run-tests --mode unit
 ```
 
 ## Admin CLI
@@ -146,6 +155,12 @@ cargo run -p admin-cli -- update-config
 
 The command reads the `config.json` file and updates the configuration of the system according to the values in the file.
 
+### View System State
+Displays current system state.
+```sh
+cargo run -p admin-cli -- view-system-state
+```
+
 ### Activate or Pause the System
 This command activates or pauses the system. If the system is paused, no new trades can be executed.
 ```sh
@@ -167,6 +182,75 @@ cargo run -p admin-cli -- set-admin -a <ADMIN_ACCOUNT>
 
 - `-a`: Admin account public key.
 
+### Add Dequeuer
+Add a dequeuer address to the authorized list
+```sh
+cargo run -p admin-cli -- add-dequeuer -a <DEQUEUER_ACCOUNT>
+```
+
+- `-a`: Dequeuer account public key.
+
+### Remove Dequeuer
+Remove a dequeuer address from the authorized list
+```sh
+cargo run -p admin-cli -- remove-dequeuer -a <DEQUEUER_ACCOUNT>
+```
+
+- `-a`: Dequeuer account public key.
+
+### Add to DenyList
+Adds an address to the deny list registry
+```sh
+cargo run -p admin-cli -- add-to-deny-list -a <USER_ACCOUNT>
+```
+
+- `-a`: User account public key.
+ 
+### Remove From DenyList
+Removes an address from the deny list registry
+```sh
+cargo run -p admin-cli -- remove-from-deny-list -a <USER_ACCOUNT>
+```
+
+- `-a`: User account public key.
+ 
+### View DenyList
+Displays all addresses in the deny list registry
+```sh
+cargo run -p admin-cli -- view-deny-list 
+```
+
+### Init Mock Transfer Program
+Initializes Mock Transfer Program Accounts
+```sh
+cargo run -p admin-cli -- init-mock-program
+```
+
+### Airdrop to Mock Vault
+Sends specified amount of SOL to Mock Vault
+```sh
+cargo run -p admin-cli -- airdrop-to-mock-vault -a <AMOUNT>
+```
+- `AMOUNT`: SOL amount to be airdropped.
+
+
+### Mock Token Mint
+Mints Mock 2Z token to specified address.
+```sh
+cargo run -p admin-cli -- mock-token-mint -a <AMOUNT> -t <DESTINATION_TOKEN_ACCOUNT>
+```
+
+- `-a`: Token Amount to be minted
+- `-t`: Destination token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
+
+### Mint to Protocol Treasury Token Account
+Mints specified amount of Mock 2Z token to protocol Treasury Account
+```sh
+cargo run -p admin-cli -- mock-to-protocol-treasury -a <AMOUNT>
+```
+- `-a`: 2Z Token amount to be minted.
+
+
 ## User CLI
 
 ### Get Current Price
@@ -184,7 +268,9 @@ cargo run -p user-cli -- get-quantity
 ### Buy SOL
 Initiates SOL purchase. Trade executes at bid price if ask price ≤ bid price; otherwise cancels.
 ```sh
-cargo run -p user-cli -- buy-sol -p <bid_price>
+cargo run -p user-cli -- buy-sol -p <bid_price> -f <SOURCE_ACCOUNT>
 ```
 
 - `-p`: User's maximum acceptable purchase price
+- `-f`: Source token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
+

@@ -1,5 +1,5 @@
 import {Keypair} from "@solana/web3.js";
-import { accountExists, getDefaultKeyPair } from "../utils/accounts"
+import { accountExists, getDefaultKeyPair } from "../utils/account-utils"
 import { DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig } from "../utils/configuration-registry";
 import { getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA } from "../utils/pda-helper";
 import { Program } from "@coral-xyz/anchor";
@@ -11,11 +11,11 @@ export const updateConfigsAndVerify = async (
     adminKeypair: Keypair = getDefaultKeyPair(),
     input: SystemConfig = DEFAULT_CONFIGS
 ) => {
-    const pdas = await Promise.all([
+    const pdas = [
         getConfigurationRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
         getProgramStatePDA(program.programId),
-    ]);
+    ];
 
     let [programStateExists, configRegistryExists, denyRegistryExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))
@@ -52,11 +52,11 @@ export const updateConfigsAndVerifyFail = async (
     input: SystemConfig | any = DEFAULT_CONFIGS,
     expectedError: string
 ) => {
-    const pdas = await Promise.all([
+    const pdas = [
         getConfigurationRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
         getProgramStatePDA(program.programId),
-    ]);
+    ];
 
     let [programStateExists, configRegistryExists, denyRegistryExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))

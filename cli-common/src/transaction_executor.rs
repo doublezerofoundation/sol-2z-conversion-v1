@@ -6,7 +6,7 @@ use std::{
 };
 use anchor_client::{
     solana_client::{
-        rpc_client::RpcClient, 
+        rpc_client::RpcClient,
         rpc_config::RpcSendTransactionConfig,
         rpc_config::RpcTransactionConfig
     },
@@ -25,8 +25,10 @@ use crate::{
     utils::{
         env_var::load_payer_from_env,
         error_handler, 
-        ui::{LABEL, OK, WAITING}
-    }
+        ui::{LABEL, OK, WAITING},
+        return_data::ReturnData
+    },
+    constant::{RETRY_COUNT, RETRY_DELAY},
 };
 
 
@@ -35,8 +37,6 @@ use solana_transaction_status::{
     option_serializer::OptionSerializer, EncodedConfirmedTransactionWithStatusMeta,
     UiTransactionEncoding,
 };
-use crate::constant::{RETRY_COUNT, RETRY_DELAY};
-use crate::utils::return_data::ReturnData;
 
 pub fn send_batch_instructions(
     instructions: Vec<Instruction>
@@ -51,8 +51,8 @@ pub fn send_batch_instructions(
 
     let rpc_client = RpcClient::new_with_commitment(config.rpc_url, CommitmentConfig::confirmed());
 
-    // Fetch recent blockhash
-    let recent_blockhash = rpc_client
+    // Fetch recent block hash
+    let recent_block_hash = rpc_client
         .get_latest_blockhash()
         .map_err(|_| "Error when getting latest block hash")?;
 
@@ -66,7 +66,7 @@ pub fn send_batch_instructions(
         &instructions,
         Some(&payer.pubkey()),
         &[&payer],
-        recent_blockhash
+        recent_block_hash
     );
 
     let signature = rpc_client
@@ -101,8 +101,8 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
 
     let rpc_client = RpcClient::new_with_commitment(config.rpc_url, CommitmentConfig::confirmed());
 
-    // Fetch recent blockhash
-    let recent_blockhash = rpc_client
+    // Fetch recent block hash
+    let recent_block_hash = rpc_client
         .get_latest_blockhash()
         .map_err(|_| "Error when getting latest block hash")?;
 
@@ -110,7 +110,7 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
         &[instruction],
         Some(&payer.pubkey()),
         &[&payer],
-        recent_blockhash,
+        recent_block_hash,
     );
 
     let tx_config = RpcSendTransactionConfig {
@@ -124,7 +124,7 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
         CommitmentConfig::confirmed(),
         tx_config,
     );
-    
+
     match signature {
         Ok(_) => {
             println!("{OK} Transaction Completed!");
@@ -139,7 +139,7 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
 
     println!("{WAITING} Reading transaction data...");
 
-    // Retry get_transaction up to 5 times with 2 second delay between attempts
+    // Retry get_transaction up to 5 times with 2-second delay between attempts
     for i in 0..RETRY_COUNT {
         if i > 0 {
             println!("{WAITING} Retrying get_transaction (attempt {})...", i + 1);
@@ -176,9 +176,9 @@ fn extract_return_data(
         if let OptionSerializer::Some(data) = meta.return_data {
             if data.program_id == program_id {
                 let result = base64::engine::general_purpose::STANDARD.decode(data.data.0);
-                match result {
-                    Ok(data) => return Ok(data),
-                    Err(e) => return Err(e.into()),
+                return match result {
+                    Ok(data) => Ok(data),
+                    Err(e) => Err(e.into()),
                 }
             } else {
                 println!("Return data is not from the expected program");

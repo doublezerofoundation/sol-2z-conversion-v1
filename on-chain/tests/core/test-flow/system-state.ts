@@ -1,7 +1,7 @@
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
 import { getProgramStatePDA } from "../utils/pda-helper";
-import { accountExists, getDefaultKeyPair } from "../utils/accounts";
+import { accountExists, getDefaultKeyPair } from "../utils/account-utils";
 import { Keypair } from "@solana/web3.js";
 import { assert, expect } from "chai";
 
