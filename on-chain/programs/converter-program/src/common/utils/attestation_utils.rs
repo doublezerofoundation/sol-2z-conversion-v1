@@ -6,23 +6,24 @@ use base64::{
 use brine_ed25519::sig_verify;
 use crate::common::{
     error::DoubleZeroError,
-    events::system::AttestationInvalid
+    events::system::AttestationInvalid,
+    structs::OraclePriceData
 };
 
 pub fn verify_attestation(
-    swap_rate: String,
-    attestation_timestamp: i64,
-    signature: String,
+    oracle_price_data: &OraclePriceData,
     oracle_public_key: Pubkey,
     price_maximum_age: i64,
 ) -> Result<()> {
     // Rebuild the message
-    let message_string = format!("{}|{}", swap_rate, attestation_timestamp);
+    let message_string = format!(
+        "{}|{}", oracle_price_data.swap_rate, oracle_price_data.timestamp
+    );
     let message_bytes = message_string.as_bytes();
 
     // Decode base64
     let signature_vec = STANDARD
-        .decode(&signature)
+        .decode(&oracle_price_data.signature)
         .map_err(|_| error!(DoubleZeroError::InvalidAttestation))?;
 
     // ed25519 signature verification
@@ -35,7 +36,7 @@ pub fn verify_attestation(
 
     // timestamp verification
     let current_timestamp = Clock::get()?.unix_timestamp;
-    let difference = current_timestamp - attestation_timestamp;
+    let difference = current_timestamp - oracle_price_data.timestamp;
 
     require!(
         difference <= price_maximum_age,

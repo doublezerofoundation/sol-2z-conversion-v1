@@ -95,15 +95,11 @@ pub mod converter_program {
     pub fn buy_sol(
         ctx: Context<BuySol>,
         bid_price: u64,
-        swap_rate: String,
-        timestamp: i64,
-        signature: String
+        oracle_price_data: OraclePriceData
     ) -> Result<()> {
         ctx.accounts.process(
             bid_price,
-            swap_rate,
-            timestamp,
-            signature
+            oracle_price_data
         )
     }
 

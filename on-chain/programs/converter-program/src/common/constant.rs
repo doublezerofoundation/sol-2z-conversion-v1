@@ -10,6 +10,3 @@ pub const DECIMAL_PRECISION: u64 = 10000;
 
 // Account Size
 pub const DISCRIMINATOR_SIZE: usize = 8;
-
-
-pub const TOKEN_DECIMALS: u64 = 10u64.pow(6);
