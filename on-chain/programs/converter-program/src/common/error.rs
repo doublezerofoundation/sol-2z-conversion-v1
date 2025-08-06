@@ -60,6 +60,9 @@ pub enum DoubleZeroError {
     #[msg("Address already added to Deny List")]
     AlreadyExistsInDenyList, // 6018
 
+    #[msg("Invalid system state")]
+    InvalidSystemState, // 6019
+
     #[msg("System is halted")]
     SystemIsHalted, // 6019
 

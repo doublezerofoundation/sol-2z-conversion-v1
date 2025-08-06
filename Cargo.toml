@@ -3,7 +3,8 @@ members = [
     "./on-chain/programs/*",
     "cli-common",
     "admin-cli",
-    "user-cli"
+    "user-cli",
+    "integration-cli"
 ]
 resolver = "2"
 

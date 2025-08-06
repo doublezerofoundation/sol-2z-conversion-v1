@@ -6,6 +6,16 @@ pub struct UnauthorizedUser {
 }
 
 #[event]
+pub struct SystemHalted {
+    pub halted_by: Pubkey,
+}
+
+#[event]
+pub struct SystemUnhalted{
+    pub unhalted_by: Pubkey,
+}
+
+#[event]
 pub struct AccessDuringSystemHalt {
     pub accessed_by: Pubkey,
 }

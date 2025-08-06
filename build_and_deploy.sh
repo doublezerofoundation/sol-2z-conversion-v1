@@ -40,8 +40,8 @@ show_help() {
   echo "Build and deploy script for Converter Program"
   echo ""
   echo "OPTIONS:"
-  echo "  -w, --workspace Workspace      Set the workspace (on-chain, admin-cli, user-cli)."
-  echo "  -m, --mode Mode   Set the mode of operation ([deploy_only, build_only, build_and_deploy] for on-chain, [unit, e2e] for tests)."
+  echo "  -w, --workspace Workspace      Set the workspace (on-chain, admin-cli, user-cli, integration-cli)."
+  echo "  -m, --mode Mode  -m, --mode Mode   Set the mode of operation ([deploy_only, build_only, build_and_deploy] for on-chain, [unit, e2e] for tests)."
   echo "  -r, --restart-validator Start/ Restart validator (Only in the local net, Only for on-chain deployment)"
   echo "  -h, --help          Show this help message"
   echo ""
@@ -117,11 +117,14 @@ case "$workspace" in
   user-cli)
     handle_cli_build "user"
     ;;
+  integration-cli)
+    handle_cli_build "integration"
+    ;;
   run-tests)
     handle_run_tests
     ;;
   *)
-    log_error "Invalid workspace specified. Please use 'converter-program', 'admin-cli', or 'user-cli'."
+    log_error "Invalid workspace specified. Please use 'converter-program', 'admin-cli', 'integration-cli' or 'user-cli'."
     exit 1
     ;;
 esac
