@@ -11,6 +11,10 @@ UNIT_TESTS=(
     system-state-test
 )
 
+E2E_TESTS=(
+    admin-e2e
+)
+
 TEST_TYPE="unit"
 QUIET_MODE=0
 BASE_RPC_PORT=8899
@@ -40,10 +44,20 @@ done
 
 # -------------------- Globals --------------------
 FAILED_TESTS=()
-TOTAL_TESTS=${#UNIT_TESTS[@]}
 COMPLETED_COUNT=0
 FAILED_COUNT=0
-TOTAL_TESTS=${#UNIT_TESTS[@]}
+
+# Determine active test list based on --test-type
+if [ "$TEST_TYPE" == "e2e" ]; then
+    ACTIVE_TESTS=("${E2E_TESTS[@]}")
+elif [ "$TEST_TYPE" == "unit" ]; then
+    ACTIVE_TESTS=("${UNIT_TESTS[@]}")
+else
+    echo "Invalid test type: $TEST_TYPE"
+    exit 1
+fi
+
+TOTAL_TESTS=${#ACTIVE_TESTS[@]}
 
 # -------------------- Logging --------------------
 log_info() { [[ $QUIET_MODE -eq 0 ]] && echo -e "ℹ️  \033[38;5;250m[INFO]\033[0m $1"; }
@@ -81,8 +95,17 @@ print_status_bar() {
 # -------------------- Validator Management --------------------
 start_validator() {
     local RPC_PORT=$1
+    local RPC_URL="http://127.0.0.1:$RPC_PORT"
+
+    # Stop any running validator
+    VALIDATOR_PID=$(pgrep -f "solana-test-validator")
+    if [ -n "$VALIDATOR_PID" ]; then
+        stop_validator $VALIDATOR_PID
+    fi
+    wait_for_port_release $RPC_PORT
+
     solana-test-validator --reset --quiet --rpc-port $RPC_PORT &> /dev/null &
-    echo $!
+    wait_for_validator $RPC_URL
 }
 
 stop_validator() {
@@ -153,8 +176,7 @@ run_test() {
     print_status_bar
     log_section "Running Test: $TEST_SCRIPT (RPC: $RPC_PORT)"
 
-    VALIDATOR_PID=$(start_validator $RPC_PORT)
-    wait_for_validator $RPC_URL
+    start_validator $RPC_PORT
     deploy_program $RPC_URL
 
     anchor run $TEST_SCRIPT --provider.cluster $RPC_URL
@@ -170,9 +192,6 @@ run_test() {
 
     COMPLETED_COUNT=$((COMPLETED_COUNT + 1))
     print_status_bar
-
-    stop_validator $VALIDATOR_PID
-    wait_for_port_release $RPC_PORT
 }
 
 # -------------------- Main Execution --------------------
@@ -182,7 +201,7 @@ trap 'killall -9 solana-test-validator 2>/dev/null || true' EXIT
 cd ./on-chain || exit 1
 build_program
 
-for TEST_SCRIPT in "${UNIT_TESTS[@]}"; do
+for TEST_SCRIPT in "${ACTIVE_TESTS[@]}"; do
     run_test $TEST_SCRIPT $BASE_RPC_PORT
 done
 
@@ -192,9 +211,9 @@ print_status_bar
 echo ""
 
 if [ ${#FAILED_TESTS[@]} -eq 0 ]; then
-    log_success "All tests passed successfully. 🎉"
+    log_success "All $TEST_TYPE tests passed successfully. 🎉"
 else
-    log_warning "Some tests failed:"
+    log_warning "Some $TEST_TYPE tests failed:"
     for FAILED_TEST in "${FAILED_TESTS[@]}"; do
         echo -e "✖️  \033[38;5;203m$FAILED_TEST\033[0m"
     done
