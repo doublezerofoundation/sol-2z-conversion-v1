@@ -6,3 +6,4 @@ export const PROGRAM_ID  = new PublicKey(
   process.env.PROGRAM_ID || 'YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z'
 );
 export const CONCURRENCY = parseInt(process.env.CONCURRENCY || '8', 10);
+export const ENV         = process.env.ENV || 'dev1';

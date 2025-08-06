@@ -61,7 +61,11 @@ resource "aws_instance" "this" {
   }
 
   tags = merge(
-    { Name = "${local.full_prefix}-instance", Environment = var.environment },
+    { 
+      Name = "${local.full_prefix}-service", 
+      Environment = var.environment,
+      Service     = var.container_name
+    },
     var.additional_tags
   )
 }
