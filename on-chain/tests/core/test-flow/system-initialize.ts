@@ -105,7 +105,6 @@ export async function systemInitializeFail(
             .rpc();
 
     } catch (error) {
-        console.log(error);
         console.log("System initialization is rejected as expected");
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "System initialization is rejected as expected");

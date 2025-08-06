@@ -36,7 +36,7 @@ describe("System Initialization Tests", () => {
     })
 
     it("Mint 2Z!", async () => {
-        await mint2z( program, tokenAccount,500);
+        await mint2z(program, tokenAccount,500);
     });
 
     it("Airdrop vault", async () => {
@@ -47,8 +47,12 @@ describe("System Initialization Tests", () => {
         await buySol(program, tokenAccount,500, 200, userKeyPair);
     });
 
-    it("Buy Sol!", async () => {
-        await withdraw_2z(program, tokenAccount,500, userKeyPair);
+    it(" Mint 2Z to Protocol Treasury", async () => {
+        await mint2z(program, pdas.protocolTreasury,500);
+    });
+
+    it("Withdraw 2Z!", async () => {
+        await withdraw_2z(program, tokenAccount,600, userKeyPair);
     });
 
 });

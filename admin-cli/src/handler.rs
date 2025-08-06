@@ -98,8 +98,13 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             mock_token_handler::mint(to_address, amount)
         }
 
+        // Mint Mock Tokens to Protocol Treasury Token Account
+        Some(Commands::MintToMockProtocolTreasury { amount }) => {
+            mock_token_handler::mint_to_protocol_treasury_token_account(amount)
+        }
+
         // Mock vault airdrop
-        Some(Commands::MockVaultAirdrop {  amount }) => {
+        Some(Commands::AirdropToMockVault {  amount }) => {
             mock_token_handler::airdrop_vault(amount)
         }
 

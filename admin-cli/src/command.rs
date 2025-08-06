@@ -83,8 +83,14 @@ pub enum Commands {
         amount: String,
     },
 
+    /// Mints Mock 2Z token to protocol Treasury Account
+    MintToMockProtocolTreasury {
+        #[arg(short = 'a', required = true)]
+        amount: String,
+    },
+
     /// Airdrop to Mock Vault
-    MockVaultAirdrop{
+    AirdropToMockVault{
         #[arg(short = 'a', required = true)]
         amount: String,
     },

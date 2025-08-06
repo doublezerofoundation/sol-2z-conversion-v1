@@ -66,20 +66,11 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Error>> {
+// to account is fixed
+pub fn mint_to_account(recipient_pub_key: Pubkey, amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
     let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
-    let payer = load_payer_from_env()?;
     let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
-
-    let recipient_pub_key = match to_pub_key {
-        Some(ref key_str) => Pubkey::from_str(key_str)?,
-        None => find_or_initialize_associated_token_account(
-            payer,
-            token_mint_account_pda,
-            admin_config.rpc_url
-        )?
-    };
 
     let amount_parsed = parse_token_value(&amount)?;
 
@@ -104,6 +95,33 @@ pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Er
     transaction_executor::send_batch_instructions(vec![mint_ix])?;
     println!("{} Token mint is successful", ui::OK);
     Ok(())
+}
+
+// to account is flexible where if it is not provided, it takes Associated token address.
+pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Error>> {
+    let admin_config = AdminConfig::load_admin_config()?;
+    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let payer = load_payer_from_env()?;
+    let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
+
+    let recipient_pub_key = match to_pub_key {
+        Some(ref key_str) => Pubkey::from_str(key_str)?,
+        None => find_or_initialize_associated_token_account(
+            payer,
+            token_mint_account_pda,
+            admin_config.rpc_url
+        )?
+    };
+    mint_to_account(recipient_pub_key, amount)
+}
+
+pub fn mint_to_protocol_treasury_token_account(amount: String) -> Result<(), Box<dyn Error>> {
+    let admin_config = AdminConfig::load_admin_config()?;
+    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let protocol_treasury_token_account =
+        pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
+    println!("Mock Protocol Treasury Token Account {}", protocol_treasury_token_account);
+    mint_to_account(protocol_treasury_token_account, amount)
 }
 
 pub fn airdrop_vault(amount: String) -> Result<(), Box<dyn Error>> {

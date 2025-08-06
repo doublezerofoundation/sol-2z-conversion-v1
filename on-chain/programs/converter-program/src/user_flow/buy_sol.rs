@@ -50,12 +50,19 @@ pub struct BuySol<'info> {
         bump,
     )]
     pub fills_registry: Account<'info, FillsRegistry>,
-    #[account(mut)]
+    #[account(
+        mut,
+        token::mint = double_zero_mint,
+    )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
     pub vault_account: SystemAccount<'info>,
-    #[account(mut)]
+    #[account(
+        mut,
+        token::mint = double_zero_mint,
+    )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
+    #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,

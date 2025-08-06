@@ -1,6 +1,6 @@
 import {createAccount, TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 import {getDefaultKeyPair} from "./account-utils";
-import {Connection, PublicKey} from "@solana/web3.js";
+import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 
 export async function createTokenAccount(
     connection: Connection,
@@ -12,7 +12,7 @@ export async function createTokenAccount(
         getDefaultKeyPair(),
         mint,
         owner,
-        undefined,
+        Keypair.generate(),
         undefined,
         TOKEN_2022_PROGRAM_ID
     )

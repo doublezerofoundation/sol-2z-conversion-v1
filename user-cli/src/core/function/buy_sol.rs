@@ -17,7 +17,7 @@ use anchor_client::{
 use cli_common::{
     transaction_executor,
     utils::{
-        env_var::load_payer_from_env, 
+        env_var::load_payer_from_env,
         pda_helper,
         fixed_point_utils::parse_token_value,
         token_utils::find_or_initialize_associated_token_account

@@ -6,12 +6,6 @@ use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, TransferCh
 pub struct Withdraw2Z<'info> {
     #[account(
         mut,
-        seeds = [b"vault"],
-        bump
-    )]
-    pub vault_account: SystemAccount<'info>,
-    #[account(
-        mut,
         token::mint = double_zero_mint,
     )]
     pub recipient_token_account: InterfaceAccount<'info, TokenAccount>,
