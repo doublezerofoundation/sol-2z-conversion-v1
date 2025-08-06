@@ -14,10 +14,10 @@ describe("Admin Change Tests", async () => {
 
   it("Program deployer can set admin", async () => {
     const newAdmin = Keypair.generate();
-    await setAdminAndVerify(program, adminKeyPair, newAdmin.publicKey);
+    await setAdminAndVerify(program, newAdmin.publicKey, adminKeyPair);
 
     // Revert: Set admin back to adminKeyPair
-    await setAdminAndVerify(program, adminKeyPair, adminKeyPair.publicKey);
+    await setAdminAndVerify(program, adminKeyPair.publicKey, adminKeyPair);
   });
 
   it("Should fail to set admin if not program deployer", async () => {

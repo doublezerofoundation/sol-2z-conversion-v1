@@ -8,8 +8,8 @@ import { assert, expect } from "chai";
 
 export const setAdminAndVerify = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     new_admin: PublicKey,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const pdas = await Promise.all([
         getProgramStatePDA(program.programId),

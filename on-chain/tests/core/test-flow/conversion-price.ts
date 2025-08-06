@@ -8,7 +8,7 @@ import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "..
 import { DECIMAL_PRECISION } from "../constants";
 import { Keypair } from "@solana/web3.js";
 
-export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair) => {
+export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair = getDefaultKeyPair()) => {
     const oraclePriceData = await getOraclePriceData();
     const configurationRegistryPDA = await getConfigurationRegistryPDA(program.programId);
 
@@ -76,8 +76,8 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
 export const getConversionPriceToFail = async (
     program: Program<ConverterProgram>,
     oraclePriceData: OraclePriceData,
-    signer: Keypair,
-    expectedError: string
+    expectedError: string,
+    signer: Keypair = getDefaultKeyPair(),
 ) => {
     try {
         const signature = await program.methods.calculateAskPrice({

@@ -18,9 +18,9 @@ describe("Config Update Tests", async () => {
     await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey);
     await updateConfigsAndVerifyFail(
       program,
-      nonAdminUserKeyPair,
       DEFAULT_CONFIGS,
-      "Unauthorized Admin"
+      "Unauthorized Admin",
+      nonAdminUserKeyPair
     )
   });
 
@@ -36,14 +36,12 @@ describe("Config Update Tests", async () => {
     };
     await updateConfigsAndVerify(
       program,
-      adminKeyPair,
       newConfig
     );
 
     // return the config to original values
     await updateConfigsAndVerify(
       program,
-      adminKeyPair,
       DEFAULT_CONFIGS
     );
   });
@@ -54,7 +52,6 @@ describe("Config Update Tests", async () => {
     };
     await updateConfigsAndVerifyFail(
       program,
-      adminKeyPair,
       newConfig,
       ""
     )

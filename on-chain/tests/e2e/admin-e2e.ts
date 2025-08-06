@@ -12,11 +12,13 @@ import { updateConfigsAndVerify } from "../core/test-flow/change-configs";
 import { getConversionPriceAndVerify } from "../core/test-flow/conversion-price";
 import { addToDenyListAndVerify, removeFromDenyListAndVerify } from "../core/test-flow/deny-list";
 import * as anchor from "@coral-xyz/anchor";
+import { setAdminAndVerify } from "../core/test-flow/set-admin";
 
 export interface AdminTestArgs {
   systemConfig?: SystemConfig;
   dequeuer?: Keypair;
-  deny_account?: Keypair;
+  denyAccount?: Keypair;
+  newAdmin?: Keypair;
 }
 
 const adminTestList: Test[] = [
@@ -32,8 +34,7 @@ const adminTestList: Test[] = [
     name: "deployer_init_system",
     description: "Deployer should be able to initialize the system",
     execute: async (program: Program<ConverterProgram>) => {
-      const admin = getDefaultKeyPair();
-      await systemInitializeAndVerify(program, admin);
+      await systemInitializeAndVerify(program);
     }
   },
   {
@@ -48,16 +49,14 @@ const adminTestList: Test[] = [
     name: "config_update",
     description: "Admin should be able to update configs",
     execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
-      const admin = getDefaultKeyPair();
-      await updateConfigsAndVerify(program, admin, args.systemConfig);
+      await updateConfigsAndVerify(program, args.systemConfig);
     }
   },
   {
     name: "check_updated_configs",
     description: "Verify whether the ask price is updated with the new configs",
     execute: async (program: Program<ConverterProgram>) => {
-      const admin = getDefaultKeyPair();
-      await getConversionPriceAndVerify(program, admin);
+      await getConversionPriceAndVerify(program);
     }
   },
   {
@@ -93,8 +92,7 @@ const adminTestList: Test[] = [
     name: "add_deny_list",
     description: "Admin should be able to add accounts to the deny list",
     execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
-      const admin = getDefaultKeyPair();
-      await addToDenyListAndVerify(program, args.deny_account.publicKey, admin);
+      await addToDenyListAndVerify(program, args.denyAccount.publicKey);
     }
   },
   {
@@ -108,8 +106,7 @@ const adminTestList: Test[] = [
     name: "remove_deny_list",
     description: "Admin should be able to remove accounts from the deny list",
     execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
-      const admin = getDefaultKeyPair();
-      await removeFromDenyListAndVerify(program, args.deny_account.publicKey, admin);
+      await removeFromDenyListAndVerify(program, args.denyAccount.publicKey);
     }
   },
   {
@@ -117,6 +114,36 @@ const adminTestList: Test[] = [
     description: "Deny list accounts should be able to perform actions after removal",
     execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
       // TODO: Yet to be implemented
+    }
+  },
+  {
+    name: "change_admin",
+    description: "Deployer should be able to change the admin",
+    execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
+      // Set the new admin
+      await setAdminAndVerify(program, args.newAdmin.publicKey);
+    }
+  },
+  {
+    name: "new_admin_can_do_admin_actions",
+    description: "New admin should be able to do admin actions",
+    execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
+      // Add a dequeuer
+      const dequeuer = await getRandomKeyPair(program.provider.connection);
+      await addDequeuerAndVerify(program, args.newAdmin, dequeuer.publicKey, true);
+      await removeDequeuerAndVerify(program, args.newAdmin, dequeuer.publicKey, true);
+
+      // Add a deny list account
+      const denyAccount = await getRandomKeyPair(program.provider.connection);
+      await addToDenyListAndVerify(program, denyAccount.publicKey, args.newAdmin);
+      await removeFromDenyListAndVerify(program, denyAccount.publicKey, args.newAdmin);
+
+      // Update configs
+      await updateConfigsAndVerify(program, args.systemConfig, args.newAdmin);
+
+      // Revert: Set admin back to deployer
+      const deployer = getDefaultKeyPair();
+      await setAdminAndVerify(program, deployer.publicKey);
     }
   }
 ];
@@ -133,7 +160,8 @@ describe("Admin E2E", () => {
         solQuantity: new anchor.BN(100),
       },
       dequeuer: await getRandomKeyPair(program.provider.connection),
-      deny_account: await getRandomKeyPair(program.provider.connection)
+      denyAccount: await getRandomKeyPair(program.provider.connection),
+      newAdmin: await getRandomKeyPair(program.provider.connection)
     };
   });
 

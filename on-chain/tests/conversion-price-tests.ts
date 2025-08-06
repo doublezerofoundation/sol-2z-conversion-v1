@@ -15,7 +15,7 @@ describe("Conversion Price Tests", async () => {
     });
     
     it("should get conversion price", async () => {
-        await getConversionPriceAndVerify(program, getDefaultKeyPair());
+        await getConversionPriceAndVerify(program);
     });
 
     it("should fail to get conversion price for deny listed user", async () => {
@@ -23,7 +23,7 @@ describe("Conversion Price Tests", async () => {
 
         // Add user to deny list
         await addToDenyListAndVerify(program, keypair.publicKey);
-        await getConversionPriceToFail(program, await getOraclePriceData(), keypair, "User is blocked in the DenyList");
+        await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the DenyList", keypair);
 
         // Revert: Remove user from deny list
         await removeFromDenyListAndVerify(program, keypair.publicKey);
@@ -35,6 +35,6 @@ describe("Conversion Price Tests", async () => {
             timestamp: 1722633600,
             signature: "invalid_signature",
         };
-        await getConversionPriceToFail(program, oraclePriceData, getDefaultKeyPair(), "Attestation is Invalid");
+        await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
     });
 });
