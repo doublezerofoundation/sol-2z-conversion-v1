@@ -3,6 +3,9 @@ import {CloudWatchClient, PutMetricDataCommand, PutMetricDataCommandInput} from 
 import process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
 const ENV:string = process.env.ENV || 'dev';
+import {injectable} from "inversify";
+
+@injectable()
 export default class CloudWatchMonitoringService implements MetricsMonitoringService {
     private cloudWatchClient: CloudWatchClient;
     constructor() {

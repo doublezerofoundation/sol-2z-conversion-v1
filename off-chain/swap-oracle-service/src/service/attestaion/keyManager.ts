@@ -7,6 +7,9 @@ import * as process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
 import bs58 from 'bs58';
 import {Keypair} from "@solana/web3.js";
+import { injectable } from 'inversify';
+
+@injectable()
 export class KeyManager {
     private awsSSM: any;
     constructor() {
@@ -28,12 +31,12 @@ export class KeyManager {
             WithDecryption: true
         }
 
-        const result = await this.awsSSM.send(new GetParameterCommand(params))
-        if (!result.Parameter?.Value) {
-            throw new Error("No value found in parameter store")
-        }
-        const value = result.Parameter.Value;
-        const privateKeyBytes = bs58.decode(value);
+        // const result = await this.awsSSM.send(new GetParameterCommand(params))
+        // if (!result.Parameter?.Value) {
+        //     throw new Error("No value found in parameter store")
+        // }
+        // const value = result.Parameter.Value;
+        const privateKeyBytes = bs58.decode("Hgg3MkWLBrHiqahDLi8CQfcaVZuUTvWtAGwsFh3vYuX2");
         const keyPair = Keypair.fromSeed(privateKeyBytes);
         console.log(keyPair.publicKey.toString())
 
@@ -48,12 +51,12 @@ export class KeyManager {
             WithDecryption: true
         }
 
-        const result = await this.awsSSM.send(new GetParameterCommand(params))
-        if (!result.Parameter?.Value) {
-            throw new Error("No value found in parameter store")
-        }
-        const value = result.Parameter.Value;
-        const privateKeyBytes = bs58.decode(value);
+        // const result = await this.awsSSM.send(new GetParameterCommand(params))
+        // if (!result.Parameter?.Value) {
+        //     throw new Error("No value found in parameter store")
+        // }
+        // const value = result.Parameter.Value;
+        const privateKeyBytes = bs58.decode("Hgg3MkWLBrHiqahDLi8CQfcaVZuUTvWtAGwsFh3vYuX2");
         const cryptoKeyPair = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
         console.log(cryptoKeyPair.address)
 

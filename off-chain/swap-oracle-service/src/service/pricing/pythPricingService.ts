@@ -1,19 +1,18 @@
 import {PricingServiceBase} from "./pricingService";
 import {HermesClient, PriceUpdate} from "@pythnetwork/hermes-client";
 import {HealthCheckResult, HealthStatus, PriceFeed, PricingServicesConfig} from "../../types/common";
-import {PythSwapRateService} from "../swap/PythSwapRateService";
 import {CacheService} from "../cache/cacheService";
-import {RedisCacheService} from "../cache/redisCacheService";
-
+import axios from "axios";
 const ENV:string = process.env.ENV || 'dev';
+import {injectable} from "inversify";
+import SwapRateService from "../swap/swapRateService";
 
+@injectable()
 export default class PythPricingService extends PricingServiceBase {
 
     private priceServiceConnection: HermesClient;
     private solUsdFeedID;
     private twozUsdFeedID;
-
-
     private cacheService: CacheService;
 
     constructor(pricingServicesConfig:PricingServicesConfig) {
@@ -23,11 +22,18 @@ export default class PythPricingService extends PricingServiceBase {
 
     init(): void {
         this.priceServiceConnection = new HermesClient(this.pricingServicesConfig.endpoint, {});
-        this.swapRateService = new PythSwapRateService();
         this.solUsdFeedID = this.pricingServicesConfig.priceFeedIds[PriceFeed.SOL_USD];
         this.twozUsdFeedID = this.pricingServicesConfig.priceFeedIds[PriceFeed.TWOZ_USD];
-        this.cacheService = RedisCacheService.getInstance();
     }
+
+    setCacheService(cacheService: CacheService): void {
+        this.cacheService = cacheService;
+    }
+
+    setSwapRateService(swapRateService: SwapRateService): void {
+        this.swapRateService = swapRateService;
+    }
+
 
     async fetchPrice(feedID: string): Promise<any> {
         try {
@@ -55,7 +61,8 @@ export default class PythPricingService extends PricingServiceBase {
 
     async retrieveSwapRate() {
         if (!this.solUsdFeedID || !this.twozUsdFeedID) {
-            return;
+            console.error('Missing feed IDs for price retrieval');
+            throw new Error('Missing required feed IDs');
         }
         const solPrice = await this.fetchPrice(this.solUsdFeedID);
         const twozPrice = await this.fetchPrice(this.twozUsdFeedID);
@@ -69,14 +76,7 @@ export default class PythPricingService extends PricingServiceBase {
         let isConnected: boolean;
         try {
             lastPriceUpdate = await this.cacheService.get(`${this.getPricingServiceType()}-${ENV}-last-price-update`);
-            await this.priceServiceConnection.getLatestPriceUpdates(
-                [this.solUsdFeedID],
-                {encoding: "base64"}
-            )
-            await this.priceServiceConnection.getLatestPriceUpdates(
-                [this.twozUsdFeedID],
-                {encoding: "base64"}
-            )
+            await axios.get(`${this.pricingServicesConfig.endpoint}live`)
             isConnected = true;
 
         } catch (error) {

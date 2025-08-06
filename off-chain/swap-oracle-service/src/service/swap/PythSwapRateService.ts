@@ -1,7 +1,9 @@
 import SwapRateService from "./swapRateService";
 import {PriceRate} from "../../types/common";
 const TWOZ_PRECISION = 6;
+import {injectable} from "inversify";
 
+@injectable()
 export class PythSwapRateService implements SwapRateService {
     convertPrice(price: string | number, exponent: number): number {
         const priceNum = typeof price === 'string' ? parseInt(price) : price;
@@ -22,7 +24,7 @@ export class PythSwapRateService implements SwapRateService {
         const twozPerSol = (solUsdPrice - solConfidence) /  (twozUsdPrice - twozConfidence);
         const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION));
 
-        console.log(`Rate: ${roundedTwozPerSol} TWOZ per 1 SOL`);
+        console.log(`Rate: ${roundedTwozPerSol} TWOZ for 1 SOL`);
         return {
             swapRate: roundedTwozPerSol,
             solPriceUsd: (solUsdPrice - solConfidence),

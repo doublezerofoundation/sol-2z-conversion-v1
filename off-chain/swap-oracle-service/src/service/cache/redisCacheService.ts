@@ -5,13 +5,15 @@ const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT
 const REDIS_PORT =  process.env.REDIS_PORT
 const REDIS_URL = `rediss://${REDIS_ENDPOINT}:${REDIS_PORT}`
 const TTL_SECONDS = 10
+import {injectable} from "inversify";
+
+@injectable()
 export class RedisCacheService implements CacheService {
     private redisClient: RedisClientType;
     private isConnected: boolean = false;
-    static instance: RedisCacheService;
 
 
-    private constructor() {
+    constructor() {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
@@ -43,13 +45,6 @@ export class RedisCacheService implements CacheService {
         } catch (error) {
             console.error("Failed to connect to Redis:", error);
         }
-    }
-
-    static getInstance(): CacheService {
-        if(!RedisCacheService.instance) {
-            RedisCacheService.instance = new RedisCacheService();
-        }
-        return RedisCacheService.instance as CacheService;
     }
 
     private async ensureConnection(): Promise<void> {

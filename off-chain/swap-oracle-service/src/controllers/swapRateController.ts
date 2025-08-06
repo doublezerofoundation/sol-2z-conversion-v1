@@ -1,66 +1,51 @@
 import {Request, Response} from 'express';
 import {PricingService} from "../service/pricing/pricingService";
-import {HealthCheckResult, PriceRate} from "../types/common";
-import {PricingServiceFactory} from "../factory/ServiceFactory";
+import {HealthCheckResult, PriceRate, TYPES} from "../types/common";
+import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestaion/attestationService";
 import {CacheService} from "../service/cache/cacheService";
-import {RedisCacheService} from "../service/cache/redisCacheService";
 import MetricsMonitoringService from "../service/monitor/metricsMonitoringService";
-import CloudWatchMonitoringService from "../service/monitor/cloudWatchMonitoringService";
 import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
+import {inject, injectable} from "inversify";
+import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
 
 const ENV:string = process.env.ENV || 'dev';
+@injectable()
 export default class SwapRateController {
     private priceServices: PricingService[];
-    private attestationService: any;
-    private redisService: CacheService;
-    private monitoringService: MetricsMonitoringService;
-    private healthCheckService: HealthMonitoringService;
 
-    constructor() {
+    constructor(
+        @inject(TYPES.PricingServiceFactory) private pricingServiceFactory: PricingServiceFactory,
+        @inject(TYPES.AttestationService) private attestationService: AttestationService,
+        @inject(TYPES.CacheService) private cacheService: CacheService,
+        @inject(TYPES.MetricsMonitoringService) private metricsMonitoringService: MetricsMonitoringService,
+        @inject(TYPES.HealthMonitoringService) private healthMonitoringService: HealthMonitoringService,
+        @inject(TYPES.CircuitBreakerService) private circuitBreakerService: CircuitBreakerService,
+
+    ) {
         this.initializePricingService();
     }
 
     private initializePricingService(): void {
-        this.priceServices = PricingServiceFactory.create();
+        this.priceServices = this.pricingServiceFactory.create();
         this.priceServices.map(priceService => {
             priceService.init();
         })
-        this.attestationService = new AttestationService();
-        this.monitoringService = new CloudWatchMonitoringService()
-        this.redisService = RedisCacheService.getInstance();
-        this.healthCheckService = HealthMonitoringService.getInstance();
     }
 
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
-            if(!await this.healthCheckService.getHealthStatus()) {
+            if (!await this.healthMonitoringService.getHealthStatus()) {
                 console.log("Health check failed")
-                console.log(await this.healthCheckService.getHealthMonitoringData())
-                // TODO need to give proper error msg
-                res.status(500).json({error: 'Internal server error'});
+                res.status(503).json({
+                    error: 'Service temporarily unavailable',
+                    details: 'Health check failed',
+                    circuitBreakerStats: this.circuitBreakerService.getStats()
+                });
                 return;
             }
-            let priceRate: PriceRate;
-            let isCacheHit:boolean
-            const cachedSwapRate: PriceRate = await this.redisService.get(`${ENV}-swapRate`)
-            if (cachedSwapRate) {
-                priceRate = cachedSwapRate;
-                isCacheHit = true;
 
-            } else {
-                const pricePromises = this.priceServices.map(async (priceService) => {
-                    return await priceService.retrieveSwapRate();
-                });
-
-                const priceRates:PriceRate[] = await Promise.all(pricePromises);
-                priceRate = this.selectMostFavorableRate(priceRates);
-                await this.monitoringService.putMonitoringData("2Z/Sol-price-rate",priceRate.swapRate)
-
-                await this.redisService.add(`${ENV}-swapRate`, priceRate,true);
-                isCacheHit = false;
-            }
-
+            const { priceRate, isCacheHit } = await this.getSwapRate();
             const timestamp = Math.floor(Date.now() / 1000);
             const swapRate = priceRate.swapRate.toString();
 
@@ -88,8 +73,17 @@ export default class SwapRateController {
 
     healthCheckHandler = async (req: Request, res: Response): Promise<void> => {
         try {
-            const HealthCheckPromise:HealthCheckResult[] = await this.healthCheckService.getHealthMonitoringData()
-            res.json(HealthCheckPromise);
+            const healthChecks: HealthCheckResult[] = await this.healthMonitoringService.getHealthMonitoringData();
+            const circuitBreakerStats = this.circuitBreakerService.getStats();
+            const overallHealthy = await this.healthMonitoringService.getHealthStatus();
+
+            res.json({
+                healthy: overallHealthy,
+                healthChecks: healthChecks,
+                circuitBreaker: circuitBreakerStats,
+                timestamp: new Date().toISOString()
+            });
+
         } catch (error) {
             console.error('Error in healthCheckHandler:', error);
             res.status(500).json({error: 'Internal server error'});
@@ -105,6 +99,58 @@ export default class SwapRateController {
             currentRate.swapRate > bestRate.swapRate ? currentRate : bestRate
         );
     }
+
+    private async getSwapRate(): Promise<{ priceRate: PriceRate; isCacheHit: boolean }> {
+        const cachedSwapRate: PriceRate = await this.cacheService.get(`${ENV}-swapRate`);
+
+        if (cachedSwapRate) {
+            return { priceRate: cachedSwapRate, isCacheHit: true };
+        }
+        try {
+            const pricePromises = this.priceServices.map(async (service) => {
+                try {
+                    const result = await service.retrieveSwapRate();
+                    return { success: true, data: result, service: service.getPricingServiceType() };
+                } catch (error) {
+                    console.error(`Error from ${service.getPricingServiceType()}:`, error);
+                    return { success: false, error, service: service.getPricingServiceType() };
+                }
+            });
+
+            const results = await Promise.allSettled(pricePromises);
+            const successfulRates: PriceRate[] = [];
+            const failures: string[] = [];
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled' && result.value.success && result.value.data) {
+                    successfulRates.push(result.value.data);
+                } else {
+                    const serviceName = this.priceServices[index]?.getPricingServiceType() || `service-${index}`;
+                    failures.push(serviceName);
+                }
+            });
+
+            console.log(`Successful rates: ${successfulRates.length}, Failures: ${failures.length}`);
+
+            if (successfulRates.length === 0) {
+                throw new Error(`All pricing services failed. Failed services: ${failures.join(', ')}`);
+            }
+
+            const priceRate = this.selectMostFavorableRate(successfulRates);
+
+
+            await this.metricsMonitoringService.putMonitoringData("2Z/Sol-price-rate", priceRate.swapRate);
+            await this.cacheService.add(`${ENV}-swapRate`, priceRate, true);
+
+            return { priceRate, isCacheHit: false };
+        } catch (error) {
+            console.error('Error retrieving swap rate:', error);
+            this.circuitBreakerService.reportPriceRetrievalFailure();
+            throw error;
+        }
+
+
+    }
+
 
 
 }
