@@ -2254,6 +2254,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "integration-cli"
+version = "0.1.0"
+dependencies = [
+ "anchor-client",
+ "clap",
+ "cli-common",
+ "reqwest 0.11.27",
+ "rust_decimal",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "io-uring"
 version = "0.7.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
