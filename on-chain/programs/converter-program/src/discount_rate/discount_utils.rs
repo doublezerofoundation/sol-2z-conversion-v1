@@ -20,7 +20,7 @@ use crate::{
 /// ### Returns
 /// * `Result<u64>` - The sol demand in basis points
 pub fn calculate_sol_demand(
-    trade_history: Vec<TradeHistory>,
+    trade_history: &Vec<TradeHistory>,
     sol_quantity_bps: u64,
 ) -> Result<u64> {
     let mut sol_demand = 0;
