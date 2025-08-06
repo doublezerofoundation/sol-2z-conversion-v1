@@ -10,5 +10,5 @@ import { tailRealTime } from './core/realtime';
  */
 (async () => {
   tailRealTime();
-  await recoverHistory();
+  await recoverHistory();    
 })();

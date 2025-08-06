@@ -1,7 +1,7 @@
 # Development Environment Configuration
 
 # General
-environment = "dev2"
+environment = "dev1"
 aws_region  = "us-east-1"
 
 # VPC Configuration
@@ -32,3 +32,7 @@ lb_internal = false
 health_check_interval = 30
 health_check_healthy_threshold   = 3
 health_check_unhealthy_threshold = 3
+
+# Off-chain sSrvice Configuration
+enable_swap_oracle_service = false
+enable_indexer_service     = true

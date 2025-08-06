@@ -96,6 +96,8 @@ flake.lock
 
 target/
 .terraform.lock.hcl
-deployment/.terraform/
+.terraform/
 .idea/
-test-ledger
+
+# solana 
+test-ledger/

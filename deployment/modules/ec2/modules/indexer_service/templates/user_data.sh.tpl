@@ -40,8 +40,6 @@ ECR_REGISTRY="${ecr_registry}"
 ECR_REPOSITORY="${ecr_repository}"
 IMAGE_TAG="${image_tag}"
 CONTAINER_NAME="${container_name}"
-REDIS_PORT="${redis_port}"
-REDIS_ENDPOINT="${redis_enpoint}"
 
 echo "Configuring ECR authentication..."
 
@@ -78,11 +76,11 @@ echo "Starting container: $CONTAINER_NAME"
 docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   -p ${container_port}:${container_port} \
   --log-driver=awslogs \
-  --log-opt awslogs-group="/ec2/${environment}/docker" \
+  --log-opt awslogs-group="/ec2/${environment}/$CONTAINER_NAME}" \
   --log-opt awslogs-region=$REGION \
   --log-opt awslogs-stream=$INSTANCE_ID \
   -v /opt/app/logs:/app/logs \
-  -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT -e INSTANCE_ID=$INSTANCE_ID \
+  -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e INSTANCE_ID=$INSTANCE_ID \
   %{ for key, value in container_environment_vars ~}-e ${key}=${value} %{ endfor ~}\
   $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
@@ -198,7 +196,7 @@ aws ec2 create-tags \
   --resources $INSTANCE_ID \
   --tags \
     Key=Environment,Value=${environment} \
-    Key=Service,Value=swap-oracle-service \
+    Key=Service,Value=indexer-service \
     Key=ManagedBy,Value=Ansible \
     Key=SSMEnabled,Value=true \
     Key=ContainerRunning,Value=true \

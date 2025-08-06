@@ -1,76 +1,43 @@
 # Outputs for EC2 Module
 
-output "launch_template_id" {
-  description = "The ID of the Launch Template"
-  value       = aws_launch_template.this.id
+# Swap Oracle outputs 
+output "swap_oracle_asg_id" {
+  value = var.enable_swap_oracle_service ? module.swap_oracle_service_ec2[0].asg_id : null
 }
 
-output "launch_template_arn" {
-  description = "The ARN of the Launch Template"
-  value       = aws_launch_template.this.arn
+output "swap_oracle_asg_name" {
+  value = var.enable_swap_oracle_service ? module.swap_oracle_service_ec2[0].asg_name : null
 }
 
-output "launch_template_latest_version" {
-  description = "The latest version of the Launch Template"
-  value       = aws_launch_template.this.latest_version
+output "swap_oracle_asg_arn" {
+  value = var.enable_swap_oracle_service ? module.swap_oracle_service_ec2[0].asg_arn : null
 }
 
-output "asg_id" {
-  description = "The ID of the Auto Scaling Group"
-  value       = aws_autoscaling_group.this.id
+output "swap_oracle_launch_template_id" {
+  value = var.enable_swap_oracle_service ? module.swap_oracle_service_ec2[0].launch_template_id : null
 }
 
-output "asg_name" {
-  description = "The name of the Auto Scaling Group"
-  value       = aws_autoscaling_group.this.name
+output "swap_oracle_launch_template_arn" {
+  value = var.enable_swap_oracle_service ? module.swap_oracle_service_ec2[0].launch_template_arn : null
 }
 
-output "asg_arn" {
-  description = "The ARN of the Auto Scaling Group"
-  value       = aws_autoscaling_group.this.arn
+# Indexer outputs 
+output "indexer_instance_id" {
+  value = var.enable_indexer_service ? module.indexer_service_ec2[0].instance_id : null
 }
 
-output "iam_role_name" {
-  description = "The name of the IAM role for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_role.ec2_role[0].name : null
+output "indexer_instance_arn" {
+  value = var.enable_indexer_service ? module.indexer_service_ec2[0].instance_arn : null
 }
 
-output "iam_role_arn" {
-  description = "The ARN of the IAM role for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_role.ec2_role[0].arn : null
+output "indexer_private_ip" {
+  value = var.enable_indexer_service ? module.indexer_service_ec2[0].private_ip : null
 }
 
-output "instance_profile_name" {
-  description = "The name of the IAM instance profile for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_instance_profile.ec2_profile[0].name : var.instance_profile_name
+output "indexer_public_ip" {
+  value = var.enable_indexer_service ? module.indexer_service_ec2[0].public_ip : null
 }
 
-output "instance_profile_arn" {
-  description = "The ARN of the IAM instance profile for EC2 instances"
-  value       = var.instance_profile_name == "" ? aws_iam_instance_profile.ec2_profile[0].arn : null
+output "indexer_instance_profile_name" {
+  value = var.enable_indexer_service ? module.indexer_service_ec2[0].instance_profile_name : null
 }
-
-output "scale_up_policy_arn" {
-  description = "The ARN of the scale up policy"
-  value       = aws_autoscaling_policy.scale_up.arn
-}
-
-output "scale_down_policy_arn" {
-  description = "The ARN of the scale down policy"
-  value       = aws_autoscaling_policy.scale_down.arn
-}
-
-output "high_cpu_alarm_id" {
-  description = "The ID of the high CPU alarm"
-  value       = aws_cloudwatch_metric_alarm.high_cpu.id
-}
-
-output "low_cpu_alarm_id" {
-  description = "The ID of the low CPU alarm"
-  value       = aws_cloudwatch_metric_alarm.low_cpu.id
-}
-
-# output "user_data_template_path" {
-#   description = "The path to the user data template file"
-#   value       = local_file.user_data_template.filename
-# }
