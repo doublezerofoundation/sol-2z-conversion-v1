@@ -1,5 +1,5 @@
 import {Keypair} from "@solana/web3.js";
-import { accountExists, getDefaultKeyPair } from "../utils/account-utils"
+import { accountExists, getDefaultKeyPair } from "../utils/account"
 import { DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig } from "../utils/configuration-registry";
 import { getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA } from "../utils/pda-helper";
 import { Program } from "@coral-xyz/anchor";

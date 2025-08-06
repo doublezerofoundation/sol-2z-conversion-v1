@@ -2,7 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { Keypair } from "@solana/web3.js";
 import { ConverterProgram } from "../target/types/converter_program";
-import { getDefaultKeyPair } from "./core/utils/account-utils";
+import { getDefaultKeyPair } from "./core/utils/account";
 import { setAdminAndVerify, setAdminAndVerifyFail } from "./core/test-flow/set-admin";
 
 describe("Admin Change Tests", () => {

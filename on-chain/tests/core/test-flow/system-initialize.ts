@@ -6,7 +6,7 @@ import {
 } from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair} from "@solana/web3.js";
-import {accountExists, getDefaultKeyPair} from "../utils/account-utils";
+import {accountExists, getDefaultKeyPair} from "../utils/account";
 import {DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig} from "../utils/configuration-registry";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
