@@ -51,13 +51,7 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
 
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;
     let mut data = hash(BUY_SOL_INSTRUCTION).to_bytes()[..8].to_vec();
-    data = [
-        data,
-        bid_price_parsed.to_le_bytes().to_vec(),
-        oracle_price_data.swap_rate.try_to_vec().expect("Error in serializing Swap Rate"),
-        oracle_price_data.timestamp.to_le_bytes().to_vec(),
-        oracle_price_data.signature.try_to_vec().expect("Error in serializing attestation"),
-    ].concat();
+    data = [data, bid_price_parsed.to_le_bytes().to_vec(), oracle_price_data.try_to_vec()?].concat();
 
     // Getting necessary accounts
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;

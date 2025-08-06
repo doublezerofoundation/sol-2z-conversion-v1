@@ -62,4 +62,7 @@ pub enum DoubleZeroError {
 
     #[msg("System is halted")]
     SystemIsHalted, // 6019
+
+    #[msg("Arithmetic Error has occurred")]
+    ArithmeticError, // 6020
 }
