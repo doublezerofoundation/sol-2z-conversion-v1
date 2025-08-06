@@ -99,7 +99,7 @@ const adminTestList: Test[] = [
   },
   {
     name: "check_deny_user_action",
-    description: "Deny list accounts should not be able to perform any actions",
+    description: "Deny list accounts should not be able to perform trade actions",
     execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {
       // TODO: Yet to be implemented
     }
