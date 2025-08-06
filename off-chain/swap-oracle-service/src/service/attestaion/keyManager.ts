@@ -31,12 +31,12 @@ export class KeyManager {
             WithDecryption: true
         }
 
-        // const result = await this.awsSSM.send(new GetParameterCommand(params))
-        // if (!result.Parameter?.Value) {
-        //     throw new Error("No value found in parameter store")
-        // }
-        // const value = result.Parameter.Value;
-        const privateKeyBytes = bs58.decode("Hgg3MkWLBrHiqahDLi8CQfcaVZuUTvWtAGwsFh3vYuX2");
+        const result = await this.awsSSM.send(new GetParameterCommand(params))
+        if (!result.Parameter?.Value) {
+            throw new Error("No value found in parameter store")
+        }
+        const value = result.Parameter.Value;
+        const privateKeyBytes = bs58.decode(value);
         const keyPair = Keypair.fromSeed(privateKeyBytes);
         console.log(keyPair.publicKey.toString())
 
@@ -51,12 +51,12 @@ export class KeyManager {
             WithDecryption: true
         }
 
-        // const result = await this.awsSSM.send(new GetParameterCommand(params))
-        // if (!result.Parameter?.Value) {
-        //     throw new Error("No value found in parameter store")
-        // }
-        // const value = result.Parameter.Value;
-        const privateKeyBytes = bs58.decode("Hgg3MkWLBrHiqahDLi8CQfcaVZuUTvWtAGwsFh3vYuX2");
+        const result = await this.awsSSM.send(new GetParameterCommand(params))
+        if (!result.Parameter?.Value) {
+            throw new Error("No value found in parameter store")
+        }
+        const value = result.Parameter.Value;
+        const privateKeyBytes = bs58.decode(value);
         const cryptoKeyPair = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
         console.log(cryptoKeyPair.address)
 

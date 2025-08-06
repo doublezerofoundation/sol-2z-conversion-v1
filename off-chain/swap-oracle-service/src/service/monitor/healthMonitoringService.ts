@@ -60,6 +60,6 @@ export class HealthMonitoringService {
             console.log('Circuit breaker is open, health status is false');
             return false;
         }
-        return  this.monitoringData.every(healthCheck => healthCheck.status === HealthStatus.HEALTHY);
+        return  this.monitoringData.some(healthCheck => healthCheck.status === HealthStatus.HEALTHY);
     }
 }
