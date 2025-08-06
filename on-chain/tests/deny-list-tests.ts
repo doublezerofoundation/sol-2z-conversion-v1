@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
-import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/account";
+import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { systemInitializeAndVerify } from "./core/test-flow/system-initialize";
 import {

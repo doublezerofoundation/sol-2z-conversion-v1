@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { MockTransferProgram } from "../target/types/mock_transfer_program";
-import { airdrop, airdropToActivateAccount, getDefaultKeyPair} from "./core/utils/account";
+import { airdrop, airdropToActivateAccount, getDefaultKeyPair} from "./core/utils/accounts";
 import {
     buySol,
     initializeMockTransferSystemIfNeeded,

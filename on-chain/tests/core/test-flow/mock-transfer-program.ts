@@ -3,7 +3,7 @@ import {
 } from "../utils/pda-helper";
 import {assert} from "chai";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
-import {accountExists, getDefaultKeyPair} from "../utils/account";
+import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
 import {TOKEN_DECIMAL} from "../constants";
