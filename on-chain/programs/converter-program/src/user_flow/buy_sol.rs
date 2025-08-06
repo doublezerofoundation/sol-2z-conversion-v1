@@ -27,6 +27,7 @@ use mock_transfer_program::{
     },
     program::MockTransferProgram
 };
+use crate::common::constant::TOKEN_DECIMALS;
 
 #[derive(Accounts)]
 pub struct BuySol<'info> {
@@ -101,13 +102,16 @@ impl<'info> BuySol<'info> {
         
         let sol_quantity = self.configuration_registry.sol_quantity;
         // call util function to get current ask price
-        let ask_price = calculate_ask_price_with_oracle_price_data(
+        let raw_ask_price = calculate_ask_price_with_oracle_price_data(
             &self.program_state.trade_history_list,
             sol_quantity,
             self.configuration_registry.steepness,
             self.configuration_registry.max_discount_rate,
             oracle_price_data
         )?;
+
+        let ask_price = raw_ask_price.checked_mul(TOKEN_DECIMALS)
+            .ok_or(DoubleZeroError::ArithmeticError)?;
 
         let clock = Clock::get()?;
         
@@ -124,10 +128,12 @@ impl<'info> BuySol<'info> {
             return err!(DoubleZeroError::BidTooLow);
         }
         
-        let tokens_required = sol_quantity.checked_mul(bid_price)
-            .ok_or(DoubleZeroError::ArithmeticError)?
-            .checked_div(LAMPORTS_PER_SOL)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
+        // let tokens_required = sol_quantity.checked_mul(bid_price)
+        //     .ok_or(DoubleZeroError::ArithmeticError)?
+        //     .checked_div(LAMPORTS_PER_SOL)
+        //     .ok_or(DoubleZeroError::ArithmeticError)?;
+
+        let tokens_required = bid_price;
 
         let cpi_accounts = BuySolCpi {
             vault_account: self.vault_account.to_account_info(),
