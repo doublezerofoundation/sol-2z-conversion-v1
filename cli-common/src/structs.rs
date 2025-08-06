@@ -1,0 +1,58 @@
+use anchor_client::{
+    anchor_lang::prelude::{borsh::BorshDeserialize, *},
+    solana_sdk::pubkey::Pubkey,
+};
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct ConfigurationRegistry {
+    pub oracle_pubkey: Pubkey,
+    pub sol_quantity: u64,
+    pub slot_threshold: u64,
+    pub price_maximum_age: i64,
+    pub max_fills_storage: u64,
+    pub authorized_dequeuers: Vec<Pubkey>,
+    pub steepness: u64,
+    pub max_discount_rate: u64,
+}
+
+impl AccountDeserialize for ConfigurationRegistry {
+    fn try_deserialize(buf: &mut &[u8]) -> Result<Self> {
+        *buf = &buf[8..];
+        ConfigurationRegistry::try_deserialize_unchecked(buf)
+    }
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
+        ConfigurationRegistry::deserialize(buf).map_err(Into::into)
+    }
+}
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct ProgramStateAccount {
+    pub admin: Pubkey,
+    pub is_halted: bool,
+    pub bump_registry: BumpRegistry,
+    pub trade_history_list: Vec<TradeHistory>,
+}
+
+impl AccountDeserialize for ProgramStateAccount {
+    fn try_deserialize(buf: &mut &[u8]) -> Result<Self> {
+        *buf = &buf[8..];
+        ProgramStateAccount::try_deserialize_unchecked(buf)
+    }
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
+        ProgramStateAccount::deserialize(buf).map_err(Into::into)
+    }
+}
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct TradeHistory {
+    pub epoch: u64,
+    pub num_of_trades: u64,
+}
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct BumpRegistry {
+    pub configuration_registry_bump: u8,
+    pub program_state_bump: u8,
+    pub fills_registry_bump: u8,
+    pub deny_list_registry_bump: u8,
+}

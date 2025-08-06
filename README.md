@@ -47,11 +47,22 @@ The file should contain the following items.
   "sol_quantity": 2121,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "max_fills_storage": 234
+  "max_fills_storage": 234,
+  "skip_preflight": true,
+  "steepness": 9000,
+  "max_discount_rate": 5000
 }
 ```
 - `rpc_url`: The `Deploying cluster` from last step.
 - `program_id`: Public key of the anchor program.
+- `skip_preflight`: Setting this to `true` will disable transaction preflight checks (which normally simulate the transaction and catch errors before sending) and enable error logging in the database.
+- `oracle_pubkey`: Public key of the oracle program.
+- `sol_quantity`: Quantity of SOL to be converted in a single transaction.
+- `slot_threshold`: Slot threshold for storing the trade history.
+- `price_maximum_age`: Maximum age of the oracle price.
+- `max_fills_storage`: Maximum number of fills to be stored.
+- `steepness`: Steepness of the discount calculation curve in basis points. (0-10000)
+- `max_discount_rate`: Maximum discount rate in basis points. (0-10000)
 
 ## Deploy the Anchor Program
 ### Keypair for the programs
@@ -128,30 +139,44 @@ cargo run -p admin-cli -- view-config
 ```
 
 ### Update Configuration
-Transfers specified tokens from protocol treasury to designated account.
+Updates the configuration of the system.
 ```sh
 cargo run -p admin-cli -- update-config
 ```
 
-- `-a`: Amount of 2Z tokens to withdraw from protocol treasury.
-- `-t`: Destination token account address.
+The command reads the `config.json` file and updates the configuration of the system according to the values in the file.
 
 ### Activate or Pause the System
+This command activates or pauses the system. If the system is paused, no new trades can be executed.
 ```sh
 cargo run -p admin-cli -- toggle-system-state --activate
 cargo run -p admin-cli -- toggle-system-state --pause
 ```
 
+### Check System State
+Checks the current state of the system.
+```sh
+cargo run -p admin-cli -- view-system-state
+```
+
+### Set Admin
+Sets the admin of the system. Only the program deployer can set/change the admin.
+```sh
+cargo run -p admin-cli -- set-admin -a <ADMIN_ACCOUNT>
+```
+
+- `-a`: Admin account public key.
+
 ## User CLI
 
 ### Get Current Price
-Displays current configuration registry contents.
+Calculates the current discount rate and estimates the ask price (in 2Z tokens) for the given SOL quantity.
 ```sh
 cargo run -p user-cli -- get-price
 ```
 
-### Get Current Price
-Displays current configuration registry contents.
+### Get Current Quantity
+Displays the current SOL quantity that can be purchased by spending 2Z tokens.
 ```sh
 cargo run -p user-cli -- get-quantity
 ```

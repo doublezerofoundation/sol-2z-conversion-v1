@@ -62,7 +62,7 @@ restart_validator() {
     log_info "Validator started with PID: $pid"
 
     log_info "Waiting for validator to initialize (20 seconds)..."
-    sleep 20
+    sleep 10
 
     if ! kill -0 "$pid" 2>/dev/null; then
         log_error "Validator failed to start properly"

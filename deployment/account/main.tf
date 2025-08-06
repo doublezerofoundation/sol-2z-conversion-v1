@@ -128,3 +128,31 @@ resource "aws_iam_role_policy_attachment" "ecr_policy" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.ecr_policy.arn
 }
+
+# Create DynamoDB access policy for EC2
+resource "aws_iam_policy" "dynamodb_access_policy" {
+  name        = "doublezero-dynamodb-access-policy"
+  description = "Policy for DynamoDB access from EC2"
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "dynamodb:Query",
+          "dynamodb:Scan"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# Attach DynamoDB access policy to EC2 role
+resource "aws_iam_role_policy_attachment" "dynamodb_access_policy" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
+}

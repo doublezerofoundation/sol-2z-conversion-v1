@@ -4,7 +4,8 @@ pub mod command;
 
 use std::error::Error;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
 
     println!(r#"
 
@@ -22,5 +23,5 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("🛠  USER CLI\n");
 
     // Calling handler to handle the cli calls
-    handler::handle()
+    handler::handle().await
 }

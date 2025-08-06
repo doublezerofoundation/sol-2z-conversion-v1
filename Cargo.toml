@@ -3,7 +3,8 @@ members = [
     "./on-chain/programs/*",
     "cli-common",
     "admin-cli",
-    "user-cli"
+    "user-cli",
+    "integration-cli"
 ]
 resolver = "2"
 
@@ -12,19 +13,28 @@ resolver = "2"
 anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
 
+## on-chain
+base64 = "0.22.1"
+brine-ed25519 = "0.2.0"
+
 # Workspace members (internal dependencies)
 cli-common = { path = "cli-common" }
-
 
 ### CLI Serialization
 serde="1.0.219"
 serde_json = "1.0.141"
 
+### CLI Deserialization
+solana-transaction-status = "2.3.6"
+
 ### CLI
-clap = { version = "4.5.41", features = ["derive"] }
+clap = { version = "4.5.42", features = ["derive"] }
 solana-loader-v3-interface = "5.0.0"
+rust_decimal = "1.37.2"
+
 ## CLI Rest
-reqwest = { version = "0.12.22", features = ["json"] }
+reqwest = { version = "0.11", features = ["json"] }
+tokio = { version = "1.47.0", features = ["full"] }
 
 [profile.release]
 overflow-checks = true

@@ -12,18 +12,15 @@ use std::{
 };
 
 pub fn handle_error(error: ClientError) -> Box<dyn Error> {
-    if let Some(logs) = extract_tx_logs(&error) {
-        let message = format!(
-            "Error: Transaction failed during simulation.\n  {LABEL} Error Message: {error}\n  {LABEL} Error Logs:\n      {}",
-            logs.join("\n      ")
-        );
-        return Box::new(io::Error::other(message));
-    }
+    let logs = extract_tx_logs(&error);
 
-    let message = format!(
-        "Error: Error found without Logs.\n  {LABEL} Error Message: {error}"
-    );
-    Box::new(io::Error::other(message))
+    if let Some(tx_logs) = logs {
+        println!("{} Error Logs:\n\t{}", LABEL, tx_logs.join("\n\t"));
+        return Box::new(io::Error::other("Error during transaction execution"));
+    } else {
+        println!("{} Error Logs:\n\t{}", LABEL, error.to_string());
+        return Box::new(io::Error::other(error.to_string()));
+    }
 }
 
 fn extract_tx_logs(error: &ClientError) -> Option<Vec<String>> {

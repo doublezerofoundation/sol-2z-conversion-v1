@@ -1,0 +1,46 @@
+use anchor_lang::prelude::*;
+
+use crate::{
+    common::{
+        error::DoubleZeroError,
+        events::system::{SystemHalted, SystemUnhalted},
+        seeds::seed_prefixes::SeedPrefixes,
+    },
+    state::program_state::ProgramStateAccount,
+};
+
+#[derive(Accounts)]
+pub struct SystemState<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(
+        mut,
+        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        bump,
+    )]
+    pub program_state: Account<'info, ProgramStateAccount>,
+}
+
+impl<'info> SystemState<'info> {
+    pub fn process(&mut self, set_to: bool) -> Result<()> {
+        // Authentication check
+        self.program_state.assert_admin(&self.admin)?;
+
+        // Update system state
+        if set_to && !self.program_state.is_halted {
+            self.program_state.is_halted = true;
+            emit!(SystemHalted {
+                halted_by: self.admin.key()
+            });
+        } else if !set_to && self.program_state.is_halted {
+            self.program_state.is_halted = false;
+            emit!(SystemUnhalted {
+                unhalted_by: self.admin.key()
+            });
+        } else {
+            return err!(DoubleZeroError::InvalidSystemState);
+        }
+        Ok(())
+    }
+}

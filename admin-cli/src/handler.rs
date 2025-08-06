@@ -1,8 +1,22 @@
-use clap::Parser;
-use crate::command::Commands;
 use std::error::Error;
-use crate::core::functions::{config_handler, init_handler, system_state, withdraw_2z};
-use crate::core::common::error::COMMAND_NOT_SPECIFIED;
+
+use clap::Parser;
+
+use crate::{
+    command::Commands,
+    core::{
+        common::error::COMMAND_NOT_SPECIFIED,
+        functions::{
+            admin_handler,
+            config_handler,
+            deny_list,
+            init_handler,
+            system_state,
+            update_dequeuer_handler,
+            withdraw_2z,
+        },
+    },
+};
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -35,8 +49,8 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         }
 
         // Changing system state between active and pause
-        Some(Commands::ToggleSystemState { activate: active, pause}) => {
-            system_state::toggle_system_state(active, pause)
+        Some(Commands::ToggleSystemState { activate, pause}) => {
+            system_state::toggle_system_state(activate, pause)
         }
 
         // Withdrawing from protocol treasury to designated account
@@ -44,7 +58,34 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             withdraw_2z::withdraw_2z_tokens(token_amount, to_account)
         }
 
-        // Toggles system between active and paused states.
+        Some(Commands::AddDequeuer { dequeuer }) => {
+            update_dequeuer_handler::add_dequeuer(&dequeuer)
+        }
+        
+        Some(Commands::RemoveDequeuer { dequeuer }) => {
+            update_dequeuer_handler::remove_dequeuer(&dequeuer)
+        }
+                  
+        // Adding an address to the deny list
+        Some(Commands::AddToDenyList { address }) => {
+            deny_list::add_to_deny_list(address)
+        }
+
+        // Removing an address from the deny list
+        Some(Commands::RemoveFromDenyList { address }) => {
+            deny_list::remove_from_deny_list(address)
+        }
+
+        // Viewing the deny list
+        Some(Commands::ViewDenyList) => {
+            deny_list::view_deny_list()
+        }
+
+        // Setting the admin of the system
+        Some(Commands::SetAdmin { admin }) => {
+            admin_handler::set_admin(admin)
+        }
+
         None => {
             // println!("No command specified. Use --help for available commands.");
             Err(Box::from(COMMAND_NOT_SPECIFIED))

@@ -65,8 +65,10 @@ impl<'info> InitializeSystem<'info> {
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
         slot_threshold: u64,
-        price_maximum_age: u64,
+        price_maximum_age: i64,
         max_fills_storage: u64,
+        steepness: u64,
+        max_discount_rate: u64
     ) -> Result<()> {
 
         // Initialize configuration_registry registry with provided values
@@ -75,7 +77,9 @@ impl<'info> InitializeSystem<'info> {
             sol_quantity,
             slot_threshold,
             price_maximum_age,
-            max_fills_storage
+            max_fills_storage,
+            steepness,
+            max_discount_rate
         )?;
 
         // Set upgrade authority as admin
