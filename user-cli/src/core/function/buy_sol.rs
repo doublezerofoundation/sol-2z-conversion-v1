@@ -35,7 +35,7 @@ pub async fn buy_sol(bid_price: String) -> Result<(), Box<dyn Error>> {
     data_initialize = [
         data_initialize,
         bid_price_parsed.to_le_bytes().to_vec(),
-        oracle_price_data.swap_rate.try_to_vec().expect("Error in serializing Swap Rate"),
+        oracle_price_data.swap_rate.to_le_bytes().to_vec(),
         oracle_price_data.timestamp.to_le_bytes().to_vec(),
         oracle_price_data.signature.try_to_vec().expect("Error in serializing attestation"),
     ].concat();

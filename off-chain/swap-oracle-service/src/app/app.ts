@@ -1,27 +1,43 @@
 import express from 'express';
 import appRouter from "./route";
 import {configUtil, ConfigUtil} from "../utils/configUtil";
+import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
+import { injectable, inject } from 'inversify';
+import {TYPES} from "../types/common";
 
 
-
+@injectable()
  export default class App {
     public app: express.Application
-    public config: ConfigUtil;
     public server: any;
 
-    constructor() {
-        this.config = configUtil;
+    constructor(
+        @inject(TYPES.ConfigUtil) private config: ConfigUtil,
+        @inject(TYPES.HealthMonitoringService) private healthMonitoringService: HealthMonitoringService
+    ) {
         this.app = express();
     }
+
 
     async startServer() {
         this.app.use('/api/v1', appRouter)
         this.app.use('/', (req, res) => {
             res.send('Swap Oracle Service is running');
         });
-
+        await this.startMonitoringService();
         this.server = await this.app.listen(this.config.get('applicationPort'));
     }
+
+    private async startMonitoringService() {
+        await this.healthMonitoringService.startMonitoring();
+        setInterval(async () => {
+            console.log("Health monitoring started", Date.now());
+            await this.healthMonitoringService.startMonitoring();
+            console.log("Health monitoring completed", Date.now(),
+                this.healthMonitoringService.getHealthMonitoringData());
+        }, 60000);
+    }
+
 
     public getApp(): express.Application {
         return this.app;

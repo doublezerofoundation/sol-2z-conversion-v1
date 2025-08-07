@@ -20,12 +20,12 @@ export const DEFAULT_CONFIGS: SystemConfig = {
     slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),
     maxFillsStorage: new anchor.BN(234),
-    steepness: new anchor.BN(9000),
-    maxDiscountRate: new anchor.BN(5000),
+    steepness: new anchor.BN(90),
+    maxDiscountRate: new anchor.BN(50),
 };
 
 export async function fetchCurrentConfiguration(program): Promise<SystemConfig> {
-    const configurationAccountPda = await getConfigurationRegistryPDA(program.programId);
+    const configurationAccountPda = getConfigurationRegistryPDA(program.programId);
     const configurationRegistry = await program.account.configurationRegistry.fetch(configurationAccountPda);
     return {
         oraclePubkey: configurationRegistry.oraclePubkey,

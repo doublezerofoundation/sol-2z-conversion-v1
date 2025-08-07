@@ -1,5 +1,5 @@
 export interface AttestationData {
-    swapRate: string;
+    swapRate: number;
     timestamp: number;
 }
 

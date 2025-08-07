@@ -17,12 +17,12 @@ export async function systemInitializeAndVerify(
     inputConfigs: SystemConfig = DEFAULT_CONFIGS
 ) {
     // List of Accounts to be verified
-    const pdas = await Promise.all([
+    const pdas = [
         getProgramStatePDA(program.programId),
         getConfigurationRegistryPDA(program.programId),
         getFillsRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
-    ]);
+    ];
 
     // Accounts to be initialized should not exist before initialization
     let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
@@ -35,7 +35,7 @@ export async function systemInitializeAndVerify(
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
 
     // Initialization
-    const programDataAccount = await getProgramDataAccountPDA(program.programId);
+    const programDataAccount = getProgramDataAccountPDA(program.programId);
     try {
         const tx = await program.methods.initializeSystem(
             inputConfigs.oraclePubkey,
@@ -76,6 +76,8 @@ export async function systemInitializeAndVerify(
     assert.equal(configInConfigRegistry.priceMaximumAge.toString(), inputConfigs.priceMaximumAge.toString());
     assert.equal(configInConfigRegistry.slotThreshold.toString(), inputConfigs.slotThreshold.toString());
     assert.equal(configInConfigRegistry.solQuantity.toString(), inputConfigs.solQuantity.toString());
+    assert.equal(configInConfigRegistry.steepness.toString(), inputConfigs.steepness.toString());
+    assert.equal(configInConfigRegistry.maxDiscountRate.toString(), inputConfigs.maxDiscountRate.toString());
 }
 
 export async function systemInitializeFail(
@@ -84,7 +86,7 @@ export async function systemInitializeFail(
     configRegistryValues: SystemConfig = DEFAULT_CONFIGS,
     expectedError: string
 ) {
-    const programDataAccount = await getProgramDataAccountPDA(program.programId);
+    const programDataAccount = getProgramDataAccountPDA(program.programId);
     try {
         await program.methods.initializeSystem(
             configRegistryValues.oraclePubkey,
@@ -112,7 +114,7 @@ export async function systemInitializeFail(
 }
 
 export async function initializeSystemIfNeeded(program) {
-    if (!await accountExists(program.provider.connection, await getConfigurationRegistryPDA(program.programId))) {
+    if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
         const adminKeypair: Keypair = getDefaultKeyPair();
         await systemInitializeAndVerify(program, adminKeypair);
     }

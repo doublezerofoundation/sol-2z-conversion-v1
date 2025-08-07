@@ -24,7 +24,8 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 
 # environment variables
-ENV RPC_URL=http://127.0.0.1:8899 \
+ENV ENV=dev1 \
+    RPC_URL=http://127.0.0.1:8899 \
     CONCURRENCY=8
 
 CMD ["node", "dist/src/index.js"]

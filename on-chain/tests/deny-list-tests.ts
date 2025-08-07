@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
-import { airdrop, getDefaultKeyPair } from "./core/utils/accounts";
+import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { initializeSystemIfNeeded, systemInitializeAndVerify } from "./core/test-flow/system-initialize";
 import {
@@ -97,7 +97,7 @@ describe("Deny List Tests", async () => {
 
         it("Should fail when non-authority tries to add to deny list", async () => {
             const nonAuthorityKeyPair = Keypair.generate();
-            await airdrop(program.provider.connection, nonAuthorityKeyPair.publicKey);
+            await airdropToActivateAccount(program.provider.connection, nonAuthorityKeyPair.publicKey);
 
             // Note: Current implementation doesn't actually check authority,
             // so this test will currently pass. This should be updated when
@@ -160,7 +160,7 @@ describe("Deny List Tests", async () => {
 
         it("Should fail when non-authority tries to remove from deny list", async () => {
             const nonAuthorityKeyPair = Keypair.generate();
-            await airdrop(program.provider.connection, nonAuthorityKeyPair.publicKey);
+            await airdropToActivateAccount(program.provider.connection, nonAuthorityKeyPair.publicKey);
 
             // Note: Current implementation doesn't actually check authority,
             // so this test will currently pass. This should be updated when

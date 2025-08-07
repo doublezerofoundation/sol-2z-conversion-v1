@@ -61,7 +61,7 @@ restart_validator() {
     local pid=$!
     log_info "Validator started with PID: $pid"
 
-    log_info "Waiting for validator to initialize (20 seconds)..."
+    log_info "Waiting for validator to initialize (10 seconds)..."
     sleep 10
 
     if ! kill -0 "$pid" 2>/dev/null; then
