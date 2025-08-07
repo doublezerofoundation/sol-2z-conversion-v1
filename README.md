@@ -125,6 +125,17 @@ Build and Deploy a Single Workspace
 ./build_and_deploy.sh -w run-tests --mode unit
 ```
 
+### Export the Private Key
+To use CLI, It is essential to export the private key\
+To set up the private key as an environment variable, run:
+
+```sh
+export PRIVATE_KEY=MAIN_PRIVATE_KEY
+
+eg: export PRIVATE_KEY=226,222,1,3 ...
+```
+NOTE: Ensure this account is prefunded with adequate SOL
+
 ## Admin CLI
 
 ### Initialize the system 
