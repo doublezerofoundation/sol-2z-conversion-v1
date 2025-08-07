@@ -72,6 +72,13 @@ pub fn calculate_discount_rate(
         )
         .ok_or(error!(DoubleZeroError::InvalidMaxDiscountRate))?;
 
+    // Validate D_max is between 0 and 1
+    if max_discount_rate_decimal > Decimal::from_u64(1).unwrap()
+        || max_discount_rate_decimal < Decimal::from_u64(0).unwrap()
+    {
+        return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
+    }
+
     // (x * c)
     let exponent = sol_demand_decimal
         .checked_mul(steepness_decimal)
@@ -163,10 +170,10 @@ pub fn calculate_ask_price_with_conversion_rate(
     conversion_rate: u64,
     sol_quantity: u64,
 ) -> Result<u64> {
-    let conversion_rate_decimal = Decimal::from_u64(conversion_rate)
-        .ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
-    let sol_quantity_decimal = Decimal::from_u64(sol_quantity)
-        .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
+    let conversion_rate_decimal =
+        Decimal::from_u64(conversion_rate).ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
+    let sol_quantity_decimal =
+        Decimal::from_u64(sol_quantity).ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
 
     let ask_price = sol_quantity_decimal
         .checked_mul(conversion_rate_decimal)

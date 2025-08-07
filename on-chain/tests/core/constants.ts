@@ -9,6 +9,6 @@ export namespace Seeds {
     export const DENY_LIST_REGISTRY_SEED = "deny_list_v1";
 }
 
-export const DECIMAL_PRECISION = 10000;
+export const DECIMAL_PRECISION = 1000000;
 
 export const PRICE_ORACLE_END_POINT = "https://x5rmshrog9.execute-api.us-east-1.amazonaws.com/test/api/v1/swap-rate";
