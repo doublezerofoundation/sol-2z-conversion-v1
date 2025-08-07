@@ -103,10 +103,10 @@ pub mod converter_program {
             .process(bid_price, swap_rate, timestamp, attestation)
     }
 
-    pub fn calculate_ask_price(
+    pub fn get_conversion_rate(
         ctx: Context<CalculateAskPrice>,
         oracle_price_data: OraclePriceData,
     ) -> Result<u64> {
-        ctx.accounts.process(oracle_price_data)
+        ctx.accounts.get_conversion_rate(oracle_price_data)
     }
 }
