@@ -1,6 +1,9 @@
 import SwapRateService from "./swapRateService";
 import {PriceRate} from "../../types/common";
+const TWOZ_PRECISION = 6;
+import {injectable} from "inversify";
 
+@injectable()
 export class PythSwapRateService implements SwapRateService {
     convertPrice(price: string | number, exponent: number): number {
         const priceNum = typeof price === 'string' ? parseInt(price) : price;
@@ -14,15 +17,19 @@ export class PythSwapRateService implements SwapRateService {
         const twozUsdPrice = this.convertPrice(twozPriceData.price, twozPriceData.exponent);
         const twozConfidence = this.convertPrice(twozPriceData.confidence, twozPriceData.exponent);
 
+
         console.log(`SOL USD Price: ${solUsdPrice} ± ${solConfidence}`);
         console.log(`TWOZ USD Price: ${twozUsdPrice} ± ${twozConfidence}`);
 
-        const twozPerSol = (solUsdPrice - solConfidence) / (twozUsdPrice - twozConfidence);
-        console.log(`Rate: ${twozPerSol} TWOZ per 1 SOL`);
+        const twozPerSol = (solUsdPrice - solConfidence) /  (twozUsdPrice - twozConfidence);
+        const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION));
+
+        console.log(`Rate: ${roundedTwozPerSol} TWOZ for 1 SOL`);
         return {
-            swapRate: twozPerSol,
+            swapRate: roundedTwozPerSol,
             solPriceUsd: (solUsdPrice - solConfidence),
             twozPriceUsd: (twozUsdPrice - twozConfidence),
+            last_price_update: new Date().toUTCString()
         }
 
     }

@@ -3,13 +3,14 @@ import { signBytes, getUtf8Encoder } from "@solana/kit";
 import {AttestationData, AttestationResult} from "./types";
 import  secp256k1 from 'secp256k1';
 import {keccak256} from "js-sha3";
+import { injectable, inject } from 'inversify';
+import {TYPES} from "../../types/common";
 
+@injectable()
 export class AttestationService {
-    private keyManager: KeyManager;
 
-    constructor() {
-        this.keyManager = new KeyManager()
-    }
+
+    constructor(@inject(TYPES.KeyManager) private keyManager: KeyManager) {}
 
     async createAttestation(data: AttestationData):Promise<string> {
         const { swapRate, timestamp } = data;

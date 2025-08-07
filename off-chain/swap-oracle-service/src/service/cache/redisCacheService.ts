@@ -4,13 +4,16 @@ import process from "node:process";
 const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT
 const REDIS_PORT =  process.env.REDIS_PORT
 const REDIS_URL = `rediss://${REDIS_ENDPOINT}:${REDIS_PORT}`
+const TTL_SECONDS = 10
+import {injectable} from "inversify";
+
+@injectable()
 export class RedisCacheService implements CacheService {
     private redisClient: RedisClientType;
     private isConnected: boolean = false;
-    static instance: RedisCacheService;
 
 
-    private constructor() {
+    constructor() {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
@@ -44,13 +47,6 @@ export class RedisCacheService implements CacheService {
         }
     }
 
-    static getInstance(): CacheService {
-        if(!RedisCacheService.instance) {
-            RedisCacheService.instance = new RedisCacheService();
-        }
-        return RedisCacheService.instance as CacheService;
-    }
-
     private async ensureConnection(): Promise<void> {
         if (!this.isConnected) {
             try {
@@ -61,14 +57,16 @@ export class RedisCacheService implements CacheService {
         }
     }
 
-    async add(key: string, value: any): Promise<any> {
+    async add(key: string, value: any,isTTL:boolean): Promise<any> {
         try {
             await this.ensureConnection();
             const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
-            return await this.redisClient.set(key, stringValue, {
-                EX: 10,
-                NX: true,
-            });
+            if(isTTL) {
+                return await this.redisClient.set(key, stringValue, {
+                    EX: TTL_SECONDS,
+                });
+            }
+            await this.redisClient.set(key, stringValue);
         } catch (error) {
             console.error(`Error adding key ${key}:`, error);
             return null;
@@ -79,6 +77,7 @@ export class RedisCacheService implements CacheService {
         try {
             await this.ensureConnection();
             const value: string | {} = await this.redisClient.get(key);
+            console.log("value from redis",value)
             if (value === null) return null;
             try {
                 return JSON.parse(value as string);

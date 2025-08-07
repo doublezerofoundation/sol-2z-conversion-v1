@@ -6,10 +6,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../build_utils.sh"
 
-SERVICE_NAME="indexer-service"
+SERVICE_NAME="double-zero-indexer-service"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
 BUILD_TAG="${BUILD_TAG:-latest}"
+ENV="${ENV:-dev1}"
 
 main() {
     log_info "Starting build and deploy process for $SERVICE_NAME"
@@ -47,6 +48,10 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
+        --env)
+            ENV="$2"
+            shift 2
+            ;;
         --repository)
             ECR_REPOSITORY_NAME="$2"
             shift 2
@@ -58,10 +63,11 @@ while [[ $# -gt 0 ]]; do
         --help)
             echo "Usage: $0 [options]"
             echo "Options:"
-            echo "  --region REGION        AWS region (default: us-east-1)"
-            echo "  --repository NAME      ECR repository name (default: swap-oracle-service)"
-            echo "  --tag TAG             Build tag (default: latest)"
-            echo "  --help                Show this help message"
+            echo "  --region REGION         AWS region (default: us-east-1)"
+            echo "  --env ENV               Environment (default: dev1)"
+            echo "  --repository NAME       ECR repository name (default: double-zero-indexer-service)"
+            echo "  --tag TAG               Build tag (default: latest)"
+            echo "  --help                  Show this help message"
             exit 0
             ;;
         *)
