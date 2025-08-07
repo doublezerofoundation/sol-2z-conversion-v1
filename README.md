@@ -4,11 +4,9 @@ This repository contains on-chain and off-chain implementation for DoubleZero Fe
 This system consists of following components. 
 
 1) Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
-2) Mock Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
-It provides CPIs which is used by converter program to simulate actual transfer.  
-3) Admin CLI - CLI interface for admins to control the system.
-4) User CLI - CLI interface for user to interact with the system.
-5) Common CLI - Includes common functionalities for Admin CLI & User CLI 
+2) Admin CLI - CLI interface for admins to control the system.
+3) User CLI - CLI interface for user to interact with the system.
+4) Common CLI - Includes common functionalities for Admin CLI & User CLI 
 
 ### Setup Dependencies
 
@@ -219,36 +217,6 @@ Displays all addresses in the deny list registry
 ```sh
 cargo run -p admin-cli -- view-deny-list 
 ```
-
-### Init Mock Transfer Program
-Initializes Mock Transfer Program Accounts
-```sh
-cargo run -p admin-cli -- init-mock-program
-```
-
-### Airdrop to Mock Vault
-Sends specified amount of SOL to Mock Vault
-```sh
-cargo run -p admin-cli -- airdrop-to-mock-vault -a <AMOUNT>
-```
-- `AMOUNT`: SOL amount to be airdropped.
-
-
-### Mock Token Mint
-Mints Mock 2Z token to specified address.
-```sh
-cargo run -p admin-cli -- mock-token-mint -a <AMOUNT> -t <DESTINATION_TOKEN_ACCOUNT>
-```
-
-- `-a`: Token Amount to be minted
-- `-t`: Destination token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
-
-### Mint to Protocol Treasury Token Account
-Mints specified amount of Mock 2Z token to protocol Treasury Account
-```sh
-cargo run -p admin-cli -- mock-to-protocol-treasury -a <AMOUNT>
-```
-- `-a`: 2Z Token amount to be minted.
 
 
 ## User CLI
