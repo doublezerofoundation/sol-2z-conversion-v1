@@ -8,7 +8,7 @@ import MetricsMonitoringService from "../service/monitor/metricsMonitoringServic
 import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
-
+const TWOZ_PRECISION = 1000000;
 const ENV:string = process.env.ENV || 'dev';
 @injectable()
 export default class SwapRateController {
@@ -47,14 +47,14 @@ export default class SwapRateController {
 
             const { priceRate, isCacheHit } = await this.getSwapRate();
             const timestamp = Math.floor(Date.now() / 1000);
-            const swapRate = priceRate.swapRate.toString();
+            const swapRate = priceRate.swapRate * TWOZ_PRECISION
 
             const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
             console.log("signedBytes: ", signedBytes)
 
             console.log(signedBytes)
             const result = {
-                swapRate : swapRate.toString(),
+                swapRate : swapRate,
                 timestamp: timestamp,
                 signature: signedBytes,
                 solPriceUsd: priceRate.solPriceUsd.toString(),
