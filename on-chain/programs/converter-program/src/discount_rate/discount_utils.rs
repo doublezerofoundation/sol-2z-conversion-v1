@@ -1,11 +1,14 @@
-use anchor_lang::prelude::*;
+use anchor_lang::{prelude::*, solana_program::native_token::LAMPORTS_PER_SOL};
 use rust_decimal::{
     prelude::{FromPrimitive, ToPrimitive},
     Decimal,
 };
 
 use crate::{
-    common::{constant::DECIMAL_PRECISION, error::DoubleZeroError},
+    common::{
+        constant::{DECIMAL_PRECISION, TOKEN_DECIMALS},
+        error::DoubleZeroError,
+    },
     state::program_state::TradeHistory,
 };
 
@@ -19,13 +22,13 @@ use crate::{
 /// * `Result<u64>` - The sol demand in basis points
 pub fn calculate_sol_demand(
     trade_history: &Vec<TradeHistory>,
-    sol_quantity_bps: u64,
-) -> Result<u64> {
+    sol_quantity: u64,
+) -> Result<Decimal> {
     let mut sol_demand = 0;
     for trade in trade_history {
-        sol_demand += trade.num_of_trades * sol_quantity_bps;
+        sol_demand += trade.num_of_trades * sol_quantity;
     }
-    Ok(sol_demand)
+    Ok(Decimal::from_u64(sol_demand).ok_or(error!(DoubleZeroError::InvalidSolDemand))?)
 }
 
 /// Discount function
@@ -44,17 +47,10 @@ pub fn calculate_sol_demand(
 /// ### Returns
 /// * `Result<Decimal>` - The discount rate
 pub fn calculate_discount_rate(
-    sol_demand_bps: u64,
+    sol_demand: Decimal,
     steepness_bps: u64,
     max_discount_rate_bps: u64,
 ) -> Result<Decimal> {
-    let sol_demand_decimal = Decimal::from_u64(sol_demand_bps)
-        .ok_or(error!(DoubleZeroError::InvalidSolDemand))?
-        .checked_div(
-            Decimal::from_u64(DECIMAL_PRECISION)
-                .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?,
-        )
-        .ok_or(error!(DoubleZeroError::InvalidSolDemand))?;
     let steepness_decimal = Decimal::from_u64(steepness_bps)
         .ok_or(error!(DoubleZeroError::InvalidSteepness))?
         .checked_div(
@@ -78,7 +74,7 @@ pub fn calculate_discount_rate(
     }
 
     // (x * c)
-    let exponent = sol_demand_decimal
+    let exponent = sol_demand
         .checked_mul(steepness_decimal)
         .ok_or(error!(DoubleZeroError::DiscountCalculationError))?;
     let exponent_f64 = exponent
@@ -115,11 +111,11 @@ pub fn calculate_discount_rate(
 pub fn calculate_conversion_rate_with_discount(
     oracle_swap_rate: u64,
     discount_rate: Decimal,
-) -> Result<u64> {
+) -> Result<Decimal> {
     let oracle_swap_rate_decimal = Decimal::from_u64(oracle_swap_rate)
         .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?
         .checked_div(
-            Decimal::from_u64(DECIMAL_PRECISION)
+            Decimal::from_u64(TOKEN_DECIMALS)
                 .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?,
         )
         .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?;
@@ -142,16 +138,7 @@ pub fn calculate_conversion_rate_with_discount(
     msg!("Conversion rate: {}", coversion_rate);
 
     // Convert to basis points
-    let conversion_rate_u64 = coversion_rate
-        .checked_mul(
-            Decimal::from_u64(DECIMAL_PRECISION).ok_or(error!(DoubleZeroError::InvalidAskPrice))?,
-        )
-        .ok_or(error!(DoubleZeroError::InvalidAskPrice))?
-        .to_u64()
-        .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
-
-    msg!("Conversion rate u64: {}", conversion_rate_u64);
-    Ok(conversion_rate_u64)
+    Ok(coversion_rate)
 }
 
 /// Calculate the ask price with the conversion rate
@@ -168,23 +155,21 @@ pub fn calculate_conversion_rate_with_discount(
 /// * `sol_quantity` - The sol quantity
 ///
 /// ### Returns
-/// * `Result<Decimal>` - The ask price
+/// * `Result<Decimal>` - The ask price in 2Z Token
 pub fn calculate_ask_price_with_conversion_rate(
-    conversion_rate_bps: u64,
+    conversion_rate: Decimal,
     sol_quantity: u64,
-) -> Result<u64> {
-    let conversion_rate_decimal =
-        Decimal::from_u64(conversion_rate_bps).ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
-    let sol_quantity_decimal =
-        Decimal::from_u64(sol_quantity).ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
+) -> Result<Decimal> {
+    let sol_quantity_decimal = Decimal::from_u64(sol_quantity)
+        .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?
+        .checked_div(
+            Decimal::from_u64(LAMPORTS_PER_SOL).ok_or(error!(DoubleZeroError::InvalidSolQuantity))?,
+        )
+        .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
 
     let ask_price = sol_quantity_decimal
-        .checked_mul(conversion_rate_decimal)
-        .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
-    let ask_price_u64 = ask_price
-        .to_u64()
+        .checked_mul(conversion_rate)
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
 
-    msg!("Ask price u64: {}", ask_price_u64);
-    Ok(ask_price_u64)
+    Ok(ask_price)
 }
