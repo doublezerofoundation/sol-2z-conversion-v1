@@ -13,7 +13,6 @@ pub struct AdminConfig {
     pub slot_threshold: u64,
     pub price_maximum_age: i64,
     pub max_fills_storage: u64,
-    pub skip_preflight: bool,
     pub steepness: u64,
     pub max_discount_rate: u64,
 }
@@ -25,12 +24,11 @@ impl AdminConfig {
         Ok(AdminConfig {
             rpc_url: raw_config.rpc_url,
             program_id: raw_config.program_id,
-            double_zero_program_id: raw_config.double_zero_program_id,
+            double_zero_program_id: raw_config.revenue_distribution_program,
             oracle_pubkey:  Pubkey::from_str(&raw_pub_key)?,
             sol_quantity: raw_config.sol_quantity.ok_or("Missing sol_quantity in config file")?,
             slot_threshold: raw_config.slot_threshold.ok_or("Missing slot_threshold in config file")?,
             price_maximum_age: raw_config.price_maximum_age.ok_or("Missing price_maximum_age in config file")?,
-            skip_preflight : raw_config.skip_preflight,
             max_fills_storage: raw_config.max_fills_storage.ok_or("Missing max_fills_storage in config file")?,
             steepness: raw_config.steepness.ok_or("Missing steepness in config file")?,
             max_discount_rate: raw_config.max_discount_rate.ok_or("Missing max_discount_rate in config file")?,

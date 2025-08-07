@@ -33,12 +33,12 @@ use crate::core::{
 pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<(), Box<dyn Error>> {
     let user_config = UserConfig::load_user_config()?;
     let program_id = Pubkey::from_str(&user_config.program_id)?;
-    let transfer_program_id = Pubkey::from_str(&user_config.double_zero_program_id)?;
+    let revenue_distribution_program = Pubkey::from_str(&user_config.revenue_distribution_program)?;
 
     let bid_price_parsed = parse_token_value(&bid_price)?;
     let payer = load_payer_from_env()?;
     let payer_pub_key = payer.pubkey();
-    let token_mint_account_pda = pda_helper::get_token_mint_pda(transfer_program_id).0;
+    let token_mint_account_pda = pda_helper::get_token_mint_pda(revenue_distribution_program).0;
 
     let from_pub_key = match from_address {
         Some(ref key_str) => Pubkey::from_str(key_str)?,
@@ -58,8 +58,8 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
     let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
-    let vault_account_pda = pda_helper::get_vault_pda(transfer_program_id).0;
-    let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(transfer_program_id).0;
+    let vault_account_pda = pda_helper::get_vault_pda(revenue_distribution_program).0;
+    let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(revenue_distribution_program).0;
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
@@ -72,7 +72,7 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
         AccountMeta::new(token_mint_account_pda, false),
         AccountMeta::new(spl_token_2022::id(), false),
         AccountMeta::new(system_program::ID, false),
-        AccountMeta::new(transfer_program_id, false),
+        AccountMeta::new(revenue_distribution_program, false),
         AccountMeta::new(payer_pub_key, true),
     ];
 

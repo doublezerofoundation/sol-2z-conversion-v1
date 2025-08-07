@@ -68,7 +68,7 @@ pub struct BuySol<'info> {
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    pub transfer_program: Program<'info, MockTransferProgram>,
+    pub revenue_distribution_program: Program<'info, MockTransferProgram>,
     #[account(mut)]
     pub signer: Signer<'info>
 }
@@ -135,6 +135,13 @@ impl<'info> BuySol<'info> {
 
         let tokens_required = bid_price;
 
+        let program_id = self.revenue_distribution_program.to_account_info();
+
+        let account_metas = vec![
+            AccountMeta::new(self.vault_account.key(), true),
+            AccountMeta::new(to_pubkey.key(), false),
+        ];
+
         let cpi_accounts = BuySolCpi {
             vault_account: self.vault_account.to_account_info(),
             user_token_account: self.user_token_account.to_account_info(),
@@ -145,7 +152,7 @@ impl<'info> BuySol<'info> {
             signer: self.signer.to_account_info(),
         };
 
-        let cpi_program = self.transfer_program.to_account_info();
+        let cpi_program = self.revenue_distribution_program.to_account_info();
         let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
 
         // settlement

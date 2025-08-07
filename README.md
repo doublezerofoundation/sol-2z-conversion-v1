@@ -4,7 +4,7 @@ This repository contains on-chain and off-chain implementation for DoubleZero Fe
 This system consists of following components. 
 
 1) Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
-2) Mock Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
+2) Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
 It provides CPIs which is used by converter program to simulate actual transfer.  
 3) Admin CLI - CLI interface for admins to control the system.
 4) User CLI - CLI interface for user to interact with the system.
@@ -110,7 +110,7 @@ deploy it to the environment.
 - `--restart-validator` If it is on-chain local deployment, then start/ restart the validator.
 - `--m <value>` Set the mode of operation.
   - For on-chain workspace and run-tests
-    - For On-chain workspace
+    - For On-chain workspace & Mock Double Zero Program
         - `deploy_only`: Only deploy the specified workspace(s).
         - `build_only`: Only build the specified workspace(s).
         - `build_and_deploy`: Build and then deploy the specified workspace(s).
