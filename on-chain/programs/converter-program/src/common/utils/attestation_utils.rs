@@ -7,7 +7,7 @@ use brine_ed25519::sig_verify;
 use crate::common::error::DoubleZeroError;
 
 pub fn verify_attestation(
-    swap_rate: String,
+    swap_rate: u64,
     attestation_timestamp: i64,
     signature: String,
     oracle_public_key: Pubkey,

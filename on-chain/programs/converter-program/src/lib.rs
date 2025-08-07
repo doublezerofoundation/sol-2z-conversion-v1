@@ -95,7 +95,7 @@ pub mod converter_program {
     pub fn buy_sol(
         ctx: Context<BuySol>,
         bid_price: u64,
-        swap_rate: String,
+        swap_rate: u64,
         timestamp: i64,
         attestation: String,
     ) -> Result<()> {

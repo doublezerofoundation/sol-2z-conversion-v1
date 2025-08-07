@@ -69,6 +69,6 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
     let result_bps: u64 = send_instruction_with_return_data(ix)?;
     let result = result_bps as f64 / DECIMAL_PRECISION as f64;
 
-    println!("{} Current estimated ask price: {}", ui::OK, result);
+    println!("{} Current estimated conversion rate: {} 2Z per SOL", ui::OK, result);
     Ok(())
 }

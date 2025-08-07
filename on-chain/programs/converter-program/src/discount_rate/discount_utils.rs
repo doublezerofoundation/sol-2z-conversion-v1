@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use anchor_lang::prelude::*;
 use rust_decimal::{
     prelude::{FromPrimitive, ToPrimitive},
@@ -115,11 +113,16 @@ pub fn calculate_discount_rate(
 /// ### Returns
 /// * `Result<u64>` - The ask price in basis points
 pub fn calculate_conversion_rate_with_discount(
-    oracle_swap_rate_string: String,
+    oracle_swap_rate: u64,
     discount_rate: Decimal,
 ) -> Result<u64> {
-    let oracle_swap_rate_decimal = Decimal::from_str(&oracle_swap_rate_string)
-        .map_err(|_| error!(DoubleZeroError::InvalidOracleSwapRate))?;
+    let oracle_swap_rate_decimal = Decimal::from_u64(oracle_swap_rate)
+        .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?
+        .checked_div(
+            Decimal::from_u64(DECIMAL_PRECISION)
+                .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?,
+        )
+        .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?;
     let one_decimal = Decimal::from_u64(1).unwrap();
 
     msg!("Oracle swap rate: {}", oracle_swap_rate_decimal);
@@ -166,12 +169,13 @@ pub fn calculate_conversion_rate_with_discount(
 ///
 /// ### Returns
 /// * `Result<Decimal>` - The ask price
+#[allow(dead_code)]
 pub fn calculate_ask_price_with_conversion_rate(
-    conversion_rate: u64,
+    conversion_rate_bps: u64,
     sol_quantity: u64,
 ) -> Result<u64> {
     let conversion_rate_decimal =
-        Decimal::from_u64(conversion_rate).ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
+        Decimal::from_u64(conversion_rate_bps).ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
     let sol_quantity_decimal =
         Decimal::from_u64(sol_quantity).ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
 
@@ -179,10 +183,6 @@ pub fn calculate_ask_price_with_conversion_rate(
         .checked_mul(conversion_rate_decimal)
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
     let ask_price_u64 = ask_price
-        .checked_mul(
-            Decimal::from_u64(DECIMAL_PRECISION).ok_or(error!(DoubleZeroError::InvalidAskPrice))?,
-        )
-        .ok_or(error!(DoubleZeroError::InvalidAskPrice))?
         .to_u64()
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
 

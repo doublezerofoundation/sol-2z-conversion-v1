@@ -7,7 +7,7 @@
   "price_maximum_age": 324,
   "max_fills_storage": 234,
   "skip_preflight": true,
-  "price_oracle_end_point": "https://x5rmshrog9.execute-api.us-east-1.amazonaws.com/test/api/v1/swap-rate",
+  "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
   "steepness": 900000,
   "max_discount_rate": 500000
 }

@@ -8,7 +8,7 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     discount_rate::discount_utils::{
-        calculate_ask_price_with_conversion_rate, calculate_conversion_rate_with_discount, calculate_discount_rate, calculate_sol_demand
+        calculate_conversion_rate_with_discount, calculate_discount_rate, calculate_sol_demand,
     },
     state::program_state::{ProgramStateAccount, TradeHistory},
 };
@@ -68,14 +68,8 @@ impl<'info> CalculateAskPrice<'info> {
             self.configuration_registry.max_discount_rate,
         )?;
 
-        // Calculate ask price
-        let ask_price_bps = calculate_ask_price_with_conversion_rate(
-            conversion_rate,
-            self.configuration_registry.sol_quantity,
-        )?;
-
-        set_return_data(ask_price_bps.to_le_bytes().as_slice());
-        Ok(ask_price_bps)
+        set_return_data(conversion_rate.to_le_bytes().as_slice());
+        Ok(conversion_rate)
     }
 }
 
