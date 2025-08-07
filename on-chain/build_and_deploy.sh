@@ -110,14 +110,6 @@ deploy_program() {
     fi
     log_success "Successfully deployed the converter program into the network!"
 
-    if ! anchor deploy \
-        --program-name mock-transfer-program \
-        --program-keypair .keys/mock-transfer-program-keypair.json; then
-        log_error "Mock Transfer Program deployment failed"
-        return 1
-    fi
-    log_success "Successfully deployed the mock transfer program into the network!"
-
 }
 
 cd "$(dirname "$0")" || exit 1

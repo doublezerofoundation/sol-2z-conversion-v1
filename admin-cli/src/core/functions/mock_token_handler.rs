@@ -30,7 +30,7 @@ use crate::core::{
 
 pub fn init() -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
-    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let payer = load_payer_from_env()?;
 
     let vault_account_pda = pda_helper::get_vault_pda(mock_program_id).0;
@@ -69,7 +69,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
 // to account is fixed
 pub fn mint_to_account(recipient_pub_key: Pubkey, amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
-    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
 
     let amount_parsed = parse_token_value(&amount)?;
@@ -100,7 +100,7 @@ pub fn mint_to_account(recipient_pub_key: Pubkey, amount: String) -> Result<(), 
 // to account is flexible where if it is not provided, it takes Associated token address.
 pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
-    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let payer = load_payer_from_env()?;
     let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
 
@@ -117,7 +117,7 @@ pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Er
 
 pub fn mint_to_protocol_treasury_token_account(amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
-    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let protocol_treasury_token_account =
         pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
     println!("Mock Protocol Treasury Token Account {}", protocol_treasury_token_account);
@@ -126,7 +126,7 @@ pub fn mint_to_protocol_treasury_token_account(amount: String) -> Result<(), Box
 
 pub fn airdrop_vault(amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
-    let mock_program_id = Pubkey::from_str(&admin_config.transfer_program_id)?;
+    let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     load_payer_from_env()?;
     let amount_parsed = parse_sol_value(&amount)?;
     let vault_account = pda_helper::get_vault_pda(mock_program_id).0;

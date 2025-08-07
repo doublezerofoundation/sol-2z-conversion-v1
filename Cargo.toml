@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "./on-chain/programs/*",
+    "./on-chain/programs/converter-program",
     "cli-common",
     "admin-cli",
     "user-cli",
-    "integration-cli"
+    "integration-cli",
+    "mock-double-zero-program/programs/mock-double-zero-program"
 ]
 resolver = "2"
 

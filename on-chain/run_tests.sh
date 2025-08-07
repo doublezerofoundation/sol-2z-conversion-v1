@@ -8,7 +8,6 @@ UNIT_TESTS=(
     deny-list-test
     conversion-price-test
     admin-change-test
-    mock-transfer-program-test
 )
 
 TEST_TYPE="unit"
@@ -125,16 +124,6 @@ deploy_program() {
         return 1
     fi
     log_success "Successfully deployed the converter program into the network!"
-
-    if ! anchor deploy \
-        --program-name mock-transfer-program \
-        --program-keypair .keys/mock-transfer-program-keypair.json; then
-        log_error "Mock Transfer Program deployment failed"
-        FAILED_TESTS+=("$TEST_SCRIPT")
-        EXIT_CODE=1
-        return 1
-    fi
-    log_success "Successfully deployed the mock transfer program into the network!"
 
 }
 
