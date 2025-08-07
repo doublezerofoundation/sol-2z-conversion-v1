@@ -3,7 +3,7 @@ set -e
 
 ENV="dev1"
 AWS_REGION="us-east-1"
-IMAGE_TAG="dev1-v1.0.0"
+IMAGE_TAG="dev1-v1.0.3"
 CONTAINER_NAME="indexer-service"
 ECR_REGISTRY=""
 ECR_REPOSITORY="double-zero-indexer-service"
