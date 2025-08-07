@@ -1,7 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../target/types/converter_program";
-import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
+import {airdropToActivateAccount, getDefaultKeyPair} from "./core/utils/accounts";
 import {DEFAULT_CONFIGS} from "./core/utils/configuration-registry";
 import {systemInitializeAndVerify, systemInitializeFail} from "./core/test-flow/system-initialize";
 
@@ -14,7 +14,7 @@ describe("System Initialization Tests", () => {
 
   it("Person who doesn't have upgrade authority should not init the system!", async () => {
     const nonAdminUserKeyPair = anchor.web3.Keypair.generate();
-    await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey);
+    await airdropToActivateAccount(program.provider.connection, nonAdminUserKeyPair.publicKey);
     await systemInitializeFail(
         program,
         nonAdminUserKeyPair,
