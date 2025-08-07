@@ -8,8 +8,7 @@ import { Keypair } from "@solana/web3.js";
 export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair) => {
     const oraclePriceData = await getOraclePriceData();
 
-    const swapRateBps = oraclePriceData.swapRate;
-    const expectedAskPrice = swapRateBps * (1 - 0.5);
+    const expectedAskPrice = oraclePriceData.swapRate * (1 - 0.5);
 
     const signature = await program.methods.getConversionRate({
         swapRate: new BN(oraclePriceData.swapRate),

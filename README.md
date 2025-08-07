@@ -55,8 +55,8 @@ The file should contain the following items.
   "price_maximum_age": 324,
   "max_fills_storage": 234,
   "skip_preflight": true,
-  "steepness": 9000,
-  "max_discount_rate": 5000
+  "steepness": 90,
+  "max_discount_rate": 50
 }
 ```
 - `rpc_url`: The `Deploying cluster` from last step.
@@ -67,8 +67,8 @@ The file should contain the following items.
 - `slot_threshold`: Slot threshold for storing the trade history.
 - `price_maximum_age`: Maximum age of the oracle price.
 - `max_fills_storage`: Maximum number of fills to be stored.
-- `steepness`: Steepness of the discount calculation curve in basis points. (0-10000)
-- `max_discount_rate`: Maximum discount rate in basis points. (0-10000)
+- `steepness`: Steepness of the discount calculation curve in basis points. (0-100)
+- `max_discount_rate`: Maximum discount rate in basis points. (0-100)
 
 ## Deploy the Anchor Program
 ### Keypair for the programs

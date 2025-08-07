@@ -20,8 +20,8 @@ export const DEFAULT_CONFIGS: SystemConfig = {
     slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),
     maxFillsStorage: new anchor.BN(234),
-    steepness: new anchor.BN(900000),
-    maxDiscountRate: new anchor.BN(500000),
+    steepness: new anchor.BN(90),
+    maxDiscountRate: new anchor.BN(50),
 };
 
 export async function fetchCurrentConfiguration(program): Promise<SystemConfig> {
