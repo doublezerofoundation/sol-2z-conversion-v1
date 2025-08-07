@@ -1,21 +1,11 @@
 use std::{error::Error, str::FromStr};
 
-use anchor_client::{anchor_lang::prelude::AccountMeta, solana_sdk::{hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer}};
-use cli_common::{transaction_executor::send_batch_instructions, utils::{env_var::load_private_key, pda_helper, ui}};
-
+use anchor_client::{anchor_lang::prelude::AccountMeta, solana_sdk::{hash::hash, instruction::Instruction, pubkey::Pubkey, signer::Signer}};
+use cli_common::{transaction_executor::send_batch_instructions, utils::{env_var::load_payer_from_env, pda_helper, ui}};
 use crate::core::{common::instruction::SET_ADMIN_INSTRUCTION, config::AdminConfig};
 
 pub fn set_admin(admin: String) -> Result<(), Box<dyn Error>> {
-    let private_key = load_private_key()?;
-
-    // Added due to backwards compatibility with anchor 0.30.1
-    #[allow(deprecated)]
-    let payer = Keypair::from_bytes(&private_key)?;
-
-    // TODO: Uncomment when upgrading to anchor 0.31.1
-    // let payer = Keypair::try_from(&private_key[..])?;
-
-
+    let payer = load_payer_from_env()?;
     let admin_config = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
 

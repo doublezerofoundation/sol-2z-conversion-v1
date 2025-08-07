@@ -1,7 +1,6 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
-import { getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA } from "../utils/pda-helper";
-import { getDefaultKeyPair } from "../utils/accounts";
+import { getConfigurationRegistryPDA } from "../utils/pda-helper";
 import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
 import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "../utils/return-data";
@@ -10,7 +9,7 @@ import { Keypair } from "@solana/web3.js";
 
 export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair) => {
     const oraclePriceData = await getOraclePriceData();
-    const configurationRegistryPDA = await getConfigurationRegistryPDA(program.programId);
+    const configurationRegistryPDA = getConfigurationRegistryPDA(program.programId);
 
     const configurationRegistry = await program.account.configurationRegistry.fetch(configurationRegistryPDA);
 
