@@ -63,9 +63,12 @@ pub enum DoubleZeroError {
     #[msg("Invalid system state")]
     InvalidSystemState, // 6019
 
+    #[msg("Invalid conversion rate")]
+    InvalidConversionRate, // 6020
+
     #[msg("System is halted")]
-    SystemIsHalted, // 6019
+    SystemIsHalted, // 6021
 
     #[msg("Arithmetic Error has occurred")]
-    ArithmeticError, // 6020
+    ArithmeticError, // 6022
 }

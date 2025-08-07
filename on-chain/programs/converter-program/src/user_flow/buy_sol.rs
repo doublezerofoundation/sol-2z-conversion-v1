@@ -98,7 +98,7 @@ impl<'info> BuySol<'info> {
             self.configuration_registry.oracle_pubkey,
             self.configuration_registry.price_maximum_age
         )?;
-        
+
         let sol_quantity = self.configuration_registry.sol_quantity;
         // call util function to get current ask price
         let raw_ask_price = calculate_ask_price_with_oracle_price_data(
@@ -113,7 +113,7 @@ impl<'info> BuySol<'info> {
             .ok_or(DoubleZeroError::ArithmeticError)?;
 
         let clock = Clock::get()?;
-        
+
         // Check if bid meets ask
         if bid_price < ask_price {
             emit!(BidTooLowEvent {
@@ -126,7 +126,7 @@ impl<'info> BuySol<'info> {
             });
             return err!(DoubleZeroError::BidTooLow);
         }
-        
+
         // let tokens_required = sol_quantity.checked_mul(bid_price)
         //     .ok_or(DoubleZeroError::ArithmeticError)?
         //     .checked_div(LAMPORTS_PER_SOL)

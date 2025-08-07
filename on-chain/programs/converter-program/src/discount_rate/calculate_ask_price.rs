@@ -8,7 +8,7 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     discount_rate::discount_utils::{
-        calculate_ask_price_with_discount, calculate_discount_rate, calculate_sol_demand,
+        calculate_conversion_rate_with_discount, calculate_discount_rate, calculate_sol_demand,
     },
     state::program_state::{ProgramStateAccount, TradeHistory},
 };
@@ -40,7 +40,7 @@ pub struct CalculateAskPrice<'info> {
 }
 
 impl<'info> CalculateAskPrice<'info> {
-    pub fn process(&mut self, oracle_price_data: OraclePriceData) -> Result<u64> {
+    pub fn get_conversion_rate(&mut self, oracle_price_data: OraclePriceData) -> Result<u64> {
         // check if the signer is in the deny list
         if self
             .deny_list_registry
@@ -57,38 +57,37 @@ impl<'info> CalculateAskPrice<'info> {
             self.configuration_registry.price_maximum_age,
         )?;
 
-        // Calculate ask price
-        let ask_price_bps = calculate_ask_price_with_oracle_price_data(
+        // Calculate conversion rate
+        let conversion_rate = calculate_conversion_rate_with_oracle_price_data(
+            oracle_price_data,
             &self.program_state.trade_history_list,
             self.configuration_registry.sol_quantity,
             self.configuration_registry.steepness,
             self.configuration_registry.max_discount_rate,
-            oracle_price_data,
         )?;
-        set_return_data(ask_price_bps.to_le_bytes().as_slice());
-        Ok(ask_price_bps)
+
+        set_return_data(conversion_rate.to_le_bytes().as_slice());
+        Ok(conversion_rate)
     }
 }
 
-/// A convenience function to calculate the ask price with the oracle price data
+/// A convenience function to calculate the conversion rate with the oracle price data
 ///
 /// ### Arguments
-/// * `program_state` - The program state
-/// * `configuration_registry` - The configuration registry
 /// * `oracle_price_data` - The oracle price data
 ///
 /// ### Returns
-/// * `Result<u64>` - The ask price in basis points
-pub fn calculate_ask_price_with_oracle_price_data(
+/// * `Result<u64>` - The conversion rate in basis points
+pub fn calculate_conversion_rate_with_oracle_price_data(
+    oracle_price_data: OraclePriceData,
     trade_history_list: &Vec<TradeHistory>,
     sol_quantity: u64,
     steepness: u64,
     max_discount_rate: u64,
-    oracle_price_data: OraclePriceData,
 ) -> Result<u64> {
     let sol_demand_bps = calculate_sol_demand(trade_history_list, sol_quantity)?;
 
     let discount_rate = calculate_discount_rate(sol_demand_bps, steepness, max_discount_rate)?;
 
-    calculate_ask_price_with_discount(sol_quantity, oracle_price_data.swap_rate, discount_rate)
+    calculate_conversion_rate_with_discount(oracle_price_data.swap_rate, discount_rate)
 }
