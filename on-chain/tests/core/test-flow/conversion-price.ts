@@ -1,11 +1,8 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
-import { getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA } from "../utils/pda-helper";
-import { getDefaultKeyPair } from "../utils/accounts";
 import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
 import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "../utils/return-data";
-import { DECIMAL_PRECISION } from "../constants";
 import { Keypair } from "@solana/web3.js";
 
 export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair) => {

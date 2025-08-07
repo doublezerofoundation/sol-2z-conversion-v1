@@ -29,15 +29,16 @@ export async function processTx(sig: string) {
      for (const e of events) {
           console.log(`✅ [${timestamp}] Event ${e.name} @${sig}`, e.data);
           const eventId = `${slot}-${sig}-${e.name}`;
+          const safeData = serializeForDynamo(e.data);
           switch (e.name) {
                case 'FillDequeued':
-                    await writeFillDequeue(sig, eventId, e.data, slot, timestamp);
+                    await writeFillDequeue(sig, eventId, safeData, slot, timestamp);
                     break;
                case 'DenyListModified':
-                    await writeDenyListAction(sig, eventId, e.data, slot, timestamp);
+                    await writeDenyListAction(sig, eventId, safeData, slot, timestamp);
                     break;
                default:
-                    await writeSolanaEvent(sig, eventId, e.name, e.data, slot, timestamp);
+                    await writeSolanaEvent(sig, eventId, e.name, safeData, slot, timestamp);
           }
      }
 }
@@ -69,4 +70,35 @@ function handleTxError(sig: string, err: TransactionError): string | undefined {
           console.info(`Failed tx ${sig}:`, err);
           return 'RawError'; // No custom error found, log raw error
      }
+}
+
+/**
+ * Recursively serializes any object for DynamoDB storage.
+ * - Converts Solana PublicKey instances to base58 strings.
+ * - Handles primitives, arrays, and nested objects.
+ * - Ensures all values are plain JSON-compatible types (string, number, boolean, array, object).
+ * - Prevents unsupported class instances from causing DynamoDB marshalling errors.
+ *
+ */
+function serializeForDynamo(obj: any): any {
+     if (obj == null) return obj;
+     if (typeof obj === "string" || typeof obj === "number" || typeof obj === "boolean") return obj;
+     if (Array.isArray(obj)) return obj.map(serializeForDynamo);
+   
+     // Solana PublicKey detection 
+     if (obj.constructor && obj.constructor.name === "PublicKey" && typeof obj.toString === "function") {
+       return obj.toString();
+     }
+   
+     // For objects, recursively serialize each property
+     if (typeof obj === "object") {
+       const result: any = {};
+       for (const key of Object.keys(obj)) {
+         result[key] = serializeForDynamo(obj[key]);
+       }
+       return result;
+     }
+   
+     // Fallback: convert to string
+     return String(obj);
 }

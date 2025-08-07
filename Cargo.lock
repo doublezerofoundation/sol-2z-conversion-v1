@@ -1047,7 +1047,6 @@ dependencies = [
  "base64 0.22.1",
  "serde",
  "serde_json",
- "solana-loader-v3-interface",
  "solana-transaction-status",
 ]
 

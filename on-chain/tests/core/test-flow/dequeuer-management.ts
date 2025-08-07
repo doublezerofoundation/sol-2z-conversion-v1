@@ -51,8 +51,8 @@ export async function addDequeuerAndVerify(
 
     try {
 
-        const programStateAccount = await getProgramStatePDA(program.programId);
-        const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
+        const programStateAccount = getProgramStatePDA(program.programId);
+        const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
 
         const txSig = await program.methods
             .addDequeuer(dequeuer)
@@ -90,8 +90,8 @@ export async function removeDequeuerAndVerify(
     expectEvent: boolean = true
 ) {
     try {
-        const programStateAccount = await getProgramStatePDA(program.programId);
-        const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
+        const programStateAccount = getProgramStatePDA(program.programId);
+        const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
 
         const txSig = await program.methods
             .removeDequeuer(dequeuer)
@@ -129,8 +129,8 @@ export async function addDequeuerExpectUnauthorized(
     dequeuer: PublicKey
 ) {
     try {
-        const programStateAccount = await getProgramStatePDA(program.programId);
-        const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
+        const programStateAccount = getProgramStatePDA(program.programId);
+        const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
         await program.methods
             .addDequeuer(dequeuer)
             .accounts({
@@ -167,8 +167,8 @@ export async function removeDequeuerExpectUnauthorized(
     dequeuer: PublicKey
 ) {
     try {
-        const programStateAccount = await getProgramStatePDA(program.programId);
-        const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
+        const programStateAccount = getProgramStatePDA(program.programId);
+        const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
 
         const txSig = await program.methods
             .removeDequeuer(dequeuer)
@@ -202,8 +202,8 @@ export async function removeDequeuerExpectUnauthorized(
 export async function addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerList) {
     let txSig;
     try {
-        const programStateAccount = await getProgramStatePDA(program.programId);
-        const configRegistryAccount = await getConfigurationRegistryPDA(program.programId);
+        const programStateAccount = getProgramStatePDA(program.programId);
+        const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
         // Add up to the max limit
         for (let i = 0; i < dequeuerList.length; i++) {
             await program.methods

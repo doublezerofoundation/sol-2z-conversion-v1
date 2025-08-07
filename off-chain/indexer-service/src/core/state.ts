@@ -3,11 +3,11 @@ import { getLastProcessedSig, setLastProcessedSig } from "../utils/ddb";
 let recovering = true; 
 
 export async function getLastSignature(): Promise<string | null> {
-     return await getLastProcessedSig();
+  return await getLastProcessedSig();
 }
 
 export async function saveLastSignature(sig: string | null) {
-     await setLastProcessedSig(sig);
+  await setLastProcessedSig(sig);
 }
 
 export function isRecovering() {

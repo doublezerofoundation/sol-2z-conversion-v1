@@ -169,7 +169,6 @@ pub fn calculate_conversion_rate_with_discount(
 ///
 /// ### Returns
 /// * `Result<Decimal>` - The ask price
-#[allow(dead_code)]
 pub fn calculate_ask_price_with_conversion_rate(
     conversion_rate_bps: u64,
     sol_quantity: u64,
