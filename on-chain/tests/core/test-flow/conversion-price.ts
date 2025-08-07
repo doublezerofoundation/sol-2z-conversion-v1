@@ -4,6 +4,7 @@ import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
 import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "../utils/return-data";
 import { Keypair } from "@solana/web3.js";
+import { getDefaultKeyPair } from "../utils/accounts";
 
 export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair = getDefaultKeyPair()) => {
     const oraclePriceData = await getOraclePriceData();
