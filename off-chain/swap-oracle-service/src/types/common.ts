@@ -44,4 +44,50 @@ export interface PriceRate {
     swapRate: number;
     solPriceUsd: number;
     twozPriceUsd: number;
+    last_price_update: string;
 }
+
+export type HealthCheckResult = PythHealthCheckResponse
+
+export interface PythHealthCheckResponse {
+    serviceType: string;
+    status: HealthStatus;
+    hermes_connected: boolean;
+    last_price_update: string;
+}
+
+export enum HealthStatus {
+    HEALTHY = 'HEALTHY',
+    UN_HEALTHY = 'UN_HEALTHY'
+}
+
+export enum CircuitBreakerState {
+    OPEN = 'OPEN',
+    CLOSED = 'CLOSED'
+}
+
+export interface CircuitBreakerConfig {
+    healthCheckAttemptsToClose: number;
+}
+
+export interface CircuitBreakerStats {
+    state: CircuitBreakerState;
+    openedAt: number;
+    lastFailureReason: string;
+}
+
+
+export const TYPES = {
+    CacheService: Symbol.for('CacheService'),
+    AttestationService: Symbol.for('AttestationService'),
+    MetricsMonitoringService: Symbol.for('MetricsMonitoringService'),
+    HealthMonitoringService: Symbol.for('HealthMonitoringService'),
+    KeyManager: Symbol.for('KeyManager'),
+    CircuitBreakerService: Symbol.for('CircuitBreakerService'),
+
+    PricingService: Symbol.for('PricingService'),
+    PricingServiceFactory: Symbol.for('PricingServiceFactory'),
+    SwapRateService: Symbol.for('SwapRateService'),
+    SwapRateController: Symbol.for('SwapRateController'),
+    ConfigUtil: Symbol.for('ConfigUtil'),
+};

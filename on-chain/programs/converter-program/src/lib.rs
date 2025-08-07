@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 #![allow(deprecated)]
 
-mod admin_change;
+mod system_management;
 mod common;
 pub mod configuration_registry;
 mod deny_list_registry;
@@ -11,7 +11,8 @@ mod initialize;
 mod state;
 mod user_flow;
 
-use admin_change::set_admin::*;
+use system_management::set_admin::*;
+use system_management::system_state::*;
 use anchor_lang::prelude::*;
 use common::structs::*;
 use configuration_registry::update_configuration::*;
@@ -83,6 +84,10 @@ pub mod converter_program {
 
     pub fn set_admin(ctx: Context<SetAdmin>, new_admin: Pubkey) -> Result<()> {
         ctx.accounts.process(new_admin)
+    }
+
+    pub fn toggle_system_state(ctx: Context<SystemState>, set_to: bool) -> Result<()> {
+        ctx.accounts.process(set_to)
     }
 
     //////////////////////// USER FLOW ////////////////////////

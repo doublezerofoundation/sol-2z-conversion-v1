@@ -24,3 +24,35 @@ impl AccountDeserialize for ConfigurationRegistry {
         ConfigurationRegistry::deserialize(buf).map_err(Into::into)
     }
 }
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct ProgramStateAccount {
+    pub admin: Pubkey,
+    pub is_halted: bool,
+    pub bump_registry: BumpRegistry,
+    pub trade_history_list: Vec<TradeHistory>,
+}
+
+impl AccountDeserialize for ProgramStateAccount {
+    fn try_deserialize(buf: &mut &[u8]) -> Result<Self> {
+        *buf = &buf[8..];
+        ProgramStateAccount::try_deserialize_unchecked(buf)
+    }
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
+        ProgramStateAccount::deserialize(buf).map_err(Into::into)
+    }
+}
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct TradeHistory {
+    pub epoch: u64,
+    pub num_of_trades: u64,
+}
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct BumpRegistry {
+    pub configuration_registry_bump: u8,
+    pub program_state_bump: u8,
+    pub fills_registry_bump: u8,
+    pub deny_list_registry_bump: u8,
+}
