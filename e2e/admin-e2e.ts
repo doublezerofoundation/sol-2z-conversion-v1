@@ -1,7 +1,7 @@
 import { setup } from "../core/setup";
 
 import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../../target/types/converter_program";
+import { ConverterProgram } from "../on-chain/target/types/converter_program";
 import { Test } from "../core/setup";
 import { getDefaultKeyPair, getRandomKeyPair } from "../core/utils/accounts";
 import { systemInitializeAndVerify, systemInitializeFail } from "../core/test-flow/system-initialize";

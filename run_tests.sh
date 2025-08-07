@@ -12,7 +12,7 @@ UNIT_TESTS=(
 )
 
 E2E_TESTS=(
-    admin-e2e
+    admin-flow
 )
 
 TEST_TYPE="unit"
@@ -167,6 +167,30 @@ deploy_program() {
     anchor deploy --provider.cluster $RPC_URL --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
 }
 
+# -------------------- CLI Management --------------------
+build_admin_cli() {
+    log_info "Building the Admin CLI..."
+    cd ../admin-cli && cargo build
+    cd ../e2e
+    log_success "Admin CLI built successfully"
+}
+
+build_user_cli() {
+    log_info "Building the User CLI..."
+    cd ../user-cli && cargo build
+    cd ../e2e
+    log_success "User CLI built successfully"
+}
+
+copy_cli_to_e2e() {
+    log_info "Copying the CLI binaries to the E2E directory..."
+    mkdir -p ../e2e/cli
+    cp ../target/debug/admin-cli ../e2e/cli/
+    cp ../target/debug/user-cli ../e2e/cli/
+    cp ../config.json ../e2e/cli/
+    log_success "CLI copied to the E2E directory"
+}
+
 # -------------------- Test Runner --------------------
 run_test() {
     local TEST_SCRIPT=$1
@@ -179,8 +203,15 @@ run_test() {
     start_validator $RPC_PORT
     deploy_program $RPC_URL
 
-    anchor run $TEST_SCRIPT --provider.cluster $RPC_URL
-    RESULT=$?
+    if [ "$TEST_TYPE" == "e2e" ]; then
+        cd ../e2e || exit 1
+        npm run $TEST_SCRIPT
+        RESULT=$?
+        cd ../on-chain || exit 1
+    else
+        anchor run $TEST_SCRIPT --provider.cluster $RPC_URL
+        RESULT=$?
+    fi
 
     if [ $RESULT -eq 0 ]; then
         log_success "Test Passed: $TEST_SCRIPT"
@@ -200,6 +231,12 @@ trap 'killall -9 solana-test-validator 2>/dev/null || true' EXIT
 
 cd ./on-chain || exit 1
 build_program
+
+if [ "$TEST_TYPE" == "e2e" ]; then
+    build_admin_cli
+    build_user_cli
+    copy_cli_to_e2e
+fi
 
 for TEST_SCRIPT in "${ACTIVE_TESTS[@]}"; do
     run_test $TEST_SCRIPT $BASE_RPC_PORT
