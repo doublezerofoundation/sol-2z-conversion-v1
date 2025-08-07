@@ -6,9 +6,10 @@ import {
   GetCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { DDBTable, SystemStateKey } from "../common";
+import { ENV } from "../core/config";
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const table_prefix = `doublezero-${process.env.ENV!}`;
+const table_prefix = `doublezero-${ENV}`;
 
 // ---- System State ----
 
@@ -96,7 +97,7 @@ export async function writeFillDequeue(
       tx_hash: txHash,
       timestamp, // sort key
       action_id: actionId,
-      data,
+      data, // TODO: add separate fields for each data item
       slot,
     },
   };
@@ -118,7 +119,7 @@ export async function writeDenyListAction(
       tx_hash: txHash,
       timestamp, // sort key
       action_id: actionId,
-      data,
+      data, // TODO: add separate fields for each data item
       slot,
     },
   };
