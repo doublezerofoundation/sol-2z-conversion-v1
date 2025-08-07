@@ -1,7 +1,7 @@
 import { PRICE_ORACLE_END_POINT } from "../constants";
 
 export interface OraclePriceData {
-    swapRate: string;
+    swapRate: number;
     timestamp: number;
     signature: string;
     // solPriceUsd?: string;

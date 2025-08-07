@@ -35,7 +35,7 @@ describe("Conversion Price Tests", async () => {
 
     it("should fail to get conversion price for invalid signature", async () => {
         const oraclePriceData: OraclePriceData = {
-            swapRate: "1.0",
+            swapRate: 12000000,
             timestamp: 1722633600,
             signature: "invalid_signature",
         };

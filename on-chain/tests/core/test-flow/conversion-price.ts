@@ -10,16 +10,12 @@ import { Keypair } from "@solana/web3.js";
 
 export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair) => {
     const oraclePriceData = await getOraclePriceData();
-    const configurationRegistryPDA = await getConfigurationRegistryPDA(program.programId);
 
-    const configurationRegistry = await program.account.configurationRegistry.fetch(configurationRegistryPDA);
+    const swapRateBps = oraclePriceData.swapRate;
+    const expectedAskPrice = swapRateBps * (1 - 0.5);
 
-    const swapRateBps = parseFloat(oraclePriceData.swapRate) * DECIMAL_PRECISION;
-    const solQuantity = configurationRegistry.solQuantity.toNumber();
-    const expectedAskPrice = solQuantity * swapRateBps * (1 - 0.5);
-
-    const signature = await program.methods.calculateAskPrice({
-        swapRate: oraclePriceData.swapRate,
+    const signature = await program.methods.getConversionRate({
+        swapRate: new BN(oraclePriceData.swapRate),
         timestamp: new BN(oraclePriceData.timestamp),
         signature: oraclePriceData.signature,
     })
@@ -80,8 +76,8 @@ export const getConversionPriceToFail = async (
     expectedError: string
 ) => {
     try {
-        const signature = await program.methods.calculateAskPrice({
-            swapRate: oraclePriceData.swapRate,
+        const signature = await program.methods.getConversionRate({
+            swapRate: new BN(oraclePriceData.swapRate),
             timestamp: new BN(oraclePriceData.timestamp),
             signature: oraclePriceData.signature,
         })
