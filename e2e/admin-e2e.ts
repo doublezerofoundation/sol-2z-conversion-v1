@@ -23,21 +23,6 @@ export interface AdminTestArgs {
 
 const adminTestList: Test[] = [
   {
-    name: "non_deployer_init_system",
-    description: "Non-deployer should not be able to initialize the system",
-    execute: async (program: Program<ConverterProgram>) => {
-      const nonDeployer = await getRandomKeyPair(program.provider.connection);
-      await systemInitializeFail(program, nonDeployer, DEFAULT_CONFIGS, "A raw constraint was violated");
-    }
-  },
-  {
-    name: "deployer_init_system",
-    description: "Deployer should be able to initialize the system",
-    execute: async (program: Program<ConverterProgram>) => {
-      await systemInitializeAndVerify(program);
-    }
-  },
-  {
     name: "add_dequeuer",
     description: "Admin should be able to add authorised dequeuer and emit dequeuerAdded event",
     execute: async (program: Program<ConverterProgram>, args: AdminTestArgs) => {

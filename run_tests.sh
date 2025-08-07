@@ -171,14 +171,14 @@ deploy_program() {
 build_admin_cli() {
     log_info "Building the Admin CLI..."
     cd ../admin-cli && cargo build
-    cd ../e2e
+    cd ../on-chain
     log_success "Admin CLI built successfully"
 }
 
 build_user_cli() {
     log_info "Building the User CLI..."
     cd ../user-cli && cargo build
-    cd ../e2e
+    cd ../on-chain
     log_success "User CLI built successfully"
 }
 

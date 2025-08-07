@@ -21,8 +21,8 @@ export class AdminClient {
         await this.session.executeCliCommand(`update-configs`);
     }
 
-    public async viewConfigCommand(): Promise<void> {
-        await this.session.executeCliCommand(`view-config`);
+    public async viewConfigCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`view-config`);
     }
 
     public async withdrawTokensCommand(amount: number, destination: string): Promise<void> {
@@ -33,11 +33,23 @@ export class AdminClient {
         await this.session.executeCliCommand(`toggle-system-state --${isHalted ? "pause" : "activate"}`);
     }
 
-    public async viewSystemStateCommand(): Promise<void> {
-        await this.session.executeCliCommand(`view-system-state`);
+    public async viewSystemStateCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`view-system-state`);
     }
 
     public async setAdminCommand(admin: string): Promise<void> {
         await this.session.executeCliCommand(`set-admin -a ${admin}`);
+    }
+
+    public async addUserToDenyListCommand(user: string): Promise<void> {
+        await this.session.executeCliCommand(`add-to-deny-list -a ${user}`);
+    }
+
+    public async removeUserFromDenyListCommand(user: string): Promise<void> {
+        await this.session.executeCliCommand(`remove-from-deny-list -a ${user}`);
+    }
+
+    public async viewDenyListCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`view-deny-list`);
     }
 }

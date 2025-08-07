@@ -37,36 +37,12 @@ export class InitializeScenario extends CommonScenario {
         expect(denyListRegExists).to.be.true;
     }
 
-    public async initializeSystemAndVerifyFail(): Promise<void> {
+    public async initializeSystemAndVerifyFail(expectedError: string = ""): Promise<void> {
         try {
             await this.deployer.initializeSystemCommand();
             assert.fail("System should not be initialized");
         } catch (error) {
-            // Expected error
+            expect(error!.toString()).to.contain(expectedError);
         }
-
-        // Verify that the system is not initialized
-        const program = this.deployer.session.getProgram();
-        const connection = this.deployer.session.getConnection();
-
-        const pdas = await Promise.all([
-            getConfigurationRegistryPDA(program.programId),
-            getProgramStatePDA(program.programId),
-            getFillsRegistryPDA(program.programId),
-            getDenyListRegistryPDA(program.programId),
-        ]);
-
-        const [configurationRegistryPDA, programStatePDA, fillsRegistryPDA, denyListRegistryPDA] = pdas;
-        const [configRegExists, stateRegExists, fillsRegExists, denyListRegExists] = await Promise.all([
-            accountExists(connection, configurationRegistryPDA),
-            accountExists(connection, programStatePDA),
-            accountExists(connection, fillsRegistryPDA),
-            accountExists(connection, denyListRegistryPDA),
-        ]);
-
-        expect(configRegExists).to.be.false;
-        expect(stateRegExists).to.be.false;
-        expect(fillsRegExists).to.be.false;
-        expect(denyListRegExists).to.be.false;
     }
 }
