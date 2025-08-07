@@ -105,6 +105,7 @@ deploy it to the environment.
 - `--w <value>` Specify the workspace to process. Available workspaces
   - on-chain 
   - admin-cli
+  - mock-double-zero-program
   - user-cli
   - run-tests
 - `--restart-validator` If it is on-chain local deployment, then start/ restart the validator.
@@ -123,6 +124,7 @@ deploy it to the environment.
 Build and Deploy a Single Workspace
 ```sh
 ./build_and_deploy.sh -w on-chain --restart-validator
+./build_and_deploy.sh -w mock-double-zero-program --restart-validator
 ./build_and_deploy.sh -w run-tests --mode unit
 ```
 
