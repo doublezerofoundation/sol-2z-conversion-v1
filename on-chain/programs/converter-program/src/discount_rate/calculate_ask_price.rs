@@ -1,9 +1,16 @@
 use anchor_lang::{prelude::*, solana_program::program::set_return_data};
 
 use crate::{
-    common::{error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData, utils::attestation_utils::verify_attestation}, configuration_registry::configuration_registry::ConfigurationRegistry, deny_list_registry::deny_list_registry::DenyListRegistry, discount_rate::discount_utils::{
+    common::{
+        error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData,
+        utils::attestation_utils::verify_attestation,
+    },
+    configuration_registry::configuration_registry::ConfigurationRegistry,
+    deny_list_registry::deny_list_registry::DenyListRegistry,
+    discount_rate::discount_utils::{
         calculate_ask_price_with_discount, calculate_discount_rate, calculate_sol_demand,
-    }, state::program_state::ProgramStateAccount
+    },
+    state::program_state::{ProgramStateAccount, TradeHistory},
 };
 
 #[derive(Accounts)]
@@ -35,7 +42,11 @@ pub struct CalculateAskPrice<'info> {
 impl<'info> CalculateAskPrice<'info> {
     pub fn process(&mut self, oracle_price_data: OraclePriceData) -> Result<u64> {
         // check if the signer is in the deny list
-        if self.deny_list_registry.denied_addresses.contains(&self.signer.key()) {
+        if self
+            .deny_list_registry
+            .denied_addresses
+            .contains(&self.signer.key())
+        {
             return Err(error!(DoubleZeroError::UserInsideDenyList));
         }
 
@@ -43,31 +54,43 @@ impl<'info> CalculateAskPrice<'info> {
         verify_attestation(
             oracle_price_data.swap_rate.clone(),
             oracle_price_data.timestamp,
-            oracle_price_data.signature,
+            oracle_price_data.signature.clone(),
             self.configuration_registry.oracle_pubkey,
-            self.configuration_registry.price_maximum_age
-        )?;
-
-        // Calculate sol demand
-        let sol_demand_bps = calculate_sol_demand(
-            self.program_state.trade_history_list.clone(),
-            self.configuration_registry.sol_quantity,
-        )?;
-
-        // Calculate discount rate
-        let discount_rate = calculate_discount_rate(
-            sol_demand_bps,
-            self.configuration_registry.steepness,
-            self.configuration_registry.max_discount_rate,
+            self.configuration_registry.price_maximum_age,
         )?;
 
         // Calculate ask price
-        let ask_price_bps = calculate_ask_price_with_discount(
+        let ask_price_bps = calculate_ask_price_with_oracle_price_data(
+            &self.program_state.trade_history_list,
             self.configuration_registry.sol_quantity,
-            oracle_price_data.swap_rate,
-            discount_rate,
+            self.configuration_registry.steepness,
+            self.configuration_registry.max_discount_rate,
+            oracle_price_data,
         )?;
         set_return_data(ask_price_bps.to_le_bytes().as_slice());
         Ok(ask_price_bps)
     }
+}
+
+/// A convenience function to calculate the ask price with the oracle price data
+///
+/// ### Arguments
+/// * `program_state` - The program state
+/// * `configuration_registry` - The configuration registry
+/// * `oracle_price_data` - The oracle price data
+///
+/// ### Returns
+/// * `Result<u64>` - The ask price in basis points
+pub fn calculate_ask_price_with_oracle_price_data(
+    trade_history_list: &Vec<TradeHistory>,
+    sol_quantity: u64,
+    steepness: u64,
+    max_discount_rate: u64,
+    oracle_price_data: OraclePriceData,
+) -> Result<u64> {
+    let sol_demand_bps = calculate_sol_demand(trade_history_list, sol_quantity)?;
+
+    let discount_rate = calculate_discount_rate(sol_demand_bps, steepness, max_discount_rate)?;
+
+    calculate_ask_price_with_discount(sol_quantity, oracle_price_data.swap_rate, discount_rate)
 }
