@@ -7,6 +7,9 @@ import * as process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
 import bs58 from 'bs58';
 import {Keypair} from "@solana/web3.js";
+import { injectable } from 'inversify';
+
+@injectable()
 export class KeyManager {
     private awsSSM: any;
     constructor() {

@@ -38,18 +38,54 @@ get_redis_url_from_terraform(){
   fi
 
   # Change to terraform directory and get the output
-  cd $TERRAFORM_DIR
+   cd "$TERRAFORM_DIR" || {
+      echo "❌ Failed to change to terraform directory: $TERRAFORM_DIR"
+      exit 1
+  }
+  echo "Current directory: $(pwd)"
+  echo "Checking terraform state and configuration..."
 
-  REDIS_ENDPOINT=$(terraform output -raw redis_endpoint 2>/dev/null)
-  REDIS_PORT=$(terraform output -raw redis_port 2>/dev/null)
 
-  if [[ $? -ne 0 ]]; then
-    echo "❌ Failed to run terraform output. Make sure:"
+  echo "Running terraform output commands..."
+
+  # Get Redis endpoint with error handling
+  echo "Getting Redis endpoint..."
+#  TODO remove hardcoded value
+  REDIS_ENDPOINT="master.doublezero-redis.m3emep.use1.cache.amazonaws.com"
+#  $(terraform output -raw redis_endpoint 2>&1)
+  REDIS_ENDPOINT_EXIT_CODE=$?
+
+  if [[ $REDIS_ENDPOINT_EXIT_CODE -ne 0 ]]; then
+    echo "❌ Failed to get redis_endpoint from terraform output."
+    echo "Error output: $REDIS_ENDPOINT"
+    echo "Make sure:"
     echo "   - Terraform is initialized (run 'terraform init')"
     echo "   - Infrastructure has been applied (run 'terraform apply')"
+    echo "   - The 'redis_endpoint' output exists in your terraform configuration"
     echo "   - You have the necessary permissions to access the state"
+    cd - > /dev/null
     exit 1
   fi
+
+  # Get Redis port with error handling
+  echo "Getting Redis port..."
+  #  TODO remove hardcoded value
+  REDIS_PORT="6379"
+#  $(terraform output -raw redis_port 2>&1)
+  REDIS_PORT_EXIT_CODE=$?
+
+  if [[ $REDIS_PORT_EXIT_CODE -ne 0 ]]; then
+    echo "❌ Failed to get redis_port from terraform output."
+    echo "Error output: $REDIS_PORT"
+    echo "Make sure:"
+    echo "   - Terraform is initialized (run 'terraform init')"
+    echo "   - Infrastructure has been applied (run 'terraform apply')"
+    echo "   - The 'redis_port' output exists in your terraform configuration"
+    echo "   - You have the necessary permissions to access the state"
+    cd - > /dev/null
+    exit 1
+  fi
+
 
 
   if [[ -z "$REDIS_ENDPOINT" || "$REDIS_ENDPOINT" == "null" ]]; then
@@ -79,6 +115,7 @@ verify_ecr_image(){
 create_deployment_script() {
   local script_path="/tmp/container_deploy.sh"
 
+
   cat > "$script_path" << EOF
 #!/bin/bash
 set -e
@@ -93,7 +130,7 @@ CONTAINER_NAME="$CONTAINER_NAME"
 REDIS_PORT="$REDIS_PORT"
 REDIS_ENDPOINT="$REDIS_ENDPOINT"
 FULL_IMAGE_URI="\${ECR_REGISTRY}/\${ECR_REPOSITORY}:\${IMAGE_TAG}"
-
+INSTANCE_ID=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 echo "Starting container redeployment on \$(hostname)"
 echo "Image: \$FULL_IMAGE_URI"
 
@@ -120,7 +157,12 @@ docker run -d \\
   --name \$CONTAINER_NAME \\
   --restart unless-stopped \\
   -p 8080:8080 \\
-  -e ENVIRONMENT=\$ENVIRONMENT -e AWS_REGION=$AWS_REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT\\
+  --log-driver=awslogs \\
+  --log-opt awslogs-group="/ec2/\$ENVIRONMENT/\$CONTAINER_NAME" \\
+  --log-opt awslogs-region=\$AWS_REGION  \\
+  --log-opt awslogs-stream=\$INSTANCE_ID \\
+  --log-opt awslogs-create-group=true \\
+  -e ENVIRONMENT=\$ENVIRONMENT -e AWS_REGION=\$AWS_REGION -e REDIS_ENDPOINT=\$REDIS_ENDPOINT -e REDIS_PORT=\$REDIS_PORT\\
   -v /opt/app/logs:/app/logs \\
   \$FULL_IMAGE_URI
 
@@ -312,4 +354,6 @@ get_redis_url_from_terraform
 get_ecr_config
 find_ec2_instance
 verify_ecr_image
+echo "DEBUG: ENV variable is: '$ENV'"
+echo "DEBUG: Environment will be: '$ENV'"
 deploy_application
