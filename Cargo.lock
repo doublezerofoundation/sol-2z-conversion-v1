@@ -1141,7 +1141,6 @@ dependencies = [
  "anchor-spl",
  "base64 0.22.1",
  "brine-ed25519",
- "mock-double-zero-program",
  "rust_decimal",
 ]
 

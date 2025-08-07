@@ -33,7 +33,7 @@ use crate::core::{
 pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<(), Box<dyn Error>> {
     let user_config = UserConfig::load_user_config()?;
     let program_id = Pubkey::from_str(&user_config.program_id)?;
-    let revenue_distribution_program = Pubkey::from_str(&user_config.revenue_distribution_program)?;
+    let revenue_distribution_program = Pubkey::from_str(&user_config.double_zero_program_id)?;
 
     let bid_price_parsed = parse_token_value(&bid_price)?;
     let payer = load_payer_from_env()?;

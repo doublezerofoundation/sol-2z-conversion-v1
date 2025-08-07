@@ -24,7 +24,7 @@ impl AdminConfig {
         Ok(AdminConfig {
             rpc_url: raw_config.rpc_url,
             program_id: raw_config.program_id,
-            double_zero_program_id: raw_config.revenue_distribution_program,
+            double_zero_program_id: raw_config.double_zero_program_id,
             oracle_pubkey:  Pubkey::from_str(&raw_pub_key)?,
             sol_quantity: raw_config.sol_quantity.ok_or("Missing sol_quantity in config file")?,
             slot_threshold: raw_config.slot_threshold.ok_or("Missing slot_threshold in config file")?,
