@@ -1,13 +1,14 @@
-import { Connection, TransactionError } from '@solana/web3.js';
+import { Connection, TransactionError, PublicKey } from '@solana/web3.js';
 import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
 import idlJson from '../../idl/converter_program.json';
-import { RPC_URL, PROGRAM_ID } from './config';
+
+import Config from '../utils/config';
 import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb';
 
-const connection = new Connection(RPC_URL, 'confirmed');
+const connection = new Connection(Config.RPC_URL, 'confirmed');
 const idl        = idlJson as Idl;
 const coder      = new BorshCoder(idl);
-const parser     = new EventParser(PROGRAM_ID, coder);
+const parser     = new EventParser(new PublicKey(Config.PROGRAM_ID), coder);
 
 export async function processTx(sig: string) {
      const tx = await connection.getTransaction(sig, { commitment: 'confirmed' });

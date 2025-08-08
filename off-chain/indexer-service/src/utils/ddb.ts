@@ -6,7 +6,9 @@ import {
   GetCommand,
 } from "@aws-sdk/lib-dynamodb";
 import { DDBTable, SystemStateKey } from "../common";
-import { ENV } from "../core/config";
+
+import { ENV } from '../utils/config';
+
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
 const table_prefix = `doublezero-${ENV}`;
