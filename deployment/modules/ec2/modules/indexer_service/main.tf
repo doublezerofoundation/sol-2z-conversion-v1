@@ -22,13 +22,18 @@ locals {
 }
 
 # CloudWatch Log Groups
-resource "aws_cloudwatch_log_group" "service_logs" {
-  name              = "/ec2/${var.environment}/${var.container_name}/service"
+resource "aws_cloudwatch_log_group" "user_data_logs" {
+  name              = "/ec2/${var.environment}/${var.container_name}/user_data"
   retention_in_days = 7
 }
 
 resource "aws_cloudwatch_log_group" "application_logs" {
   name              = "/ec2/${var.environment}/${var.container_name}/application"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "container_logs" {
+  name              = "/ec2/${var.environment}/${var.container_name}"
   retention_in_days = 7
 }
 

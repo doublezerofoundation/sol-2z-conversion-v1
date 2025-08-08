@@ -78,7 +78,7 @@ echo "Starting container: $CONTAINER_NAME"
 docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   -p ${container_port}:${container_port} \
   --log-driver=awslogs \
-  --log-opt awslogs-group="/ec2/${environment}/${CONTAINER_NAME}" \
+  --log-opt awslogs-group="/ec2/${environment}/${container_name}" \
   --log-opt awslogs-region=$REGION \
   --log-opt awslogs-stream=$INSTANCE_ID \
   -v /opt/app/logs:/app/logs \
