@@ -89,7 +89,8 @@ export async function writeSolanaError(
 export async function writeFillDequeue(
   txHash: string,
   actionId: string,
-  data: Record<string, any>,
+  requester: string,
+  solAmount: number,
   slot: number,
   timestamp: number
 ) {
@@ -99,7 +100,8 @@ export async function writeFillDequeue(
       tx_hash: txHash,
       timestamp, // sort key
       action_id: actionId,
-      data, // TODO: add separate fields for each data item
+      requester,
+      sol_amount: solAmount,
       slot,
     },
   };
@@ -111,7 +113,8 @@ export async function writeFillDequeue(
 export async function writeDenyListAction(
   txHash: string,
   actionId: string,
-  data: Record<string, any>,
+  address: string,
+  actionType: string,
   slot: number,
   timestamp: number
 ) {
@@ -121,7 +124,8 @@ export async function writeDenyListAction(
       tx_hash: txHash,
       timestamp, // sort key
       action_id: actionId,
-      data, // TODO: add separate fields for each data item
+      address,
+      action_type: actionType,
       slot,
     },
   };

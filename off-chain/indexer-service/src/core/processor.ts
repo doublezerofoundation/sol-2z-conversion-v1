@@ -33,10 +33,16 @@ export async function processTx(sig: string) {
           const safeData = serializeForDynamo(e.data);
           switch (e.name) {
                case 'FillDequeued':
-                    await writeFillDequeue(sig, eventId, safeData, slot, timestamp);
+                    // TODO: test after on-chain event is implemented
+                    const requester = safeData.requester;
+                    const solAmount = safeData.sol_amount;
+                    await writeFillDequeue(sig, eventId, requester, solAmount, slot, timestamp);
                     break;
                case 'DenyListModified':
-                    await writeDenyListAction(sig, eventId, safeData, slot, timestamp);
+                    // TODO: test after on-chain event is implemented
+                    const address = safeData.address;
+                    const actionType = safeData.action_type;
+                    await writeDenyListAction(sig, eventId, address, actionType, slot, timestamp);
                     break;
                default:
                     await writeSolanaEvent(sig, eventId, e.name, safeData, slot, timestamp);
