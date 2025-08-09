@@ -1,9 +1,9 @@
 use anchor_lang::{prelude::*, solana_program::program::set_return_data};
+use rust_decimal::{prelude::{FromPrimitive, ToPrimitive}, Decimal};
 
 use crate::{
     common::{
-        error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData,
-        utils::attestation_utils::verify_attestation,
+        constant::TOKEN_DECIMALS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData, utils::attestation_utils::verify_attestation
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
@@ -89,5 +89,13 @@ pub fn calculate_conversion_rate_with_oracle_price_data(
 
     let discount_rate = calculate_discount_rate(sol_demand_bps, steepness, max_discount_rate)?;
 
-    calculate_conversion_rate_with_discount(oracle_price_data.swap_rate, discount_rate)
+    let conversion_rate = calculate_conversion_rate_with_discount(oracle_price_data.swap_rate, discount_rate)?;
+
+    let conversion_rate_u64 = conversion_rate
+        .checked_mul(Decimal::from_u64(TOKEN_DECIMALS).ok_or(error!(DoubleZeroError::InvalidConversionRate))?)
+        .ok_or(error!(DoubleZeroError::InvalidConversionRate))?
+        .to_u64()
+        .ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
+
+    Ok(conversion_rate_u64)
 }
