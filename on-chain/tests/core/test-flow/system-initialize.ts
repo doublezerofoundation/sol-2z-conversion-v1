@@ -10,6 +10,7 @@ import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import {DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig} from "../utils/configuration-registry";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
+import {toggleSystemStateAndVerify} from "./system-state";
 
 export async function systemInitializeAndVerify(
     program: Program<ConverterProgram>,
@@ -114,8 +115,16 @@ export async function systemInitializeFail(
 }
 
 export async function initializeSystemIfNeeded(program) {
+    const adminKeypair: Keypair = getDefaultKeyPair();
     if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
-        const adminKeypair: Keypair = getDefaultKeyPair();
         await systemInitializeAndVerify(program, adminKeypair);
+
+    }
+    // make system to unhalted state
+    try {
+        await toggleSystemStateAndVerify(program, adminKeypair, false);
+        console.log("System was halted. Now it is open");
+    } catch (error) {
+        console.log("System is not in halted state");
     }
 }

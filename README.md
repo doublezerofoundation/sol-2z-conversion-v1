@@ -259,7 +259,7 @@ cargo run -p admin-cli -- mock-token-mint -a <AMOUNT> -t <DESTINATION_TOKEN_ACCO
 ### Mint to Protocol Treasury Token Account
 Mints specified amount of Mock 2Z token to protocol Treasury Account
 ```sh
-cargo run -p admin-cli -- mock-to-protocol-treasury -a <AMOUNT>
+cargo run -p admin-cli -- mint-to-mock-protocol-treasury -a <AMOUNT>
 ```
 - `-a`: 2Z Token amount to be minted.
 

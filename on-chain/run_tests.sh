@@ -8,6 +8,7 @@ UNIT_TESTS=(
     deny-list-test
     conversion-price-test
     admin-change-test
+    mock-transfer-program-test
 )
 
 TEST_TYPE="unit"

@@ -57,11 +57,10 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
                 actualAskPrice >= lowerBound && actualAskPrice <= upperBound,
                 `actualAskPrice (${actualAskPrice}) is not within ${errorMargin * 100}% of expectedAskPrice (${expectedAskPrice})`
             );
+            return Number(actualAskPrice);
         } catch (error) {
             assert.fail("Error decoding return data", error);
         }
-
-        break;
     }
 }
 

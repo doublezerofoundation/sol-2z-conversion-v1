@@ -127,9 +127,9 @@ impl<'info> BuySol<'info> {
         }
 
         let tokens_required = sol_quantity.checked_mul(bid_price)
-            .ok_or(DoubleZeroError::ArithmeticError)?
-            .checked_div(LAMPORTS_PER_SOL)
             .ok_or(DoubleZeroError::ArithmeticError)?;
+            // .checked_div(LAMPORTS_PER_SOL)
+            // .ok_or(DoubleZeroError::ArithmeticError)?;
 
         msg!("Tokens required {}", tokens_required);
 
@@ -182,7 +182,8 @@ impl<'info> BuySol<'info> {
 
         // Check storage limits
         let maximum_fills_storage = self.configuration_registry.max_fills_storage as usize;
-        if self.fills_registry.fills.len() > maximum_fills_storage {
+        msg!("Fill size {}", self.fills_registry.fills.len());
+        if self.fills_registry.fills.len() >= maximum_fills_storage {
             // Remove the oldest fill
             self.fills_registry.fills.remove(0);
         }
@@ -196,6 +197,7 @@ impl<'info> BuySol<'info> {
         emit!(TradeEvent {
             sol_amount: sol_quantity,
             token_amount: tokens_required,
+            bid_price,
             timestamp: clock.unix_timestamp,
             buyer: self.signer.key(),
             epoch: clock.epoch,
