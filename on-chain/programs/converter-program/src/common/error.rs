@@ -62,4 +62,7 @@ pub enum DoubleZeroError {
 
     #[msg("Invalid system state")]
     InvalidSystemState, // 6019
+
+    #[msg("Invalid conversion rate")]
+    InvalidConversionRate, // 6020
 }

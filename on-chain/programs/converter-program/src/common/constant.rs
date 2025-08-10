@@ -5,8 +5,11 @@ pub const MAX_DENY_LIST_SIZE: u64 = 50;
 pub const MAX_FILLS_LIST_SIZE: u64 = 50;
 pub const MAX_TRADE_HISTORY_SIZE: u64 = 50;
 
-// Decimal precision
-pub const DECIMAL_PRECISION: u64 = 10000;
+/// Decimal precision for basis points
+pub const DECIMAL_PRECISION: u64 = 100;
+
+/// 2Z Token decimals
+pub const TOKEN_DECIMALS: u64 = 1_000_000;
 
 // Account Size
 pub const DISCRIMINATOR_SIZE: usize = 8;
