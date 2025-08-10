@@ -14,7 +14,7 @@ cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
 no-log-ix-name = []
-idl-build = ["anchor-lang/idl-build"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
 
 
 [dependencies]
@@ -22,3 +22,4 @@ anchor-lang = { workspace = true }
 rust_decimal = { workspace = true }
 base64 = { workspace = true }
 brine-ed25519 = {workspace = true}
+anchor-spl = { workspace = true }

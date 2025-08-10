@@ -23,8 +23,8 @@ pub async fn handle() -> Result<(), Box<dyn Error>> {
     match cli.command {
 
         // Triggering SOL transaction
-        Some(Commands::BuySol { bid_price }) => {
-            buy_sol(bid_price).await
+        Some(Commands::BuySol { bid_price, from_address}) => {
+            buy_sol(bid_price, from_address).await
         }
 
         // Displays SOL quantity available per transaction

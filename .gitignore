@@ -102,3 +102,11 @@ temp_*
 
 # solana 
 test-ledger/
+
+.anchor
+target
+**/*.rs.bk
+test-ledger
+.yarn
+.keys
+logs

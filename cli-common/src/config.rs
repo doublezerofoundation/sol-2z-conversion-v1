@@ -11,6 +11,7 @@ pub struct Config {
     // Common Configs
     pub rpc_url: String,
     pub program_id: String,
+    pub double_zero_program_id: String,
     pub oracle_pubkey: Option<String>,
     pub sol_quantity: Option<u64>,
     pub slot_threshold: Option<u64>,

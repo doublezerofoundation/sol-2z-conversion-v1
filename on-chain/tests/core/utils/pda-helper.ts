@@ -4,6 +4,9 @@ import CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
 import PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
 import FILLS_REGISTRY_SEED = Seeds.FILLS_REGISTRY_SEED;
 import DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
+import MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
+import MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
+import MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
 
 export function getConfigurationRegistryPDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
@@ -36,4 +39,31 @@ export function getProgramDataAccountPDA(programId: PublicKey) {
         [programId.toBytes()],
         BPF_UPGRADEABLE_LOADER_ID
     )[0];
+}
+
+export function getMockVaultPDA(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_VAULT_SEED)],
+        mockProgramId
+    )[0]
+}
+export function getMockDoubleZeroTokenMintPDA(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_2Z_TOKEN_MINT_SEED)],
+        mockProgramId
+    )[0]
+}
+export function getMockProtocolTreasuryAccount(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_PROTOCOL_TREASURY_SEED)],
+        mockProgramId
+    )[0]
+}
+
+export function getMockProgramPDAs(mockProgramId: PublicKey) {
+    return {
+        tokenMint: getMockDoubleZeroTokenMintPDA(mockProgramId),
+        vault: getMockVaultPDA(mockProgramId),
+        protocolTreasury: getMockProtocolTreasuryAccount(mockProgramId),
+    }
 }

@@ -40,8 +40,8 @@ show_help() {
   echo "Build and deploy script for Converter Program"
   echo ""
   echo "OPTIONS:"
-  echo "  -w, --workspace Workspace      Set the workspace (on-chain, admin-cli, user-cli, integration-cli)."
-  echo "  -m, --mode Mode  -m, --mode Mode   Set the mode of operation ([deploy_only, build_only, build_and_deploy] for on-chain, [unit, e2e] for tests)."
+  echo "  -w, --workspace Workspace      Set the workspace (on-chain, admin-cli, user-cli, integration-cli, mock-double-zero-program)."
+  echo "  -m, --mode Mode  -m, --mode Mode   Set the mode of operation ([deploy_only, build_only, build_and_deploy] for on-chain & mock-double-zero-program, [unit, e2e] for tests)."
   echo "  -r, --restart-validator Start/ Restart validator (Only in the local net, Only for on-chain deployment)"
   echo "  -h, --help          Show this help message"
   echo ""
@@ -52,6 +52,13 @@ show_help() {
 
 handle_on_chain() {
   cmd=(./on-chain/build_and_deploy.sh)
+  [[ "$restart_validator" == true ]] && cmd+=("--restart-validator")
+  [[ -n "$mode" ]] && cmd+=("-m" "$mode")
+  "${cmd[@]}"
+}
+
+handle_mock_double_zero_program() {
+  cmd=(./mock-double-zero-program/build_and_deploy.sh)
   [[ "$restart_validator" == true ]] && cmd+=("--restart-validator")
   [[ -n "$mode" ]] && cmd+=("-m" "$mode")
   "${cmd[@]}"
@@ -110,6 +117,9 @@ done
 case "$workspace" in
   converter-program|on-chain)
     handle_on_chain
+    ;;
+  mock-double-zero-program)
+    handle_mock_double_zero_program
     ;;
   admin-cli)
     handle_cli_build "admin"

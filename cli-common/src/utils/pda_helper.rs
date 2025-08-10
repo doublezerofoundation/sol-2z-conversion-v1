@@ -1,11 +1,5 @@
-#[allow(deprecated)]
+use crate::seeds::{CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS, FILLS_REGISTRY_SEEDS, MOCK_2Z_TOKEN_MINT_SEED, MOCK_PROTOCOL_TREASURY_SEED, MOCK_VAULT_SEED, PROGRAM_STATE_SEEDS};
 use anchor_client::{anchor_lang::prelude::Pubkey, solana_sdk::bpf_loader_upgradeable};
-use crate::seeds::{
-    CONFIGURATION_REGISTRY_SEEDS,
-    DENY_LIST_REGISTRY_SEEDS,
-    FILLS_REGISTRY_SEEDS,
-    PROGRAM_STATE_SEEDS
-};
 
 pub fn get_configuration_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
@@ -48,3 +42,24 @@ pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
 // pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
 //     solana_loader_v3_interface::get_program_data_address(&program_id)
 // }
+
+pub fn get_vault_pda(transfer_program_id: Pubkey) ->  (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[MOCK_VAULT_SEED],
+        &transfer_program_id,
+    )
+}
+
+pub fn get_token_mint_pda(transfer_program_id: Pubkey) ->  (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[MOCK_2Z_TOKEN_MINT_SEED],
+        &transfer_program_id,
+    )
+}
+
+pub fn get_protocol_treasury_token_account_pda(transfer_program_id: Pubkey) ->  (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[MOCK_PROTOCOL_TREASURY_SEED],
+        &transfer_program_id,
+    )
+}

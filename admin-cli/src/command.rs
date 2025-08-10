@@ -70,4 +70,28 @@ pub enum Commands {
         #[arg(short = 'a', required = true)]
         admin: String,
     },
+
+    /// Initializes Mock Transfer Program Accounts
+    InitMockProgram,
+
+    /// Mints Mock 2Z token to specified address. If no address specified, defaults to ATA
+    MockTokenMint {
+        #[arg(short = 't')]
+        to_address: Option<String>,
+
+        #[arg(short = 'a', required = true)]
+        amount: String,
+    },
+
+    /// Mints Mock 2Z token to protocol Treasury Account
+    MintToMockProtocolTreasury {
+        #[arg(short = 'a', required = true)]
+        amount: String,
+    },
+
+    /// Airdrop to Mock Vault
+    AirdropToMockVault{
+        #[arg(short = 'a', required = true)]
+        amount: String,
+    },
 }
