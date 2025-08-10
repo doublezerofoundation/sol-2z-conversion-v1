@@ -76,7 +76,7 @@ echo "Starting container: $CONTAINER_NAME"
 docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   -p ${container_port}:${container_port} \
   --log-driver=awslogs \
-  --log-opt awslogs-group="/ec2/${environment}/$CONTAINER_NAME}" \
+  --log-opt awslogs-group="/ec2/${environment}/${container_name}" \
   --log-opt awslogs-region=$REGION \
   --log-opt awslogs-stream=$INSTANCE_ID \
   -v /opt/app/logs:/app/logs \
@@ -135,12 +135,12 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'EOF'
         "collect_list": [
           {
             "file_path": "/var/log/user-data.log",
-            "log_group_name": "/ec2/${environment}/user-data",
+            "log_group_name": "/ec2/${environment}/${container_name}/user_data",
             "log_stream_name": "{instance_id}"
           },
           {
             "file_path": "/opt/app/logs/*.log",
-            "log_group_name": "/ec2/${environment}/application",
+            "log_group_name": "/ec2/${environment}/${container_name}/application",
             "log_stream_name": "{instance_id}"
           }
         ]

@@ -35,11 +35,15 @@ check_docker() {
 
 build_image() {
     local image_tag=$1
+
+     local build_args="--build-arg AWS_REGION=${AWS_REGION:-us-east-1}"
+
+    # Only add build args if they are set
+    [ -n "$ENV" ] && build_args="$build_args --build-arg ENV=$ENV"
+
     log_info "Building Docker image..."
-
-    docker build --build-arg AWS_REGION=$AWS_REGION --build-arg ENV=$ENV -t $SERVICE_NAME:$BUILD_TAG .
+    docker build $build_args -t "$SERVICE_NAME:$BUILD_TAG" .
     docker tag "$SERVICE_NAME:$BUILD_TAG" "$image_tag"
-
     log_info "Image built successfully: $image_tag"
 }
 

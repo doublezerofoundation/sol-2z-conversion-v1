@@ -85,10 +85,6 @@ resource "aws_wafv2_web_acl" "this" {
     name     = "RateBasedRule"
     priority = 4
 
-    action {
-      block {}
-    }
-
     statement {
       rate_based_statement {
         limit              = 100
