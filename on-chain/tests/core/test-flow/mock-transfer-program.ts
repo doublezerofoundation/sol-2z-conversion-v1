@@ -2,13 +2,11 @@ import {
     getMockDoubleZeroTokenMintPDA, getMockProgramPDAs, getMockProtocolTreasuryAccount, getMockVaultPDA,
 } from "../utils/pda-helper";
 import {assert} from "chai";
-import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
-import {TOKEN_DECIMAL} from "../constants";
 import {getTokenBalance} from "../utils/token-utils";
-import {toggleSystemStateAndVerify} from "./system-state";
 
 export async function initializeMockTransferSystemAndVerify(
     program,
@@ -87,7 +85,11 @@ export async function mint2z(
     }
     const balanceAfterMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
 
-    assert.equal(balanceAfterMint, balanceBeforeMint + amount, "Balance should increase by mint")
+    assert.equal(
+        balanceAfterMint,
+        Math.floor(balanceBeforeMint + amount),
+        "Balance should increase by mint"
+    );
 }
 export async function buySol(
     program,

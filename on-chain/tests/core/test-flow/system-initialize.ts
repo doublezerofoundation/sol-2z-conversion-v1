@@ -123,8 +123,7 @@ export async function initializeSystemIfNeeded(program) {
     // make system to unhalted state
     try {
         await toggleSystemStateAndVerify(program, adminKeypair, false);
-        console.log("System was halted. Now it is open");
     } catch (error) {
-        console.log("System is not in halted state");
+        // system already in active state
     }
 }

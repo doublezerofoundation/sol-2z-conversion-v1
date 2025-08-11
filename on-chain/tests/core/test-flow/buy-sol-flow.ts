@@ -1,6 +1,6 @@
 import {getFillsRegistryPDA, getMockProgramPDAs} from "../utils/pda-helper";
 import {assert, expect} from "chai";
-import {Keypair, PublicKey} from "@solana/web3.js";
+import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {BN, Program} from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
 import {getTokenBalance} from "../utils/token-utils";
@@ -51,7 +51,7 @@ export async function buySolAndVerify(
         assert.fail("Buy Sol  failed");
     }
 
-    const tokenBalanceChange = Number(DEFAULT_CONFIGS.solQuantity) * bidPrice;
+    const tokenBalanceChange = Number(DEFAULT_CONFIGS.solQuantity) * bidPrice / LAMPORTS_PER_SOL;
     const solBalanceChange = Number(DEFAULT_CONFIGS.solQuantity);
     const tokenBalanceAfter = await getTokenBalance(program.provider.connection, senderTokenAccount);
     const solBalanceAfter = await program.provider.connection.getBalance(signer.publicKey);
@@ -114,7 +114,6 @@ export async function buySolFail(
             .rpc();
     } catch (error) {
         console.log("Buy SOL is rejected as expected");
-        console.log(error);
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "Buy SOL is rejected as expected");
         return; // Exit early — test passes
