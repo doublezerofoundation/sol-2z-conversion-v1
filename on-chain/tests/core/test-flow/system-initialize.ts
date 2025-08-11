@@ -82,7 +82,7 @@ export async function systemInitializeAndVerify(
 }
 
 export async function systemInitializeFail(
-    program,
+    program: Program<ConverterProgram>,
     adminKeyPair: Keypair = getDefaultKeyPair(),
     configRegistryValues: SystemConfig = DEFAULT_CONFIGS,
     expectedError: string
@@ -114,7 +114,7 @@ export async function systemInitializeFail(
     assert.fail("It was able to initialize system");
 }
 
-export async function initializeSystemIfNeeded(program) {
+export async function initializeSystemIfNeeded(program: Program<ConverterProgram>) {
     const adminKeypair: Keypair = getDefaultKeyPair();
     if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
         await systemInitializeAndVerify(program, adminKeypair);
@@ -122,7 +122,7 @@ export async function initializeSystemIfNeeded(program) {
     }
     // make system to unhalted state
     try {
-        await toggleSystemStateAndVerify(program, adminKeypair, false);
+        await toggleSystemStateAndVerify(program, false, adminKeypair);
     } catch (error) {
         // system already in active state
     }

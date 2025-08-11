@@ -15,7 +15,7 @@ describe("Config Update Tests", async () => {
 
   it("Non admin user should not be able to update config", async () => {
     const nonAdminUserKeyPair = await getRandomKeyPair(program.provider.connection);
-    await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey);
+    await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey, 5000000000);
     await updateConfigsAndVerifyFail(
       program,
       DEFAULT_CONFIGS,

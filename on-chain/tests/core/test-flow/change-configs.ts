@@ -76,7 +76,7 @@ export const updateConfigsAndVerifyFail = async (
         .signers([adminKeypair])
         .rpc();
     } catch(e) {
-        expect((new Error(e!.toString())).message).to.include(expectedError);
+        expect(e!.toString()).to.include(expectedError);
         assert.ok(true, "Config update failed as expected");
         return; // Exit early — test passes
     }
