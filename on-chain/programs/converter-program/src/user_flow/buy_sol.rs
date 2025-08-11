@@ -19,14 +19,15 @@ use crate::{
         },
         structs::OraclePriceData,
     },
-    state::program_state::ProgramStateAccount,
+    state::{
+        trade_registry::TradeRegistry,
+        program_state::ProgramStateAccount
+    },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
-    fills_registry::fills_registry::{Fill, FillsRegistry},
+    fills_registry::fills_registry::FillsRegistry,
     discount_rate::calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
 };
-use crate::common::constant::MAX_TRADE_HISTORY_SIZE;
-use crate::state::program_state::TradeHistory;
 
 #[derive(Accounts)]
 pub struct BuySol<'info> {
@@ -48,9 +49,15 @@ pub struct BuySol<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixes::FillsRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.fills_registry_bump,
     )]
     pub fills_registry: Account<'info, FillsRegistry>,
+    #[account(
+        mut,
+        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
+        bump = program_state.bump_registry.trade_registry_bump,
+    )]
+    pub trade_registry: Account<'info, TradeRegistry>,
     #[account(
         mut,
         token::mint = double_zero_mint,
@@ -104,7 +111,7 @@ impl<'info> BuySol<'info> {
         // call util function to get current ask price
         let ask_price = calculate_conversion_rate_with_oracle_price_data(
             oracle_price_data,
-            &self.program_state.trade_history_list,
+            &self.trade_registry.trade_history_list,
             sol_quantity,
             self.configuration_registry.steepness,
             self.configuration_registry.max_discount_rate,
@@ -194,7 +201,7 @@ impl<'info> BuySol<'info> {
         });
 
         // Adding it to Trade History
-        self.program_state.update_trade_history(
+        self.trade_registry.update_trade_registry(
             clock.epoch,
             sol_quantity
         )?;

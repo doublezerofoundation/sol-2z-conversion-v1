@@ -1,6 +1,5 @@
-use crate::common::constant::{MAX_FILLS_LIST_SIZE, MAX_TRADE_HISTORY_SIZE};
+use crate::common::constant::MAX_FILLS_LIST_SIZE;
 use anchor_lang::prelude::*;
-use crate::state::program_state::TradeHistory;
 
 #[account]
 #[derive(InitSpace, Debug)]

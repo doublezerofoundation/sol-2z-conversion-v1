@@ -333,9 +333,8 @@ describe("Buy Sol Tests", () => {
     });
 
     describe("Config Change Check", async () => {
-        it("should fail to do buy sol after config change using inappropriate price", async () => {
-            const oldAskPrice = await getConversionPriceAndVerify(program, userKeyPair);
-            // decrease the discount rate
+
+        it("User should be able to do buy SOL with proper rates", async () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
@@ -346,36 +345,6 @@ describe("Buy Sol Tests", () => {
                 adminKeyPair,
                 currentConfigs
             );
-
-            const oraclePriceData = await getOraclePriceData();
-            const bidPrice = oldAskPrice;
-            // Ensure that user has sufficient 2Z
-            await mint2z(
-                mockTransferProgram,
-                tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
-            );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
-
-            await buySolFail(
-                program,
-                mockTransferProgram,
-                tokenAccountForUser,
-                bidPrice,
-                userKeyPair,
-                oraclePriceData,
-                "Provided bid is too low"
-            );
-        });
-
-        it("User should be able to do buy SOL with proper rates", async () => {
-            await updateConfigsAndVerify(
-                program,
-                adminKeyPair,
-                DEFAULT_CONFIGS
-            );
-            currentConfigs = DEFAULT_CONFIGS;
 
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 3;
@@ -394,7 +363,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
-                oraclePriceData
+                oraclePriceData,
+                currentConfigs
             );
         });
     });

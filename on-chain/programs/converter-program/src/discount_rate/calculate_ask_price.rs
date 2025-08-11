@@ -10,7 +10,10 @@ use crate::{
     discount_rate::discount_utils::{
         calculate_conversion_rate_with_discount, calculate_discount_rate, calculate_sol_demand,
     },
-    state::program_state::{ProgramStateAccount, TradeHistory},
+    state::{
+        program_state::ProgramStateAccount,
+        trade_registry::{TradeHistory, TradeRegistry}
+    },
 };
 
 #[derive(Accounts)]
@@ -21,22 +24,27 @@ pub struct CalculateAskPrice<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
 
     #[account(
         mut,
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
 
     #[account(
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
+    #[account(
+        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
+        bump = program_state.bump_registry.trade_registry_bump,
+    )]
+    pub trade_registry: Account<'info, TradeRegistry>,
 }
 
 impl<'info> CalculateAskPrice<'info> {
@@ -60,7 +68,7 @@ impl<'info> CalculateAskPrice<'info> {
         // Calculate conversion rate
         let conversion_rate = calculate_conversion_rate_with_oracle_price_data(
             oracle_price_data,
-            &self.program_state.trade_history_list,
+            &self.trade_registry.trade_history_list,
             self.configuration_registry.sol_quantity,
             self.configuration_registry.steepness,
             self.configuration_registry.max_discount_rate,

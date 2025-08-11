@@ -7,7 +7,8 @@ pub enum SeedPrefixes {
     ConfigurationRegistry,
     ProgramState,
     DenyListRegistry,
-    FillsRegistry
+    FillsRegistry,
+    TradeRegistry,
 }
 
 impl SeedPrefixes {
@@ -20,6 +21,7 @@ impl SeedPrefixes {
             SeedPrefixes::ProgramState => SeedPrefixVersions::ProgramState,
             SeedPrefixes::DenyListRegistry => SeedPrefixVersions::DenyListRegistry,
             SeedPrefixes::FillsRegistry => SeedPrefixVersions::FillsRegistry,
+            SeedPrefixes::TradeRegistry => SeedPrefixVersions::TradeRegistry,
         };
         current_version.as_bytes()
     }

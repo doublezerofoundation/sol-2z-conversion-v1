@@ -9,7 +9,10 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
-    state::program_state::ProgramStateAccount,
+    state::{
+        program_state::ProgramStateAccount,
+        trade_registry::TradeRegistry
+    },
     program::ConverterProgram
 };
 
@@ -32,6 +35,14 @@ pub struct InitializeSystem<'info> {
         bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
+    #[account(
+        init,
+        payer = authority,
+        space = DISCRIMINATOR_SIZE + TradeRegistry::INIT_SPACE,
+        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
+        bump,
+    )]
+    pub trade_registry: Account<'info, TradeRegistry>,
     #[account(
         init,
         payer = authority,
@@ -96,6 +107,7 @@ impl<'info> InitializeSystem<'info> {
         program_state_bump: u8,
         fills_registry_bump: u8,
         deny_list_registry_bump: u8,
+        trade_registry_bump: u8,
     )-> Result<()> {
 
         let bump_registry = &mut self.program_state.bump_registry;
@@ -103,6 +115,7 @@ impl<'info> InitializeSystem<'info> {
         bump_registry.program_state_bump = program_state_bump;
         bump_registry.fills_registry_bump = fills_registry_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
+        bump_registry.trade_registry_bump = trade_registry_bump;
         Ok(())
 
     }

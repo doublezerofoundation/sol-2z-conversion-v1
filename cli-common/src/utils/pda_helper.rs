@@ -1,4 +1,4 @@
-use crate::seeds::{CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS, FILLS_REGISTRY_SEEDS, MOCK_2Z_TOKEN_MINT_SEED, MOCK_PROTOCOL_TREASURY_SEED, MOCK_VAULT_SEED, PROGRAM_STATE_SEEDS};
+use crate::seeds::{CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS, FILLS_REGISTRY_SEEDS, MOCK_2Z_TOKEN_MINT_SEED, MOCK_PROTOCOL_TREASURY_SEED, MOCK_VAULT_SEED, PROGRAM_STATE_SEEDS, TRADE_REGISTRY_SEED};
 use anchor_client::{anchor_lang::prelude::Pubkey, solana_sdk::bpf_loader_upgradeable};
 
 pub fn get_configuration_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
@@ -10,6 +10,13 @@ pub fn get_configuration_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
 pub fn get_program_state_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
         &[PROGRAM_STATE_SEEDS],
+        &program_id,
+    )
+}
+
+pub fn get_trade_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
+    Pubkey::find_program_address(
+        &[TRADE_REGISTRY_SEED],
         &program_id,
     )
 }

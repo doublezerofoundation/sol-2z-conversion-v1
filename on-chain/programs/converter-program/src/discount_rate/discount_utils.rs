@@ -9,7 +9,7 @@ use crate::{
         constant::{DECIMAL_PRECISION, TOKEN_DECIMALS},
         error::DoubleZeroError,
     },
-    state::program_state::TradeHistory,
+    state::trade_registry::TradeHistory,
 };
 
 /// Calculate the sol demand
