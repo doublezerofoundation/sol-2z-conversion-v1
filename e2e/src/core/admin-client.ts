@@ -18,7 +18,7 @@ export class AdminClient {
     }
 
     public async updateConfigsCommand(): Promise<void> {
-        await this.session.executeCliCommand(`update-configs`);
+        await this.session.executeCliCommand(`update-config`);
     }
 
     public async viewConfigCommand(): Promise<string> {

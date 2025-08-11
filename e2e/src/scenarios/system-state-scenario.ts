@@ -17,12 +17,12 @@ export class SystemStateScenario extends CommonScenario {
     public async toggleSystemStateAndVerify(setHalted: boolean) {
         await this.admin.toggleSystemStateCommand(setHalted);
         const state = await this.admin.viewSystemStateCommand();
-        expect(state).to.contain(setHalted.toString());
+        expect(state).to.contain(setHalted ? "Paused" : "Active");
     }
 
-    public async toggleSystemStateAndVerifyFail(expectedError: string) {
+    public async toggleSystemStateAndVerifyFail(setHalted: boolean, expectedError: string) {
         try {
-            await this.admin.toggleSystemStateCommand(true);
+            await this.admin.toggleSystemStateCommand(setHalted);
             assert.fail("Expected toggle system state to fail");
         } catch (error) {
             this.handleExpectedError(error, expectedError);

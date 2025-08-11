@@ -8,8 +8,7 @@ export interface SystemConfig {
     priceMaximumAge: BN,
     maxFillsStorage: BN,
     steepness: BN,
-    maxDiscountRate: BN,
-    authorizedDequeuers?: PublicKey[],
+    maxDiscountRate: BN
 }
 
 export interface SystemState {

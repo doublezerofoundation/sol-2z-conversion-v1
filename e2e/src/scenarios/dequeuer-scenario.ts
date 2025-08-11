@@ -1,7 +1,7 @@
 import { CommonScenario } from "./common-scenario";
 import { AdminClient } from "../core/admin-client";
 import { assert, expect } from "chai";
-import { getConfigurationRegistryAccount } from "../core/utils/account-helper";
+import { getConfigurationRegistryAccount, getDequeuerList } from "../core/utils/account-helper";
 import { PublicKey } from "@solana/web3.js";
 
 export class DequeuerScenario extends CommonScenario {
@@ -11,10 +11,11 @@ export class DequeuerScenario extends CommonScenario {
 
     public async addDequeuerAndVerify(dequeuer: string) {
         await this.admin.addDequeuerCommand(dequeuer);
-        const dequeuers = (await getConfigurationRegistryAccount(this.admin.session.getProgram())).authorizedDequeuers;
+        let dequeuers = await getDequeuerList(this.admin.session.getProgram());
 
         if (dequeuers) {
-            expect(dequeuers).to.contain(new PublicKey(dequeuer));
+            let dequeuerKeys = dequeuers.map(dequeuer => dequeuer.toString());
+            expect(dequeuerKeys).to.contain(dequeuer);
         } else {
             assert.fail("Dequeuers are not initialized");
         }
@@ -22,7 +23,7 @@ export class DequeuerScenario extends CommonScenario {
 
     public async removeDequeuerAndVerify(dequeuer: string) {
         await this.admin.removeDequeuerCommand(dequeuer);
-        const dequeuers = (await getConfigurationRegistryAccount(this.admin.session.getProgram())).authorizedDequeuers;
+        const dequeuers = await getDequeuerList(this.admin.session.getProgram());
 
         if (dequeuers) {
             expect(dequeuers).not.to.contain(new PublicKey(dequeuer));
