@@ -1,13 +1,14 @@
-import { Connection, TransactionError } from '@solana/web3.js';
+import { Connection, TransactionError, PublicKey } from '@solana/web3.js';
 import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
 import idlJson from '../../idl/converter_program.json';
-import { RPC_URL, PROGRAM_ID } from './config';
+
+import Config from '../utils/config';
 import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb';
 
-const connection = new Connection(RPC_URL, 'confirmed');
+const connection = new Connection(Config.RPC_URL, 'confirmed');
 const idl        = idlJson as Idl;
 const coder      = new BorshCoder(idl);
-const parser     = new EventParser(PROGRAM_ID, coder);
+const parser     = new EventParser(new PublicKey(Config.PROGRAM_ID), coder);
 
 export async function processTx(sig: string) {
      const tx = await connection.getTransaction(sig, { commitment: 'confirmed' });
@@ -32,10 +33,16 @@ export async function processTx(sig: string) {
           const safeData = serializeForDynamo(e.data);
           switch (e.name) {
                case 'FillDequeued':
-                    await writeFillDequeue(sig, eventId, safeData, slot, timestamp);
+                    // TODO: test after on-chain event is implemented
+                    const requester = safeData.requester;
+                    const solAmount = safeData.sol_amount;
+                    await writeFillDequeue(sig, eventId, requester, solAmount, slot, timestamp);
                     break;
                case 'DenyListModified':
-                    await writeDenyListAction(sig, eventId, safeData, slot, timestamp);
+                    // TODO: test after on-chain event is implemented
+                    const address = safeData.address;
+                    const actionType = safeData.action_type;
+                    await writeDenyListAction(sig, eventId, address, actionType, slot, timestamp);
                     break;
                default:
                     await writeSolanaEvent(sig, eventId, e.name, safeData, slot, timestamp);
