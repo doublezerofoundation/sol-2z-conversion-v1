@@ -51,6 +51,7 @@ pub fn calculate_discount_rate(
     steepness_bps: u64,
     max_discount_rate_bps: u64,
 ) -> Result<Decimal> {
+    // Convert steepness to decimal
     let steepness_decimal = Decimal::from_u64(steepness_bps)
         .ok_or(error!(DoubleZeroError::InvalidSteepness))?
         .checked_div(
@@ -58,10 +59,13 @@ pub fn calculate_discount_rate(
                 .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?,
         )
         .ok_or(error!(DoubleZeroError::InvalidSteepness))?;
+
+    // Dmax = max_discount_rate_bps / (DECIMAL_PRECISION * 100)
+    // 0 <= Dmax <= 1
     let max_discount_rate_decimal = Decimal::from_u64(max_discount_rate_bps)
         .ok_or(error!(DoubleZeroError::InvalidMaxDiscountRate))?
         .checked_div(
-            Decimal::from_u64(DECIMAL_PRECISION)
+            Decimal::from_u64(DECIMAL_PRECISION * 100)
                 .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?,
         )
         .ok_or(error!(DoubleZeroError::InvalidMaxDiscountRate))?;
