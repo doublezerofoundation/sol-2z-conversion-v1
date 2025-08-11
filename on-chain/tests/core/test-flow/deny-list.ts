@@ -45,7 +45,7 @@ export async function addToDenyListAndVerify(
 }
 
 export async function addToDenyListShouldFail(
-    program,
+    program: Program<ConverterProgram>,
     addressToAdd: PublicKey,
     expectedError: string,
     authorityKeyPair: Keypair = getDefaultKeyPair()
@@ -66,7 +66,7 @@ export async function addToDenyListShouldFail(
 }
 
 export async function removeFromDenyListAndVerify(
-    program,
+    program: Program<ConverterProgram>,
     addressToRemove: PublicKey,
     authorityKeyPair: Keypair = getDefaultKeyPair()
 ) {
@@ -78,7 +78,7 @@ export async function removeFromDenyListAndVerify(
     const beforeUpdateCount = denyListBefore.updateCount;
     
     // Verify address is in the list
-    const isDenied = denyListBefore.deniedAddresses.some(addr => addr.equals(addressToRemove));
+    const isDenied = denyListBefore.deniedAddresses.some((addr: { equals: (arg0: PublicKey) => any; }) => addr.equals(addressToRemove));
     assert.isTrue(isDenied, "Address should be in deny list before removal");
     
     // Remove from deny list
@@ -105,7 +105,7 @@ export async function removeFromDenyListAndVerify(
 }
 
 export async function removeFromDenyListShouldFail(
-    program,
+    program: Program<ConverterProgram>,
     addressToRemove: PublicKey,
     expectedError: string,
     authorityKeyPair: Keypair = getDefaultKeyPair()
@@ -124,13 +124,13 @@ export async function removeFromDenyListShouldFail(
     }
 }
 
-export async function fetchDenyListRegistry(program) {
+export async function fetchDenyListRegistry(program: Program<ConverterProgram>) {
     const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
     return await program.account.denyListRegistry.fetch(denyListRegistryPda);
 }
 
 export async function verifyDenyListState(
-    program,
+    program: Program<ConverterProgram>,
     expectedAddresses: PublicKey[],
     expectedUpdateCount?: number
 ) {

@@ -153,7 +153,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "A raw constraint was violated",
+                "Address not found in Deny List",
                 adminKeyPair
             );
         });
@@ -316,7 +316,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "A raw constraint was violated",
+                "Address not found in Deny List",
                 adminKeyPair
             );
             
