@@ -81,11 +81,11 @@ impl<'info> CalculateAskPrice<'info> {
 pub fn calculate_conversion_rate_with_oracle_price_data(
     oracle_price_data: OraclePriceData,
     trade_history_list: &Vec<TradeHistory>,
-    sol_quantity: u64,
+    _sol_quantity: u64, // TODO: check usage when implementing price formula
     steepness: u64,
     max_discount_rate: u64,
 ) -> Result<u64> {
-    let sol_demand_bps = calculate_sol_demand(trade_history_list, sol_quantity)?;
+    let sol_demand_bps = calculate_sol_demand(trade_history_list)?;
 
     let discount_rate = calculate_discount_rate(sol_demand_bps, steepness, max_discount_rate)?;
 

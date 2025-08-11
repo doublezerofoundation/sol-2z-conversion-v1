@@ -25,6 +25,8 @@ use crate::{
     fills_registry::fills_registry::{Fill, FillsRegistry},
     discount_rate::calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
 };
+use crate::common::constant::MAX_TRADE_HISTORY_SIZE;
+use crate::state::program_state::TradeHistory;
 
 #[derive(Accounts)]
 pub struct BuySol<'info> {
@@ -172,26 +174,14 @@ impl<'info> BuySol<'info> {
         )?;
 
         // Add it to fills registry
-        let fill = Fill {
-            sol_in: sol_quantity,
-            token_2z_out: tokens_required,
-            timestamp: clock.unix_timestamp,
-            buyer: self.signer.key(),
-            epoch: clock.epoch,
-        };
-
-        // Check storage limits
-        let maximum_fills_storage = self.configuration_registry.max_fills_storage as usize;
-        msg!("Fill size {}", self.fills_registry.fills.len());
-        if self.fills_registry.fills.len() >= maximum_fills_storage {
-            // Remove the oldest fill
-            self.fills_registry.fills.remove(0);
-        }
-
-        // Update fills registry
-        self.fills_registry.fills.push(fill);
-        self.fills_registry.total_sol_pending += sol_quantity;
-        self.fills_registry.total_2z_pending += tokens_required;
+        self.fills_registry.add_fill_to_fills_registry(
+            sol_quantity,
+            tokens_required,
+            clock.unix_timestamp,
+            self.signer.key(),
+            clock.epoch,
+            self.configuration_registry.max_fills_storage as usize,
+        )?;
 
         msg!("Buy SOL is successful");
         emit!(TradeEvent {
@@ -202,6 +192,12 @@ impl<'info> BuySol<'info> {
             buyer: self.signer.key(),
             epoch: clock.epoch,
         });
+
+        // Adding it to Trade History
+        self.program_state.update_trade_history(
+            clock.epoch,
+            sol_quantity
+        )?;
         Ok(())
     }
 }
