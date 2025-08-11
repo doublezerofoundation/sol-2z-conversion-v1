@@ -6,7 +6,7 @@
   "sol_quantity": 25000000000,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "max_fills_storage": 234,
+  "max_fills_storage": 50,
   "skip_preflight": false,
   "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
   "steepness": 90,

@@ -13,7 +13,7 @@ import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData} from "./core/utils/price-oracle";
-import {TOKEN_DECIMAL} from "./core/constants";
+import {BPS, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
@@ -338,8 +338,8 @@ describe("Buy Sol Tests", () => {
             // decrease the discount rate
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
-                solQuantity: new anchor.BN(21),
-                maxDiscountRate: new anchor.BN(15),
+                solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
+                maxDiscountRate: new anchor.BN(15 * BPS),
             };
             await updateConfigsAndVerify(
                 program,
@@ -375,6 +375,8 @@ describe("Buy Sol Tests", () => {
                 adminKeyPair,
                 DEFAULT_CONFIGS
             );
+            currentConfigs = DEFAULT_CONFIGS;
+
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 3;
             // Ensure that user has sufficient 2Z
@@ -399,7 +401,13 @@ describe("Buy Sol Tests", () => {
 
     describe("Invalid Attestation Check", async () => {
         it("should fail to do buy sol with invalid signature", async () => {
-            // Make system to halt stage
+            await updateConfigsAndVerify(
+                program,
+                adminKeyPair,
+                DEFAULT_CONFIGS
+            );
+            currentConfigs = DEFAULT_CONFIGS;
+
             let oraclePriceData = await getOraclePriceData();
 
             // manually making changes
