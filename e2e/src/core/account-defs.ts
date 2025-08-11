@@ -1,6 +1,5 @@
 import { BN } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import { CommonScenario } from "../scenarios/common-scenario";
 
 export interface SystemConfig {
     oraclePubkey: PublicKey,
@@ -10,6 +9,7 @@ export interface SystemConfig {
     maxFillsStorage: BN,
     steepness: BN,
     maxDiscountRate: BN,
+    authorizedDequeuers?: PublicKey[],
 }
 
 export interface SystemState {
@@ -29,6 +29,12 @@ export interface BumpRegistry {
 export interface TradeHistory {
     epoch: BN,
     numOfTrades: BN,
+}
+
+export interface DenyListRegistry {
+    deniedAddresses: PublicKey[],
+    lastUpdated: BN,
+    updateCount: BN,
 }
 
 export interface Test {

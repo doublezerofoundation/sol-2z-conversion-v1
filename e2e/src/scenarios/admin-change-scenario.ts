@@ -10,19 +10,19 @@ export class AdminChangeScenario extends CommonScenario {
     }
 
     public async setAdminAndVerify(admin: PublicKey): Promise<void> {
-        await this.deployer.setAdminCommand(admin.toString());
+        await this.admin.setAdminCommand(admin.toString());
 
         // Verify that the admin is set
-        const state = await getProgramStateAccount(this.deployer.session.getProgram());
+        const state = await getProgramStateAccount(this.admin.session.getProgram());
         expect(state.admin.toString()).to.equal(admin.toString());
     }
 
     public async setAdminAndVerifyFail(admin: PublicKey, expectedError: string): Promise<void> {
         try {
-            await this.deployer.setAdminCommand(admin.toString());
+            await this.admin.setAdminCommand(admin.toString());
             assert.fail("Expected error not thrown");
         } catch (error) {
-            this.handleError(error, expectedError);
+            this.handleExpectedError(error, expectedError);
         }
     }
 }

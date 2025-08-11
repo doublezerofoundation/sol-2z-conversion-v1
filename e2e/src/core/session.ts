@@ -57,14 +57,18 @@ export abstract class Session {
         this.program = new anchor.Program(idl, provider);
     }
 
-    public async initialize(): Promise<void> {
-        // Airdrop SOL to the keypair
+    public async logSessionInfo(): Promise<void> {
         console.log("--------------------------------");
-        console.log(`CREATING SESSION FOR ${this.sessionType}`);
+        console.log(`${this.sessionType} Session Info`);
         console.log("RPC URL: ", this.rpcUrl);
         console.log("Keypair: ", this.keypair.publicKey.toBase58());
         console.log("Program ID: ", this.program.programId.toString());
+        console.log("Execute Dir: ", this.executeDir);
         console.log("--------------------------------");
+    }
+
+    public async initialize(): Promise<void> {
+        // Airdrop SOL to the keypair
         await this.program.provider.connection.requestAirdrop(this.keypair.publicKey, 100 * anchor.web3.LAMPORTS_PER_SOL);
     }
 

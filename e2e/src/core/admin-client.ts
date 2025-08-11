@@ -52,4 +52,13 @@ export class AdminClient {
     public async viewDenyListCommand(): Promise<string> {
         return await this.session.executeCliCommand(`view-deny-list`);
     }
+
+    public async addDequeuerCommand(dequeuer: string): Promise<void> {
+        await this.session.executeCliCommand(`add-dequeuer -a ${dequeuer}`);
+    }
+
+    public async removeDequeuerCommand(dequeuer: string): Promise<void> {
+        await this.session.executeCliCommand(`remove-dequeuer -a ${dequeuer}`);
+    }
+
 }

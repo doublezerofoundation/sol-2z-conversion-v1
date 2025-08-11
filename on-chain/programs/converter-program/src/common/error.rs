@@ -65,4 +65,7 @@ pub enum DoubleZeroError {
 
     #[msg("Invalid conversion rate")]
     InvalidConversionRate, // 6020
+
+    #[msg("Address not found in Deny List")]
+    AddressNotInDenyList, // 6021
 }

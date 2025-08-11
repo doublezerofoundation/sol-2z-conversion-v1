@@ -11,11 +11,11 @@ export class InitializeScenario extends CommonScenario {
     }
 
     public async initializeSystemAndVerify(): Promise<void> {
-        await this.deployer.initializeSystemCommand();
+        await this.admin.initializeSystemCommand();
 
         // Verify that the system is initialized
-        const program = this.deployer.session.getProgram();
-        const connection = this.deployer.session.getConnection();
+        const program = this.admin.session.getProgram();
+        const connection = this.admin.session.getConnection();
         const pdas = await Promise.all([
             getConfigurationRegistryPDA(program.programId),
             getProgramStatePDA(program.programId),
@@ -39,10 +39,10 @@ export class InitializeScenario extends CommonScenario {
 
     public async initializeSystemAndVerifyFail(expectedError: string = ""): Promise<void> {
         try {
-            await this.deployer.initializeSystemCommand();
+            await this.admin.initializeSystemCommand();
             assert.fail("System should not be initialized");
         } catch (error) {
-            this.handleError(error, expectedError);
+            this.handleExpectedError(error, expectedError);
         }
     }
 }

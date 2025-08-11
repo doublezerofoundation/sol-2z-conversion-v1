@@ -4,10 +4,8 @@ import { CommonScenario } from "./common-scenario";
 import { assert, expect } from "chai";
 
 export class DenyListScenario extends CommonScenario {
-    private admin: AdminClient;
-    constructor(deployer: AdminClient, admin: AdminClient) {
+    constructor(deployer: AdminClient) {
         super(deployer);
-        this.admin = admin;
     }
 
     public async addUserToDenyListAndVerify(user: PublicKey): Promise<void> {
@@ -31,7 +29,7 @@ export class DenyListScenario extends CommonScenario {
             await this.admin.addUserToDenyListCommand(user.toString());
             assert.fail("Expected add user to deny list to fail");
         } catch (error) {
-            this.handleError(error, expectedError);
+            this.handleExpectedError(error, expectedError);
         }
     }
 
@@ -40,7 +38,7 @@ export class DenyListScenario extends CommonScenario {
             await this.admin.removeUserFromDenyListCommand(user.toString());
             assert.fail("Expected remove user from deny list to fail");
         } catch (error) {
-            this.handleError(error, expectedError);
+            this.handleExpectedError(error, expectedError);
         }
     }
 }
