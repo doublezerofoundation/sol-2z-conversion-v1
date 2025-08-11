@@ -42,7 +42,7 @@ export class InitializeScenario extends CommonScenario {
             await this.deployer.initializeSystemCommand();
             assert.fail("System should not be initialized");
         } catch (error) {
-            expect(error!.toString()).to.contain(expectedError);
+            this.handleError(error, expectedError);
         }
     }
 }

@@ -6,13 +6,15 @@ import { getTestName } from "../core/utils/test-helper";
 import { DEFAULT_KEYPAIR_PATH } from "../core/constants";
 import { DenyListScenario } from "../scenarios/deny-list-scenario";
 import { PublicKey } from "@solana/web3.js";
+import { UserClient } from "../core/user-client";
+import { AdminChangeScenario } from "../scenarios/admin-change-scenario";
 
 const initializationTests: Test[] = [
     {
         name: "non_deployer_init_system_fail",
         description: "Non-deployer should not be able to initialize the system",
         execute: async (scenario: any, invalidScenario: InitializeScenario) => {
-            await invalidScenario.initializeSystemAndVerifyFail("A raw constraint was violated");
+            await invalidScenario.initializeSystemAndVerifyFail("program error");
         }
     },
     {
@@ -26,9 +28,33 @@ const initializationTests: Test[] = [
         name: "deployer_reinit_system_fail",
         description: "Deployer should not be able to re-initialize the system",
         execute: async (scenario: InitializeScenario) => {
-            await scenario.initializeSystemAndVerifyFail("already in use");
+            await scenario.initializeSystemAndVerifyFail("program error");
         }
     },
+]
+
+const setAdminTests: Test[] = [
+    {
+        name: "set_admin_fail",
+        description: "Non-deployer should not be able to set a new admin",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await invalidScenario.setAdminAndVerifyFail(admin, "program error");
+        }
+    },
+    {
+        name: "set_admin",
+        description: "Deployer should be able to set a new admin",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await scenario.setAdminAndVerify(admin);
+        }
+    },
+    {
+        name: "admin_cannot_set_admin",
+        description: "Admin cannot change admin to another admin",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await invalidScenario.setAdminAndVerifyFail(admin, "program error");
+        }
+    }
 ]
 
 const denyListTests: Test[] = [
@@ -43,7 +69,7 @@ const denyListTests: Test[] = [
         name: "deny_list_add_user_fail",
         description: "Non-admin should not be able to add a user to the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
-            await invalidScenario.addUserToDenyListAndVerifyFail(user, "A raw constraint was violated");
+            await invalidScenario.addUserToDenyListAndVerifyFail(user, "program error");
         }
     },
     {
@@ -87,10 +113,12 @@ const denyListTests: Test[] = [
 describe("Admin E2E Tests", () => {
     let deployer: AdminClient;
     let nonDeployerAdmin: AdminClient;
+    let invalidAdmin: AdminClient;
 
     before(async () => {
         deployer = await AdminClient.create(DEFAULT_KEYPAIR_PATH);
         nonDeployerAdmin = await AdminClient.create()
+        invalidAdmin = await AdminClient.create()
     });
 
     describe("System Initialization", () => {
@@ -108,11 +136,33 @@ describe("Admin E2E Tests", () => {
         }
     });
 
+    describe("Admin Change", () => {
+        let deployerScenario: AdminChangeScenario;
+        let adminScenario: AdminChangeScenario;
+        before(async () => {
+            deployerScenario = new AdminChangeScenario(deployer);
+            adminScenario = new AdminChangeScenario(nonDeployerAdmin);
+        });
+        for (const [i, test] of setAdminTests.entries()) {
+            it(getTestName("SET_ADMIN", i, test.description), async () => {
+                await test.execute(deployerScenario, adminScenario, nonDeployerAdmin.session.getPublicKey());
+            });
+        }
+    });
+
     describe("Deny List Tests", () => {
+        let user: UserClient;
+        let validScenario: DenyListScenario;
+        let invalidScenario: DenyListScenario;
+        before(async () => {
+            user = await UserClient.create();
+            validScenario = new DenyListScenario(deployer, nonDeployerAdmin);
+            invalidScenario = new DenyListScenario(deployer, invalidAdmin);
+        });
 
         for (const [i, test] of denyListTests.entries()) {
-            it(getTestName("DL", i, test.description), async () => {
-                await test.execute();
+            it(getTestName("DENY_LIST", i, test.description), async () => {
+                await test.execute(validScenario, invalidScenario, user.session.getPublicKey());
             });
         }
     });

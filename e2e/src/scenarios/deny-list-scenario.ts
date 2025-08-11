@@ -31,7 +31,7 @@ export class DenyListScenario extends CommonScenario {
             await this.admin.addUserToDenyListCommand(user.toString());
             assert.fail("Expected add user to deny list to fail");
         } catch (error) {
-            expect(error!.toString()).to.contain(expectedError);
+            this.handleError(error, expectedError);
         }
     }
 
@@ -40,7 +40,7 @@ export class DenyListScenario extends CommonScenario {
             await this.admin.removeUserFromDenyListCommand(user.toString());
             assert.fail("Expected remove user from deny list to fail");
         } catch (error) {
-            expect(error!.toString()).to.contain(expectedError);
+            this.handleError(error, expectedError);
         }
     }
 }

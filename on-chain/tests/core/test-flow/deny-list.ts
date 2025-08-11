@@ -2,9 +2,11 @@ import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
 import { getDenyListRegistryPDA } from "../utils/pda-helper";
 import { getDefaultKeyPair } from "../utils/accounts";
+import { Program } from "@coral-xyz/anchor";
+import { ConverterProgram } from "../../../target/types/converter_program";
 
 export async function addToDenyListAndVerify(
-    program,
+    program: Program<ConverterProgram>,
     addressToAdd: PublicKey,
     authorityKeyPair: Keypair = getDefaultKeyPair()
 ) {

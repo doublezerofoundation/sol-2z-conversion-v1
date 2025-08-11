@@ -1,4 +1,4 @@
-import { Connection, Keypair } from "@solana/web3.js";
+import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { ConverterProgram } from "../../../on-chain/target/types/converter_program";
 import * as anchor from "@coral-xyz/anchor";
 import fs from 'fs';
@@ -93,5 +93,9 @@ export abstract class Session {
 
     public getProgram(): Program<ConverterProgram> {
         return this.program;
+    }
+
+    public getPublicKey(): PublicKey {
+        return this.keypair.publicKey;
     }
 }
