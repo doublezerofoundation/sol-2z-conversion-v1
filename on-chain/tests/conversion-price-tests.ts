@@ -1,11 +1,13 @@
 import { describe } from "mocha";
 import { getConversionPriceAndVerify, getConversionPriceToFail } from "./core/test-flow/conversion-price";
 import { getOraclePriceData, OraclePriceData } from "./core/utils/price-oracle";
-import { getDefaultKeyPair } from "./core/utils/accounts";
 import { Keypair } from "@solana/web3.js";
 import { addToDenyListAndVerify, removeFromDenyListAndVerify } from "./core/test-flow/deny-list";
 import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
+import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
+import { updateConfigsAndVerify } from "./core/test-flow/change-configs";
+import * as anchor from "@coral-xyz/anchor";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
@@ -36,5 +38,25 @@ describe("Conversion Price Tests", async () => {
             signature: "invalid_signature",
         };
         await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
+    });
+
+    it("should fail to get conversion price for invalid max discount rate", async () => {
+        const oraclePriceData = await getOraclePriceData();
+
+        // Set max discount rate to 10000
+        await updateConfigsAndVerify(program, {
+            maxDiscountRate: new anchor.BN(10001),
+            steepness: new anchor.BN(90),
+            solQuantity: new anchor.BN(25000000000),
+            slotThreshold: new anchor.BN(134),
+            priceMaximumAge: new anchor.BN(324),
+            maxFillsStorage: new anchor.BN(234),
+            oraclePubkey: DEFAULT_CONFIGS.oraclePubkey,
+        });
+
+        await getConversionPriceToFail(program, oraclePriceData, "Invalid max discount rate");
+
+        // Revert: Set max discount rate to 5000
+        await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
     });
 });

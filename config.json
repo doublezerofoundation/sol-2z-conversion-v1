@@ -2,12 +2,12 @@
   "rpc_url": "http://127.0.0.1:8899",
   "program_id": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
   "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
-  "sol_quantity": 2121,
+  "sol_quantity": 25000000000,
   "slot_threshold": 134,
   "price_maximum_age": 324,
   "max_fills_storage": 234,
   "skip_preflight": true,
   "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
   "steepness": 90,
-  "max_discount_rate": 50
+  "max_discount_rate": 5000
 }
