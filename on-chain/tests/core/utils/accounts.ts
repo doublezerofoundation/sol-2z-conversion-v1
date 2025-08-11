@@ -22,7 +22,7 @@ export async function accountExists(
 export async function airdropToActivateAccount(
     connection: Connection,
     pubkey: PublicKey,
-    amount = 10
+    amount = 10 * LAMPORTS_PER_SOL
 ): Promise<void> {
     const balance = await connection.getBalance(pubkey);
     if (balance < amount) {
