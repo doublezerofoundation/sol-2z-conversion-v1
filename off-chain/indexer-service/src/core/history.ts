@@ -1,11 +1,11 @@
-import { Connection } from '@solana/web3.js';
-import { RPC_URL, PROGRAM_ID, CONCURRENCY } from './config';
+import { Connection, PublicKey } from '@solana/web3.js';
+import Config from '../utils/config';
 import { getLastSignature, endRecovery } from './state';
 import { promisePool } from '../utils/concurrency';
 import { processTx } from './processor';
 
 export async function recoverHistory() {
-
+  const program_id = new PublicKey(Config.PROGRAM_ID);
   const lastSig = await getLastSignature();
   if (!lastSig) {
     console.log('No last signature found, skipping history recovery.');
@@ -15,12 +15,12 @@ export async function recoverHistory() {
 
   console.log(`⏳ Catching up from head down to last processed sig: ${lastSig}`);
 
-  const connection = new Connection(RPC_URL, 'confirmed');
+  const connection = new Connection(Config.RPC_URL, 'confirmed');
   let before: string | undefined;
 
   while (true) {
     const sigInfos = await connection.getSignaturesForAddress(
-      PROGRAM_ID,
+      program_id,
       { before,
         limit: 1000,
         until: lastSig ?? undefined,      // recovery will stop once it reaches this signature
@@ -32,7 +32,7 @@ export async function recoverHistory() {
     await promisePool(
       sigInfos.map(i => i.signature),
       sig => processTx(sig),
-      CONCURRENCY
+      Config.CONCURRENCY!
     );
 
     // page backwards

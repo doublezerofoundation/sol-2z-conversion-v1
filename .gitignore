@@ -98,6 +98,15 @@ target/
 .terraform.lock.hcl
 .terraform/
 .idea/
+temp_*
 
 # solana 
 test-ledger/
+
+.anchor
+target
+**/*.rs.bk
+test-ledger
+.yarn
+.keys
+logs

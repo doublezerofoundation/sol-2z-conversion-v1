@@ -9,6 +9,9 @@ pub enum Commands {
     BuySol {
         #[arg(short = 'p', long, required = true)]
         bid_price: String,
+
+        #[arg(short = 'f')]
+        from_address: Option<String>,
     },
     
     /// Retrieves current 2Z-to-SOL conversion price.

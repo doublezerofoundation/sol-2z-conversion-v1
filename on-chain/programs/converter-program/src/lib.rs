@@ -1,5 +1,4 @@
 #![allow(unexpected_cfgs)]
-#![allow(deprecated)]
 
 mod system_management;
 mod common;
@@ -102,12 +101,12 @@ pub mod converter_program {
     pub fn buy_sol(
         ctx: Context<BuySol>,
         bid_price: u64,
-        swap_rate: u64,
-        timestamp: i64,
-        attestation: String,
+        oracle_price_data: OraclePriceData
     ) -> Result<()> {
-        ctx.accounts
-            .process(bid_price, swap_rate, timestamp, attestation)
+        ctx.accounts.process(
+            bid_price,
+            oracle_price_data
+        )
     }
 
     pub fn get_conversion_rate(

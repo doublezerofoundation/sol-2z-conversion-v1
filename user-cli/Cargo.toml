@@ -11,4 +11,4 @@ tokio = { workspace = true }
 cli-common = { workspace = true }
 reqwest = { workspace = true }
 serde = { workspace = true }
-rust_decimal = { workspace = true }
+spl-token-2022 = { workspace = true }

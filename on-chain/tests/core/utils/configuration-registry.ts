@@ -1,7 +1,8 @@
-import {Connection, PublicKey} from "@solana/web3.js";
+import {Connection, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import BN from "bn.js";
 import * as anchor from "@coral-xyz/anchor";
 import {getConfigurationRegistryPDA} from "./pda-helper";
+import {BPS} from "../constants";
 
 export interface SystemConfig {
     oraclePubkey: PublicKey,
@@ -16,12 +17,12 @@ export interface SystemConfig {
 // Default Configurations
 export const DEFAULT_CONFIGS: SystemConfig = {
     oraclePubkey: new PublicKey("3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj"),
-    solQuantity: new anchor.BN(25000000000),
+    solQuantity: new anchor.BN(25 * LAMPORTS_PER_SOL),
     slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),
-    maxFillsStorage: new anchor.BN(234),
+    maxFillsStorage: new anchor.BN(50),
     steepness: new anchor.BN(90),
-    maxDiscountRate: new anchor.BN(5000),
+    maxDiscountRate: new anchor.BN(50 * BPS),
 };
 
 export async function fetchCurrentConfiguration(program): Promise<SystemConfig> {

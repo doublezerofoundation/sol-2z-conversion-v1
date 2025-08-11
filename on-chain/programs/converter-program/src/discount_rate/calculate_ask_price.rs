@@ -52,9 +52,7 @@ impl<'info> CalculateAskPrice<'info> {
 
         // checking attestation
         verify_attestation(
-            oracle_price_data.swap_rate.clone(),
-            oracle_price_data.timestamp,
-            oracle_price_data.signature.clone(),
+            &oracle_price_data,
             self.configuration_registry.oracle_pubkey,
             self.configuration_registry.price_maximum_age,
         )?;

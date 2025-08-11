@@ -1,10 +1,11 @@
 [workspace]
 members = [
-    "./on-chain/programs/*",
+    "./on-chain/programs/converter-program",
     "cli-common",
     "admin-cli",
     "user-cli",
-    "integration-cli"
+    "integration-cli",
+    "mock-double-zero-program/programs/mock-double-zero-program"
 ]
 resolver = "2"
 
@@ -12,6 +13,8 @@ resolver = "2"
 # Anchor framework
 anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
+anchor-spl = "0.31.1"
+
 
 ## on-chain
 base64 = "0.22.1"
@@ -29,8 +32,9 @@ solana-transaction-status = "2.3.6"
 
 ### CLI
 clap = { version = "4.5.42", features = ["derive"] }
-solana-loader-v3-interface = "5.0.0"
 rust_decimal = "1.37.2"
+spl-token-2022 = "9.0.0"
+spl-associated-token-account = "7.0.0"
 
 ## CLI Rest
 reqwest = { version = "0.11", features = ["json"] }

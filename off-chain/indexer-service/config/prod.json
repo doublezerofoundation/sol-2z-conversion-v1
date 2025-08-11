@@ -1,0 +1,5 @@
+{
+  "RPC_URL": "https://api.devnet.solana.com",
+  "PROGRAM_ID": "program_id",
+  "CONCURRENCY": 8
+}

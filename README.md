@@ -4,9 +4,11 @@ This repository contains on-chain and off-chain implementation for DoubleZero Fe
 This system consists of following components. 
 
 1) Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
-2) Admin CLI - CLI interface for admins to control the system.
-3) User CLI - CLI interface for user to interact with the system.
-4) Common CLI - Includes common functionalities for Admin CLI & User CLI 
+2) Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
+It provides CPIs which is used by converter program to simulate actual transfer.  
+3) Admin CLI - CLI interface for admins to control the system.
+4) User CLI - CLI interface for user to interact with the system.
+5) Common CLI - Includes common functionalities for Admin CLI & User CLI 
 
 ### Setup Dependencies
 
@@ -100,12 +102,13 @@ deploy it to the environment.
 - `--w <value>` Specify the workspace to process. Available workspaces
   - on-chain 
   - admin-cli
+  - mock-double-zero-program
   - user-cli
   - run-tests
 - `--restart-validator` If it is on-chain local deployment, then start/ restart the validator.
 - `--m <value>` Set the mode of operation.
   - For on-chain workspace and run-tests
-    - For On-chain workspace
+    - For On-chain workspace & Mock Double Zero Program
         - `deploy_only`: Only deploy the specified workspace(s).
         - `build_only`: Only build the specified workspace(s).
         - `build_and_deploy`: Build and then deploy the specified workspace(s).
@@ -118,8 +121,20 @@ deploy it to the environment.
 Build and Deploy a Single Workspace
 ```sh
 ./build_and_deploy.sh -w on-chain --restart-validator
+./build_and_deploy.sh -w mock-double-zero-program --restart-validator
 ./build_and_deploy.sh -w run-tests --mode unit
 ```
+
+### Export the Private Key
+To use CLI, It is essential to export the private key\
+To set up the private key as an environment variable, run:
+
+```sh
+export PRIVATE_KEY=MAIN_PRIVATE_KEY
+
+eg: export PRIVATE_KEY=226,222,1,3 ...
+```
+NOTE: Ensure this account is prefunded with adequate SOL
 
 ## Admin CLI
 
@@ -136,7 +151,7 @@ cargo run -p admin-cli -- withdraw-tokens -a <TOKEN_AMOUNT> -t <DESTINATION_ACCO
 ```
 
 - `-a`: Amount of 2Z tokens to withdraw from protocol treasury.
-- `-t`: Destination token account address.
+- `-t`: Destination token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
 
  
 ### View Configuration
@@ -217,6 +232,36 @@ Displays all addresses in the deny list registry
 ```sh
 cargo run -p admin-cli -- view-deny-list 
 ```
+
+### Init Mock Transfer Program
+Initializes Mock Transfer Program Accounts
+```sh
+cargo run -p admin-cli -- init-mock-program
+```
+
+### Airdrop to Mock Vault
+Sends specified amount of SOL to Mock Vault
+```sh
+cargo run -p admin-cli -- airdrop-to-mock-vault -a <AMOUNT>
+```
+- `AMOUNT`: SOL amount to be airdropped.
+
+
+### Mock Token Mint
+Mints Mock 2Z token to specified address.
+```sh
+cargo run -p admin-cli -- mock-token-mint -a <AMOUNT> -t <DESTINATION_TOKEN_ACCOUNT>
+```
+
+- `-a`: Token Amount to be minted
+- `-t`: Destination token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
+
+### Mint to Protocol Treasury Token Account
+Mints specified amount of Mock 2Z token to protocol Treasury Account
+```sh
+cargo run -p admin-cli -- mint-to-mock-protocol-treasury -a <AMOUNT>
+```
+- `-a`: 2Z Token amount to be minted.
 
 
 ## User CLI

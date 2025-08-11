@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-
 ENV="dev3"
 AWS_REGION="us-east-1"
 IMAGE_TAG="$ENV-v1.0.0"
@@ -14,13 +13,12 @@ ECR_REPOSITORY="double-zero-oracle-pricing-service"
 help() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  --env ENV                Environment (default: dev3)"
-    echo "  --region REGION          AWS Region (default: us-east-1)"
-    echo "  --image-tag TAG          Docker image tag (default: v1.0.0)"
-    echo "  --container-name NAME    Container name (default: swap-oracle-service)"
-    echo "  --ecr-registry REGISTRY  ECR registry URL (optional, will be auto-detected)"
-    echo "  --ecr-repository REPO    ECR repository name (default: double-zero-oracle-pricing-service)"
-    echo "  -h, --help              Display this help message"
+    echo "  --env ENV                   Environment"
+    echo "  --region REGION             AWS Region (default: us-east-1)"
+    echo "  --image-tag TAG             Docker image tag"
+    echo "  --service-name NAME         Service name"
+    echo "  --ecr-repository REPO       ECR repository name"
+    echo "  -h, --help                  Display this help message"
     echo ""
     echo "Example:"
     echo "  $0 --env prod --region us-west-2 --image-tag prod-v2.0.0"

@@ -105,11 +105,11 @@ deploy_program() {
     if ! anchor deploy \
         --program-name converter-program \
         --program-keypair .keys/converter-program-keypair.json; then
-        log_error "Program deployment failed"
+        log_error "Converter Program deployment failed"
         return 1
     fi
+    log_success "Successfully deployed the converter program into the network!"
 
-    log_success "Program deployed successfully"
 }
 
 cd "$(dirname "$0")" || exit 1
@@ -133,7 +133,7 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         *)
-            echo "Unknown option: $1"
+            log_warning "Unknown option: $1"
             show_help
             exit 1
             ;;
@@ -154,7 +154,6 @@ fi
 case "$mode" in
   deploy_only)
     deploy_program
-    log_info "Successfully deployed the converter program into the network!"
     ;;
   build_only)
     build_program

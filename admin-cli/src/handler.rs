@@ -14,6 +14,7 @@ use crate::{
             system_state,
             update_dequeuer_handler,
             withdraw_2z,
+            mock_token_handler
         },
     },
 };
@@ -85,6 +86,26 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         // Setting the admin of the system
         Some(Commands::SetAdmin { admin }) => {
             admin_handler::set_admin(admin)
+        }
+
+        // Initializing the mock transfer program
+        Some(Commands::InitMockProgram) => {
+            mock_token_handler::init()
+        }
+
+        // Mint Mock Tokens
+        Some(Commands::MockTokenMint { to_address, amount }) => {
+            mock_token_handler::mint(to_address, amount)
+        }
+
+        // Mint Mock Tokens to Protocol Treasury Token Account
+        Some(Commands::MintToMockProtocolTreasury { amount }) => {
+            mock_token_handler::mint_to_protocol_treasury_token_account(amount)
+        }
+
+        // Mock vault airdrop
+        Some(Commands::AirdropToMockVault {  amount }) => {
+            mock_token_handler::airdrop_vault(amount)
         }
 
         None => {
