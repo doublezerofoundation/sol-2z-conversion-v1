@@ -13,4 +13,3 @@ pub const TOKEN_DECIMALS: u64 = 1_000_000;
 
 // Account Size
 pub const DISCRIMINATOR_SIZE: usize = 8;
-pub const TOKEN_DECIMALS: u64 = 6;

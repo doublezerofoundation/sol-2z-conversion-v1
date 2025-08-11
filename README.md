@@ -65,12 +65,12 @@ The file should contain the following items.
 - `program_id`: Public key of the anchor program.
 - `skip_preflight`: Setting this to `true` will disable transaction preflight checks (which normally simulate the transaction and catch errors before sending) and enable error logging in the database.
 - `oracle_pubkey`: Public key of the oracle program.
-- `sol_quantity`: Quantity of SOL to be converted in a single transaction.
+- `sol_quantity`: Quantity of SOL to be converted in a single transaction (in Lamports).
 - `slot_threshold`: Slot threshold for storing the trade history.
 - `price_maximum_age`: Maximum age of the oracle price.
 - `max_fills_storage`: Maximum number of fills to be stored.
 - `steepness`: Steepness of the discount calculation curve in basis points. (0-100)
-- `max_discount_rate`: Maximum discount rate in basis points. (0-100)
+- `max_discount_rate`: Maximum discount rate in basis points. (0-10000)
 
 ## Deploy the Anchor Program
 ### Keypair for the programs
@@ -259,7 +259,7 @@ cargo run -p admin-cli -- mock-token-mint -a <AMOUNT> -t <DESTINATION_TOKEN_ACCO
 ### Mint to Protocol Treasury Token Account
 Mints specified amount of Mock 2Z token to protocol Treasury Account
 ```sh
-cargo run -p admin-cli -- mock-to-protocol-treasury -a <AMOUNT>
+cargo run -p admin-cli -- mint-to-mock-protocol-treasury -a <AMOUNT>
 ```
 - `-a`: 2Z Token amount to be minted.
 

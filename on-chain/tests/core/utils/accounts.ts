@@ -35,7 +35,7 @@ export async function airdrop(
     pubkey: PublicKey,
     amount = 10
 ): Promise<void> {
-    const tx = await connection.requestAirdrop(pubkey, amount * LAMPORTS_PER_SOL);
+    const tx = await connection.requestAirdrop(pubkey, amount);
     await connection.confirmTransaction({
         signature: tx,
         lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,

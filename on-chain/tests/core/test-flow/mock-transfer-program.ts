@@ -2,11 +2,10 @@ import {
     getMockDoubleZeroTokenMintPDA, getMockProgramPDAs, getMockProtocolTreasuryAccount, getMockVaultPDA,
 } from "../utils/pda-helper";
 import {assert} from "chai";
-import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
-import {TOKEN_DECIMAL} from "../constants";
 import {getTokenBalance} from "../utils/token-utils";
 
 export async function initializeMockTransferSystemAndVerify(
@@ -73,7 +72,7 @@ export async function mint2z(
 ) {
     const balanceBeforeMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
     try {
-        const tx = await program.methods.mint2Z(new anchor.BN(amount * TOKEN_DECIMAL))
+        const tx = await program.methods.mint2Z(new anchor.BN(amount))
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 userTokenAccount: recipientTokenAccount
@@ -86,7 +85,11 @@ export async function mint2z(
     }
     const balanceAfterMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
 
-    assert.equal(balanceAfterMint, balanceBeforeMint + amount, "Balance should increase by mint")
+    assert.equal(
+        balanceAfterMint,
+        Math.floor(balanceBeforeMint + amount),
+        "Balance should increase by mint"
+    );
 }
 export async function buySol(
     program,
@@ -95,7 +98,6 @@ export async function buySol(
     amountSol: number,
     signer: Keypair
 ) {
-    amountSol = amountSol * LAMPORTS_PER_SOL
     const pdas = getMockProgramPDAs(program.programId);
     const tokenBalanceBefore = await getTokenBalance(program.provider.connection, senderTokenAccount);
     const protocolTreasuryBalanceBefore =
@@ -105,7 +107,7 @@ export async function buySol(
 
     try {
         const tx = await program.methods.buySol(
-            new anchor.BN(amount2Z * TOKEN_DECIMAL),
+            new anchor.BN(amount2Z),
             new anchor.BN(amountSol)
         )
             .accounts({
@@ -162,7 +164,7 @@ export async function withdraw_2z(
 
     try {
         const tx = await program.methods.withdraw2Z(
-            new anchor.BN(amount2z * TOKEN_DECIMAL)
+            new anchor.BN(amount2z)
         )
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
