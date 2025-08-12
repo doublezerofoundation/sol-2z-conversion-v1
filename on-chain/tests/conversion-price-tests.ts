@@ -59,15 +59,15 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceData();
 
         // Set min discount rate to 10001
-        await updateConfigsAndVerify(program, getDefaultKeyPair(), {
+        await updateConfigsAndVerify(program, {
             ...DEFAULT_CONFIGS,
             maxDiscountRate: new anchor.BN(5000),
             minDiscountRate: new anchor.BN(5001)
         });
 
-        await getConversionPriceToFail(program, oraclePriceData, getDefaultKeyPair(), "Invalid min discount rate");
+        await getConversionPriceToFail(program, oraclePriceData, "Invalid min discount rate");
 
         // Revert: Set min discount rate to 500
-        await updateConfigsAndVerify(program, getDefaultKeyPair(), DEFAULT_CONFIGS);
+        await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
     });
 });

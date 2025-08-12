@@ -5,11 +5,20 @@ import { assert, expect } from "chai";
 import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "../utils/return-data";
 import { Keypair } from "@solana/web3.js";
 import { getDefaultKeyPair } from "../utils/accounts";
+import { getProgramStatePDA } from "../utils/pda-helper";
+import { fetchCurrentConfiguration } from "../utils/configuration-registry";
 
 export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair = getDefaultKeyPair()) => {
     const oraclePriceData = await getOraclePriceData();
 
-    const expectedAskPrice = oraclePriceData.swapRate * (1 - 0.5);
+    const {lastTradeSlot} = await program.account.programStateAccount.fetch(getProgramStatePDA(program.programId));
+    const currentSlot = await program.provider.connection.getSlot();
+    const {coefficient, maxDiscountRate, minDiscountRate} = await fetchCurrentConfiguration(program);
+    const discountRate = (coefficient.toNumber() * (currentSlot - lastTradeSlot.toNumber()) / 100000000) + minDiscountRate.toNumber();
+    let expectedAskPrice = oraclePriceData.swapRate * (1 - discountRate / 10000);
+    if (expectedAskPrice > maxDiscountRate.toNumber()) {
+        expectedAskPrice = maxDiscountRate.toNumber();
+    }
 
     const signature = await program.methods.getConversionRate({
         swapRate: new BN(oraclePriceData.swapRate),
@@ -54,11 +63,10 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
             const lowerBound = expectedAskPrice * (1 - errorMargin);
             const upperBound = expectedAskPrice * (1 + errorMargin);
 
-            // TODO: when transaction happens, this fails. update the assertion logic.
-            // assert(
-            //     actualAskPrice >= lowerBound && actualAskPrice <= upperBound,
-            //     `actualAskPrice (${actualAskPrice}) is not within ${errorMargin * 100}% of expectedAskPrice (${expectedAskPrice})`
-            // );
+            assert(
+                actualAskPrice >= lowerBound && actualAskPrice <= upperBound,
+                `actualAskPrice (${actualAskPrice}) is not within ${errorMargin * 100}% of expectedAskPrice (${expectedAskPrice})`
+            );
             return Number(actualAskPrice);
         } catch (error) {
             assert.fail("Error decoding return data", error);
