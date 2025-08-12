@@ -109,17 +109,101 @@ get_redis_url_from_terraform(){
     exit 1
   fi
 
-  cd "$TERRAFORM_DIR" || {
-    echo "❌ Failed to change to terraform directory: $TERRAFORM_DIR"
-    exit 1
+  # Change to terraform directory and get the output
+   cd "$TERRAFORM_DIR" || {
+      echo "❌ Failed to change to terraform directory: $TERRAFORM_DIR"
+      exit 1
   }
+  echo "Current directory: $(pwd)"
+  echo "Checking terraform state and configuration..."
 
-  # TODO: Remove hardcoded values and use terraform output
-  REDIS_ENDPOINT="master.doublezero-redis.m3emep.use1.cache.amazonaws.com"
-  REDIS_PORT="6379"
+  echo "Running terraform output commands..."
 
+  # Get Redis endpoint with timeout and retry logic
+  echo "Getting Redis endpoint..."
+  local max_attempts=3
+  local attempt=1
+  local timeout_duration=60
+
+  while [[ $attempt -le $max_attempts ]]; do
+    echo "Attempt $attempt of $max_attempts..."
+
+    # Use timeout command to limit execution time
+    if REDIS_ENDPOINT=$(timeout $timeout_duration terraform output -raw redis_endpoint 2>&1); then
+      REDIS_ENDPOINT_EXIT_CODE=0
+      break
+    else
+      REDIS_ENDPOINT_EXIT_CODE=$?
+      echo "❌ Attempt $attempt failed (exit code: $REDIS_ENDPOINT_EXIT_CODE)"
+
+      if [[ $attempt -eq $max_attempts ]]; then
+        echo "❌ All attempts failed to get redis_endpoint from terraform output."
+        echo "Error output: $REDIS_ENDPOINT"
+        echo "Make sure:"
+        echo "   - Terraform is initialized (run 'terraform init')"
+        echo "   - Infrastructure has been applied (run 'terraform apply')"
+        echo "   - The Redis infrastructure is fully provisioned"
+        echo "   - The 'redis_endpoint' output exists in your terraform configuration"
+        echo "   - You have the necessary permissions to access the state"
+        cd - > /dev/null
+        exit 1
+      fi
+
+      echo "Waiting 10 seconds before retry..."
+      sleep 10
+      attempt=$((attempt + 1))
+    fi
+  done
+
+  # Get Redis port with timeout and retry logic
+  echo "Getting Redis port..."
+  attempt=1
+
+  while [[ $attempt -le $max_attempts ]]; do
+    echo "Attempt $attempt of $max_attempts for Redis port..."
+
+    if REDIS_PORT=$(timeout $timeout_duration terraform output -raw redis_port 2>&1); then
+      REDIS_PORT_EXIT_CODE=0
+      break
+    else
+      REDIS_PORT_EXIT_CODE=$?
+      echo "❌ Attempt $attempt failed (exit code: $REDIS_PORT_EXIT_CODE)"
+
+      if [[ $attempt -eq $max_attempts ]]; then
+        echo "❌ All attempts failed to get redis_port from terraform output."
+        echo "Error output: $REDIS_PORT"
+        echo "Make sure:"
+        echo "   - Terraform is initialized (run 'terraform init')"
+        echo "   - Infrastructure has been applied (run 'terraform apply')"
+        echo "   - The Redis infrastructure is fully provisioned"
+        echo "   - The 'redis_port' output exists in your terraform configuration"
+        echo "   - You have the necessary permissions to access the state"
+        cd - > /dev/null
+        exit 1
+      fi
+
+      echo "Waiting 10 seconds before retry..."
+      sleep 10
+      attempt=$((attempt + 1))
+    fi
+  done
+
+  if [[ -z "$REDIS_ENDPOINT" || "$REDIS_ENDPOINT" == "null" ]]; then
+    echo "❌ Redis endpoint output is empty or null. Check your Terraform configuration."
+    exit 1
+  fi
+
+  if [[ -z "$REDIS_PORT" || "$REDIS_PORT" == "null" ]]; then
+    echo "❌ Redis port output is empty or null. Check your Terraform configuration."
+    exit 1
+  fi
+
+  echo "✅ Successfully retrieved Redis configuration:"
+  echo "REDIS_ENDPOINT: $REDIS_ENDPOINT"
+  echo "REDIS_PORT: $REDIS_PORT"
   cd - > /dev/null
 }
+
 
 create_deployment_script() {
   local script_path="/tmp/container_deploy.sh"
@@ -135,7 +219,10 @@ ECR_REGISTRY=${ECR_REGISTRY@Q}
 ECR_REPOSITORY=${ECR_REPOSITORY@Q}
 IMAGE_TAG=${IMAGE_TAG@Q}
 CONTAINER_NAME=${CONTAINER_NAME@Q}
+REDIS_PORT="${REDIS_PORT}"
+REDIS_ENDPOINT="${REDIS_ENDPOINT}"
 FULL_IMAGE_URI="\${ECR_REGISTRY}/\${ECR_REPOSITORY}:\${IMAGE_TAG}"
+INSTANCE_ID=\$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
 EOF
 
   # Body: no expansion while writing (avoid escaping hell)
@@ -159,19 +246,12 @@ docker run -d \
   --name $CONTAINER_NAME \
   --restart unless-stopped \
   -p 8080:8080 \
-EOF
-
-  # Optional Redis flags only for swap-oracle-service
-  if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
-    cat >> "$script_path" <<'EOF'
-  -e REDIS_ENDPOINT="$REDIS_ENDPOINT" \
-  -e REDIS_PORT="$REDIS_PORT" \
-EOF
-  fi
-
-  # Finish docker run + health check
-  cat >> "$script_path" <<'EOF'
-  -e ENVIRONMENT="$ENVIRONMENT" -e AWS_REGION="$AWS_REGION" \
+  --log-driver=awslogs \
+  --log-opt awslogs-group="/ec2/$ENVIRONMENT/$CONTAINER_NAME" \
+  --log-opt awslogs-region=$AWS_REGION  \
+  --log-opt awslogs-stream=$INSTANCE_ID \
+  --log-opt awslogs-create-group=true \
+  -e ENVIRONMENT=$ENVIRONMENT -e AWS_REGION=$AWS_REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT\
   -v /opt/app/logs:/app/logs \
   $FULL_IMAGE_URI
 
