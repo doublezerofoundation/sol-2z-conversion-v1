@@ -26,6 +26,34 @@ impl AccountDeserialize for ConfigurationRegistry {
 }
 
 #[derive(Debug, AnchorDeserialize)]
+pub struct FillsRegistry {
+    pub fills: Vec<Fill>,
+    pub total_sol_pending: u64,      // Total SOL in not dequeued fills
+    pub total_2z_pending: u64,       // Total 2Z in not dequeued fills
+    pub lifetime_sol_processed: u64, // Cumulative SOL processed
+    pub lifetime_2z_processed: u64,  // Cumulative 2Z processed
+}
+
+#[derive(Debug, AnchorDeserialize)]
+pub struct Fill {
+    pub sol_in: u64,
+    pub token_2z_out: u64,
+    pub timestamp: i64,
+    pub buyer: Pubkey,
+    pub epoch: u64, // Source epoch for accounting
+}
+
+impl AccountDeserialize for FillsRegistry {
+    fn try_deserialize(buf: &mut &[u8]) -> Result<Self> {
+        *buf = &buf[8..];
+        FillsRegistry::try_deserialize_unchecked(buf)
+    }
+    fn try_deserialize_unchecked(buf: &mut &[u8]) -> Result<Self> {
+        FillsRegistry::deserialize(buf).map_err(Into::into)
+    }
+}
+
+#[derive(Debug, AnchorDeserialize)]
 pub struct ProgramStateAccount {
     pub admin: Pubkey,
     pub is_halted: bool,
