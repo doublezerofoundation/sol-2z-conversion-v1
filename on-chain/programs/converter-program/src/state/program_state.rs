@@ -12,6 +12,7 @@ pub struct ProgramStateAccount {
     pub admin: Pubkey,
     pub is_halted: bool,  // Indicates whether the system accepts conversion requests
     pub bump_registry: BumpRegistry,
+    pub last_trade_slot: u64,
 }
 
 impl ProgramStateAccount {

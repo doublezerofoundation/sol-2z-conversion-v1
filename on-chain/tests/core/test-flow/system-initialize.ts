@@ -47,8 +47,9 @@ export async function systemInitializeAndVerify(
             inputConfigs.slotThreshold,
             inputConfigs.priceMaximumAge,
             inputConfigs.maxFillsStorage,
-            inputConfigs.steepness,
-            inputConfigs.maxDiscountRate
+            inputConfigs.coefficient,
+            inputConfigs.maxDiscountRate,
+            inputConfigs.minDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -82,8 +83,9 @@ export async function systemInitializeAndVerify(
     assert.equal(configInConfigRegistry.priceMaximumAge.toString(), inputConfigs.priceMaximumAge.toString());
     assert.equal(configInConfigRegistry.slotThreshold.toString(), inputConfigs.slotThreshold.toString());
     assert.equal(configInConfigRegistry.solQuantity.toString(), inputConfigs.solQuantity.toString());
-    assert.equal(configInConfigRegistry.steepness.toString(), inputConfigs.steepness.toString());
+    assert.equal(configInConfigRegistry.coefficient.toString(), inputConfigs.coefficient.toString());
     assert.equal(configInConfigRegistry.maxDiscountRate.toString(), inputConfigs.maxDiscountRate.toString());
+    assert.equal(configInConfigRegistry.minDiscountRate.toString(), inputConfigs.minDiscountRate.toString());
 }
 
 export async function systemInitializeFail(
@@ -100,8 +102,9 @@ export async function systemInitializeFail(
             configRegistryValues.slotThreshold,
             configRegistryValues.priceMaximumAge,
             configRegistryValues.maxFillsStorage,
-            configRegistryValues.steepness,
-            configRegistryValues.maxDiscountRate
+            configRegistryValues.coefficient,
+            configRegistryValues.maxDiscountRate,
+            configRegistryValues.minDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,

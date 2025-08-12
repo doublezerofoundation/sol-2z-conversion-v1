@@ -44,8 +44,9 @@ export const updateConfigsAndVerify = async (
     assert.equal(updatedConfig.priceMaximumAge.toString(), input.priceMaximumAge.toString());
     assert.equal(updatedConfig.slotThreshold.toString(), input.slotThreshold.toString());
     assert.equal(updatedConfig.solQuantity.toString(), input.solQuantity.toString());
-    assert.equal(updatedConfig.steepness.toString(), input.steepness.toString());
+    assert.equal(updatedConfig.coefficient.toString(), input.coefficient.toString());
     assert.equal(updatedConfig.maxDiscountRate.toString(), input.maxDiscountRate.toString());
+    assert.equal(updatedConfig.minDiscountRate.toString(), input.minDiscountRate.toString());
 }
 
 export const updateConfigsAndVerifyFail = async (
