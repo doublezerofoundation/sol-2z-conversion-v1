@@ -41,7 +41,6 @@ describe("Buy Sol Tests", () => {
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
             program,
-            adminKeyPair,
             DEFAULT_CONFIGS
         );
 
@@ -66,7 +65,6 @@ describe("Buy Sol Tests", () => {
     after("Change configs to Default", async () => {
         await updateConfigsAndVerify(
             program,
-            adminKeyPair,
             DEFAULT_CONFIGS
         );
     });
@@ -284,7 +282,7 @@ describe("Buy Sol Tests", () => {
     describe("Market Halting Check", async () => {
         it("should fail to do buy sol during market halt", async () => {
             // Make system to halt stage
-            await toggleSystemStateAndVerify(program, adminKeyPair, true);
+            await toggleSystemStateAndVerify(program, true);
 
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
@@ -309,7 +307,7 @@ describe("Buy Sol Tests", () => {
         });
 
         it("User should be able to do buy SOL after market gets Opened", async () => {
-            await toggleSystemStateAndVerify(program, adminKeyPair, false);
+            await toggleSystemStateAndVerify(program, false);
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z
@@ -343,7 +341,6 @@ describe("Buy Sol Tests", () => {
             };
             await updateConfigsAndVerify(
                 program,
-                adminKeyPair,
                 currentConfigs
             );
 
@@ -372,7 +369,6 @@ describe("Buy Sol Tests", () => {
         it("User should be able to do buy SOL with proper rates", async () => {
             await updateConfigsAndVerify(
                 program,
-                adminKeyPair,
                 DEFAULT_CONFIGS
             );
             currentConfigs = DEFAULT_CONFIGS;
@@ -403,7 +399,6 @@ describe("Buy Sol Tests", () => {
         it("should fail to do buy sol with invalid signature", async () => {
             await updateConfigsAndVerify(
                 program,
-                adminKeyPair,
                 DEFAULT_CONFIGS
             );
             currentConfigs = DEFAULT_CONFIGS;

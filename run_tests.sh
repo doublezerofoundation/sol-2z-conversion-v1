@@ -9,6 +9,8 @@ UNIT_TESTS=(
     deny-list-test
     conversion-price-test
     system-state-test
+    # buy-sol-test
+    # mock-transfer-program-test
 )
 
 E2E_TESTS=(
@@ -157,37 +159,32 @@ wait_for_port_release() {
 
 # -------------------- Program Management --------------------
 build_program() {
-    log_info "Building the program..."
+    local PROGRAM_NAME=$1
+    log_info "Building the $PROGRAM_NAME program..."
     anchor build
 }
 
 deploy_program() {
     local RPC_URL=$1
-    log_info "Deploying program to $RPC_URL"
-    anchor deploy --provider.cluster $RPC_URL --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
+    local PROGRAM_NAME=$2
+    log_info "Deploying $PROGRAM_NAME program to $RPC_URL"
+    anchor deploy --provider.cluster $RPC_URL --program-name $PROGRAM_NAME --program-keypair ./.keys/$PROGRAM_NAME-keypair.json
 }
 
 # -------------------- CLI Management --------------------
-build_admin_cli() {
-    log_info "Building the Admin CLI..."
-    cd ../admin-cli && cargo build
-    cd ../on-chain
-    log_success "Admin CLI built successfully"
-}
-
-build_user_cli() {
-    log_info "Building the User CLI..."
-    cd ../user-cli && cargo build
-    cd ../on-chain
-    log_success "User CLI built successfully"
+build_cli() {
+    log_info "Running cargo build for the CLIs..."
+    cargo build
+    log_success "CLI built successfully"
 }
 
 copy_cli_to_e2e() {
     log_info "Copying the CLI binaries to the E2E directory..."
-    mkdir -p ../e2e/cli
-    cp ../target/debug/admin-cli ../e2e/cli/
-    cp ../target/debug/user-cli ../e2e/cli/
-    cp ../config.json ../e2e/cli/
+    mkdir -p ./e2e/cli
+    cp ./target/debug/admin-cli ./e2e/cli/
+    cp ./target/debug/user-cli ./e2e/cli/
+    # cp ./target/debug/integration-cli ./e2e/cli/
+    cp ./config.json ./e2e/cli/
     log_success "CLI copied to the E2E directory"
 }
 
@@ -201,13 +198,17 @@ run_test() {
     log_section "Running Test: $TEST_SCRIPT (RPC: $RPC_PORT)"
 
     start_validator $RPC_PORT
-    deploy_program $RPC_URL
+
+    # Deploy the programs to the validator
+    cd ./mock-double-zero-program || exit 1
+    deploy_program $RPC_URL "mock-double-zero-program"
+    cd ../on-chain || exit 1
+    deploy_program $RPC_URL "converter-program"
 
     if [ "$TEST_TYPE" == "e2e" ]; then
         cd ../e2e || exit 1
         npm run $TEST_SCRIPT
         RESULT=$?
-        cd ../on-chain || exit 1
     else
         anchor run $TEST_SCRIPT --provider.cluster $RPC_URL
         RESULT=$?
@@ -223,19 +224,36 @@ run_test() {
 
     COMPLETED_COUNT=$((COMPLETED_COUNT + 1))
     print_status_bar
+    cd ../ || exit 1
 }
 
 # -------------------- Main Execution --------------------
 print_header
 trap 'killall -9 solana-test-validator 2>/dev/null || true' EXIT
 
+# Build the double zero converter program
 cd ./on-chain || exit 1
-build_program
+build_program "converter-program"
 
+# Build the mock double zero transfer program
+cd ../mock-double-zero-program || exit 1
+build_program "mock-double-zero-program"
+cd ../
+
+# Build the admin and user CLI
 if [ "$TEST_TYPE" == "e2e" ]; then
-    build_admin_cli
-    build_user_cli
+    build_cli
     copy_cli_to_e2e
+
+    # Install the dependencies for the e2e test suite
+    cd ./e2e || exit 1
+    npm install
+    cd ../
+else
+    # Install the dependencies for the unit tests
+    cd ./on-chain || exit 1
+    yarn install
+    cd ../
 fi
 
 for TEST_SCRIPT in "${ACTIVE_TESTS[@]}"; do
