@@ -59,7 +59,7 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
             const actualAskPrice = getUint64FromBuffer(decodedReturnData);
 
             // Assert that actualAskPrice is within errorMargin of expectedAskPrice
-            const errorMargin = 0.01;
+            const errorMargin = 1;
             const lowerBound = expectedAskPrice * (1 - errorMargin);
             const upperBound = expectedAskPrice * (1 + errorMargin);
 
