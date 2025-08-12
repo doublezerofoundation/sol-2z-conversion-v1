@@ -9,6 +9,7 @@ CONTAINER_NAME="swap-oracle-service"
 ECR_REGISTRY=""
 ECR_REPOSITORY="double-zero-oracle-pricing-service"
 REGIONAL_TERRAFORM_DIR="../regional"
+ENV_TERRAFORM_DIR="../environments/dev"
 successful_instances=()
 failed_instances=()
 
@@ -448,30 +449,206 @@ update_pricing_service_launch_template_user_data() {
   rm -f "$user_data_path"
 }
 
+update_service_image_tag() {
+    echo "=== Deploying Infrastructure with Image Tag: $IMAGE_TAG ==="
+    local plan_timeout_duration=300
+    local apply_timeout_duration=1800
 
-trigger_swap-oracle_instance_refresh() {
-  echo "Triggering Auto Scaling Group instance refresh for swap_oracle_service..."
+    # Change to terraform directory
+    cd "$ENV_TERRAFORM_DIR" || {
+        echo "❌ Failed to change to terraform directory: $ENV_TERRAFORM_DIR"
+        exit 1
+    }
 
-  # Get ASG name specifically for swap oracle service
-  local asg_name="doublezero-${ENV}-swap-oracle-asg"
-  echo "$asg_name"
+    echo "Running terraform plan with dynamic image tag..."
+    timeout $plan_timeout_duration terraform plan \
+        -var-file='./terraform.tfvars' \
+        -var="swap_oracle_service_image_tag=$IMAGE_TAG" \
+        -out=tfplan
 
-  local refresh_id
-  refresh_id=$(aws autoscaling start-instance-refresh \
-    --region "$AWS_REGION" \
-    --auto-scaling-group-name "$asg_name" \
-    --preferences MinHealthyPercentage=90,InstanceWarmup=300 \
-    --query 'InstanceRefreshId' \
-    --output text)
+    local plan_exit_code=$?
 
-  if [[ -n "$refresh_id" && "$refresh_id" != "None" ]]; then
-    echo "✅ Instance refresh initiated with ID: $refresh_id"
-    echo "New instances will use image tag: $IMAGE_TAG"
-    echo "Monitor progress: aws autoscaling describe-instance-refreshes --region $AWS_REGION --auto-scaling-group-name $asg_name"
-  else
-    echo "❌ Failed to initiate instance refresh"
-    exit 1
-  fi
+    if [[ $plan_exit_code -eq 124 ]]; then
+        echo "❌ Terraform plan timed out after $plan_timeout_duration seconds"
+        exit 1
+    elif [[ $plan_exit_code -ne 0 ]]; then
+        echo "❌ Terraform plan failed with exit code: $plan_exit_code"
+        exit 1
+    fi
+
+    echo "✅ Terraform plan successful"
+    echo ""
+    echo "Plan saved to tfplan. Review the changes above."
+    echo -n "Do you want to apply these changes? (yes/no): "
+    read -r response
+
+    if [[ "$response" != "yes" ]]; then
+        echo "❌ Apply cancelled by user"
+        rm -f tfplan
+        exit 1
+    fi
+
+    echo "Applying terraform changes..."
+    timeout $apply_timeout_duration terraform apply tfplan
+
+    local apply_exit_code=$?
+
+
+    if [[ $apply_exit_code -eq 124 ]]; then
+        echo "❌ Terraform apply timed out after $apply_timeout_duration seconds"
+        echo "The apply process may still be running in the background."
+        echo "Check the terraform state and AWS console to verify the deployment status."
+        exit 1
+    elif [[ $apply_exit_code -eq 0 ]]; then
+        echo "✅ Infrastructure deployment completed successfully"
+        echo "New image tag deployed: $IMAGE_TAG"
+
+        # Wait for infrastructure to be fully ready
+        echo "Waiting for infrastructure stabilization..."
+        wait_for_infrastructure_ready
+
+    else
+        echo "❌ Terraform apply failed with exit code: $apply_exit_code"
+        echo "Checking terraform state for any partial changes..."
+        terraform show -json > /dev/null 2>&1 || true
+        exit 1
+    fi
+
+    # Clean up plan file
+    rm -f tfplan
+
+    cd - > /dev/null
+}
+
+wait_for_infrastructure_ready() {
+    echo "Verifying infrastructure components are ready..."
+    local max_wait_time=600  # 10 minutes
+    local check_interval=30  # 30 seconds
+    local elapsed_time=0
+
+    while [[ $elapsed_time -lt $max_wait_time ]]; do
+        echo "Checking infrastructure status... (${elapsed_time}s elapsed)"
+
+        # Check if launch template was updated successfully
+        if check_launch_template_ready; then
+            echo "✅ Launch template is ready with new image tag"
+            break
+        fi
+
+        echo "Infrastructure not ready yet, waiting ${check_interval} seconds..."
+        sleep $check_interval
+        elapsed_time=$((elapsed_time + check_interval))
+    done
+
+    if [[ $elapsed_time -ge $max_wait_time ]]; then
+        echo "Infrastructure readiness check timed out after ${max_wait_time} seconds"
+        echo "The deployment may still be in progress. Check AWS console for current status."
+        return 1
+    fi
+
+    echo "✅ Infrastructure is ready for deployment"
+    return 0
+}
+
+check_launch_template_ready() {
+    local launch_template_name="doublezero-${ENV}-swap-oracle-lt"
+
+    # Get the latest version of the launch template
+    local latest_version
+    latest_version=$(aws ec2 describe-launch-templates \
+        --region "$AWS_REGION" \
+        --filters "Name=launch-template-name,Values=${launch_template_name}*" \
+        --query 'LaunchTemplates[0].LatestVersionNumber' \
+        --output text 2>/dev/null)
+
+    if [[ -z "$latest_version" || "$latest_version" == "None" ]]; then
+        echo "❌ Could not retrieve launch template version"
+        return 1
+    fi
+    echo "latest_version template $latest_version"
+
+    # Check if the launch template contains the expected image tag in user data
+    local user_data
+    user_data=$(aws ec2 describe-launch-template-versions \
+        --region "$AWS_REGION" \
+        --launch-template-name "$launch_template_name" \
+        --versions '$Latest' \
+        --query 'LaunchTemplateVersions[0].LaunchTemplateData.UserData' \
+        --output text 2>/dev/null)
+
+    if [[ -n "$user_data" ]]; then
+        # Decode base64 user data and check for image tag
+        local decoded_user_data
+        decoded_user_data=$(echo "$user_data" | base64 -d 2>/dev/null)
+
+        if echo "$decoded_user_data" | grep -q "IMAGE_TAG=\"${IMAGE_TAG}\""; then
+            return 0
+        fi
+    fi
+    # Set the latest version as default
+    aws ec2 modify-launch-template \
+        --region "$AWS_REGION" \
+        --launch-template-id "$template_id" \
+        --default-version "$latest_version"
+
+    if [[ $? -eq 0 ]]; then
+        echo "✅ Set launch template version $latest_version as default"
+    else
+        echo "❌ Failed to set launch template default version"
+        return 1
+    fi
+
+
+    return 1
+}
+
+
+trigger_instance_refresh() {
+    echo "Triggering Auto Scaling Group instance refresh..."
+
+    local asg_name="doublezero-${ENV}-swap-oracle-asg"
+    echo "ASG Name: $asg_name"
+
+    # Verify ASG exists
+    if ! aws autoscaling describe-auto-scaling-groups \
+        --region "$AWS_REGION" \
+        --auto-scaling-group-names "$asg_name" \
+        --query 'AutoScalingGroups[0].AutoScalingGroupName' \
+        --output text &> /dev/null; then
+        echo "❌ Auto Scaling Group not found: $asg_name"
+        echo "Available ASGs:"
+        aws autoscaling describe-auto-scaling-groups \
+            --region "$AWS_REGION" \
+            --query 'AutoScalingGroups[].AutoScalingGroupName' \
+            --output table
+        exit 1
+    fi
+
+    local refresh_id
+    refresh_id=$(aws autoscaling start-instance-refresh \
+        --region "$AWS_REGION" \
+        --auto-scaling-group-name "$asg_name" \
+        --preferences MinHealthyPercentage=90,InstanceWarmup=300 \
+        --query 'InstanceRefreshId' \
+        --output text)
+
+    if [[ -n "$refresh_id" && "$refresh_id" != "None" ]]; then
+        echo "✅ Instance refresh initiated with ID: $refresh_id"
+        echo "New instances will use image tag: $IMAGE_TAG"
+        echo ""
+        echo "Monitor progress with:"
+        echo "aws autoscaling describe-instance-refreshes \\"
+        echo "  --region $AWS_REGION \\"
+        echo "  --auto-scaling-group-name $asg_name"
+        echo ""
+        echo "This process will:"
+        echo "1. Update the launch template with new image tag"
+        echo "2. Gradually replace instances (maintaining 90% healthy)"
+        echo "3. New instances will automatically pull and run the new image"
+    else
+        echo "❌ Failed to initiate instance refresh"
+        exit 1
+    fi
 }
 
 
@@ -665,7 +842,8 @@ verify_ecr_image
 # Main flow
 if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
   get_redis_url_from_terraform
-  update_pricing_service_launch_template_user_data
+  update_service_image_tag
+#  update_pricing_service_launch_template_user_data
   trigger_swap-oracle_instance_refresh
 
 else

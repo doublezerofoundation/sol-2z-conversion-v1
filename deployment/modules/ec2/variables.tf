@@ -90,3 +90,8 @@ variable "redis_port" {
   description = "Redis port"
   type = string
 }
+
+variable "swap_oracle_service_image_tag" {
+  description = "Docker image tag to pull from ECR"
+  type        = string
+}

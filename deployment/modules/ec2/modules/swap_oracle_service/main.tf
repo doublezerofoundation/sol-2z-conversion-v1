@@ -52,7 +52,7 @@ resource "aws_launch_template" "this" {
       region                     = var.region
       ecr_registry               = local.ecr_registry
       ecr_repository             = var.ecr_repository
-      image_tag                  = var.image_tag
+      image_tag                  = var.swap_oracle_service_image_tag
       container_name             = var.container_name
       container_port             = var.container_port
       container_environment_vars = var.container_environment_vars
@@ -115,7 +115,7 @@ resource "aws_autoscaling_group" "this" {
   dynamic "tag" {
     for_each = merge(
       {
-        Name        = "${var.name_prefix}-asg"
+        Name        = "${var.name_prefix}-swap-oracle"
         Environment = var.environment
         Service = var.ecr_repository
       },
