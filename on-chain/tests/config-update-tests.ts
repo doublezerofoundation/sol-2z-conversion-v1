@@ -26,13 +26,14 @@ describe("Config Update Tests", async () => {
 
   it("Admin user should be able to update config", async () => {
     const newConfig = {
-      ...DEFAULT_CONFIGS,
-      solQuantity: new anchor.BN(10000),
-      slotThreshold: new anchor.BN(100),
-      priceMaximumAge: new anchor.BN(100),
-      maxFillsStorage: new anchor.BN(100),
-      steepness: new anchor.BN(100),
-      maxDiscountRate: new anchor.BN(100),
+        ...DEFAULT_CONFIGS,
+        solQuantity: new anchor.BN(10000),
+        slotThreshold: new anchor.BN(100),
+        priceMaximumAge: new anchor.BN(100),
+        maxFillsStorage: new anchor.BN(100),
+        coefficient: new anchor.BN(100),
+        maxDiscountRate: new anchor.BN(100),
+        minDiscountRate: new anchor.BN(100),
     };
     await updateConfigsAndVerify(
       program,

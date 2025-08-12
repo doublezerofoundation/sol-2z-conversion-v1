@@ -3,7 +3,7 @@ set -e
 
 ENV="dev3"
 AWS_REGION="us-east-1"
-IMAGE_TAG="$ENV-v1.0.0"
+IMAGE_TAG="v1.0.0"
 SERVICE_NAME="swap-oracle-service"
 ECR_REGISTRY=""
 ECR_REPOSITORY="double-zero-oracle-pricing-service"

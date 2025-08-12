@@ -11,8 +11,9 @@ pub struct ConfigurationRegistry {
     pub price_maximum_age: i64,
     pub max_fills_storage: u64,
     pub authorized_dequeuers: Vec<Pubkey>,
-    pub steepness: u64,
+    pub coefficient: u64,
     pub max_discount_rate: u64,
+    pub min_discount_rate: u64,
 }
 
 impl AccountDeserialize for ConfigurationRegistry {
@@ -58,7 +59,7 @@ pub struct ProgramStateAccount {
     pub admin: Pubkey,
     pub is_halted: bool,
     pub bump_registry: BumpRegistry,
-    pub trade_history_list: Vec<TradeHistory>,
+    pub last_trade_slot: u64,
 }
 
 impl AccountDeserialize for ProgramStateAccount {

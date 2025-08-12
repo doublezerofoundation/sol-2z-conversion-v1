@@ -1,19 +1,20 @@
 use anchor_lang::{prelude::*, solana_program::program::set_return_data};
-use rust_decimal::{prelude::{FromPrimitive, ToPrimitive}, Decimal};
+use rust_decimal::{
+    prelude::{FromPrimitive, ToPrimitive},
+    Decimal,
+};
 
 use crate::{
     common::{
-        constant::TOKEN_DECIMALS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes, structs::OraclePriceData, utils::attestation_utils::verify_attestation
+        constant::TOKEN_DECIMALS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes,
+        structs::OraclePriceData, utils::attestation_utils::verify_attestation,
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     discount_rate::discount_utils::{
-        calculate_conversion_rate_with_discount, calculate_discount_rate, calculate_sol_demand,
+        calculate_conversion_rate_with_discount, calculate_discount_rate,
     },
-    state::{
-        program_state::ProgramStateAccount,
-        trade_registry::{TradeHistory, TradeRegistry}
-    },
+    state::program_state::ProgramStateAccount,
 };
 
 #[derive(Accounts)]
@@ -40,11 +41,6 @@ pub struct CalculateAskPrice<'info> {
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
-    #[account(
-        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
-        bump = program_state.bump_registry.trade_registry_bump,
-    )]
-    pub trade_registry: Account<'info, TradeRegistry>,
 }
 
 impl<'info> CalculateAskPrice<'info> {
@@ -65,13 +61,16 @@ impl<'info> CalculateAskPrice<'info> {
             self.configuration_registry.price_maximum_age,
         )?;
 
+        let clock = Clock::get()?;
+
         // Calculate conversion rate
         let conversion_rate = calculate_conversion_rate_with_oracle_price_data(
             oracle_price_data,
-            &self.trade_registry.trade_history_list,
-            self.configuration_registry.sol_quantity,
-            self.configuration_registry.steepness,
+            self.configuration_registry.coefficient,
             self.configuration_registry.max_discount_rate,
+            self.configuration_registry.min_discount_rate,
+            self.program_state.last_trade_slot,
+            clock.slot,
         )?;
 
         set_return_data(conversion_rate.to_le_bytes().as_slice());
@@ -88,19 +87,30 @@ impl<'info> CalculateAskPrice<'info> {
 /// * `Result<u64>` - The conversion rate in basis points
 pub fn calculate_conversion_rate_with_oracle_price_data(
     oracle_price_data: OraclePriceData,
-    trade_history_list: &Vec<TradeHistory>,
-    _sol_quantity: u64, // TODO: check usage when implementing price formula
-    steepness: u64,
+    coefficient: u64,
     max_discount_rate: u64,
+    min_discount_rate: u64,
+    s_last: u64,
+    s_now: u64,
 ) -> Result<u64> {
-    let sol_demand_bps = calculate_sol_demand(trade_history_list)?;
+    let discount_rate = calculate_discount_rate(
+        coefficient,
+        max_discount_rate,
+        min_discount_rate,
+        s_last,
+        s_now,
+    )?;
 
-    let discount_rate = calculate_discount_rate(sol_demand_bps, steepness, max_discount_rate)?;
-
-    let conversion_rate = calculate_conversion_rate_with_discount(oracle_price_data.swap_rate, discount_rate)?;
+    let conversion_rate = calculate_conversion_rate_with_discount(
+        oracle_price_data.swap_rate,
+        discount_rate,
+    )?;
 
     let conversion_rate_u64 = conversion_rate
-        .checked_mul(Decimal::from_u64(TOKEN_DECIMALS).ok_or(error!(DoubleZeroError::InvalidConversionRate))?)
+        .checked_mul(
+            Decimal::from_u64(TOKEN_DECIMALS)
+                .ok_or(error!(DoubleZeroError::InvalidConversionRate))?,
+        )
         .ok_or(error!(DoubleZeroError::InvalidConversionRate))?
         .to_u64()
         .ok_or(error!(DoubleZeroError::InvalidConversionRate))?;

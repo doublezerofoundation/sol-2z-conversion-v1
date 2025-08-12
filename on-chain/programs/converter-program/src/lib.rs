@@ -35,8 +35,9 @@ pub mod converter_program {
         slot_threshold: u64,
         price_maximum_age: i64,
         max_fills_storage: u64,
-        steepness: u64,
-        max_discount_rate: u64
+        coefficient: u64,
+        max_discount_rate: u64,
+        min_discount_rate: u64
     ) -> Result<()> {
 
         // Setting bumps values
@@ -55,8 +56,9 @@ pub mod converter_program {
             slot_threshold,
             price_maximum_age,
             max_fills_storage,
-            steepness,
-            max_discount_rate
+            coefficient,
+            max_discount_rate,
+            min_discount_rate
         )
     }
 

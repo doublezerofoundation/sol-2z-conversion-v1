@@ -1,63 +1,52 @@
 use anchor_lang::prelude::*;
 use rust_decimal::{
-    prelude::{FromPrimitive, ToPrimitive},
+    prelude::FromPrimitive,
     Decimal,
 };
 
-use crate::{
-    common::{
+use crate::common::{
         constant::{DECIMAL_PRECISION, TOKEN_DECIMALS},
         error::DoubleZeroError,
-    },
-    state::trade_registry::TradeHistory,
-};
-
-/// Calculate the sol demand
-///
-/// ### Arguments
-/// * `trade_history` - The trade history
-/// * `sol_quantity_bps` - The sol quantity in basis points
-///
-/// ### Returns
-/// * `Result<u64>` - The sol demand in basis points
-pub fn calculate_sol_demand(
-    trade_history: &Vec<TradeHistory>
-) -> Result<Decimal> {
-    let mut sol_demand = 0;
-    for trade in trade_history {
-        sol_demand += trade.amount_of_sol;
-    }
-    Ok(Decimal::from_u64(sol_demand).ok_or(error!(DoubleZeroError::InvalidSolDemand))?)
-}
+    };
 
 /// Discount function
 ///
-/// `D = Dmax * ( 1 / e ^ ( x * c ))`
+/// `D = min ( γ * (S_now - S_last) + Dmin, Dmax )`
 ///
 /// Where:
 /// - `D` is the discount rate
 /// - `Dmax` is the maximum discount rate
-/// - `x` is the sol demand
-/// - `c` is the steepness of the discount function
+/// - `Dmin` is the minimum discount rate
+/// - `γ` is the coefficient
+/// - `S_now` is the current sol demand
+/// - `S_last` is the last sol demand
 ///
 /// ### Arguments
-/// * `sol_demand` - The sol demand
+/// * `coefficient` - The coefficient
+/// * `max_discount_rate_bps` - The maximum discount rate
+/// * `min_discount_rate_bps` - The minimum discount rate
+/// * `s_last` - The last sol demand
+/// * `s_now` - The current sol demand
 ///
 /// ### Returns
 /// * `Result<Decimal>` - The discount rate
 pub fn calculate_discount_rate(
-    sol_demand: Decimal,
-    steepness_bps: u64,
+    coefficient: u64,
     max_discount_rate_bps: u64,
+    min_discount_rate_bps: u64,
+    s_last: u64,
+    s_now: u64,
 ) -> Result<Decimal> {
-    // Convert steepness to decimal
-    let steepness_decimal = Decimal::from_u64(steepness_bps)
-        .ok_or(error!(DoubleZeroError::InvalidSteepness))?
+    // Convert coefficient to decimal
+    // γ = coefficient / 100000000
+    // 0 <= γ <= 1
+    let coefficient_decimal = Decimal::from_u64(coefficient)
+        .ok_or(error!(DoubleZeroError::InvalidCoefficient))?
         .checked_div(
-            Decimal::from_u64(DECIMAL_PRECISION)
-                .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?,
+            Decimal::from_u64(100000000)
+                .ok_or(error!(DoubleZeroError::InvalidCoefficient))?,
         )
-        .ok_or(error!(DoubleZeroError::InvalidSteepness))?;
+        .ok_or(error!(DoubleZeroError::InvalidCoefficient))?;
 
     // Dmax = max_discount_rate_bps / (DECIMAL_PRECISION * 100)
     // 0 <= Dmax <= 1
@@ -69,30 +58,35 @@ pub fn calculate_discount_rate(
         )
         .ok_or(error!(DoubleZeroError::InvalidMaxDiscountRate))?;
 
-    // Validate D_max is between 0 and 1
-    if max_discount_rate_decimal > Decimal::from_u64(1).unwrap()
-        || max_discount_rate_decimal < Decimal::from_u64(0).unwrap()
-    {
-        return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
-    }
+    // Dmin = min_discount_rate_bps / (DECIMAL_PRECISION * 100)
+    // 0 <= Dmin <= Dmax
+    let min_discount_rate_decimal = Decimal::from_u64(min_discount_rate_bps)
+        .ok_or(error!(DoubleZeroError::InvalidMinDiscountRate))?
+        .checked_div(
+            Decimal::from_u64(DECIMAL_PRECISION * 100)
+                .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?,
+        )
+        .ok_or(error!(DoubleZeroError::InvalidMinDiscountRate))?;
 
-    // (x * c)
-    let exponent = sol_demand
-        .checked_mul(steepness_decimal)
-        .ok_or(error!(DoubleZeroError::DiscountCalculationError))?;
-    let exponent_f64 = exponent
-        .to_f64()
-        .ok_or(error!(DoubleZeroError::DiscountCalculationError))?;
+    // D = min ( γ * (S_now - S_last) + Dmin, Dmax )
 
-    // e^(-x * c)
-    let decay = (-exponent_f64).exp();
-    let decay_decimal =
-        Decimal::from_f64(decay).ok_or(error!(DoubleZeroError::DiscountCalculationError))?;
+    // S_now - S_last
+    msg!("Current slot: {}", s_now);
+    msg!("Last trade slot: {}", s_last);
+    let s_diff = s_now.checked_sub(s_last).ok_or(error!(DoubleZeroError::InvalidTradeSlot))?;
+    let s_diff_decimal = Decimal::from_u64(s_diff).ok_or(error!(DoubleZeroError::InvalidTradeSlot))?;
 
-    // Dmax * e^(-x * c)
-    let discount_rate_decimal = max_discount_rate_decimal
-        .checked_mul(decay_decimal)
-        .ok_or(error!(DoubleZeroError::DiscountCalculationError))?;
+    // γ * (S_now - S_last) + Dmin
+    let discount_rate_decimal = coefficient_decimal
+        .checked_mul(s_diff_decimal)
+        .ok_or(error!(DoubleZeroError::ArithmeticError))?
+        .checked_add(min_discount_rate_decimal)
+        .ok_or(error!(DoubleZeroError::ArithmeticError))?;
+
+    // min ( γ * (S_now - S_last) + Dmin, Dmax )
+    let discount_rate_decimal = discount_rate_decimal
+        .min(max_discount_rate_decimal);
+
     Ok(discount_rate_decimal)
 }
 
