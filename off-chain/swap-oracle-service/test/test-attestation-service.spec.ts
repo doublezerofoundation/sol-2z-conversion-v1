@@ -65,6 +65,5 @@ async function verifySwapSignature(swapRate: number, timestamp: number, signatur
     const keyManger: MockKeyManager = container.get(TYPES.KeyManager)
     const pubKey = await keyManger.getPublicKey()
     const signedBytes = new Uint8Array(Buffer.from(signature, 'base64')) as any;
-    const verified = await verifySignature(pubKey.publicKey, signedBytes, message);
-    return verified;
+    return await verifySignature(pubKey.publicKey, signedBytes, message);
 }
