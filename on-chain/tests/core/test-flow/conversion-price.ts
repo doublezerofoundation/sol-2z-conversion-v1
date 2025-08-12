@@ -14,11 +14,11 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
     const {lastTradeSlot} = await program.account.programStateAccount.fetch(getProgramStatePDA(program.programId));
     const currentSlot = await program.provider.connection.getSlot();
     const {coefficient, maxDiscountRate, minDiscountRate} = await fetchCurrentConfiguration(program);
-    const discountRate = (coefficient.toNumber() * (currentSlot - lastTradeSlot.toNumber()) / 100000000) + minDiscountRate.toNumber();
-    let expectedAskPrice = oraclePriceData.swapRate * (1 - discountRate / 10000);
-    if (expectedAskPrice > maxDiscountRate.toNumber()) {
-        expectedAskPrice = maxDiscountRate.toNumber();
+    let discountRate = ((coefficient.toNumber() / 100000000) * (currentSlot - lastTradeSlot.toNumber())) + (minDiscountRate.toNumber() / 10000);
+    if (discountRate > (maxDiscountRate.toNumber() / 10000)) {
+        discountRate = maxDiscountRate.toNumber() / 10000;
     }
+    const expectedAskPrice = oraclePriceData.swapRate * (1 - discountRate);
 
     const signature = await program.methods.getConversionRate({
         swapRate: new BN(oraclePriceData.swapRate),

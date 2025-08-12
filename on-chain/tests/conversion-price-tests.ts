@@ -39,35 +39,4 @@ describe("Conversion Price Tests", async () => {
         };
         await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
     });
-
-    it("should fail to get conversion price for invalid max discount rate", async () => {
-        const oraclePriceData = await getOraclePriceData();
-
-        // Set max discount rate to 10000
-        await updateConfigsAndVerify(program, {
-            ...DEFAULT_CONFIGS,
-            maxDiscountRate: new anchor.BN(10001),
-        });
-
-        await getConversionPriceToFail(program, oraclePriceData, "Invalid max discount rate");
-
-        // Revert: Set max discount rate to 5000
-        await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
-    });
-
-    it("should fail to get conversion price for invalid min discount rate", async () => {
-        const oraclePriceData = await getOraclePriceData();
-
-        // Set min discount rate to 10001
-        await updateConfigsAndVerify(program, {
-            ...DEFAULT_CONFIGS,
-            maxDiscountRate: new anchor.BN(5000),
-            minDiscountRate: new anchor.BN(5001)
-        });
-
-        await getConversionPriceToFail(program, oraclePriceData, "Invalid min discount rate");
-
-        // Revert: Set min discount rate to 500
-        await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
-    });
 });

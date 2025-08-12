@@ -26,14 +26,14 @@ describe("Config Update Tests", async () => {
 
   it("Admin user should be able to update config", async () => {
     const newConfig = {
-        ...DEFAULT_CONFIGS,
-        solQuantity: new anchor.BN(10000),
-        slotThreshold: new anchor.BN(100),
-        priceMaximumAge: new anchor.BN(100),
-        maxFillsStorage: new anchor.BN(100),
-        coefficient: new anchor.BN(100),
-        maxDiscountRate: new anchor.BN(100),
-        minDiscountRate: new anchor.BN(100),
+      ...DEFAULT_CONFIGS,
+      solQuantity: new anchor.BN(10000),
+      slotThreshold: new anchor.BN(100),
+      priceMaximumAge: new anchor.BN(100),
+      maxFillsStorage: new anchor.BN(100),
+      coefficient: new anchor.BN(100),
+      maxDiscountRate: new anchor.BN(100),
+      minDiscountRate: new anchor.BN(100),
     };
     await updateConfigsAndVerify(
       program,
@@ -56,5 +56,32 @@ describe("Config Update Tests", async () => {
       newConfig,
       ""
     )
+  });
+
+  it("should fail to update with invalid max discount rate", async () => {
+    // Set max discount rate to 10000
+    await updateConfigsAndVerifyFail(program, {
+      ...DEFAULT_CONFIGS,
+      maxDiscountRate: new anchor.BN(10001),
+    },
+      "Invalid max discount rate"
+    );
+
+    // Revert: Set max discount rate to 5000
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
+  });
+
+  it("should fail to get conversion price for invalid min discount rate", async () => {
+    // Set min discount rate to 5001
+    await updateConfigsAndVerifyFail(program, {
+      ...DEFAULT_CONFIGS,
+      maxDiscountRate: new anchor.BN(5000),
+      minDiscountRate: new anchor.BN(5001)
+    },
+      "Invalid min discount rate"
+    );
+
+    // Revert: Set min discount rate to 500
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 });
