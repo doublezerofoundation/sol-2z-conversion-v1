@@ -10,7 +10,7 @@ pub struct SetAdmin<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
-        bump,
+        bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
 

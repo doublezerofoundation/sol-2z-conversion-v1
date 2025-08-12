@@ -60,12 +60,14 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
     let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
     let vault_account_pda = pda_helper::get_vault_pda(revenue_distribution_program).0;
     let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(revenue_distribution_program).0;
+    let trade_registry_pda = pda_helper::get_trade_registry_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(deny_list_registry_pda, false),
         AccountMeta::new(fills_registry_pda, false),
+        AccountMeta::new(trade_registry_pda, false),
         AccountMeta::new(from_pub_key, false),
         AccountMeta::new(vault_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),

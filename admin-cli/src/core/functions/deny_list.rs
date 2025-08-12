@@ -96,9 +96,7 @@ pub fn view_deny_list() -> Result<(), Box<dyn Error>> {
 
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
 
-    // Load config and setup RPC client
-    let config = Config::load().map_err(|_| "Error when reading config file")?;
-    let rpc_client = RpcClient::new_with_commitment(config.rpc_url, CommitmentConfig::confirmed());
+    let rpc_client = RpcClient::new_with_commitment(admin_config.rpc_url, CommitmentConfig::confirmed());
 
     // Fetch the account data
     match rpc_client.get_account(&deny_list_registry_pda) {

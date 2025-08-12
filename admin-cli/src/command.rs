@@ -94,4 +94,7 @@ pub enum Commands {
         #[arg(short = 'a', required = true)]
         amount: String,
     },
+
+    /// View Fills Registry, which tracks individual fill records and overall aggregate statistics
+    ViewFills
 }

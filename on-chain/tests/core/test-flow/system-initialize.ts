@@ -2,7 +2,7 @@ import {
     getConfigurationRegistryPDA,
     getDenyListRegistryPDA,
     getFillsRegistryPDA,
-    getProgramDataAccountPDA, getProgramStatePDA
+    getProgramDataAccountPDA, getProgramStatePDA, getTradeRegistryPDA
 } from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair} from "@solana/web3.js";
@@ -23,17 +23,20 @@ export async function systemInitializeAndVerify(
         getConfigurationRegistryPDA(program.programId),
         getFillsRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
+        getTradeRegistryPDA(program.programId)
     ];
 
     // Accounts to be initialized should not exist before initialization
-    let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
-        pdas.map((pda) => accountExists(program.provider.connection, pda))
-    );
+    let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists, tradeRegistryExists] =
+        await Promise.all(
+            pdas.map((pda) => accountExists(program.provider.connection, pda))
+        );
 
     assert.isFalse(programStateExists, "Program State Account should not exist before initialization");
     assert.isFalse(configRegistryExists, "Configuration Registry should not exist before initialization");
     assert.isFalse(fillsRegistryExists, "Fills Registry should not exist before initialization");
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
+    assert.isFalse(tradeRegistryExists, "Trade Registry should not exist before initialization");
 
     // Initialization
     const programDataAccount = getProgramDataAccountPDA(program.programId);
@@ -61,14 +64,16 @@ export async function systemInitializeAndVerify(
 
 
     // Verify Existence of Initialized Accounts
-    [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
-        pdas.map((pda) => accountExists(program.provider.connection, pda))
-    );
+    [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists, tradeRegistryExists] =
+        await Promise.all(
+            pdas.map((pda) => accountExists(program.provider.connection, pda))
+        );
 
     assert.isTrue(programStateExists, "Program State Account should exist after initialization");
     assert.isTrue(configRegistryExists, "Configuration Registry should exist after initialization");
     assert.isTrue(fillsRegistryExists, "Fills Registry should exist after initialization");
     assert.isTrue(denyRegistryExists, "Deny List Registry should exist after initialization");
+    assert.isTrue(tradeRegistryExists, "Trade List Registry should exist after initialization");
 
     // Verify config values are initialized as given.
     const configInConfigRegistry = await fetchCurrentConfiguration(program);
