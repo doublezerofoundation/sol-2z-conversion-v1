@@ -21,22 +21,28 @@ describe('Pricing Service testcases', () => {
     })
 
     it("Should be able to get swap rate", async()=> {
-        assert.doesNotThrow(async () => {
-            console.log("Get price rate")
-            const swapRateResult = await pricingService.retrieveSwapRate();
-            console.log(swapRateResult)
-        })
+        console.log("Get price rate")
         const swapRateResult = await pricingService.retrieveSwapRate();
-        console.log(swapRateResult)
+        assert.isNotNull(swapRateResult)
+        assert.isNotNull(swapRateResult.swapRate, 'swapRate should not be null');
+        assert.isNotNull(swapRateResult.solPriceUsd, 'solPriceUsd should not be null');
+        assert.isNotNull(swapRateResult.twozPriceUsd, 'twozPriceUsd should not be null');
+        assert.isNotNull(swapRateResult.last_price_update, 'last_price_update should not be null');
+
+        assert.isNumber(swapRateResult.swapRate, 'swapRate should be a number');
+        assert.isNumber(swapRateResult.solPriceUsd, 'solPriceUsd should be a number');
+        assert.isNumber(swapRateResult.twozPriceUsd, 'twozPriceUsd should be a number');
+        assert.isString(swapRateResult.last_price_update, 'last_price_update should be a string');
     })
 
 
     it("Should be able to get health", async()=>{
-        assert.doesNotThrow(async () => {
-            console.log("Get health")
-            const healthResult = await pricingService.getHealth();
-            console.log(healthResult)
-        })
+        console.log("Get health")
+        const healthResult = await pricingService.getHealth();
+        assert.isNotNull(healthResult)
+        assert.isNotNull(healthResult.status, 'status should not be null');
+        assert.isNotNull(healthResult.serviceType, 'serviceType should not be null');
+        assert.isTrue(healthResult.hermes_connected, 'hermes_connected should be true');
     })
 
 
