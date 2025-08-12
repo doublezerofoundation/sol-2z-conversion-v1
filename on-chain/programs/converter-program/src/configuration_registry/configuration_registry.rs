@@ -16,8 +16,9 @@ pub struct ConfigurationRegistry {
     pub authorized_dequeuers: Vec<Pubkey>, // Contracts authorized to dequeue fills
 
     // Price calculation
-    pub steepness: u64, // Steepness of the discount function in basis points (0 <= steepness <= 10_000)
+    pub coefficient: u64, // Coefficient of the discount function in basis points (0 <= coefficient <= 10_000)
     pub max_discount_rate: u64, // Maximum discount rate in basis points (0 <= max_discount_rate <= 10_000)
+    pub min_discount_rate: u64, // Minimum discount rate in basis points (0 <= min_discount_rate <= 10_000)
 }
 
 impl ConfigurationRegistry {
@@ -28,16 +29,18 @@ impl ConfigurationRegistry {
         slot_threshold: u64,
         price_maximum_age: i64,
         max_fills_storage: u64,
-        steepness: u64,
-        max_discount_rate: u64
+        coefficient: u64,
+        max_discount_rate: u64,
+        min_discount_rate: u64
     ) -> Result<()> {
         self.oracle_pubkey = oracle_pubkey;
         self.sol_quantity = sol_quantity;
         self.slot_threshold = slot_threshold;
         self.price_maximum_age = price_maximum_age;
         self.max_fills_storage = max_fills_storage;
-        self.steepness = steepness;
+        self.coefficient = coefficient;
         self.max_discount_rate = max_discount_rate;
+        self.min_discount_rate = min_discount_rate;
         Ok(())
     }
 
@@ -57,11 +60,14 @@ impl ConfigurationRegistry {
         if let Some(max_fills_storage) = input.max_fills_storage {
             self.max_fills_storage = max_fills_storage;
         }
-        if let Some(steepness) = input.steepness {
-            self.steepness = steepness;
+        if let Some(coefficient) = input.coefficient {
+            self.coefficient = coefficient;
         }
         if let Some(max_discount_rate) = input.max_discount_rate {
             self.max_discount_rate = max_discount_rate;
+        }
+        if let Some(min_discount_rate) = input.min_discount_rate {
+            self.min_discount_rate = min_discount_rate;
         }
         Ok(())
     }

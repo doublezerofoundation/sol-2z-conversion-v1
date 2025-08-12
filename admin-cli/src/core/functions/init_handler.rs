@@ -34,8 +34,9 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         admin_config.slot_threshold.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
         admin_config.max_fills_storage.to_le_bytes().to_vec(),
-        admin_config.steepness.to_le_bytes().to_vec(),
+        admin_config.coefficient.to_le_bytes().to_vec(),
         admin_config.max_discount_rate.to_le_bytes().to_vec(),
+        admin_config.min_discount_rate.to_le_bytes().to_vec(),
     ].concat();
 
 

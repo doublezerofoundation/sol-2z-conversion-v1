@@ -49,18 +49,29 @@ describe("Conversion Price Tests", async () => {
 
         // Set max discount rate to 10000
         await updateConfigsAndVerify(program, getDefaultKeyPair(), {
+            ...DEFAULT_CONFIGS,
             maxDiscountRate: new anchor.BN(10001),
-            steepness: new anchor.BN(90),
-            solQuantity: new anchor.BN(25000000000),
-            slotThreshold: new anchor.BN(134),
-            priceMaximumAge: new anchor.BN(324),
-            maxFillsStorage: new anchor.BN(234),
-            oraclePubkey: DEFAULT_CONFIGS.oraclePubkey,
         });
 
         await getConversionPriceToFail(program, oraclePriceData, getDefaultKeyPair(), "Invalid max discount rate");
 
         // Revert: Set max discount rate to 5000
+        await updateConfigsAndVerify(program, getDefaultKeyPair(), DEFAULT_CONFIGS);
+    });
+
+    it("should fail to get conversion price for invalid min discount rate", async () => {
+        const oraclePriceData = await getOraclePriceData();
+
+        // Set min discount rate to 10001
+        await updateConfigsAndVerify(program, getDefaultKeyPair(), {
+            ...DEFAULT_CONFIGS,
+            maxDiscountRate: new anchor.BN(5000),
+            minDiscountRate: new anchor.BN(5001)
+        });
+
+        await getConversionPriceToFail(program, oraclePriceData, getDefaultKeyPair(), "Invalid min discount rate");
+
+        // Revert: Set min discount rate to 500
         await updateConfigsAndVerify(program, getDefaultKeyPair(), DEFAULT_CONFIGS);
     });
 });

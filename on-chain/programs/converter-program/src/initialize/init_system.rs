@@ -78,8 +78,9 @@ impl<'info> InitializeSystem<'info> {
         slot_threshold: u64,
         price_maximum_age: i64,
         max_fills_storage: u64,
-        steepness: u64,
-        max_discount_rate: u64
+        coefficient: u64,
+        max_discount_rate: u64,
+        min_discount_rate: u64
     ) -> Result<()> {
 
         // Initialize configuration_registry registry with provided values
@@ -89,8 +90,9 @@ impl<'info> InitializeSystem<'info> {
             slot_threshold,
             price_maximum_age,
             max_fills_storage,
-            steepness,
-            max_discount_rate
+            coefficient,
+            max_discount_rate,
+            min_discount_rate
         )?;
 
         // Set upgrade authority as admin
