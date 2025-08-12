@@ -31,19 +31,19 @@ use crate::common::{
 /// ### Returns
 /// * `Result<Decimal>` - The discount rate
 pub fn calculate_discount_rate(
-    coefficient_bps: u64,
+    coefficient: u64,
     max_discount_rate_bps: u64,
     min_discount_rate_bps: u64,
     s_last: u64,
     s_now: u64,
 ) -> Result<Decimal> {
     // Convert coefficient to decimal
-    // γ = coefficient_bps / (DECIMAL_PRECISION * 100)
+    // γ = coefficient / 100000000
     // 0 <= γ <= 100
-    let coefficient_decimal = Decimal::from_u64(coefficient_bps)
+    let coefficient_decimal = Decimal::from_u64(coefficient)
         .ok_or(error!(DoubleZeroError::InvalidCoefficient))?
         .checked_div(
-            Decimal::from_u64(DECIMAL_PRECISION * 100)
+            Decimal::from_u64(100000000)
                 .ok_or(error!(DoubleZeroError::InvalidCoefficient))?,
         )
         .ok_or(error!(DoubleZeroError::InvalidCoefficient))?;
