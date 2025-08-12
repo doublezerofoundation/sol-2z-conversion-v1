@@ -68,20 +68,6 @@ pub fn calculate_discount_rate(
         )
         .ok_or(error!(DoubleZeroError::InvalidMinDiscountRate))?;
 
-    // Validate D_max is between 0 and 1
-    if max_discount_rate_decimal > Decimal::from_u64(1).unwrap()
-        || max_discount_rate_decimal < Decimal::from_u64(0).unwrap()
-    {
-        return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
-    }
-
-    // Validate D_min is between 0 and D_max
-    if min_discount_rate_decimal > max_discount_rate_decimal
-        || min_discount_rate_decimal < Decimal::from_u64(0).unwrap()
-    {
-        return Err(error!(DoubleZeroError::InvalidMinDiscountRate));
-    }
-
     // D = min ( γ * (S_now - S_last) + Dmin, Dmax )
 
     // S_now - S_last

@@ -1,6 +1,6 @@
 use crate::{
     common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError},
-    configuration_registry::update_configuration::ConfigurationRegistryInput
+    configuration_registry::update_configuration::ConfigurationRegistryInput,
 };
 use anchor_lang::prelude::*;
 
@@ -31,8 +31,18 @@ impl ConfigurationRegistry {
         max_fills_storage: u64,
         coefficient: u64,
         max_discount_rate: u64,
-        min_discount_rate: u64
+        min_discount_rate: u64,
     ) -> Result<()> {
+        // Validate D_max is between 0 and 1
+        if max_discount_rate > 10000 {
+            return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
+        }
+
+        // Validate D_min is between 0 and D_max
+        if min_discount_rate > max_discount_rate {
+            return Err(error!(DoubleZeroError::InvalidMinDiscountRate));
+        }
+
         self.oracle_pubkey = oracle_pubkey;
         self.sol_quantity = sol_quantity;
         self.slot_threshold = slot_threshold;
@@ -64,16 +74,21 @@ impl ConfigurationRegistry {
             self.coefficient = coefficient;
         }
         if let Some(max_discount_rate) = input.max_discount_rate {
+            if max_discount_rate > 10000 {
+                return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
+            }
             self.max_discount_rate = max_discount_rate;
         }
         if let Some(min_discount_rate) = input.min_discount_rate {
+            if min_discount_rate > self.max_discount_rate {
+                return Err(error!(DoubleZeroError::InvalidMinDiscountRate));
+            }
             self.min_discount_rate = min_discount_rate;
         }
         Ok(())
     }
 
     pub fn add_dequeuer(&mut self, new_pubkey: Pubkey) -> Result<bool> {
-
         // Add only if not already present
         if !self.authorized_dequeuers.contains(&new_pubkey) {
             // Enforce the maximum limit
@@ -81,7 +96,7 @@ impl ConfigurationRegistry {
                 return err!(DoubleZeroError::MaxAuthorizedDequeuersReached);
             }
             self.authorized_dequeuers.push(new_pubkey);
-            Ok(true)  // return true if added
+            Ok(true) // return true if added
         } else {
             Ok(false) // already present, no change
         }
@@ -93,7 +108,3 @@ impl ConfigurationRegistry {
         Ok(before_len != self.authorized_dequeuers.len()) // true if something was removed
     }
 }
-
-
-
-
