@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test": "npx ts-mocha -p ./tsconfig.json test/**/*.spec.ts",
     "build": "tsc",
     "start": "node dist/app.js",
     "dev": "ts-node src/index.ts"
@@ -12,10 +13,16 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/chai": "^5.2.2",
+    "@types/expect": "^1.20.4",
     "@types/express": "^5.0.3",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^24.0.15",
+    "chai": "^5.2.1",
+    "mocha": "^11.7.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.9.2"
   },
   "dependencies": {
     "@aws-sdk/client-cloudwatch": "^3.859.0",
@@ -35,6 +42,7 @@
     "js-sha3": "^0.9.3",
     "redis": "^5.6.1",
     "reflect-metadata": "^0.2.2",
-    "secp256k1": "^5.0.1"
+    "secp256k1": "^5.0.1",
+    "ts-mocha": "^11.1.0"
   }
 }
