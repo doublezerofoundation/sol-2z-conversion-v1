@@ -59,7 +59,7 @@ pub struct ProgramStateAccount {
     pub admin: Pubkey,
     pub is_halted: bool,
     pub bump_registry: BumpRegistry,
-    pub trade_history_list: Vec<TradeHistory>,
+    pub last_trade_slot: u64,
 }
 
 impl AccountDeserialize for ProgramStateAccount {
