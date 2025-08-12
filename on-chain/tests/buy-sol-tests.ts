@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program} from "@coral-xyz/anchor";
 import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
+import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
 import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
 import {initializeMockTransferSystemIfNeeded, mint2z} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
@@ -23,7 +24,7 @@ describe("Buy Sol Tests", () => {
     anchor.setProvider(anchor.AnchorProvider.env());
 
     const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
-    const mockTransferProgram = anchor.workspace.mockTransferProgram as Program<MockTransferProgram>;
+    const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as anchor.Idl, anchor.getProvider());
     let adminKeyPair: Keypair = getDefaultKeyPair();
     let mockTransferProgramPDAs;
     let tokenAccountForUser: PublicKey;

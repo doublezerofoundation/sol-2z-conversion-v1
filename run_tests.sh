@@ -9,8 +9,8 @@ UNIT_TESTS=(
     deny-list-test
     conversion-price-test
     system-state-test
-    # buy-sol-test
-    # mock-transfer-program-test
+    buy-sol-test
+    mock-transfer-program-test
 )
 
 E2E_TESTS=(
@@ -162,6 +162,7 @@ build_program() {
     local PROGRAM_NAME=$1
     log_info "Building the $PROGRAM_NAME program..."
     anchor build
+    yarn install
 }
 
 deploy_program() {
@@ -248,11 +249,6 @@ if [ "$TEST_TYPE" == "e2e" ]; then
     # Install the dependencies for the e2e test suite
     cd ./e2e || exit 1
     npm install
-    cd ../
-else
-    # Install the dependencies for the unit tests
-    cd ./on-chain || exit 1
-    yarn install
     cd ../
 fi
 
