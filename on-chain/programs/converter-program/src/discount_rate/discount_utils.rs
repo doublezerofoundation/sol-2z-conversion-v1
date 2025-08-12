@@ -9,7 +9,7 @@ use crate::{
         constant::{DECIMAL_PRECISION, TOKEN_DECIMALS},
         error::DoubleZeroError,
     },
-    state::program_state::TradeHistory,
+    state::trade_registry::TradeHistory,
 };
 
 /// Calculate the sol demand
@@ -21,12 +21,11 @@ use crate::{
 /// ### Returns
 /// * `Result<u64>` - The sol demand in basis points
 pub fn calculate_sol_demand(
-    trade_history: &Vec<TradeHistory>,
-    sol_quantity: u64,
+    trade_history: &Vec<TradeHistory>
 ) -> Result<Decimal> {
     let mut sol_demand = 0;
     for trade in trade_history {
-        sol_demand += trade.num_of_trades * sol_quantity;
+        sol_demand += trade.amount_of_sol;
     }
     Ok(Decimal::from_u64(sol_demand).ok_or(error!(DoubleZeroError::InvalidSolDemand))?)
 }

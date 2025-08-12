@@ -9,6 +9,7 @@ UNIT_TESTS=(
     conversion-price-test
     admin-change-test
     mock-transfer-program-test
+    buy-sol-test
 )
 
 TEST_TYPE="unit"
@@ -100,32 +101,30 @@ kill_validator() {
     fi
 }
 
-build_program() {
-    log_section "Building program..."
+build_and_deploy_converter_program() {
+    log_section "Build & Deploy Converter program..."
+    cmd=(./on-chain/build_and_deploy.sh )
 
-    if ! anchor build; then
-        log_error "Program build failed"
-        FAILED_TESTS+=("$TEST_SCRIPT")
-        EXIT_CODE=1
-        return 1
-    fi
-
-    log_success "Program built successfully"
-}
-
-deploy_program() {
-    log_section "Deploying Anchor program..."
-
-    if ! anchor deploy \
-        --program-name converter-program \
-        --program-keypair .keys/converter-program-keypair.json; then
+    if ! "${cmd[@]}"; then
         log_error "Converter Program deployment failed"
         FAILED_TESTS+=("$TEST_SCRIPT")
         EXIT_CODE=1
         return 1
     fi
     log_success "Successfully deployed the converter program into the network!"
+}
 
+build_and_deploy_mock_double_zero_program() {
+    log_section "Build & Deploy Mock Double Zero program..."
+    cmd=(./mock-double-zero-program/build_and_deploy.sh )
+
+    if ! "${cmd[@]}"; then
+        log_error "Mock Double Zero Program deployment failed"
+        FAILED_TESTS+=("$TEST_SCRIPT")
+        EXIT_CODE=1
+        return 1
+    fi
+    log_success "Successfully deployed the Mock Double Zero Program into the network!"
 }
 
 extract_failed_tests() {
@@ -146,13 +145,13 @@ extract_failed_tests() {
 
 prepare_test() {
   restart_validator
-  build_program
-  deploy_program
+  build_and_deploy_converter_program
+  build_and_deploy_mock_double_zero_program
 }
 
 run_test() {
     local TEST_SCRIPT=$1
-    local TEST_OUTPUT_FILE="logs/anchor-$TEST_SCRIPT.log"
+    local TEST_OUTPUT_FILE="../test-logs/anchor-$TEST_SCRIPT.log"
     log_section "Running test: $TEST_SCRIPT"
 
 
@@ -209,7 +208,7 @@ print_test_summary() {
 cd "$(dirname "$0")" || exit 1
 LOG_FILES=""
 FAILED_TEST_DETAILS=""
-mkdir -p logs
+mkdir -p test-logs
 
 echo "================================================================================================"
 echo "         					RUN_TESTS (CONVERTER PROGRAM) "
@@ -241,6 +240,9 @@ prepare_test
 # Handle test type
 case "$TEST_TYPE" in
   unit)
+    ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    pushd "$ROOT_DIR/on-chain" > /dev/null
+
     log_section "RUNNING UNIT TESTS"
     for test_script in "${UNIT_TESTS[@]}"; do
         run_test "$test_script" || true

@@ -7,9 +7,8 @@ import {getTokenBalance} from "../utils/token-utils";
 import * as anchor from "@coral-xyz/anchor";
 import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 import {MockTransferProgram} from "../../../target/types/mock_transfer_program";
-import {getOraclePriceData, OraclePriceData} from "../utils/price-oracle";
+import {OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
-import {getConversionPriceAndVerify} from "./conversion-price";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
@@ -17,7 +16,8 @@ export async function buySolAndVerify(
     senderTokenAccount: PublicKey,
     bidPrice: number,
     signer: Keypair,
-    oraclePriceData: OraclePriceData
+    oraclePriceData: OraclePriceData,
+    currentConfigs = DEFAULT_CONFIGS,
 ) {
     const pdas = getMockProgramPDAs(mockTransferProgram.programId);
     const tokenBalanceBefore = await getTokenBalance(mockTransferProgram.provider.connection, senderTokenAccount);
@@ -51,8 +51,8 @@ export async function buySolAndVerify(
         assert.fail("Buy Sol  failed");
     }
 
-    const tokenBalanceChange = Number(DEFAULT_CONFIGS.solQuantity) * bidPrice / LAMPORTS_PER_SOL;
-    const solBalanceChange = Number(DEFAULT_CONFIGS.solQuantity);
+    const tokenBalanceChange = Number(currentConfigs.solQuantity) * bidPrice / LAMPORTS_PER_SOL;
+    const solBalanceChange = Number(currentConfigs.solQuantity);
     const tokenBalanceAfter = await getTokenBalance(program.provider.connection, senderTokenAccount);
     const solBalanceAfter = await program.provider.connection.getBalance(signer.publicKey);
     const protocolTreasuryBalanceAfter =

@@ -44,7 +44,8 @@ pub mod converter_program {
             ctx.bumps.configuration_registry,
             ctx.bumps.program_state,
             ctx.bumps.fills_registry,
-            ctx.bumps.deny_list_registry
+            ctx.bumps.deny_list_registry,
+            ctx.bumps.trade_registry
         )?;
 
         // Calling Init instruction
