@@ -39,7 +39,7 @@ pub fn calculate_discount_rate(
 ) -> Result<Decimal> {
     // Convert coefficient to decimal
     // γ = coefficient / 100000000
-    // 0 <= γ <= 100
+    // 0 <= γ <= 1
     let coefficient_decimal = Decimal::from_u64(coefficient)
         .ok_or(error!(DoubleZeroError::InvalidCoefficient))?
         .checked_div(
