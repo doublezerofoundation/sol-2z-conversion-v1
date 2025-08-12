@@ -151,36 +151,3 @@ pub fn calculate_conversion_rate_with_discount(
     // Convert to basis points
     Ok(coversion_rate)
 }
-
-/// Calculate the ask price with the conversion rate
-///
-/// `P = Q * P_rate`
-///
-/// Where:
-/// - `P` is the ask price
-/// - `Q` is the sol quantity
-/// - `P_rate` is the conversion rate
-///
-/// ### Arguments
-/// * `conversion_rate` - The conversion rate
-/// * `sol_quantity` - The sol quantity
-///
-/// ### Returns
-/// * `Result<Decimal>` - The ask price in 2Z Token
-pub fn calculate_ask_price_with_conversion_rate(
-    conversion_rate: Decimal,
-    sol_quantity: u64,
-) -> Result<Decimal> {
-    let sol_quantity_decimal = Decimal::from_u64(sol_quantity)
-        .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?
-        .checked_div(
-            Decimal::from_u64(LAMPORTS_PER_SOL).ok_or(error!(DoubleZeroError::InvalidSolQuantity))?,
-        )
-        .ok_or(error!(DoubleZeroError::InvalidSolQuantity))?;
-
-    let ask_price = sol_quantity_decimal
-        .checked_mul(conversion_rate)
-        .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
-
-    Ok(ask_price)
-}
