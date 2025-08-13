@@ -117,7 +117,7 @@ resource "aws_autoscaling_group" "this" {
       {
         Name        = "${var.name_prefix}-swap-oracle"
         Environment = var.environment
-        Service = var.ecr_repository
+        Service     = "double-zero-${var.container_name}"
       },
       var.additional_tags
     )

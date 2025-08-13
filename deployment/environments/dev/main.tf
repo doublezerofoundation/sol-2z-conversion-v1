@@ -11,7 +11,7 @@ terraform {
   # Backend configuration for environment-level state
   backend "s3" {
     bucket         = "doublezero-terraform-state-bucket"
-    key            = "environments/dev3-logs/terraform.tfstate"
+    key            = "environments/dev/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
     encrypt        = true
@@ -241,6 +241,7 @@ module "ec2" {
   enable_swap_oracle_service = var.enable_swap_oracle_service
   enable_indexer_service     = var.enable_indexer_service
   swap_oracle_service_image_tag = var.swap_oracle_service_image_tag
+  indexer_service_image_tag = var.indexer_service_image_tag
 
   # # Use the IAM instance profile from the account level
   # # This requires modifying the EC2 module to accept an instance profile name

@@ -4,24 +4,39 @@ set -e
 ENV="dev3"
 AWS_REGION="us-east-1"
 IMAGE_TAG="v1.0.0"
-SERVICE_NAME="swap-oracle-service"
+SERVICE_NAME=""
 ECR_REGISTRY=""
-ECR_REPOSITORY="double-zero-oracle-pricing-service"
+ECR_REPOSITORY=""
 
+# Service configurations
+declare -A SERVICE_CONFIGS
+SERVICE_CONFIGS["swap-oracle-service"]="double-zero-oracle-pricing-service"
+SERVICE_CONFIGS["indexer-service"]="double-zero-indexer-service"
 
 # Function to display usage
 help() {
-    echo "Usage: $0 [OPTIONS]"
+    echo "Usage: $0 [COMMAND] [OPTIONS]"
+    echo "Commands:"
+    echo "  publish                     Publish service(s) to ECR"
+    echo "  deploy                      Deploy service(s)"
+    echo "  publish-and-deploy          Publish and deploy service(s)"
+    echo ""
     echo "Options:"
     echo "  --env ENV                   Environment"
     echo "  --region REGION             AWS Region (default: us-east-1)"
     echo "  --image-tag TAG             Docker image tag"
-    echo "  --service-name NAME         Service name"
-    echo "  --ecr-repository REPO       ECR repository name"
+    echo "  --service-name NAME         Service name (swap-oracle-service|indexer-service)"
+    echo "                              If not specified, both services will be processed"
+    echo "  --ecr-repository REPO       ECR repository name (overrides default)"
     echo "  -h, --help                  Display this help message"
     echo ""
-    echo "Example:"
-    echo "  $0 --env prod --region us-west-2 --image-tag prod-v2.0.0"
+    echo "Available services:"
+    echo "  - swap-oracle-service (ECR: double-zero-oracle-pricing-service)"
+    echo "  - indexer-service (ECR: double-zero-indexer-service)"
+    echo ""
+    echo "Examples:"
+    echo "  $0 publish --env prod --image-tag v2.0.0"
+    echo "  $0 publish --env prod --image-tag v2.0.0 --service-name swap-oracle-service"
     exit 1
 }
 
@@ -40,7 +55,6 @@ case $COMMAND in
         help
         ;;
 esac
-
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -75,35 +89,82 @@ while [[ $# -gt 0 ]]; do
 done
 
 IMAGE_TAG=$ENV-$IMAGE_TAG
+
+get_services_to_process() {
+    if [[ -n "$SERVICE_NAME" ]]; then
+        if [[ -z "${SERVICE_CONFIGS[$SERVICE_NAME]}" ]]; then
+            echo "Error: Invalid service name '$SERVICE_NAME'"
+            echo "Available services:" "${!SERVICE_CONFIGS[@]}"
+            exit 1
+        fi
+        echo "$SERVICE_NAME"
+    else
+        echo "${!SERVICE_CONFIGS[@]}"
+    fi
+}
+
+get_ecr_repository() {
+    local service_name="$1"
+    if [[ -n "$ECR_REPOSITORY" ]]; then
+        echo "$ECR_REPOSITORY"
+    else
+        echo "${SERVICE_CONFIGS[$service_name]}"
+    fi
+}
+
 echo "=== Deployment Configuration ==="
 echo "Environment: $ENV"
 echo "AWS Region: $AWS_REGION"
 echo "Image Tag: $IMAGE_TAG"
-echo "Service Name: $SERVICE_NAME"
-echo "ECR Repository: $ECR_REPOSITORY"
-echo "ECR Registry: ${ECR_REGISTRY:-'(will be auto-detected)'}"
+echo "Service Name: ${SERVICE_NAME:-'ALL SERVICES'}"
 echo "================================"
 
-
 publish() {
-  echo "Publish the image to ECR"
+    local services=($(get_services_to_process))
 
-  if [[ ! -d "../../off-chain/$SERVICE_NAME" ]]; then
-      echo "Error: Offchain component directory not found: $SERVICE_NAME"
-      exit 1
-  fi
-  pushd "../../off-chain/$SERVICE_NAME" > /dev/null
-  ./build_and_deploy.sh --region "$AWS_REGION" --env "$ENV" --repository "$ECR_REPOSITORY" --tag "$IMAGE_TAG"
-  popd > /dev/null
+    for service in "${services[@]}"; do
+        local repository=$(get_ecr_repository "$service")
 
+        echo "=== Publishing $service to ECR ==="
+        echo "Service: $service"
+        echo "ECR Repository: $repository"
 
+        if [[ ! -d "../../off-chain/$service" ]]; then
+            echo "Error: Offchain component directory not found: $service"
+            exit 1
+        fi
+
+        pushd "../../off-chain/$service" > /dev/null
+        ./build_and_deploy.sh --region "$AWS_REGION" --env "$ENV" --repository "$repository" --tag "$IMAGE_TAG"
+        popd > /dev/null
+
+        echo "✅ Successfully published $service"
+        echo ""
+    done
 }
 
 deploy() {
-  ./deploy_application.sh --env $ENV --region $AWS_REGION --image-tag $IMAGE_TAG  --ecr-repository $ECR_REPOSITORY  --container-name $SERVICE_NAME
+    local services=($(get_services_to_process))
+
+    for service in "${services[@]}"; do
+        local repository=$(get_ecr_repository "$service")
+
+        echo "=== Deploying $service ==="
+        echo "Service: $service"
+        echo "ECR Repository: $repository"
+
+        ./deploy_application.sh --env $ENV --region $AWS_REGION --image-tag $IMAGE_TAG --ecr-repository $repository --container-name $service
+
+        echo "✅ Successfully deployed $service"
+        echo ""
+    done
 }
 
 main() {
+    local services=($(get_services_to_process))
+
+    echo "Services to process: ${services[*]}"
+    echo ""
 
     case $COMMAND in
         publish)
@@ -118,10 +179,7 @@ main() {
             ;;
     esac
 
-    echo "Operation '$COMMAND' completed successfully!"
+    echo "Operation '$COMMAND' completed successfully for all specified services!"
 }
 
-# Run main function
 main
-
-

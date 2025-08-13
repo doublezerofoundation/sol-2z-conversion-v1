@@ -26,4 +26,5 @@ module "indexer_service_ec2" {
   security_groups   = var.security_groups
   target_group_arns = var.target_group_arns
   instance_profile_name = var.instance_profile_name
+  indexer_service_image_tag = var.indexer_service_image_tag
 }
