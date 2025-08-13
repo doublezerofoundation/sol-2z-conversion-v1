@@ -9,8 +9,12 @@ import bs58 from 'bs58';
 import {Keypair} from "@solana/web3.js";
 import { injectable } from 'inversify';
 
+export interface IKeyManager {
+    getKeyPair(): Promise<Uint8Array>;
+    getKeyPairSigner(): Promise<KeyPairSigner>;
+}
 @injectable()
-export class KeyManager {
+export class KeyManager implements IKeyManager {
     private awsSSM: any;
     constructor() {
         this.awsSSM = new SSMClient({
@@ -25,7 +29,7 @@ export class KeyManager {
         return await this.loadKeyPairSignerFromParameterStore();
     }
 
-    async loadKeysFromParameterStore(): Promise<Uint8Array> {
+    private async loadKeysFromParameterStore(): Promise<Uint8Array> {
         const params:GetParameterCommandInput = {
             Name: `/ml/oracle-pricing-key`,
             WithDecryption: true
@@ -45,7 +49,7 @@ export class KeyManager {
 
     }
 
-    async loadKeyPairSignerFromParameterStore(): Promise<KeyPairSigner> {
+    private async loadKeyPairSignerFromParameterStore(): Promise<KeyPairSigner> {
         const params:GetParameterCommandInput = {
             Name: `/ml/oracle-pricing-key`,
             WithDecryption: true

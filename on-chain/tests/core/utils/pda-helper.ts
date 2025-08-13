@@ -7,7 +7,6 @@ import DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
 import MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
 import MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
 import MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
-import TRADE_REGISTRY_SEED = Seeds.TRADE_REGISTRY_SEED;
 
 export function getConfigurationRegistryPDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
@@ -31,13 +30,6 @@ export function getFillsRegistryPDA(programId: PublicKey) {
 export function getDenyListRegistryPDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(DENY_LIST_REGISTRY_SEED)],
-        programId
-    )[0]
-}
-
-export function getTradeRegistryPDA(programId: PublicKey) {
-    return PublicKey.findProgramAddressSync(
-        [Buffer.from(TRADE_REGISTRY_SEED)],
         programId
     )[0]
 }

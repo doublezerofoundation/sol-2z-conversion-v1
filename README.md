@@ -210,12 +210,6 @@ cargo run -p admin-cli -- toggle-system-state --activate
 cargo run -p admin-cli -- toggle-system-state --pause
 ```
 
-### Check System State
-Checks the current state of the system.
-```sh
-cargo run -p admin-cli -- view-system-state
-```
-
 ### Set Admin
 Sets the admin of the system. Only the program deployer can set/change the admin.
 ```sh

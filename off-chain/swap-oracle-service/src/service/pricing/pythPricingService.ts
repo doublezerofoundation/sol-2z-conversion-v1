@@ -1,11 +1,11 @@
-import {PricingServiceBase} from "./pricingService";
+import {PricingServiceBase} from "./IPricingService";
 import {HermesClient, PriceUpdate} from "@pythnetwork/hermes-client";
 import {HealthCheckResult, HealthStatus, PriceFeed, PricingServicesConfig} from "../../types/common";
 import {CacheService} from "../cache/cacheService";
 import axios from "axios";
 const ENV:string = process.env.ENV || 'dev';
 import {injectable} from "inversify";
-import SwapRateService from "../swap/swapRateService";
+import ISwapRateService from "../swap/ISwapRateService";
 
 @injectable()
 export default class PythPricingService extends PricingServiceBase {
@@ -30,7 +30,7 @@ export default class PythPricingService extends PricingServiceBase {
         this.cacheService = cacheService;
     }
 
-    setSwapRateService(swapRateService: SwapRateService): void {
+    setSwapRateService(swapRateService: ISwapRateService): void {
         this.swapRateService = swapRateService;
     }
 

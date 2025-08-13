@@ -1,7 +1,7 @@
-import SwapRateService from "../swap/swapRateService";
+import ISwapRateService from "../swap/ISwapRateService";
 import {HealthCheckResult, PriceRate, PricingServicesConfig} from "../../types/common";
 
-export  interface PricingService {
+export  interface IPricingService {
     init(): void;
     getPricingServiceType(): string;
     fetchPrice(feedID: string): Promise<any>;
@@ -10,9 +10,9 @@ export  interface PricingService {
     getHealth(): Promise<HealthCheckResult>;
 }
 
-export abstract class PricingServiceBase implements PricingService {
+export abstract class PricingServiceBase implements IPricingService {
     public pricingServicesConfig: PricingServicesConfig;
-    public swapRateService: SwapRateService;
+    public swapRateService: ISwapRateService;
 
     async swapRateCal(solPriceData: any, twozPriceData: any): Promise<PriceRate> {
         return this.swapRateService.swapRateCalculation(solPriceData, twozPriceData);

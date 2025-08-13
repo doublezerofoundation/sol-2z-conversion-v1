@@ -19,10 +19,7 @@ use crate::{
         },
         structs::OraclePriceData,
     },
-    state::{
-        trade_registry::TradeRegistry,
-        program_state::ProgramStateAccount
-    },
+    state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
@@ -53,12 +50,6 @@ pub struct BuySol<'info> {
         bump = program_state.bump_registry.fills_registry_bump,
     )]
     pub fills_registry: Account<'info, FillsRegistry>,
-    #[account(
-        mut,
-        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
-        bump = program_state.bump_registry.trade_registry_bump,
-    )]
-    pub trade_registry: Account<'info, TradeRegistry>,
     #[account(
         mut,
         token::mint = double_zero_mint,
@@ -205,11 +196,6 @@ impl<'info> BuySol<'info> {
             epoch: clock.epoch,
         });
 
-        // Adding it to Trade History
-        self.trade_registry.update_trade_registry(
-            clock.epoch,
-            sol_quantity
-        )?;
         Ok(())
     }
 }
