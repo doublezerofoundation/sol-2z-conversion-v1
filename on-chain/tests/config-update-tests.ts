@@ -1,16 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../target/types/converter_program";
-import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";
+import { setup } from "./core/setup";
+import { airdrop, getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
-import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
+import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 
-describe("Config Update Tests", () => {
-  // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
-
-  const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
+describe("Config Update Tests", async () => {
+  const program = await setup();
   const adminKeyPair = getDefaultKeyPair();
 
   before("Initialize the system if needed", async () => {
@@ -18,50 +14,74 @@ describe("Config Update Tests", () => {
   });
 
   it("Non admin user should not be able to update config", async () => {
-    const nonAdminUserKeyPair = anchor.web3.Keypair.generate();
-    await airdropToActivateAccount(program.provider.connection, nonAdminUserKeyPair.publicKey);
+    const nonAdminUserKeyPair = await getRandomKeyPair(program.provider.connection);
+    await airdrop(program.provider.connection, nonAdminUserKeyPair.publicKey, 5000000000);
     await updateConfigsAndVerifyFail(
-        program,
-        nonAdminUserKeyPair,
-        DEFAULT_CONFIGS,
-        "Unauthorized Admin"
+      program,
+      DEFAULT_CONFIGS,
+      "Unauthorized Admin",
+      nonAdminUserKeyPair
     )
   });
 
   it("Admin user should be able to update config", async () => {
     const newConfig = {
-        ...DEFAULT_CONFIGS,
-        solQuantity: new anchor.BN(10000),
-        slotThreshold: new anchor.BN(100),
-        priceMaximumAge: new anchor.BN(100),
-        maxFillsStorage: new anchor.BN(100),
-        coefficient: new anchor.BN(100),
-        maxDiscountRate: new anchor.BN(100),
-        minDiscountRate: new anchor.BN(100),
+      ...DEFAULT_CONFIGS,
+      solQuantity: new anchor.BN(10000),
+      slotThreshold: new anchor.BN(100),
+      priceMaximumAge: new anchor.BN(100),
+      maxFillsStorage: new anchor.BN(100),
+      coefficient: new anchor.BN(100),
+      maxDiscountRate: new anchor.BN(100),
+      minDiscountRate: new anchor.BN(100),
     };
     await updateConfigsAndVerify(
-        program,
-        adminKeyPair,
-        newConfig
+      program,
+      newConfig
     );
 
     // return the config to original values
     await updateConfigsAndVerify(
-        program,
-        adminKeyPair,
-        DEFAULT_CONFIGS
+      program,
+      DEFAULT_CONFIGS
     );
   });
 
   it("Admin user should not be able to update config with invalid values", async () => {
     const newConfig = {
-        invalidKey: new anchor.BN(10000),
+      invalidKey: new anchor.BN(10000),
     };
     await updateConfigsAndVerifyFail(
-        program,
-        adminKeyPair,
-        newConfig,
-        ""
+      program,
+      newConfig,
+      ""
     )
+  });
+
+  it("should fail to update with invalid max discount rate", async () => {
+    // Set max discount rate to 10000
+    await updateConfigsAndVerifyFail(program, {
+      ...DEFAULT_CONFIGS,
+      maxDiscountRate: new anchor.BN(10001),
+    },
+      "Invalid max discount rate"
+    );
+
+    // Revert: Set max discount rate to 5000
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
+  });
+
+  it("should fail to get conversion price for invalid min discount rate", async () => {
+    // Set min discount rate to 5001
+    await updateConfigsAndVerifyFail(program, {
+      ...DEFAULT_CONFIGS,
+      maxDiscountRate: new anchor.BN(5000),
+      minDiscountRate: new anchor.BN(5001)
+    },
+      "Invalid min discount rate"
+    );
+
+    // Revert: Set min discount rate to 500
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 });

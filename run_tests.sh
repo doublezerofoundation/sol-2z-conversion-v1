@@ -1,260 +1,279 @@
 #!/bin/bash
-set -e  # Exit immediately if any command fails
 
+# -------------------- Config --------------------
 UNIT_TESTS=(
     system-initialize-test
+    admin-change-test
     config-update-test
     dequeuer-management-test
     deny-list-test
     conversion-price-test
-    admin-change-test
-    mock-transfer-program-test
+    system-state-test
     buy-sol-test
+    mock-transfer-program-test
+)
+
+E2E_TESTS=(
+    admin-flow
 )
 
 TEST_TYPE="unit"
-FAILED_TESTS=()
-EXIT_CODE=0
+QUIET_MODE=0
+BASE_RPC_PORT=8899
+DEBUG_MODE=0
 
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m'
-
-log_info() {
-    echo -e "${BLUE}ℹ️ INFO:${NC} $1"
-}
-
-log_success() {
-    echo -e "${GREEN}✅ SUCCESS:${NC} $1"
-}
-
-log_warning() {
-    echo -e "${YELLOW}⚠️ WARNING:${NC} $1"
-}
-
-log_error() {
-    echo -e "${RED}❌ ERROR:${NC} $1"
-}
-
-log_section() {
-    echo ""
-    echo -e "${BLUE}=============================================${NC}"
-    echo -e "${BLUE}$1${NC}"
-    echo -e "${BLUE}=============================================${NC}"
-}
-
-show_help() {
-  echo "Usage: $0 [OPTIONS]"
-  echo ""
-  echo "Script for running tests for Converter Program"
-  echo ""
-  echo "OPTIONS:"
-  echo "  -m, --mode      Set the type of the test (unit, e2e)."
-  echo "  -h, --help          Show this help message"
-  echo ""
-  echo "Example:"
-  echo "  ./run_tests.sh -t unit"
-}
-
-restart_validator() {
-    log_section "Restarting or starting the validator..."
-
-    if pgrep -f "solana-test-validator" > /dev/null; then
-        log_warning "Validator is already running. Stopping it..."
-        kill_validator
-    fi
-
-    log_info "Starting solana-test-validator..."
-    solana-test-validator -r --quiet &
-
-    local pid=$!
-    log_info "Validator started with PID: $pid"
-
-    log_info "Waiting for validator to initialize (10 seconds)..."
-    sleep 10
-
-    if ! kill -0 "$pid" 2>/dev/null; then
-        log_error "Validator failed to start properly"
-        FAILED_TESTS+=("$TEST_SCRIPT")
-        EXIT_CODE=1
-        return 1
-    fi
-
-    log_success "Validator started successfully"
-}
-
-kill_validator() {
-    log_info "Stopping Solana test validator..."
-
-    local pids
-    pids=$(pgrep -f "solana-test-validator")
-
-    if [ -n "$pids" ]; then
-        log_info "Killing validator process(es): $pids"
-        kill -9 "$pids" 2>/dev/null || true
-        sleep 2
-        log_success "Validator stopped"
-    else
-        log_info "No running validator found."
-    fi
-}
-
-build_and_deploy_converter_program() {
-    log_section "Build & Deploy Converter program..."
-    cmd=(./on-chain/build_and_deploy.sh )
-
-    if ! "${cmd[@]}"; then
-        log_error "Converter Program deployment failed"
-        FAILED_TESTS+=("$TEST_SCRIPT")
-        EXIT_CODE=1
-        return 1
-    fi
-    log_success "Successfully deployed the converter program into the network!"
-}
-
-build_and_deploy_mock_double_zero_program() {
-    log_section "Build & Deploy Mock Double Zero program..."
-    cmd=(./mock-double-zero-program/build_and_deploy.sh )
-
-    if ! "${cmd[@]}"; then
-        log_error "Mock Double Zero Program deployment failed"
-        FAILED_TESTS+=("$TEST_SCRIPT")
-        EXIT_CODE=1
-        return 1
-    fi
-    log_success "Successfully deployed the Mock Double Zero Program into the network!"
-}
-
-extract_failed_tests() {
-    local TEST_SCRIPT=$1
-    local LOG_FILE=$2
-    local FAILURE_COUNT=$(grep -o "[0-9]\+ failing" "$LOG_FILE" | head -1 | awk '{print $1}')
-
-    if [ -z "$FAILURE_COUNT" ]; then
-        FAILURE_COUNT=0
-    fi
-
-    if [ "$FAILURE_COUNT" -gt 0 ]; then
-        log_error "$FAILURE_COUNT test(s) failed in $TEST_SCRIPT"
-        FAILED_TEST_DETAILS+="${TEST_SCRIPT}:${FAILURE_COUNT},"
-        echo "RECORDED FAILURE: ${TEST_SCRIPT}:${FAILURE_COUNT}"
-    fi
-}
-
-prepare_test() {
-  restart_validator
-  build_and_deploy_converter_program
-  build_and_deploy_mock_double_zero_program
-}
-
-run_test() {
-    local TEST_SCRIPT=$1
-    local TEST_OUTPUT_FILE="../test-logs/anchor-$TEST_SCRIPT.log"
-    log_section "Running test: $TEST_SCRIPT"
-
-
-    log_info "Executing test..."
-    echo "▶️ anchor run $TEST_SCRIPT -- --skip-deploy"
-
-    anchor run "$TEST_SCRIPT" -- --skip-deploy | tee "$TEST_OUTPUT_FILE"
-    local TEST_RESULT=${PIPESTATUS[0]}
-
-    if [ "$TEST_RESULT" -ne 0 ]; then
-        log_error "Test '$TEST_SCRIPT' FAILED with exit code $TEST_RESULT"
-        FAILED_TESTS+=("$TEST_SCRIPT")
-
-        extract_failed_tests "$TEST_SCRIPT" "$TEST_OUTPUT_FILE"
-
-        if [ -z "$LOG_FILES" ]; then
-            LOG_FILES="$TEST_OUTPUT_FILE"
-        else
-            LOG_FILES="$LOG_FILES,$TEST_OUTPUT_FILE"
-        fi
-
-        EXIT_CODE=1
-    else
-        log_success "Test '$TEST_SCRIPT' passed"
-        if [ -z "$LOG_FILES" ]; then
-            LOG_FILES="$TEST_OUTPUT_FILE"
-        else
-            LOG_FILES="$LOG_FILES,$TEST_OUTPUT_FILE"
-        fi
-    fi
-
-    echo "----------------------------------------------"
-    return "$TEST_RESULT"
-}
-
-print_test_summary() {
-    log_section "TEST SUMMARY"
-
-    if [ ${#FAILED_TESTS[@]} -eq 0 ]; then
-        log_success "ALL TESTS PASSED!"
-    else
-        log_error "FAILED TESTS: ${#FAILED_TESTS[@]}"
-        for test in "${FAILED_TESTS[@]}"; do
-            echo "   - $test"
-        done
-
-        echo ""
-        log_error "See test output above for specific test failures."
-    fi
-
-    return $EXIT_CODE
-}
-
-cd "$(dirname "$0")" || exit 1
-LOG_FILES=""
-FAILED_TEST_DETAILS=""
-mkdir -p test-logs
-
-echo "================================================================================================"
-echo "         					RUN_TESTS (CONVERTER PROGRAM) "
-echo "================================================================================================"
-
+# -------------------- CLI Args --------------------
 while [[ $# -gt 0 ]]; do
-    case "$1" in
-        -m|--mode)
+    case $1 in
+        --test-type)
             TEST_TYPE="$2"
             shift 2
             ;;
-        -h|--help)
-            show_help
-            exit 0
+        --quiet)
+            QUIET_MODE=1
+            shift
+            ;;
+        --debug)
+            DEBUG_MODE=1
+            shift
             ;;
         *)
-            log_warning "Unknown option: $1"
-            log_warning "Please choose either unit or e2e"
-            show_help
+            echo "Unknown option: $1"
             exit 1
             ;;
     esac
 done
 
-#  restart the validator, builds and deploys it
-log_section "PREPARING TEST SETUP"
-prepare_test
+# -------------------- Globals --------------------
+FAILED_TESTS=()
+COMPLETED_COUNT=0
+FAILED_COUNT=0
 
-# Handle test type
-case "$TEST_TYPE" in
-  unit)
-    ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-    pushd "$ROOT_DIR/on-chain" > /dev/null
-
-    log_section "RUNNING UNIT TESTS"
-    for test_script in "${UNIT_TESTS[@]}"; do
-        run_test "$test_script" || true
-    done
-    ;;
-  *)
-    log_error "Invalid test type: '$TEST_TYPE'. Use -t unit or -t e2e."
-    kill_validator
+# Determine active test list based on --test-type
+if [ "$TEST_TYPE" == "e2e" ]; then
+    ACTIVE_TESTS=("${E2E_TESTS[@]}")
+elif [ "$TEST_TYPE" == "unit" ]; then
+    ACTIVE_TESTS=("${UNIT_TESTS[@]}")
+else
+    echo "Invalid test type: $TEST_TYPE"
     exit 1
-    ;;
-esac
+fi
 
-kill_validator
-print_test_summary
-exit $EXIT_CODE
+TOTAL_TESTS=${#ACTIVE_TESTS[@]}
+
+# -------------------- Logging --------------------
+log_info() { [[ $QUIET_MODE -eq 0 ]] && echo -e "ℹ️  \033[38;5;250m[INFO]\033[0m $1"; }
+log_success() { [[ $QUIET_MODE -eq 0 ]] && echo -e "✔️  \033[38;5;108m[SUCCESS]\033[0m $1"; }
+log_warning() { [[ $QUIET_MODE -eq 0 ]] && echo -e "⚠️  \033[38;5;179m[WARNING]\033[0m $1"; }
+log_error() { echo -e "✖️  \033[38;5;203m[ERROR]\033[0m $1"; }
+log_section() {
+    [[ $QUIET_MODE -eq 0 ]] && {
+        echo -e "\n\033[38;5;244m──────────────────────────────────────────────\033[0m"
+        echo -e "🔹 \033[38;5;245m$1\033[0m"
+        echo -e "\033[38;5;244m──────────────────────────────────────────────\033[0m\n"
+    }
+}
+
+print_header() {
+    echo -e "\n\033[38;5;245m╔════════════════════════════════════════════════════════════════╗\033[0m"
+    echo -e "              \033[38;5;250m⬤  ⬤  DOUBLE ZERO TEST RUNNER  ⬤  ⬤\033[0m"
+    echo -e "\033[38;5;245m╚════════════════════════════════════════════════════════════════╝\033[0m\n"
+}
+
+print_footer() {
+    local PASSED_COUNT=$((TOTAL_TESTS - FAILED_COUNT))
+
+    echo -e "\n\033[38;5;245m╔════════════════════════════════════════════════════════════════╗\033[0m"
+    echo -e "              \033[38;5;250m⬤  ⬤  END OF TEST RUN  ⬤  ⬤\033[0m"
+    echo -e "\033[38;5;245m╠════════════════════════════════════════════════════════════════╣\033[0m"
+    printf "    \033[38;5;108m✔️  Passed:\033[0m %2d    \033[38;5;203m✖️  Failed:\033[0m %2d    \033[38;5;250m🧪 Total:\033[0m %2d\n" $PASSED_COUNT $FAILED_COUNT $TOTAL_TESTS
+    echo -e "\033[38;5;245m╚════════════════════════════════════════════════════════════════╝\033[0m\n"
+}
+
+print_status_bar() {
+    echo -ne "\r\033[K[Completed: $COMPLETED_COUNT/$TOTAL_TESTS] [Failures: $FAILED_COUNT]"
+}
+
+# -------------------- Validator Management --------------------
+start_validator() {
+    local RPC_PORT=$1
+    local RPC_URL="http://127.0.0.1:$RPC_PORT"
+
+    # Stop any running validator
+    VALIDATOR_PID=$(pgrep -f "solana-test-validator")
+    if [ -n "$VALIDATOR_PID" ]; then
+        stop_validator $VALIDATOR_PID
+    fi
+    wait_for_port_release $RPC_PORT
+
+    solana-test-validator --reset --quiet --rpc-port $RPC_PORT &> /dev/null &
+    wait_for_validator $RPC_URL
+}
+
+stop_validator() {
+    local PID=$1
+    kill -9 $PID 2>/dev/null || true
+}
+
+wait_for_validator() {
+    local RPC_URL=$1
+    local RETRIES=10
+    local SLEEP_TIME=3
+
+    for ((i=1; i<=RETRIES; i++)); do
+        RESPONSE=$(curl -s -X POST $RPC_URL \
+            -H "Content-Type: application/json" \
+            -d '{"jsonrpc":"2.0","id":1,"method":"getVersion"}')
+
+        if echo "$RESPONSE" | grep -q "solana-core"; then
+            log_success "Validator is up at $RPC_URL"
+            return 0
+        fi
+
+        log_info "Waiting for validator at $RPC_URL (Attempt $i/$RETRIES)..."
+        sleep $SLEEP_TIME
+    done
+
+    log_error "Validator did not respond at $RPC_URL after $RETRIES attempts."
+    exit 1
+}
+
+wait_for_port_release() {
+    local PORT=$1
+    local RETRIES=10
+    local SLEEP_TIME=1
+
+    for ((i=1; i<=RETRIES; i++)); do
+        if ! lsof -i :$PORT > /dev/null 2>&1; then
+            log_info "Port $PORT is free."
+            return 0
+        fi
+
+        log_info "Waiting for port $PORT to be free (Attempt $i/$RETRIES)..."
+        sleep $SLEEP_TIME
+    done
+
+    log_error "Port $PORT did not become free after $RETRIES attempts."
+    exit 1
+}
+
+# -------------------- Program Management --------------------
+build_program() {
+    local PROGRAM_NAME=$1
+    log_info "Building the $PROGRAM_NAME program..."
+    anchor build > /dev/null
+    yarn install > /dev/null
+}
+
+deploy_program() {
+    local RPC_URL=$1
+    local PROGRAM_NAME=$2
+    log_info "Deploying $PROGRAM_NAME program to $RPC_URL"
+    anchor deploy --provider.cluster $RPC_URL --program-name $PROGRAM_NAME --program-keypair ./.keys/$PROGRAM_NAME-keypair.json
+}
+
+# -------------------- CLI Management --------------------
+build_cli() {
+    log_info "Running cargo build for the CLIs..."
+    cargo build > /dev/null
+    log_success "CLI built successfully"
+}
+
+copy_cli_to_e2e() {
+    log_info "Copying the CLI binaries to the E2E directory..."
+    mkdir -p ./e2e/cli
+    cp ./target/debug/admin-cli ./e2e/cli/
+    cp ./target/debug/user-cli ./e2e/cli/
+    # cp ./target/debug/integration-cli ./e2e/cli/
+    cp ./config.json ./e2e/cli/
+    log_success "CLI copied to the E2E directory"
+}
+
+# -------------------- Test Runner --------------------
+run_test() {
+    local TEST_SCRIPT=$1
+    local RPC_PORT=$2
+    local RPC_URL="http://127.0.0.1:$RPC_PORT"
+
+    print_status_bar
+    log_section "Running Test: $TEST_SCRIPT (RPC: $RPC_PORT)"
+
+    start_validator $RPC_PORT
+
+    # Deploy the programs to the validator
+    cd ./mock-double-zero-program || exit 1
+    deploy_program $RPC_URL "mock-double-zero-program"
+    cd ../on-chain || exit 1
+    deploy_program $RPC_URL "converter-program"
+
+    if [ "$TEST_TYPE" == "e2e" ]; then
+        cd ../e2e || exit 1
+        npm run $TEST_SCRIPT
+        RESULT=$?
+    else
+        anchor run $TEST_SCRIPT --provider.cluster $RPC_URL
+        RESULT=$?
+    fi
+
+    if [ $RESULT -eq 0 ]; then
+        log_success "Test Passed: $TEST_SCRIPT"
+    else
+        log_error "Test Failed: $TEST_SCRIPT"
+        FAILED_TESTS+=("$TEST_SCRIPT")
+        FAILED_COUNT=$((FAILED_COUNT + 1))
+    fi
+
+    COMPLETED_COUNT=$((COMPLETED_COUNT + 1))
+    print_status_bar
+    echo ""
+    cd ../ || exit 1
+}
+
+# -------------------- Main Execution --------------------
+print_header
+trap 'killall -9 solana-test-validator 2>/dev/null || true' EXIT
+
+# Build the double zero converter program
+cd ./on-chain || exit 1
+build_program "converter-program"
+
+# Build the mock double zero transfer program
+cd ../mock-double-zero-program || exit 1
+build_program "mock-double-zero-program"
+cd ../
+
+# Build the admin and user CLI
+if [ "$TEST_TYPE" == "e2e" ]; then
+    build_cli
+    copy_cli_to_e2e
+
+    # Install the dependencies for the e2e test suite
+    cd ./e2e || exit 1
+    npm install > /dev/null
+    cd ../
+fi
+
+for TEST_SCRIPT in "${ACTIVE_TESTS[@]}"; do
+    run_test $TEST_SCRIPT $BASE_RPC_PORT
+done
+
+# -------------------- Summary --------------------
+echo ""
+print_status_bar
+echo ""
+
+if [ ${#FAILED_TESTS[@]} -eq 0 ]; then
+    log_success "All $TEST_TYPE tests passed successfully. 🎉"
+else
+    log_warning "Some $TEST_TYPE tests failed:"
+    for FAILED_TEST in "${FAILED_TESTS[@]}"; do
+        echo -e "✖️  \033[38;5;203m$FAILED_TEST\033[0m"
+    done
+fi
+
+print_footer
+
+# Stop any running validators
+stop_validator
+
+exit 0

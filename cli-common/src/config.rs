@@ -4,7 +4,7 @@ use std::{
     path::Path,
     error::Error
 };
-use crate::constant::CONFIG_FILE_PATH;
+use crate::{constant::CONFIG_FILE_PATH, utils::env_var::load_config_path_from_env};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -26,8 +26,11 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Result<Self, Box<dyn Error>> {
-        let config_path = CONFIG_FILE_PATH;
-        if Path::new(config_path).exists() {
+        let config_path = match load_config_path_from_env() {
+            Ok(path) => path,
+            Err(_) => CONFIG_FILE_PATH.to_string(),
+        };
+        if Path::new(&config_path).exists() {
             match fs::read_to_string(config_path) {
                 Ok(contents) => {
                     match serde_json::from_str(&contents) {

@@ -5,10 +5,12 @@ This system consists of following components.
 
 1) Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
 2) Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
-It provides CPIs which is used by converter program to simulate actual transfer.  
+It provides CPIs which is used by converter program to simulate actual transfer.
 3) Admin CLI - CLI interface for admins to control the system.
 4) User CLI - CLI interface for user to interact with the system.
-5) Common CLI - Includes common functionalities for Admin CLI & User CLI 
+5) Common CLI - Includes common functionalities for Admin CLI & User CLI.
+6) E2E Test Suite - End to end tests for the system using the solana local test validator.
+
 
 ### Setup Dependencies
 
@@ -308,3 +310,32 @@ cargo run -p user-cli -- buy-sol -p <bid_price> -f <SOURCE_ACCOUNT>
 - `-p`: User's maximum acceptable purchase price
 - `-f`: Source token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
 
+
+## E2E Test Suite
+
+### Setup the Test Environment
+Install the dependencies for the e2e test suite.
+```sh
+cd e2e
+npm install
+```
+
+### Run the Tests
+Run the tests using the `test_runner.sh` script with the following command.
+```sh
+./test_runner.sh --test-type <test-type>
+
+# eg: 
+./test_runner.sh --test-type unit
+./test_runner.sh --test-type e2e
+```
+
+- `test-type`: Type of tests to run.
+  - `unit`: Running unit tests.
+  - `e2e`: Running e2e tests.
+
+The tests are run using the solana local test validator. The `test_runner.sh` script starts a local validator for each test script provided in the config file.\
+- To add a new e2e test suite, add the test script to the `package.json` file in the `e2e` directory.
+- To add a new unit test, add the test script to the `Anchor.toml` file in the `on-chain` directory.
+
+Afterwards, add the test script to the `test_runner.sh` script.

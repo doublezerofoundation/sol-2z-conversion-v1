@@ -69,6 +69,9 @@ pub enum DoubleZeroError {
     #[msg("Invalid conversion rate")]
     InvalidConversionRate, // 6021
 
+    #[msg("Address not found in Deny List")]
+    AddressNotInDenyList, // 6021
+
     #[msg("System is halted")]
     SystemIsHalted, // 6022
 

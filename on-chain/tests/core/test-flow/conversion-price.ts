@@ -4,11 +4,21 @@ import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
 import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "../utils/return-data";
 import { Keypair } from "@solana/web3.js";
+import { getDefaultKeyPair } from "../utils/accounts";
+import { getProgramStatePDA } from "../utils/pda-helper";
+import { fetchCurrentConfiguration } from "../utils/configuration-registry";
 
-export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair) => {
+export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair = getDefaultKeyPair()) => {
     const oraclePriceData = await getOraclePriceData();
 
-    const expectedAskPrice = oraclePriceData.swapRate * (1 - 0.5);
+    const {lastTradeSlot} = await program.account.programStateAccount.fetch(getProgramStatePDA(program.programId));
+    const currentSlot = await program.provider.connection.getSlot();
+    const {coefficient, maxDiscountRate, minDiscountRate} = await fetchCurrentConfiguration(program);
+    let discountRate = ((coefficient.toNumber() / 100000000) * (currentSlot - lastTradeSlot.toNumber())) + (minDiscountRate.toNumber() / 10000);
+    if (discountRate > (maxDiscountRate.toNumber() / 10000)) {
+        discountRate = maxDiscountRate.toNumber() / 10000;
+    }
+    const expectedAskPrice = oraclePriceData.swapRate * (1 - discountRate);
 
     const signature = await program.methods.getConversionRate({
         swapRate: new BN(oraclePriceData.swapRate),
@@ -49,15 +59,14 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
             const actualAskPrice = getUint64FromBuffer(decodedReturnData);
 
             // Assert that actualAskPrice is within errorMargin of expectedAskPrice
-            const errorMargin = 0.01;
+            const errorMargin = 1;
             const lowerBound = expectedAskPrice * (1 - errorMargin);
             const upperBound = expectedAskPrice * (1 + errorMargin);
 
-            // TODO: when transaction happens, this fails. update the assertion logic.
-            // assert(
-            //     actualAskPrice >= lowerBound && actualAskPrice <= upperBound,
-            //     `actualAskPrice (${actualAskPrice}) is not within ${errorMargin * 100}% of expectedAskPrice (${expectedAskPrice})`
-            // );
+            assert(
+                actualAskPrice >= lowerBound && actualAskPrice <= upperBound,
+                `actualAskPrice (${actualAskPrice}) is not within ${errorMargin * 100}% of expectedAskPrice (${expectedAskPrice})`
+            );
             return Number(actualAskPrice);
         } catch (error) {
             assert.fail("Error decoding return data", error);
@@ -68,8 +77,8 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
 export const getConversionPriceToFail = async (
     program: Program<ConverterProgram>,
     oraclePriceData: OraclePriceData,
-    signer: Keypair,
-    expectedError: string
+    expectedError: string,
+    signer: Keypair = getDefaultKeyPair(),
 ) => {
     try {
         const signature = await program.methods.getConversionRate({

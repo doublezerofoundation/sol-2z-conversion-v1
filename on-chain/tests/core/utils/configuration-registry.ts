@@ -23,7 +23,7 @@ export const DEFAULT_CONFIGS: SystemConfig = {
     slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),
     maxFillsStorage: new anchor.BN(50),
-    coefficient: new anchor.BN(90),
+    coefficient: new anchor.BN(4500),
     maxDiscountRate: new anchor.BN(50 * BPS),
     minDiscountRate: new anchor.BN(10 * BPS),
 };

@@ -30,6 +30,12 @@ export async function airdropToActivateAccount(
     }
 }
 
+export async function getRandomKeyPair(connection: Connection): Promise<Keypair> {
+    const keypair = anchor.web3.Keypair.generate();
+    await airdrop(connection, keypair.publicKey);
+    return keypair;
+}
+
 export async function airdrop(
     connection: Connection,
     pubkey: PublicKey,

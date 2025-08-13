@@ -57,7 +57,7 @@ export async function systemInitializeAndVerify(
             })
             .signers([adminKeyPair])
             .rpc();
-        console.log("System Initialization is successful. Transaction Hash", tx);
+        // console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
@@ -89,7 +89,7 @@ export async function systemInitializeAndVerify(
 }
 
 export async function systemInitializeFail(
-    program,
+    program: Program<ConverterProgram>,
     adminKeyPair: Keypair = getDefaultKeyPair(),
     configRegistryValues: SystemConfig = DEFAULT_CONFIGS,
     expectedError: string
@@ -114,7 +114,7 @@ export async function systemInitializeFail(
             .rpc();
 
     } catch (error) {
-        console.log("System initialization is rejected as expected");
+        // console.log("System initialization is rejected as expected");
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "System initialization is rejected as expected");
         return; // Exit early — test passes
@@ -122,7 +122,7 @@ export async function systemInitializeFail(
     assert.fail("It was able to initialize system");
 }
 
-export async function initializeSystemIfNeeded(program) {
+export async function initializeSystemIfNeeded(program: Program<ConverterProgram>) {
     const adminKeypair: Keypair = getDefaultKeyPair();
     if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
         await systemInitializeAndVerify(program, adminKeypair);
@@ -130,7 +130,7 @@ export async function initializeSystemIfNeeded(program) {
     }
     // make system to unhalted state
     try {
-        await toggleSystemStateAndVerify(program, adminKeypair, false);
+        await toggleSystemStateAndVerify(program, false, adminKeypair);
     } catch (error) {
         // system already in active state
     }

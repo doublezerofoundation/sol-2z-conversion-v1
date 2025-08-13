@@ -59,6 +59,10 @@ impl<'info> UpdateDenyList<'info> {
         // Ensure only admin can modify
         self.program_state.assert_admin(&self.admin)?;
 
+        if !self.deny_list_registry.denied_addresses.contains(&address) {
+            return err!(DoubleZeroError::AddressNotInDenyList);
+        }
+
         let position = self
             .deny_list_registry
             .denied_addresses
