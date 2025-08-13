@@ -36,7 +36,7 @@ export async function initializeMockTransferSystemAndVerify(
             })
             .signers([adminKeyPair])
             .rpc();
-        console.log("System Initialization is successful. Transaction Hash", tx);
+        // console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
@@ -78,7 +78,7 @@ export async function mint2z(
                 userTokenAccount: recipientTokenAccount
             })
             .rpc();
-        console.log("Token Mint is successful. Transaction Hash", tx);
+        // console.log("Token Mint is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Token Mint  failed:", e);
         assert.fail("Token Mint  failed");
@@ -117,7 +117,7 @@ export async function buySol(
             })
             .signers([signer])
             .rpc();
-        console.log("Buy Sol is successful. Transaction Hash", tx);
+        // console.log("Buy Sol is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Buy Sol  failed:", e);
         assert.fail("Buy Sol  failed");
@@ -173,7 +173,7 @@ export async function withdraw_2z(
             })
             .signers([signer])
             .rpc();
-        console.log("Withdraw 2Z is successful. Transaction Hash", tx);
+        // console.log("Withdraw 2Z is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Withdraw 2Z failed:", e);
         assert.fail("Withdraw 2Z failed");

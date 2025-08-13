@@ -60,7 +60,7 @@ export async function addToDenyListShouldFail(
         
         assert.fail("Expected transaction to fail");
     } catch (error) {
-        console.log(error.message);
+        // console.log(error.message);
         assert.include(error.message, expectedError, `Expected error containing "${expectedError}"`);
     }
 }
