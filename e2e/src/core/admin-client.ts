@@ -28,12 +28,8 @@ export class AdminClient {
         return await this.session.executeCliCommand(`view-config`);
     }
 
-    public async withdrawTokensCommand(amount: number, destination: string): Promise<void> {
-        await this.session.executeCliCommand(`withdraw-tokens -a ${amount} -t ${destination}`);
-    }
-
-    public async toggleSystemStateCommand(isHalted: boolean): Promise<void> {
-        await this.session.executeCliCommand(`toggle-system-state --${isHalted ? "pause" : "activate"}`);
+    public async toggleSystemStateCommand(isHalted: boolean): Promise<string> {
+        return await this.session.executeCliCommand(`toggle-system-state --${isHalted ? "pause" : "activate"}`);
     }
 
     public async viewSystemStateCommand(): Promise<string> {
