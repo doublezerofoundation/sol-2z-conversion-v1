@@ -1,7 +1,6 @@
 use anchor_lang::prelude::*;
 
 use crate::{
-    common::constant::MAX_TRADE_HISTORY_SIZE,
     state::bump_registry::BumpRegistry,
     common::error::DoubleZeroError,
     common::events::system::UnauthorizedUser
@@ -13,8 +12,7 @@ pub struct ProgramStateAccount {
     pub admin: Pubkey,
     pub is_halted: bool,  // Indicates whether the system accepts conversion requests
     pub bump_registry: BumpRegistry,
-    #[max_len(MAX_TRADE_HISTORY_SIZE)]
-    pub trade_history_list: Vec<TradeHistory>,
+    pub last_trade_slot: u64,
 }
 
 impl ProgramStateAccount {
@@ -25,10 +23,4 @@ impl ProgramStateAccount {
         }
         Ok(())
     }
-}
-
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, InitSpace)]
-pub struct TradeHistory {
-    pub epoch: u64,
-    pub num_of_trades: u64,
 }

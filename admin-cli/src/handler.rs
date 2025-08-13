@@ -18,6 +18,7 @@ use crate::{
         },
     },
 };
+use crate::core::functions::fills_registry;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -106,6 +107,11 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         // Mock vault airdrop
         Some(Commands::AirdropToMockVault {  amount }) => {
             mock_token_handler::airdrop_vault(amount)
+        }
+
+        // View Fills Registry
+        Some(Commands::ViewFills) => {
+            fills_registry::view_fills_registry()
         }
 
         None => {

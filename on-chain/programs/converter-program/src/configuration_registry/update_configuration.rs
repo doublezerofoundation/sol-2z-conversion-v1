@@ -14,8 +14,9 @@ pub struct ConfigurationRegistryInput {
     pub slot_threshold: Option<u64>,
     pub price_maximum_age: Option<i64>, //in seconds
     pub max_fills_storage: Option<u64>,
-    pub steepness: Option<u64>,
+    pub coefficient: Option<u64>,
     pub max_discount_rate: Option<u64>,
+    pub min_discount_rate: Option<u64>,
 }
 
 #[derive(Accounts)]

@@ -2,7 +2,7 @@ import {
     getConfigurationRegistryPDA,
     getDenyListRegistryPDA,
     getFillsRegistryPDA,
-    getProgramDataAccountPDA, getProgramStatePDA
+    getProgramDataAccountPDA, getProgramStatePDA, getTradeRegistryPDA
 } from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair} from "@solana/web3.js";
@@ -10,6 +10,7 @@ import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import {DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig} from "../utils/configuration-registry";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
+import {toggleSystemStateAndVerify} from "./system-state";
 
 export async function systemInitializeAndVerify(
     program: Program<ConverterProgram>,
@@ -22,17 +23,20 @@ export async function systemInitializeAndVerify(
         getConfigurationRegistryPDA(program.programId),
         getFillsRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
+        getTradeRegistryPDA(program.programId)
     ];
 
     // Accounts to be initialized should not exist before initialization
-    let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
-        pdas.map((pda) => accountExists(program.provider.connection, pda))
-    );
+    let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists, tradeRegistryExists] =
+        await Promise.all(
+            pdas.map((pda) => accountExists(program.provider.connection, pda))
+        );
 
     assert.isFalse(programStateExists, "Program State Account should not exist before initialization");
     assert.isFalse(configRegistryExists, "Configuration Registry should not exist before initialization");
     assert.isFalse(fillsRegistryExists, "Fills Registry should not exist before initialization");
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
+    assert.isFalse(tradeRegistryExists, "Trade Registry should not exist before initialization");
 
     // Initialization
     const programDataAccount = getProgramDataAccountPDA(program.programId);
@@ -43,8 +47,9 @@ export async function systemInitializeAndVerify(
             inputConfigs.slotThreshold,
             inputConfigs.priceMaximumAge,
             inputConfigs.maxFillsStorage,
-            inputConfigs.steepness,
-            inputConfigs.maxDiscountRate
+            inputConfigs.coefficient,
+            inputConfigs.maxDiscountRate,
+            inputConfigs.minDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -60,14 +65,16 @@ export async function systemInitializeAndVerify(
 
 
     // Verify Existence of Initialized Accounts
-    [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] = await Promise.all(
-        pdas.map((pda) => accountExists(program.provider.connection, pda))
-    );
+    [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists, tradeRegistryExists] =
+        await Promise.all(
+            pdas.map((pda) => accountExists(program.provider.connection, pda))
+        );
 
     assert.isTrue(programStateExists, "Program State Account should exist after initialization");
     assert.isTrue(configRegistryExists, "Configuration Registry should exist after initialization");
     assert.isTrue(fillsRegistryExists, "Fills Registry should exist after initialization");
     assert.isTrue(denyRegistryExists, "Deny List Registry should exist after initialization");
+    assert.isTrue(tradeRegistryExists, "Trade List Registry should exist after initialization");
 
     // Verify config values are initialized as given.
     const configInConfigRegistry = await fetchCurrentConfiguration(program);
@@ -76,8 +83,9 @@ export async function systemInitializeAndVerify(
     assert.equal(configInConfigRegistry.priceMaximumAge.toString(), inputConfigs.priceMaximumAge.toString());
     assert.equal(configInConfigRegistry.slotThreshold.toString(), inputConfigs.slotThreshold.toString());
     assert.equal(configInConfigRegistry.solQuantity.toString(), inputConfigs.solQuantity.toString());
-    assert.equal(configInConfigRegistry.steepness.toString(), inputConfigs.steepness.toString());
+    assert.equal(configInConfigRegistry.coefficient.toString(), inputConfigs.coefficient.toString());
     assert.equal(configInConfigRegistry.maxDiscountRate.toString(), inputConfigs.maxDiscountRate.toString());
+    assert.equal(configInConfigRegistry.minDiscountRate.toString(), inputConfigs.minDiscountRate.toString());
 }
 
 export async function systemInitializeFail(
@@ -94,8 +102,9 @@ export async function systemInitializeFail(
             configRegistryValues.slotThreshold,
             configRegistryValues.priceMaximumAge,
             configRegistryValues.maxFillsStorage,
-            configRegistryValues.steepness,
-            configRegistryValues.maxDiscountRate
+            configRegistryValues.coefficient,
+            configRegistryValues.maxDiscountRate,
+            configRegistryValues.minDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -114,8 +123,15 @@ export async function systemInitializeFail(
 }
 
 export async function initializeSystemIfNeeded(program) {
+    const adminKeypair: Keypair = getDefaultKeyPair();
     if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
-        const adminKeypair: Keypair = getDefaultKeyPair();
         await systemInitializeAndVerify(program, adminKeypair);
+
+    }
+    // make system to unhalted state
+    try {
+        await toggleSystemStateAndVerify(program, adminKeypair, false);
+    } catch (error) {
+        // system already in active state
     }
 }

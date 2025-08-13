@@ -34,8 +34,9 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         admin_config.slot_threshold.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
         admin_config.max_fills_storage.to_le_bytes().to_vec(),
-        admin_config.steepness.to_le_bytes().to_vec(),
+        admin_config.coefficient.to_le_bytes().to_vec(),
         admin_config.max_discount_rate.to_le_bytes().to_vec(),
+        admin_config.min_discount_rate.to_le_bytes().to_vec(),
     ].concat();
 
 
@@ -44,11 +45,13 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
+    let trade_registry_pda = pda_helper::get_trade_registry_pda(program_id).0;
     let program_data_account_pda = pda_helper::get_program_data_account_pda(program_id);
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new(program_state_pda, false),
+        AccountMeta::new(trade_registry_pda, false),
         AccountMeta::new(fills_registry_pda, false),
         AccountMeta::new(deny_list_registry_pda, false),
         AccountMeta::new(program_id, false),

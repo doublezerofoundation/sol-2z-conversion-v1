@@ -3,12 +3,13 @@
   "program_id": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
   "double_zero_program_id": "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww",
   "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
-  "sol_quantity": 2121,
+  "sol_quantity": 25000000000,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "max_fills_storage": 234,
+  "max_fills_storage": 50,
   "skip_preflight": false,
   "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
-  "steepness": 90,
-  "max_discount_rate": 50
+  "coefficient": 90000,
+  "max_discount_rate": 5000,
+  "min_discount_rate": 500
 }

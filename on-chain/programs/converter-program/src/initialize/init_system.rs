@@ -9,7 +9,10 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
-    state::program_state::ProgramStateAccount,
+    state::{
+        program_state::ProgramStateAccount,
+        trade_registry::TradeRegistry
+    },
     program::ConverterProgram
 };
 
@@ -32,6 +35,14 @@ pub struct InitializeSystem<'info> {
         bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
+    #[account(
+        init,
+        payer = authority,
+        space = DISCRIMINATOR_SIZE + TradeRegistry::INIT_SPACE,
+        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
+        bump,
+    )]
+    pub trade_registry: Account<'info, TradeRegistry>,
     #[account(
         init,
         payer = authority,
@@ -67,8 +78,9 @@ impl<'info> InitializeSystem<'info> {
         slot_threshold: u64,
         price_maximum_age: i64,
         max_fills_storage: u64,
-        steepness: u64,
-        max_discount_rate: u64
+        coefficient: u64,
+        max_discount_rate: u64,
+        min_discount_rate: u64
     ) -> Result<()> {
 
         // Initialize configuration_registry registry with provided values
@@ -78,12 +90,17 @@ impl<'info> InitializeSystem<'info> {
             slot_threshold,
             price_maximum_age,
             max_fills_storage,
-            steepness,
-            max_discount_rate
+            coefficient,
+            max_discount_rate,
+            min_discount_rate
         )?;
 
         // Set upgrade authority as admin
         self.program_state.admin = self.authority.key();
+
+        // Set last trade slot to current slot
+        self.program_state.last_trade_slot = Clock::get()?.slot;
+
         msg!("System is Initialized");
         emit!(SystemInitialized {});
         Ok(())
@@ -96,6 +113,7 @@ impl<'info> InitializeSystem<'info> {
         program_state_bump: u8,
         fills_registry_bump: u8,
         deny_list_registry_bump: u8,
+        trade_registry_bump: u8,
     )-> Result<()> {
 
         let bump_registry = &mut self.program_state.bump_registry;
@@ -103,6 +121,7 @@ impl<'info> InitializeSystem<'info> {
         bump_registry.program_state_bump = program_state_bump;
         bump_registry.fills_registry_bump = fills_registry_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
+        bump_registry.trade_registry_bump = trade_registry_bump;
         Ok(())
 
     }

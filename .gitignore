@@ -110,3 +110,4 @@ test-ledger
 .yarn
 .keys
 logs
+test-logs

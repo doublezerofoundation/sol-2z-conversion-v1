@@ -9,7 +9,8 @@ import {
 } from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
 import { getMockProgramPDAs} from "./core/utils/pda-helper";
-import {Keypair, PublicKey} from "@solana/web3.js";
+import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {TOKEN_DECIMAL} from "./core/constants";
 
 describe("System Initialization Tests", () => {
     // Configure the client to use the local cluster.
@@ -36,23 +37,30 @@ describe("System Initialization Tests", () => {
     })
 
     it("Mint 2Z!", async () => {
-        await mint2z(program, tokenAccount,500);
+        await mint2z(program, tokenAccount, 500 * TOKEN_DECIMAL);
     });
 
     it("Airdrop vault", async () => {
-        await airdrop(program.provider.connection, pdas.vault, 500);
+        await airdrop(program.provider.connection, pdas.vault, 500 * LAMPORTS_PER_SOL);
     });
 
     it("Buy Sol!", async () => {
-        await buySol(program, tokenAccount,500, 200, userKeyPair);
+        await buySol(
+            program,
+            tokenAccount,
+            500 * TOKEN_DECIMAL,
+            200 * LAMPORTS_PER_SOL,
+            userKeyPair
+        );
     });
 
     it(" Mint 2Z to Protocol Treasury", async () => {
-        await mint2z(program, pdas.protocolTreasury,500);
+        await mint2z(
+            program, pdas.protocolTreasury, 500 * TOKEN_DECIMAL);
     });
 
     it("Withdraw 2Z!", async () => {
-        await withdraw_2z(program, tokenAccount,600, userKeyPair);
+        await withdraw_2z(program, tokenAccount,600 * TOKEN_DECIMAL, userKeyPair);
     });
 
 });
