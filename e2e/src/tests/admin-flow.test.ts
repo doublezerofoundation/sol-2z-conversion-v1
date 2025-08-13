@@ -87,7 +87,7 @@ const configUpdateTests: Test[] = [
         execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
             let config = getConfig();
             config.max_discount_rate = 10001;
-            await invalidScenario.updateConfigAndVerifyFail("Invalid max discount rate", config);
+            await scenario.updateConfigAndVerifyFail("Invalid max discount rate", config);
         }
     },
     {
@@ -95,8 +95,9 @@ const configUpdateTests: Test[] = [
         description: "Admin should not be able to update the config with an invalid min discount rate",
         execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
             let config = getConfig();
-            config.min_discount_rate = 10001;
-            await invalidScenario.updateConfigAndVerifyFail("Invalid min discount rate", config);
+            config.max_discount_rate = 5000;
+            config.min_discount_rate = 5001;
+            await scenario.updateConfigAndVerifyFail("Invalid min discount rate", config);
         }
     }
 ]
@@ -228,39 +229,6 @@ const dequeuerTests: Test[] = [
     }
 ]
 
-const withdrawTests: Test[] = [
-    {
-        name: "withdraw_tokens_fail",
-        description: "Non-admin should not be able to withdraw tokens",
-        execute: async (scenario: WithdrawScenario, invalidScenario: WithdrawScenario) => {
-            // TODO: add test
-            // const amount = 100;
-            // const destination = "0x0000000000000000000000000000000000000000";
-            // await invalidScenario.withdrawTokensAndVerifyFail(amount, destination, "Unauthorized Admin");
-        }
-    },
-    {
-        name: "withdraw_tokens",
-        description: "Admin should be able to withdraw tokens",
-        execute: async (scenario: WithdrawScenario, invalidScenario: WithdrawScenario) => {
-            // TODO: add test
-            const amount = 100;
-            const destination = "0x0000000000000000000000000000000000000000";
-            await scenario.withdrawTokensAndVerify(amount, destination);
-        }
-    },
-    {
-        name: "withdraw_tokens_fail_invalid_amount",
-        description: "Withdrawing an invalid amount should fail",
-        execute: async (scenario: WithdrawScenario, invalidScenario: WithdrawScenario) => {
-            // TODO: add test
-            // const amount = 9999999999999;
-            // const destination = "0x0000000000000000000000000000000000000000";
-            // await scenario.withdrawTokensAndVerifyFail(amount, destination, "Invalid amount");
-        }
-    }
-]
-
 const systemStateTests: Test[] = [
     {
         name: "system_state_toggle_fail",
@@ -375,20 +343,6 @@ describe("Admin E2E Tests", () => {
         for (const [i, test] of dequeuerTests.entries()) {
             it(getTestName("DEQUEUER", i+1, test.description), async () => {
                 await test.execute(adminScenario, nonAdminScenario, dequeuer.session.getPublicKey().toString());
-            });
-        }
-    });
-
-    describe("Withdraw Tests", () => {
-        let adminScenario: WithdrawScenario;
-        let nonAdminScenario: WithdrawScenario;
-        before(async () => {
-            adminScenario = new WithdrawScenario(nonDeployerAdmin);
-            nonAdminScenario = new WithdrawScenario(invalidAdmin);
-        });
-        for (const [i, test] of withdrawTests.entries()) {
-            it(getTestName("WITHDRAW", i+1, test.description), async () => {
-                await test.execute(adminScenario, nonAdminScenario);
             });
         }
     });

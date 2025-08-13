@@ -3,8 +3,8 @@ export const getTestName = (prefix: string, i: number, description: string) => {
 }
 
 export const extractTxHashFromResult = (result: string) => {
-    const regex = "Signature:\s(\w*)";
-    const match = result.match(regex);
+    const regex = /Signature:\s([A-Za-z0-9]+)/m;
+    const match = regex.exec(result);
     if (match) {
         return match[1];
     }
