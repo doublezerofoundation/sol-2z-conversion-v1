@@ -9,15 +9,11 @@ use crate::{
     },
     state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    fills_registry::fills_registry::FillsRegistry,
+    fills_registry::fills_registry::{
+        FillsRegistry,
+        DequeueFillsResult
+    },
 };
-
-#[derive(AnchorSerialize, AnchorDeserialize)]
-pub struct DequeueFillsResult {
-    pub sol_dequeued: u64,
-    pub token_2z_dequeued: u64,
-    pub fills_consumed: u64
-}
 
 #[derive(Accounts)]
 pub struct DequeueFills<'info> {
@@ -54,40 +50,16 @@ impl<'info> DequeueFills<'info> {
             DoubleZeroError::UnauthorizedDequeuer
         );
 
-        let fills_registry = &mut self.fills_registry;
-
-        let mut sol_dequeued = 0u64;
-        let mut token_2z_dequeued = 0u64;
-        let mut fills_consumed = 0u64;
-
-        // Consume fills until max_sol_amount reached
-        // TODO: Do refactoring.. below algorithm can be optimized.
-        while !fills_registry.fills.is_empty()
-            && sol_dequeued + fills_registry.fills[0].sol_in <= max_sol_amount {
-                let fill = fills_registry.fills.remove(0);
-                sol_dequeued += fill.sol_in;
-                token_2z_dequeued += fill.token_2z_out;
-                fills_consumed += 1;
-        }
-
-        // Update registry statistics
-        fills_registry.total_sol_pending -= sol_dequeued;
-        fills_registry.total_2z_pending -= token_2z_dequeued;
-        fills_registry.lifetime_sol_processed += sol_dequeued;
-        fills_registry.lifetime_2z_processed += token_2z_dequeued;
+        let dequeue_fills_result = self.fills_registry.dequeue_fills(max_sol_amount)?;
 
         emit!(FillsDequeuedEvent {
             requester: self.signer.key(),
-            sol_dequeued,
-            token_2z_dequeued,
-            fills_consumed,
+            sol_dequeued: dequeue_fills_result.sol_dequeued,
+            token_2z_dequeued: dequeue_fills_result.token_2z_dequeued,
+            fills_consumed: dequeue_fills_result.fills_consumed,
             timestamp: Clock::get()?.unix_timestamp,
         });
 
-        Ok(DequeueFillsResult {
-            sol_dequeued,
-            token_2z_dequeued,
-            fills_consumed,
-        })
+        Ok(dequeue_fills_result)
     }
 }

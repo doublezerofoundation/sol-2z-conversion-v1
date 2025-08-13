@@ -27,11 +27,14 @@ impl AccountDeserialize for ConfigurationRegistry {
 
 #[derive(Debug, AnchorDeserialize)]
 pub struct FillsRegistry {
-    pub fills: Vec<Fill>,
     pub total_sol_pending: u64,      // Total SOL in not dequeued fills
     pub total_2z_pending: u64,       // Total 2Z in not dequeued fills
     pub lifetime_sol_processed: u64, // Cumulative SOL processed
     pub lifetime_2z_processed: u64,  // Cumulative 2Z processed
+    pub fills: Vec<Fill>,
+    pub head: u32,   // index of oldest element
+    pub tail: u32,   // index to insert next element
+    pub count: u32,  // number of valid elements
 }
 
 #[derive(Debug, AnchorDeserialize)]

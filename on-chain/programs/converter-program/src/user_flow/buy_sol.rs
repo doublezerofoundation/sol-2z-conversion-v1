@@ -181,13 +181,12 @@ impl<'info> BuySol<'info> {
         )?;
 
         // Add it to fills registry
-        self.fills_registry.add_fill_to_fills_registry(
+        self.fills_registry.add_trade_to_fills_registry(
             sol_quantity,
             tokens_required,
             clock.unix_timestamp,
             self.signer.key(),
             clock.epoch,
-            self.configuration_registry.max_fills_storage as usize,
         )?;
 
         msg!("Buy SOL is successful");

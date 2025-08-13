@@ -21,6 +21,7 @@ use discount_rate::calculate_ask_price::*;
 use initialize::init_system::*;
 use user_flow::buy_sol::*;
 use fills_registry::dequeue_fills::*;
+use fills_registry::fills_registry::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]

@@ -54,7 +54,7 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
 
     let result_bps: DequeueFillsResult = send_instruction_with_return_data(dequeue_fills_ix)?;
 
-    println!("Deque Fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
+    println!("Dequeue Fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
     println!("{:?}", result_bps);
     Ok(())
 }
