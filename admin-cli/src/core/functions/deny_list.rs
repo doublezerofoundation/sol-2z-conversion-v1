@@ -11,7 +11,6 @@ use anchor_client::solana_sdk::{
     signature::Signer,
 };
 use cli_common::{
-    config::Config,
     transaction_executor,
     utils::{env_var::load_payer_from_env, pda_helper},
 };

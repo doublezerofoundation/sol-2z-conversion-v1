@@ -7,5 +7,4 @@ pub struct BumpRegistry {
     pub program_state_bump: u8,
     pub fills_registry_bump: u8,
     pub deny_list_registry_bump: u8,
-    pub trade_registry_bump: u8,
 }

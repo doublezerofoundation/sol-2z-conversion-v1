@@ -9,7 +9,6 @@ pub enum SeedPrefixVersions {
     ProgramState,
     DenyListRegistry,
     FillsRegistry,
-    TradeRegistry,
 }
 
 impl SeedPrefixVersions {
@@ -21,7 +20,6 @@ impl SeedPrefixVersions {
             SeedPrefixVersions::ProgramState => b"state_v1",
             SeedPrefixVersions::DenyListRegistry => b"deny_list_v1",
             SeedPrefixVersions::FillsRegistry => b"fills_registry_v1",
-            SeedPrefixVersions::TradeRegistry => b"trade_registry_v1",
         }
     }
 
