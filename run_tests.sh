@@ -161,8 +161,8 @@ wait_for_port_release() {
 build_program() {
     local PROGRAM_NAME=$1
     log_info "Building the $PROGRAM_NAME program..."
-    anchor build
-    yarn install
+    anchor build > /dev/null
+    yarn install > /dev/null
 }
 
 deploy_program() {
@@ -175,7 +175,7 @@ deploy_program() {
 # -------------------- CLI Management --------------------
 build_cli() {
     log_info "Running cargo build for the CLIs..."
-    cargo build
+    cargo build > /dev/null
     log_success "CLI built successfully"
 }
 
@@ -225,6 +225,7 @@ run_test() {
 
     COMPLETED_COUNT=$((COMPLETED_COUNT + 1))
     print_status_bar
+    echo ""
     cd ../ || exit 1
 }
 
@@ -248,7 +249,7 @@ if [ "$TEST_TYPE" == "e2e" ]; then
 
     # Install the dependencies for the e2e test suite
     cd ./e2e || exit 1
-    npm install
+    npm install > /dev/null
     cd ../
 fi
 

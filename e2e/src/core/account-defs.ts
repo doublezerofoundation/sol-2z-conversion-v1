@@ -7,15 +7,16 @@ export interface SystemConfig {
     slotThreshold: BN,
     priceMaximumAge: BN,
     maxFillsStorage: BN,
-    steepness: BN,
-    maxDiscountRate: BN
+    coefficient: BN,
+    maxDiscountRate: BN,
+    minDiscountRate: BN,
 }
 
 export interface SystemState {
     admin: PublicKey,
     isHalted: boolean,
     bumpRegistry: BumpRegistry,
-    tradeHistoryList: TradeHistory[],
+    lastTradeSlot: BN,
 }
 
 export interface BumpRegistry {
@@ -23,11 +24,6 @@ export interface BumpRegistry {
     programStateBump: BN,
     fillsRegistryBump: BN,
     denyListRegistryBump: BN,
-}
-
-export interface TradeHistory {
-    epoch: BN,
-    numOfTrades: BN,
 }
 
 export interface DenyListRegistry {

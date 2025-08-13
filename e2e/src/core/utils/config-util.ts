@@ -8,7 +8,8 @@ export interface Config {
     slot_threshold: number;
     max_fills_storage: number;
     max_discount_rate: number;
-    steepness: number;
+    min_discount_rate: number;
+    coefficient: number;
 }
 
 export const getConfig = (): Config => {
