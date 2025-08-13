@@ -42,7 +42,7 @@ describe("Buy Sol Tests", () => {
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
             program,
-            DEFAULT_CONFIGS
+            {...DEFAULT_CONFIGS, coefficient: new anchor.BN(1)}
         );
 
         currentConfigs = DEFAULT_CONFIGS;
@@ -100,7 +100,7 @@ describe("Buy Sol Tests", () => {
 
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
-            const bidPrice = askPrice - 1000;
+            const bidPrice = askPrice - 100000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
@@ -149,7 +149,7 @@ describe("Buy Sol Tests", () => {
 
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
-            const bidPrice = askPrice - 1;
+            const bidPrice = askPrice - 1000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
