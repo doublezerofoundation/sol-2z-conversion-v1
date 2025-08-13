@@ -1,8 +1,8 @@
 import { describe } from "mocha";
-import { SystemConfig, Test } from "../core/account-defs";
+import { Test } from "../core/account-defs";
 import { AdminClient } from "../core/admin-client";
 import { InitializeScenario } from "../scenarios/initialize-scenario";
-import { getTestName } from "../core/utils/test-helper";
+import { extractTxHashFromResult, getTestName } from "../core/utils/test-helper";
 import { DEFAULT_KEYPAIR_PATH } from "../core/constants";
 import { DenyListScenario } from "../scenarios/deny-list-scenario";
 import { PublicKey } from "@solana/web3.js";
@@ -12,9 +12,9 @@ import { ConfigScenario } from "../scenarios/config-scenario";
 import { DequeuerScenario } from "../scenarios/dequeuer-scenario";
 import { WithdrawScenario } from "../scenarios/withdraw-scenario";
 import { SystemStateScenario } from "../scenarios/system-state-scenario";
-import { getConfigurationRegistryAccount } from "../core/utils/account-helper";
 import { getConfig } from "../core/utils/config-util";
-import { BN } from "@coral-xyz/anchor";
+import { eventExists } from "../core/utils/assertions";
+import { assert } from "chai";
 
 const initializationTests: Test[] = [
     {
@@ -79,6 +79,24 @@ const configUpdateTests: Test[] = [
             let config = getConfig();
             config.max_discount_rate = 3440;
             await scenario.updateConfigAndVerify(config);
+        }
+    },
+    {
+        name: "config_update_fail_invalid_max_discount_rate",
+        description: "Admin should not be able to update the config with an invalid max discount rate",
+        execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
+            let config = getConfig();
+            config.max_discount_rate = 10001;
+            await invalidScenario.updateConfigAndVerifyFail("Invalid max discount rate", config);
+        }
+    },
+    {
+        name: "config_update_fail_invalid_min_discount_rate",
+        description: "Admin should not be able to update the config with an invalid min discount rate",
+        execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
+            let config = getConfig();
+            config.min_discount_rate = 10001;
+            await invalidScenario.updateConfigAndVerifyFail("Invalid min discount rate", config);
         }
     }
 ]
@@ -168,8 +186,15 @@ const dequeuerTests: Test[] = [
         name: "dequeuer_add_fail_invalid_dequeuer",
         description: "Adding an invalid dequeuer should fail",
         execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            // TODO: add test
-            // await scenario.addDequeuerAndVerifyFail(dequeuer, "Invalid dequeuer");
+            const result = await scenario.addDequeuerAndVerify(dequeuer);
+            const txHash = extractTxHashFromResult(result);
+
+            // Check for DequeuerAdded event
+            if (await eventExists(scenario.getConnection(), txHash, "DequeuerAdded")) {
+                assert.fail("DequeuerAdded should not be emitted");
+            } else {
+                assert.ok(true, "DequeuerAdded event should not be emitted");
+            }
         }
     },
     {
@@ -190,8 +215,15 @@ const dequeuerTests: Test[] = [
         name: "dequeuer_remove_fail_invalid_dequeuer",
         description: "Removing an invalid dequeuer should fail",
         execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            // TODO: add test
-            // await scenario.removeDequeuerAndVerifyFail(dequeuer, "Invalid dequeuer");
+            const result = await scenario.removeDequeuerAndVerify(dequeuer);
+            const txHash = extractTxHashFromResult(result);
+
+            // Check for DequeuerRemoved event
+            if (await eventExists(scenario.getConnection(), txHash, "DequeuerRemoved")) {
+                assert.fail("DequeuerRemoved should not be emitted");
+            } else {
+                assert.ok(true, "DequeuerRemoved event should not be emitted");
+            }
         }
     }
 ]
@@ -301,6 +333,13 @@ describe("Admin E2E Tests", () => {
         before(async () => {
             adminScenario = new ConfigScenario(nonDeployerAdmin);
             nonAdminScenario = new ConfigScenario(invalidAdmin);
+        });
+        after(async () => {
+            // Reset the config
+            let config = getConfig();
+            config.max_discount_rate = 5000;
+            config.min_discount_rate = 500;
+            await adminScenario.updateConfigAndVerify(config);
         });
         for (const [i, test] of configUpdateTests.entries()) {
             it(getTestName("CONFIG_UPDATE", i+1, test.description), async () => {

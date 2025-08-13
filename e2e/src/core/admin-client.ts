@@ -1,4 +1,7 @@
+import { PublicKey } from "@solana/web3.js";
 import { AdminSession } from "./admin-session";
+import { findOrInitializeAssociatedTokenAccount } from "./utils/account-helper";
+import { getMockDoubleZeroTokenMintPDA } from "./utils/pda-helper";
 
 export class AdminClient {
     public readonly session: AdminSession;
@@ -53,12 +56,31 @@ export class AdminClient {
         return await this.session.executeCliCommand(`view-deny-list`);
     }
 
-    public async addDequeuerCommand(dequeuer: string): Promise<void> {
-        await this.session.executeCliCommand(`add-dequeuer -a ${dequeuer}`);
+    public async addDequeuerCommand(dequeuer: string): Promise<string> {
+        return await this.session.executeCliCommand(`add-dequeuer -a ${dequeuer}`);
     }
 
-    public async removeDequeuerCommand(dequeuer: string): Promise<void> {
-        await this.session.executeCliCommand(`remove-dequeuer -a ${dequeuer}`);
+    public async removeDequeuerCommand(dequeuer: string): Promise<string> {
+        return await this.session.executeCliCommand(`remove-dequeuer -a ${dequeuer}`);
+    }
+
+    public async initMockProgramCommand(): Promise<void> {
+        await this.session.executeCliCommand(`init-mock-program`);
+    }
+
+    public async airdropToMockVaultCommand(amount: number): Promise<void> {
+        await this.session.executeCliCommand(`airdrop-to-mock-vault -a ${amount}`);
+    }
+
+    public async mockTokenMintCommand(amount: number, toUser: PublicKey): Promise<void> {
+        const mockProgram = this.session.getMockProgram();
+        const ata = await findOrInitializeAssociatedTokenAccount(
+            this.session.getKeypair(),
+            toUser,
+            await getMockDoubleZeroTokenMintPDA(mockProgram.programId),
+            mockProgram
+        );
+        await this.session.executeCliCommand(`mock-token-mint -a ${amount} -t ${ata}`);
     }
 
 }

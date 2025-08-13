@@ -33,8 +33,8 @@ impl ConfigurationRegistry {
         max_discount_rate: u64,
         min_discount_rate: u64,
     ) -> Result<()> {
-        // Validate D_max is between 0 and 1
-        if max_discount_rate > 10000 {
+        // Validate D_max is between 0 and 1 and D_max is greater than D_min
+        if max_discount_rate > 10000 || max_discount_rate < min_discount_rate {
             return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
         }
 
@@ -74,7 +74,7 @@ impl ConfigurationRegistry {
             self.coefficient = coefficient;
         }
         if let Some(max_discount_rate) = input.max_discount_rate {
-            if max_discount_rate > 10000 {
+            if max_discount_rate > 10000 || max_discount_rate < self.min_discount_rate {
                 return Err(error!(DoubleZeroError::InvalidMaxDiscountRate));
             }
             self.max_discount_rate = max_discount_rate;

@@ -5,11 +5,13 @@
   "license": "ISC",
   "author": "MeridianLabs",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "admin-flow": "mocha -r ts-node/esm 'src/tests/admin-flow.test.ts'"
+    "admin-flow": "mocha --import ./node_modules/ts-node/esm.mjs 'src/tests/admin-flow.test.ts'"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
+    "@solana/spl-token": "^0.4.13",
     "@solana/web3.js": "^1.98.4",
     "chai": "^5.2.1"
   },
