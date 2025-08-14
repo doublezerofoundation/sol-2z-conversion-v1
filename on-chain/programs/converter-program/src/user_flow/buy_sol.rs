@@ -44,12 +44,8 @@ pub struct BuySol<'info> {
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
-    #[account(
-        mut,
-        seeds = [SeedPrefixes::FillsRegistry.as_bytes()],
-        bump = program_state.bump_registry.fills_registry_bump,
-    )]
-    pub fills_registry: Account<'info, FillsRegistry>,
+    #[account(mut)]
+    pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
         mut,
         token::mint = double_zero_mint,
@@ -174,12 +170,9 @@ impl<'info> BuySol<'info> {
         )?;
 
         // Add it to fills registry
-        self.fills_registry.add_trade_to_fills_registry(
+        self.fills_registry.load_mut()?.add_trade_to_fills_registry(
             sol_quantity,
-            tokens_required,
-            clock.unix_timestamp,
-            self.signer.key(),
-            clock.epoch,
+            tokens_required
         )?;
 
         // Update the last trade slot

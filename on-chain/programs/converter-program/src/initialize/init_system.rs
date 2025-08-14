@@ -35,19 +35,13 @@ pub struct InitializeSystem<'info> {
     #[account(
         init,
         payer = authority,
-        space = DISCRIMINATOR_SIZE + FillsRegistry::INIT_SPACE,
-        seeds = [SeedPrefixes::FillsRegistry.as_bytes()],
-        bump,
-    )]
-    pub fills_registry: Account<'info, FillsRegistry>,
-    #[account(
-        init,
-        payer = authority,
         space = DISCRIMINATOR_SIZE + DenyListRegistry::INIT_SPACE,
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
         bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
+    #[account(zero)]
+    pub temp_fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(constraint = program.programdata_address()? == Some(program_data.key()))]
     pub program: Program<'info, ConverterProgram>,
     /// PDA holding upgrade authority info.
@@ -84,6 +78,11 @@ impl<'info> InitializeSystem<'info> {
             min_discount_rate
         )?;
 
+        // Initializing Fills Registry
+        self.temp_fills_registry.load_init()?;
+        // Store it in program state
+        self.program_state.fills_registry_address = self.temp_fills_registry.key();
+
         // Set upgrade authority as admin
         self.program_state.admin = self.authority.key();
 
@@ -100,14 +99,12 @@ impl<'info> InitializeSystem<'info> {
         &mut self,
         configuration_registry_bump: u8,
         program_state_bump: u8,
-        fills_registry_bump: u8,
         deny_list_registry_bump: u8,
     )-> Result<()> {
 
         let bump_registry = &mut self.program_state.bump_registry;
         bump_registry.configuration_registry_bump = configuration_registry_bump;
         bump_registry.program_state_bump = program_state_bump;
-        bump_registry.fills_registry_bump = fills_registry_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
         Ok(())
 

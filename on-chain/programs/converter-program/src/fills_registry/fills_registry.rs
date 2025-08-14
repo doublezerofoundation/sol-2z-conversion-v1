@@ -1,29 +1,27 @@
-use crate::common::constant::MAX_FILLS_QUEUE_SIZE;
+use crate::common::{
+    constant::MAX_TEMP_FILLS_QUEUE_SIZE,
+    error::DoubleZeroError
+};
 use anchor_lang::prelude::*;
-use crate::common::error::DoubleZeroError;
 
-#[account]
-#[derive(InitSpace, Debug)]
+#[account(zero_copy)]
 pub struct FillsRegistry {
     pub total_sol_pending: u64,      // Total SOL in not dequeued fills
     pub total_2z_pending: u64,       // Total 2Z in not dequeued fills
     pub lifetime_sol_processed: u64, // Cumulative SOL processed
     pub lifetime_2z_processed: u64,  // Cumulative 2Z processed
-    #[max_len(MAX_FILLS_QUEUE_SIZE)]
-    pub fills: Vec<Fill>,
-    pub head: u32,   // index of oldest element
-    pub tail: u32,   // index to insert next element
-    pub count: u32,  // number of valid elements
+    pub fills: [Fill; MAX_TEMP_FILLS_QUEUE_SIZE],
+    pub head: u64,   // index of oldest element
+    pub tail: u64,   // index to insert next element
+    pub count: u64,  // number of valid elements
 }
 
-#[derive(AnchorSerialize, AnchorDeserialize, Clone, Copy, Debug, InitSpace)]
+#[zero_copy]
 pub struct Fill {
     pub sol_in: u64,
-    pub token_2z_out: u64,
-    pub timestamp: i64,
-    pub buyer: Pubkey,
-    pub epoch: u64, // Source epoch for accounting
+    pub token_2z_out: u64
 }
+
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct DequeueFillsResult {
@@ -37,17 +35,11 @@ impl FillsRegistry {
         &mut self,
         sol_in: u64,
         token_2z_out: u64,
-        timestamp: i64,
-        buyer: Pubkey,
-        epoch: u64,
     ) -> Result<()> {
         // Add it to fills registry
         let fill = Fill {
             sol_in,
             token_2z_out,
-            timestamp,
-            buyer,
-            epoch,
         };
 
         self.enqueue(fill)?;

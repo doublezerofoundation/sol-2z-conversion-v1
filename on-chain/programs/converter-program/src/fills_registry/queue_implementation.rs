@@ -1,5 +1,7 @@
-use crate::common::constant::MAX_FILLS_QUEUE_SIZE;
-use crate::fills_registry::fills_registry::{FillsRegistry, Fill};
+use crate::{
+    fills_registry::fills_registry::{FillsRegistry, Fill},
+    common::constant::MAX_TEMP_FILLS_QUEUE_SIZE
+};
 use anchor_lang::prelude::*;
 
 #[error_code]
@@ -12,18 +14,13 @@ pub enum FillRegistryError {
 impl FillsRegistry {
 
     // Data Structure Implementation - Solana does not have implementation for queue
-
     /// Adds it to Queue
     pub fn enqueue(&mut self, fill: Fill) -> Result<()> {
-        require!(!self.is_full(), FillRegistryError::RegistryFull);
-
-        if self.fills.len() < MAX_FILLS_QUEUE_SIZE {
-            self.fills.push(fill); // extend Vec if space
-        } else {
-            self.fills[self.tail as usize] = fill; // overwrite existing slot
+        if self.count as usize >= MAX_TEMP_FILLS_QUEUE_SIZE {
+            return err!(FillRegistryError::RegistryFull);
         }
-
-        self.tail = (self.tail + 1) % MAX_FILLS_QUEUE_SIZE as u32;
+        self.fills[self.tail as usize] = fill;
+        self.tail = (self.tail + 1) % MAX_TEMP_FILLS_QUEUE_SIZE as u64;
         self.count += 1;
         Ok(())
     }
@@ -31,8 +28,8 @@ impl FillsRegistry {
     /// Remove & Return the old entry - FIFO
     pub fn dequeue(&mut self) -> Result<Fill> {
         require!(!self.is_empty(), FillRegistryError::RegistryEmpty);
-        let fill = self.fills[self.head as usize];
-        self.head = (self.head + 1) % MAX_FILLS_QUEUE_SIZE as u32;
+        let fill = self.fills[self.head as usize]; // copy the Fill (Fill is Copy)
+        self.head = (self.head + 1) % MAX_TEMP_FILLS_QUEUE_SIZE as u64;
         self.count -= 1;
         Ok(fill)
     }
@@ -47,10 +44,5 @@ impl FillsRegistry {
     /// Checks whether the queue is empty
     pub fn is_empty(&self) -> bool {
         self.count == 0
-    }
-
-    /// Checks whether the queue is full
-    fn is_full(&self) -> bool {
-        self.count as usize >= MAX_FILLS_QUEUE_SIZE
     }
 }

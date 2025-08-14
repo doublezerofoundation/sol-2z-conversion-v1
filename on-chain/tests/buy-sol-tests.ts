@@ -19,6 +19,7 @@ import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
 import { assert } from "chai";
+import {getFillsRegistryAccount} from "./core/utils/fills-registry";
 
 describe("Buy Sol Tests", () => {
     // Configure the client to use the local cluster.
@@ -72,10 +73,11 @@ describe("Buy Sol Tests", () => {
     });
 
 
-    describe("Happy Path", async() => {
+    describe.only("Happy Path", async() => {
         let lastTradeSlot: number;
 
-        it("User does buySOL at higher price than Ask Price", async () => {
+        it.only("User does buySOL at higher price than Ask Price", async () => {
+            console.log(await getFillsRegistryAccount(program));
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
             const bidPrice = askPrice + 2 * TOKEN_DECIMAL;

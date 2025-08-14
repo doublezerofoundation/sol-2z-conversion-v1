@@ -27,12 +27,8 @@ pub struct DequeueFills<'info> {
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
-    #[account(
-        mut,
-        seeds = [SeedPrefixes::FillsRegistry.as_bytes()],
-        bump = program_state.bump_registry.fills_registry_bump,
-    )]
-    pub fills_registry: Account<'info, FillsRegistry>,
+    #[account(mut)]
+    pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(mut)]
     pub signer: Signer<'info>
 }
@@ -50,7 +46,7 @@ impl<'info> DequeueFills<'info> {
             DoubleZeroError::UnauthorizedDequeuer
         );
 
-        let dequeue_fills_result = self.fills_registry.dequeue_fills(max_sol_amount)?;
+        let dequeue_fills_result = self.fills_registry.load_mut()?.dequeue_fills(max_sol_amount)?;
 
         emit!(FillsDequeuedEvent {
             requester: self.signer.key(),

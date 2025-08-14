@@ -46,7 +46,6 @@ pub mod converter_program {
         ctx.accounts.set_bumps(
             ctx.bumps.configuration_registry,
             ctx.bumps.program_state,
-            ctx.bumps.fills_registry,
             ctx.bumps.deny_list_registry
         )?;
 
