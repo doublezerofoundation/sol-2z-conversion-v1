@@ -44,11 +44,15 @@ pub struct BuySol<'info> {
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = fills_registry.key() == program_state.fills_registry_address
+    )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
         mut,
         token::mint = double_zero_mint,
+        constraint = user_token_account.owner == signer.key()
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
@@ -58,11 +62,12 @@ pub struct BuySol<'info> {
         token::mint = double_zero_mint,
     )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
+    /// CHECK: program address - TODO: implement address validations
     #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    /// CHECK: program address - TODO: implement validations
+    /// CHECK: program address - TODO: implement address validations
     pub revenue_distribution_program: AccountInfo<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,

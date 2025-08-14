@@ -42,10 +42,14 @@ pub struct InitializeSystem<'info> {
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(zero)]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
-    #[account(constraint = program.programdata_address()? == Some(program_data.key()))]
+    #[account(
+        constraint = program.programdata_address()? == Some(program_data.key()) 
+    )]
     pub program: Program<'info, ConverterProgram>,
     /// PDA holding upgrade authority info.
-    #[account(constraint = program_data.upgrade_authority_address == Some(authority.key()))]
+    #[account(
+        constraint = program_data.upgrade_authority_address == Some(authority.key())
+    )]
     pub program_data: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,
     /// current upgrade have to sign

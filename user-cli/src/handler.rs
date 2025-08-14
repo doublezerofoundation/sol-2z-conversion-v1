@@ -1,6 +1,6 @@
 use clap::Parser;
 use std::error::Error;
-use cli_common::common_functions::view_fills_registry;
+use cli_common::common_functions::view_fills::view_fills_registry;
 use crate::{
     command::Commands,
     core::{

@@ -27,7 +27,10 @@ pub struct DequeueFills<'info> {
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
-    #[account(mut)]
+    #[account(
+        mut,
+        constraint = fills_registry.key() == program_state.fills_registry_address
+    )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(mut)]
     pub signer: Signer<'info>
@@ -38,7 +41,6 @@ impl<'info> DequeueFills<'info> {
         &mut self,
         max_sol_amount: u64,
     ) -> Result<DequeueFillsResult> {
-
         // Checking whether address is inside the authorized dequeuers
         let signer_key = self.signer.key;
         require!(

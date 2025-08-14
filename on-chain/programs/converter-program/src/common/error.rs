@@ -79,5 +79,5 @@ pub enum DoubleZeroError {
     ArithmeticError, // 6023
 
     #[msg("User is not authorized to do Dequeue Action")]
-    UnauthorizedDequeuer, // 6023
+    UnauthorizedDequeuer, // 6024
 }
