@@ -6,6 +6,7 @@ use crate::{
         common::error::COMMAND_NOT_SPECIFIED
     }
 };
+use crate::core::function::dequeue_fills::dequeue_fills;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -17,15 +18,9 @@ struct Cli {
 pub async fn handle() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     match cli.command {
-        // Displays SOL quantity available per transaction
-        Some(Commands::GetQuantity) => {
-            println!("Get Quantity");
-            Ok(())
-        }
-
-        // Displays current 2Z-to-SOL conversion price
-        Some(Commands::GetPrice) => {
-            println!("Get Price");
+        // Dequeue from fills Registry
+        Some(Commands::DequeueFills { amount }) => {
+            dequeue_fills(amount)?;
             Ok(())
         }
 

@@ -1,17 +1,17 @@
 import {
     getConfigurationRegistryPDA,
     getDenyListRegistryPDA,
-    getFillsRegistryPDA,
     getProgramDataAccountPDA,
     getProgramStatePDA
 } from "../utils/pda-helper";
 import {assert, expect} from "chai";
-import {Keypair} from "@solana/web3.js";
+import {Keypair, PublicKey} from "@solana/web3.js";
 import {accountExists, getDefaultKeyPair} from "../utils/accounts";
 import {DEFAULT_CONFIGS, fetchCurrentConfiguration, SystemConfig} from "../utils/configuration-registry";
 import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
 import {toggleSystemStateAndVerify} from "./system-state";
+import * as anchor from "@coral-xyz/anchor";
 
 export async function systemInitializeAndVerify(
     program: Program<ConverterProgram>,
@@ -19,23 +19,24 @@ export async function systemInitializeAndVerify(
     inputConfigs: SystemConfig = DEFAULT_CONFIGS
 ) {
     // List of Accounts to be verified
-    const pdas = [
+    const accounts: PublicKey[] = [
         getProgramStatePDA(program.programId),
         getConfigurationRegistryPDA(program.programId),
-        getFillsRegistryPDA(program.programId),
-        getDenyListRegistryPDA(program.programId)
+        getDenyListRegistryPDA(program.programId),
     ];
 
     // Accounts to be initialized should not exist before initialization
-    let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] =
+    let [programStateExists, configRegistryExists, denyRegistryExists] =
         await Promise.all(
-            pdas.map((pda) => accountExists(program.provider.connection, pda))
+            accounts.map((pda) => accountExists(program.provider.connection, pda))
         );
 
     assert.isFalse(programStateExists, "Program State Account should not exist before initialization");
     assert.isFalse(configRegistryExists, "Configuration Registry should not exist before initialization");
-    assert.isFalse(fillsRegistryExists, "Fills Registry should not exist before initialization");
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
+
+    // Initialize fills registry
+    const fillsRegistryAddress = await initializeFillRegistry(program);
 
     // Initialization
     const programDataAccount = getProgramDataAccountPDA(program.programId);
@@ -51,22 +52,24 @@ export async function systemInitializeAndVerify(
             inputConfigs.minDiscountRate
         )
             .accounts({
+                fillsRegistry: fillsRegistryAddress,
                 authority: adminKeyPair.publicKey,
                 programData: programDataAccount
             })
             .signers([adminKeyPair])
             .rpc();
-        // console.log("System Initialization is successful. Transaction Hash", tx);
+        console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
     }
 
-
+    let fillsRegistryExists: boolean;
+    accounts.push(fillsRegistryAddress);
     // Verify Existence of Initialized Accounts
-    [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] =
+    [programStateExists, configRegistryExists, denyRegistryExists, fillsRegistryExists] =
         await Promise.all(
-            pdas.map((pda) => accountExists(program.provider.connection, pda))
+            accounts.map((pda) => accountExists(program.provider.connection, pda))
         );
 
     assert.isTrue(programStateExists, "Program State Account should exist after initialization");
@@ -93,6 +96,9 @@ export async function systemInitializeFail(
     expectedError: string
 ) {
     const programDataAccount = getProgramDataAccountPDA(program.programId);
+    // Initialize fills registry
+    const fillsRegistryAddress = await initializeFillRegistry(program);
+
     try {
         await program.methods.initializeSystem(
             configRegistryValues.oraclePubkey,
@@ -132,4 +138,34 @@ export async function initializeSystemIfNeeded(program: Program<ConverterProgram
     } catch (error) {
         // system already in active state
     }
+}
+
+export async function initializeFillRegistry(
+    program: Program<ConverterProgram>,
+    adminKeyPair: Keypair = getDefaultKeyPair()
+): Promise<PublicKey> {
+    // initializing fills registry
+    const fillsRegistryKeyPair = Keypair.generate();
+    const space = 10_485_760; // 10MB max account size
+    const lamports = await program.provider.connection.getMinimumBalanceForRentExemption(space);
+
+    const tx = new anchor.web3.Transaction().add(
+        anchor.web3.SystemProgram.createAccount({
+            fromPubkey: program.provider.publicKey,
+            newAccountPubkey: fillsRegistryKeyPair.publicKey,
+            space,
+            lamports,
+            programId: program.programId,
+        })
+    );
+
+    // Send and confirm
+    await anchor.web3.sendAndConfirmTransaction(
+        program.provider.connection,
+        tx,
+        [adminKeyPair, fillsRegistryKeyPair]
+    );
+
+    console.log("Fills Registry Account created:", fillsRegistryKeyPair.publicKey.toBase58());
+    return fillsRegistryKeyPair.publicKey;
 }

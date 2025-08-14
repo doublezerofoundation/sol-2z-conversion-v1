@@ -19,6 +19,7 @@ anchor-spl = "0.31.1"
 ## on-chain
 base64 = "0.22.1"
 brine-ed25519 = "0.2.0"
+bytemuck = { version = "1.20.0", features = ["min_const_generics"] }
 
 # Workspace members (internal dependencies)
 cli-common = { path = "cli-common" }

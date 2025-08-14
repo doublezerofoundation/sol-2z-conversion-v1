@@ -21,6 +21,8 @@ use deny_list_registry::deny_list_registry::*;
 use discount_rate::calculate_ask_price::*;
 use initialize::init_system::*;
 use user_flow::buy_sol::*;
+use fills_registry::dequeue_fills::*;
+use fills_registry::fills_registry::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -45,7 +47,6 @@ pub mod converter_program {
         ctx.accounts.set_bumps(
             ctx.bumps.configuration_registry,
             ctx.bumps.program_state,
-            ctx.bumps.fills_registry,
             ctx.bumps.deny_list_registry
         )?;
 
@@ -121,5 +122,13 @@ pub mod converter_program {
         oracle_price_data: OraclePriceData,
     ) -> Result<u64> {
         ctx.accounts.get_conversion_rate(oracle_price_data)
+    }
+
+    //////////////////////// Integration Contract ////////////////////////
+    pub fn dequeue_fills(
+        ctx: Context<DequeueFills>,
+        max_sol_amount: u64,
+    ) -> Result<DequeueFillsResult> {
+        ctx.accounts.process(max_sol_amount)
     }
 }

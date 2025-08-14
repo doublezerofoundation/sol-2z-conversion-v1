@@ -19,6 +19,7 @@ import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
 import { assert } from "chai";
+import {getFillsRegistryAccount} from "./core/utils/fills-registry";
 
 describe("Buy Sol Tests", () => {
     // Configure the client to use the local cluster.

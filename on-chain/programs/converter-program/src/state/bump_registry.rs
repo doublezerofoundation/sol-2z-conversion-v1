@@ -5,6 +5,5 @@ use anchor_lang::{AnchorSerialize, AnchorDeserialize};
 pub struct BumpRegistry {
     pub configuration_registry_bump: u8,
     pub program_state_bump: u8,
-    pub fills_registry_bump: u8,
     pub deny_list_registry_bump: u8,
 }
