@@ -349,7 +349,7 @@ describe("Buy Sol Tests", () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
-                maxDiscountRate: new anchor.BN(15 * BPS),
+                maxDiscountRate: new anchor.BN(55 * BPS),
             };
             await updateConfigsAndVerify(
                 program,
