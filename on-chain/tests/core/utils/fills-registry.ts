@@ -9,6 +9,5 @@ export async function getFillsRegistryAccountAddress(program) : Promise<PublicKe
 
 export async function getFillsRegistryAccount(program) : Promise<PublicKey> {
     const fillsRegistryAddress = await getFillsRegistryAccountAddress(program);
-    console.log(fillsRegistryAddress);
     return await program.account.tempFillsRegistry.fetch(fillsRegistryAddress);
 }
