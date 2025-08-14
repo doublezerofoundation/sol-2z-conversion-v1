@@ -16,8 +16,8 @@ export class AdminClient {
         return client;
     }
 
-    public async initializeSystemCommand(): Promise<void> {
-        await this.session.executeCliCommand("init");
+    public async initializeSystemCommand(): Promise<string> {
+        return await this.session.executeCliCommand("init");
     }
 
     public async updateConfigsCommand(): Promise<void> {

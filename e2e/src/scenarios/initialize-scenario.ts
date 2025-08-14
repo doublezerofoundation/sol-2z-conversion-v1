@@ -9,8 +9,8 @@ export class InitializeScenario extends CommonScenario {
         super(deployer);
     }
 
-    public async initializeSystemAndVerify(): Promise<void> {
-        await this.admin.initializeSystemCommand();
+    public async initializeSystemAndVerify(): Promise<string> {
+        const result = await this.admin.initializeSystemCommand();
 
         // Verify that the system is initialized
         const program = this.admin.session.getProgram();
@@ -34,6 +34,8 @@ export class InitializeScenario extends CommonScenario {
         expect(stateRegExists).to.be.true;
         expect(fillsRegExists).to.be.true;
         expect(denyListRegExists).to.be.true;
+
+        return result;
     }
 
     public async initializeSystemAndVerifyFail(expectedError: string = ""): Promise<void> {

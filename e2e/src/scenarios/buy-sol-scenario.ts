@@ -74,4 +74,8 @@ export class BuySolScenario extends CommonScenario {
         const balance = await this.admin.session.getMockProgram().provider.connection.getBalance(this.user.session.getPublicKey());
         return balance / LAMPORTS_PER_SOL;
     }
+
+    public getUserPublicKey(): PublicKey {
+        return this.user.session.getPublicKey();
+    }
 }

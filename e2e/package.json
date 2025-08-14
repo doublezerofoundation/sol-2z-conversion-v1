@@ -6,8 +6,8 @@
   "author": "MeridianLabs",
   "main": "index.js",
   "scripts": {
-    "admin-flow": "mocha -r ts-node/esm 'src/tests/admin-flow.test.ts'",
-    "user-flow": "mocha -r ts-node/esm 'src/tests/user-flow.test.ts'"
+    "admin-flow": "mocha -r ts-node/esm 'src/admin-flow.spec.ts'",
+    "user-flow": "mocha -r ts-node/esm 'src/user-flow.spec.ts'"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",

@@ -4,6 +4,7 @@ import { UserClient } from "../core/user-client";
 import { CommonScenario } from "./common-scenario";
 import { TOKEN_DECIMALS } from "../core/constants";
 import { getConfig } from "../core/utils/config-util";
+import { PublicKey } from "@solana/web3.js";
 
 export class UserQueryScenario extends CommonScenario {
     private readonly user: UserClient;
@@ -56,5 +57,9 @@ export class UserQueryScenario extends CommonScenario {
         } catch (error) {
             expect(error!.toString()).to.contain(errorMessage);
         }
+    }
+
+    public getUserPublicKey(): PublicKey {
+        return this.user.session.getPublicKey();
     }
 }
