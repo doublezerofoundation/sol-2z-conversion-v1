@@ -40,6 +40,10 @@ export class AdminClient {
         await this.session.executeCliCommand(`set-admin -a ${admin}`);
     }
 
+    public async setDenyAuthorityCommand(authority: string): Promise<void> {
+        await this.session.executeCliCommand(`set-deny-authority -a ${authority}`);
+    }
+
     public async addUserToDenyListCommand(user: string): Promise<void> {
         await this.session.executeCliCommand(`add-to-deny-list -a ${user}`);
     }

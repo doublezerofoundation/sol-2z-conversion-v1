@@ -17,6 +17,7 @@ export interface SystemState {
     isHalted: boolean,
     bumpRegistry: BumpRegistry,
     lastTradeSlot: BN,
+    denyListAuthority: PublicKey,
 }
 
 export interface BumpRegistry {

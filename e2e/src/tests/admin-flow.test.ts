@@ -62,6 +62,27 @@ const setAdminTests: Test[] = [
         execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
             await invalidScenario.setAdminAndVerifyFail(admin, "A raw constraint was violated");
         }
+    },
+    {
+        name: "set_deny_authority_fail",
+        description: "Non-deployer should not be able to set a new deny authority",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await invalidScenario.setDenyAuthorityAndVerifyFail(admin, "A raw constraint was violated");
+        }
+    },
+    {
+        name: "set_deny_authority",
+        description: "Deployer should be able to set a new deny authority",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await scenario.setDenyAuthorityAndVerify(admin);
+        }
+    },
+    {
+        name: "set_deny_authority_fail_invalid_authority",
+        description: "Admin should not be able to set a new deny authority",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await invalidScenario.setDenyAuthorityAndVerifyFail(admin, "A raw constraint was violated");
+        }
     }
 ]
 
@@ -106,16 +127,16 @@ const configUpdateTests: Test[] = [
 const denyListTests: Test[] = [
     {
         name: "deny_list_add_user",
-        description: "New admin should be able to add a user to the deny list",
+        description: "New deny authority should be able to add a user to the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
             await scenario.addUserToDenyListAndVerify(user);
         }
     },
     {
         name: "deny_list_add_user_fail",
-        description: "Non-admin should not be able to add a user to the deny list",
+        description: "Non-authority should not be able to add a user to the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
-            await invalidScenario.addUserToDenyListAndVerifyFail(user, "Unauthorized Admin");
+            await invalidScenario.addUserToDenyListAndVerifyFail(user, "Unauthorized Deny List Authority");
         }
     },
     {
@@ -134,14 +155,14 @@ const denyListTests: Test[] = [
     },
     {
         name: "deny_list_remove_user_fail",
-        description: "Non-admin should not be able to remove a user from the deny list",
+        description: "Non-authority should not be able to remove a user from the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
-            await invalidScenario.removeUserFromDenyListAndVerifyFail(user, "Unauthorized Admin");
+            await invalidScenario.removeUserFromDenyListAndVerifyFail(user, "Unauthorized Deny List Authority");
         }
     },
     {
         name: "deny_list_remove_user",
-        description: "Admin should be able to remove a user from the deny list",
+        description: "Deny authority should be able to remove a user from the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
             await scenario.removeUserFromDenyListAndVerify(user);
         }
