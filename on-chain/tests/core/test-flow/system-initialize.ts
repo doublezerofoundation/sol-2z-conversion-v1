@@ -111,7 +111,6 @@ export async function systemInitializeFail(
             configRegistryValues.minDiscountRate
         )
             .accounts({
-                fillsRegistry: fillsRegistryAddress,
                 authority: adminKeyPair.publicKey,
                 programData: programDataAccount
             })

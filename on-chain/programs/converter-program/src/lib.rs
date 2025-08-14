@@ -11,6 +11,7 @@ mod state;
 mod user_flow;
 
 use system_management::set_admin::*;
+use system_management::set_deny_list_authority::*;
 use system_management::system_state::*;
 use anchor_lang::prelude::*;
 use common::structs::*;
@@ -93,6 +94,10 @@ pub mod converter_program {
 
     pub fn set_admin(ctx: Context<SetAdmin>, new_admin: Pubkey) -> Result<()> {
         ctx.accounts.process(new_admin)
+    }
+
+    pub fn set_deny_list_authority(ctx: Context<SetDenyListAuthority>, new_authority: Pubkey) -> Result<()> {
+        ctx.accounts.process(new_authority)
     }
 
     pub fn toggle_system_state(ctx: Context<SystemState>, set_to: bool) -> Result<()> {

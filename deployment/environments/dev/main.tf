@@ -240,6 +240,8 @@ module "ec2" {
   redis_port = data.terraform_remote_state.regional.outputs.redis_port
   enable_swap_oracle_service = var.enable_swap_oracle_service
   enable_indexer_service     = var.enable_indexer_service
+  swap_oracle_service_image_tag = var.swap_oracle_service_image_tag
+  indexer_service_image_tag = var.indexer_service_image_tag
 
   # # Use the IAM instance profile from the account level
   # # This requires modifying the EC2 module to accept an instance profile name
@@ -301,5 +303,13 @@ module "dynamodb" {
   source       = "../../modules/dynamodb"
   name_prefix  = "doublezero-${var.environment}"
   environment  = var.environment
+}
+
+module "sns" {
+  source            = "../../modules/sns"
+  name_prefix       = "doublezero-${var.environment}"     
+  environment       = var.environment
+  email_subscribers = [] # add admin email addresses for error notifications
+  additional_tags   = { Project = "DoubleZero" }
 }
 

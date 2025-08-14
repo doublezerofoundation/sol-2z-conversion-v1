@@ -88,6 +88,11 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             admin_handler::set_admin(admin)
         }
 
+        // Setting the deny list authority of the system
+        Some(Commands::SetDenyAuthority { authority }) => {
+            admin_handler::set_deny_authority(authority)
+        }
+
         // Initializing the mock transfer program
         Some(Commands::InitMockProgram) => {
             mock_token_handler::init()

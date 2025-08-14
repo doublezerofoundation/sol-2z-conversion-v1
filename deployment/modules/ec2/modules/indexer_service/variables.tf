@@ -108,10 +108,9 @@ variable "ecr_repository" {
   default = "double-zero-indexer-service"
 }
 
-variable "image_tag" {
+variable "indexer_service_image_tag" {
   description = "Docker image tag to pull from ECR"
   type        = string
-  default     = "dev1-v1.0.0" // TODO need to get from arg
 }
 
 variable "container_name" {

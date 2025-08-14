@@ -34,5 +34,8 @@ health_check_healthy_threshold   = 3
 health_check_unhealthy_threshold = 3
 
 # Off-chain sSrvice Configuration
-enable_swap_oracle_service = false
+enable_swap_oracle_service = true
 enable_indexer_service     = true
+
+swap_oracle_service_image_tag = "dev3-v1.0.0"
+indexer_service_image_tag = "dev3-v1.0.0"

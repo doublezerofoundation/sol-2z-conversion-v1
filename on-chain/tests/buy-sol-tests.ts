@@ -16,7 +16,7 @@ import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData} from "./core/utils/price-oracle";
 import {BPS, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
-import {addToDenyListAndVerify, removeFromDenyListAndVerify} from "./core/test-flow/deny-list";
+import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
 import { assert } from "chai";
 import {getFillsRegistryAccount} from "./core/utils/fills-registry";
@@ -40,6 +40,8 @@ describe("Buy Sol Tests", () => {
             mockTransferProgram,
             adminKeyPair,
         )
+        // Set deny list authority to admin
+        await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
 
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(

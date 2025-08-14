@@ -89,6 +89,7 @@ impl<'info> InitializeSystem<'info> {
 
         // Set upgrade authority as admin
         self.program_state.admin = self.authority.key();
+        self.program_state.deny_list_authority = self.authority.key();
 
         // Set last trade slot to current slot
         self.program_state.last_trade_slot = Clock::get()?.slot;

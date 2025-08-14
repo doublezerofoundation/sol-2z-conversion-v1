@@ -3,6 +3,7 @@ import { getDefaultKeyPair } from "./core/utils/accounts";
 import { setAdminAndVerify, setAdminAndVerifyFail } from "./core/test-flow/set-admin";
 import { setup } from "./core/setup";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
+import { setDenyListAuthorityAndVerify, setDenyListAuthorityShouldFail } from "./core/test-flow/deny-list";
 
 describe("Admin Change Tests", async () => {
   const program = await setup();
@@ -23,5 +24,15 @@ describe("Admin Change Tests", async () => {
   it("Should fail to set admin if not program deployer", async () => {
     const newAdmin = Keypair.generate();
     await setAdminAndVerifyFail(program, newAdmin, adminKeyPair.publicKey, "A raw constraint was violated");
+  });
+
+  it("Program deployer can set deny list authority", async () => {
+    const newDenyListAuthority = Keypair.generate();
+    await setDenyListAuthorityAndVerify(program, newDenyListAuthority.publicKey);
+  });
+
+  it("Should fail to set deny list authority if not program deployer", async () => {
+    const newDenyListAuthority = Keypair.generate();
+    await setDenyListAuthorityShouldFail(program, newDenyListAuthority.publicKey, "A raw constraint was violated", newDenyListAuthority);
   });
 });
