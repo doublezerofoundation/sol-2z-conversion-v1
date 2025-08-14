@@ -7,8 +7,8 @@ import { assert, expect } from "chai";
 
 export const toggleSystemStateAndVerify = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     set_to: boolean,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const [programStatePDA] = await Promise.all([
         getProgramStatePDA(program.programId),
@@ -40,9 +40,9 @@ export const toggleSystemStateAndVerify = async (
 
 export const toggleSystemStateAndVerifyFail = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     set_to: boolean,
     expectedError: string,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const [programStatePDA] = await Promise.all([
         getProgramStatePDA(program.programId),

@@ -47,8 +47,9 @@ export async function systemInitializeAndVerify(
             inputConfigs.slotThreshold,
             inputConfigs.priceMaximumAge,
             inputConfigs.maxFillsStorage,
-            inputConfigs.steepness,
-            inputConfigs.maxDiscountRate
+            inputConfigs.coefficient,
+            inputConfigs.maxDiscountRate,
+            inputConfigs.minDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -56,7 +57,7 @@ export async function systemInitializeAndVerify(
             })
             .signers([adminKeyPair])
             .rpc();
-        console.log("System Initialization is successful. Transaction Hash", tx);
+        // console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
@@ -82,12 +83,13 @@ export async function systemInitializeAndVerify(
     assert.equal(configInConfigRegistry.priceMaximumAge.toString(), inputConfigs.priceMaximumAge.toString());
     assert.equal(configInConfigRegistry.slotThreshold.toString(), inputConfigs.slotThreshold.toString());
     assert.equal(configInConfigRegistry.solQuantity.toString(), inputConfigs.solQuantity.toString());
-    assert.equal(configInConfigRegistry.steepness.toString(), inputConfigs.steepness.toString());
+    assert.equal(configInConfigRegistry.coefficient.toString(), inputConfigs.coefficient.toString());
     assert.equal(configInConfigRegistry.maxDiscountRate.toString(), inputConfigs.maxDiscountRate.toString());
+    assert.equal(configInConfigRegistry.minDiscountRate.toString(), inputConfigs.minDiscountRate.toString());
 }
 
 export async function systemInitializeFail(
-    program,
+    program: Program<ConverterProgram>,
     adminKeyPair: Keypair = getDefaultKeyPair(),
     configRegistryValues: SystemConfig = DEFAULT_CONFIGS,
     expectedError: string
@@ -100,8 +102,9 @@ export async function systemInitializeFail(
             configRegistryValues.slotThreshold,
             configRegistryValues.priceMaximumAge,
             configRegistryValues.maxFillsStorage,
-            configRegistryValues.steepness,
-            configRegistryValues.maxDiscountRate
+            configRegistryValues.coefficient,
+            configRegistryValues.maxDiscountRate,
+            configRegistryValues.minDiscountRate
         )
             .accounts({
                 authority: adminKeyPair.publicKey,
@@ -111,7 +114,7 @@ export async function systemInitializeFail(
             .rpc();
 
     } catch (error) {
-        console.log("System initialization is rejected as expected");
+        // console.log("System initialization is rejected as expected");
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "System initialization is rejected as expected");
         return; // Exit early — test passes
@@ -119,7 +122,7 @@ export async function systemInitializeFail(
     assert.fail("It was able to initialize system");
 }
 
-export async function initializeSystemIfNeeded(program) {
+export async function initializeSystemIfNeeded(program: Program<ConverterProgram>) {
     const adminKeypair: Keypair = getDefaultKeyPair();
     if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
         await systemInitializeAndVerify(program, adminKeypair);
@@ -127,7 +130,7 @@ export async function initializeSystemIfNeeded(program) {
     }
     // make system to unhalted state
     try {
-        await toggleSystemStateAndVerify(program, adminKeypair, false);
+        await toggleSystemStateAndVerify(program, false, adminKeypair);
     } catch (error) {
         // system already in active state
     }

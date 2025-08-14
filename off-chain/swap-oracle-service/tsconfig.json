@@ -10,15 +10,17 @@
       "target": "es2020",
       "experimentalDecorators": true,
       "emitDecoratorMetadata": true,
-    "types": [
-        "node"
-    ],
+      "types": [
+          "node",
+          "mocha"
+      ],
       "outDir": "./lib",
       "baseUrl": "./src",
       "esModuleInterop": true
   },
   "include": [
-      "src/**/*"
+      "src/**/*",
+      "test/**/*"
   ],
   "exclude": [
       "node_modules",

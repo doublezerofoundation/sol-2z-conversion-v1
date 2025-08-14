@@ -1,0 +1,42 @@
+import { PublicKey } from "@solana/web3.js";
+import { Seeds } from "../enums/seeds";
+
+const CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
+const PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
+const FILLS_REGISTRY_SEED = Seeds.FILLS_REGISTRY_SEED;
+const DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
+
+const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+
+export async function getConfigurationRegistryPDA(programId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(CONFIGURATION_REGISTRY_SEED)],
+        programId
+    )[0]
+}
+export async function getProgramStatePDA(programId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(PROGRAM_STATE_SEED)],
+        programId
+    )[0]
+}
+export async function getFillsRegistryPDA(programId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(FILLS_REGISTRY_SEED)],
+        programId
+    )[0]
+}
+
+export async function getDenyListRegistryPDA(programId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(DENY_LIST_REGISTRY_SEED)],
+        programId
+    )[0]
+}
+
+export async function getProgramDataAccountPDA(programId: PublicKey) {
+    return  PublicKey.findProgramAddressSync(
+        [programId.toBytes()],
+        BPF_UPGRADEABLE_LOADER_ID
+    )[0];
+}

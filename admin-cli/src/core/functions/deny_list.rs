@@ -11,7 +11,6 @@ use anchor_client::solana_sdk::{
     signature::Signer,
 };
 use cli_common::{
-    config::Config,
     transaction_executor,
     utils::{env_var::load_payer_from_env, pda_helper},
 };
@@ -33,9 +32,11 @@ pub fn add_to_deny_list(address: String) -> Result<(), Box<dyn Error>> {
 
     // Getting necessary accounts
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
+    let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(deny_list_registry_pda, false),
+        AccountMeta::new(program_state_pda, false),
         AccountMeta::new(payer.pubkey(), true),
     ];
 
@@ -66,9 +67,11 @@ pub fn remove_from_deny_list(address: String) -> Result<(), Box<dyn Error>> {
 
     // Getting necessary accounts
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
+    let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(deny_list_registry_pda, false),
+        AccountMeta::new(program_state_pda, false),
         AccountMeta::new(payer.pubkey(), true),
     ];
 

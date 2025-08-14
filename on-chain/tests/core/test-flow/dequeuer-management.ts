@@ -64,7 +64,7 @@ export async function addDequeuerAndVerify(
             .signers([adminKeyPair])
             .rpc();
 
-        console.log("Add Dequeuer successful. Transaction Hash", txSig);
+        // console.log("Add Dequeuer successful. Transaction Hash", txSig);
         await sleep(100);
         const logs = await getTransactionLogs(program.provider, txSig);        
         const event = await findAnchorEventInLogs(logs, program.idl, "dequeuerAdded");
@@ -104,7 +104,7 @@ export async function removeDequeuerAndVerify(
             .rpc();
 
 
-        console.log("Remove Dequeuer successful. Transaction Hash", txSig);
+        // console.log("Remove Dequeuer successful. Transaction Hash", txSig);
 
         await sleep(100);
         const logs = await getTransactionLogs(program.provider, txSig);        

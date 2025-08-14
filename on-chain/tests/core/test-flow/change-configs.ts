@@ -8,8 +8,8 @@ import { ConverterProgram } from "../../../target/types/converter_program";
 
 export const updateConfigsAndVerify = async (
     program: Program<ConverterProgram>,
+    input: SystemConfig = DEFAULT_CONFIGS,
     adminKeypair: Keypair = getDefaultKeyPair(),
-    input: SystemConfig = DEFAULT_CONFIGS
 ) => {
     const pdas = [
         getConfigurationRegistryPDA(program.programId),
@@ -44,15 +44,16 @@ export const updateConfigsAndVerify = async (
     assert.equal(updatedConfig.priceMaximumAge.toString(), input.priceMaximumAge.toString());
     assert.equal(updatedConfig.slotThreshold.toString(), input.slotThreshold.toString());
     assert.equal(updatedConfig.solQuantity.toString(), input.solQuantity.toString());
-    assert.equal(updatedConfig.steepness.toString(), input.steepness.toString());
+    assert.equal(updatedConfig.coefficient.toString(), input.coefficient.toString());
     assert.equal(updatedConfig.maxDiscountRate.toString(), input.maxDiscountRate.toString());
+    assert.equal(updatedConfig.minDiscountRate.toString(), input.minDiscountRate.toString());
 }
 
 export const updateConfigsAndVerifyFail = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     input: SystemConfig | any = DEFAULT_CONFIGS,
-    expectedError: string
+    expectedError: string,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const pdas = [
         getConfigurationRegistryPDA(program.programId),
@@ -76,7 +77,7 @@ export const updateConfigsAndVerifyFail = async (
         .signers([adminKeypair])
         .rpc();
     } catch(e) {
-        expect((new Error(e!.toString())).message).to.include(expectedError);
+        expect(e!.toString()).to.include(expectedError);
         assert.ok(true, "Config update failed as expected");
         return; // Exit early — test passes
     }

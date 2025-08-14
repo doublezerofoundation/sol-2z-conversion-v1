@@ -5,7 +5,7 @@ import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
 import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
-import { systemInitializeAndVerify } from "./core/test-flow/system-initialize";
+import { initializeSystemIfNeeded, systemInitializeAndVerify } from "./core/test-flow/system-initialize";
 import {
     addToDenyListAndVerify,
     addToDenyListShouldFail,
@@ -14,13 +14,15 @@ import {
     fetchDenyListRegistry,
     verifyDenyListState
 } from "./core/test-flow/deny-list";
+import { setup } from "./core/setup";
 
-describe("Deny List Tests", () => {
-    // Configure the client to use the local cluster.
-    anchor.setProvider(anchor.AnchorProvider.env());
-
-    const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
+describe("Deny List Tests", async () => {
+    const program = await setup();
     const adminKeyPair = getDefaultKeyPair();
+
+    before("Initialize the system if needed", async () => {
+        await initializeSystemIfNeeded(program)
+    });
 
     // Test addresses
     const testAddress1 = new PublicKey("11111111111111111111111111111112");
@@ -151,7 +153,7 @@ describe("Deny List Tests", () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "A raw constraint was violated",
+                "Address not found in Deny List",
                 adminKeyPair
             );
         });
@@ -314,7 +316,7 @@ describe("Deny List Tests", () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "A raw constraint was violated",
+                "Address not found in Deny List",
                 adminKeyPair
             );
             

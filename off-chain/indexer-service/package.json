@@ -5,8 +5,11 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node ./src/index.ts"
+    "dev": "ts-node ./src/index.ts",
+    "test": "jest --maxWorkers=2",
+    "test:watch": "jest --watch",
+    "test:unit": "jest tests/unit --runInBand",
+    "test:smoke": "jest tests/smoke --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -19,7 +22,10 @@
     "bs58": "^6.0.0"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^24.0.14",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }

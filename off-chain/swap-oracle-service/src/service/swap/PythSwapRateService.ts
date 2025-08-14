@@ -1,10 +1,10 @@
-import SwapRateService from "./swapRateService";
+import ISwapRateService from "./ISwapRateService";
 import {PriceRate} from "../../types/common";
 const TWOZ_PRECISION = 6;
 import {injectable} from "inversify";
 
 @injectable()
-export class PythSwapRateService implements SwapRateService {
+export class PythSwapRateService implements ISwapRateService {
     convertPrice(price: string | number, exponent: number): number {
         const priceNum = typeof price === 'string' ? parseInt(price) : price;
         return priceNum * Math.pow(10, exponent);

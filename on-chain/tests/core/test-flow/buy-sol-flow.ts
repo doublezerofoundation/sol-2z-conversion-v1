@@ -6,7 +6,7 @@ import { ConverterProgram } from "../../../target/types/converter_program";
 import {getTokenBalance} from "../utils/token-utils";
 import * as anchor from "@coral-xyz/anchor";
 import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
-import {MockTransferProgram} from "../../../target/types/mock_transfer_program";
+import {MockTransferProgram} from "../../../../mock-double-zero-program/target/types/mock_transfer_program";
 import {OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
 

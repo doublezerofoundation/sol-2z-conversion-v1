@@ -30,48 +30,54 @@ pub enum DoubleZeroError {
     #[msg("Invalid max discount rate")]
     InvalidMaxDiscountRate, // 6008
 
-    #[msg("Invalid sol demand")]
-    InvalidSolDemand, // 6009
+    #[msg("Invalid min discount rate")]
+    InvalidMinDiscountRate, // 6009
 
-    #[msg("Invalid steepness")]
-    InvalidSteepness, // 6010
+    #[msg("Invalid trade slot")]
+    InvalidTradeSlot, // 6010
+
+    #[msg("Invalid coefficient")]
+    InvalidCoefficient, // 6011
 
     #[msg("Discount calculation error")]
-    DiscountCalculationError, // 6011
+    DiscountCalculationError, // 6012
 
     #[msg("Invalid oracle swap rate")]
-    InvalidOracleSwapRate, // 6012
+    InvalidOracleSwapRate, // 6013
 
     #[msg("Invalid Timestamp")]
-    InvalidTimestamp, // 6013
+    InvalidTimestamp, // 6014
 
     #[msg("Provided bid is too low")]
-    BidTooLow, // 6014
+    BidTooLow, // 6015
 
     #[msg("Provided Attestation is not Authentic")]
-    StalePrice, // 6015
+    StalePrice, // 6016
 
     #[msg("Maximum number of authorized dequeuers reached")]
-    MaxAuthorizedDequeuersReached, // 6016
+    MaxAuthorizedDequeuersReached, // 6017
 
     #[msg("Deny list is full")]
-    DenyListFull, // 6017
+    DenyListFull, // 6018
 
     #[msg("Address already added to Deny List")]
-    AlreadyExistsInDenyList, // 6018
+    AlreadyExistsInDenyList, // 6019
 
     #[msg("Invalid system state")]
-    InvalidSystemState, // 6019
+    InvalidSystemState, // 6020
 
     #[msg("Invalid conversion rate")]
-    InvalidConversionRate, // 6020
+    InvalidConversionRate, // 6021
+
+    #[msg("Address not found in Deny List")]
+    AddressNotInDenyList, // 6021
 
     #[msg("System is halted")]
-    SystemIsHalted, // 6021
+    SystemIsHalted, // 6022
 
     #[msg("Arithmetic Error has occurred")]
-    ArithmeticError, // 6022
-    
+    ArithmeticError, // 6023
+
     #[msg("User is not authorized to do Dequeue Action")]
     UnauthorizedDequeuer, // 6023
 }

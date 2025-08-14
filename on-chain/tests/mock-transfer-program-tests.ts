@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
-import { MockTransferProgram } from "../target/types/mock_transfer_program";
+import { MockTransferProgram } from "../../mock-double-zero-program/target/types/mock_transfer_program";
+import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
 import { airdrop, airdropToActivateAccount, getDefaultKeyPair} from "./core/utils/accounts";
 import {
     buySol,
@@ -16,7 +17,7 @@ describe("System Initialization Tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
-    const program = anchor.workspace.mockTransferProgram as Program<MockTransferProgram>;
+    const program: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as anchor.Idl, anchor.getProvider());
     let adminKeyPair: Keypair = getDefaultKeyPair();
     let pdas;
     let tokenAccount: PublicKey;
