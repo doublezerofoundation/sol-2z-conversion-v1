@@ -13,8 +13,8 @@ export class UserClient {
         return client;
     }
 
-    public async buySolCommand(amount: number): Promise<void> {
-        await this.session.executeCliCommand(`buy-sol -a ${amount}`);
+    public async buySolCommand(amount: number): Promise<string> {
+        return await this.session.executeCliCommand(`buy-sol -a ${amount}`);
     }
 
     public async getPriceCommand(): Promise<string> {

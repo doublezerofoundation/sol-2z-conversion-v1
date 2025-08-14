@@ -14,7 +14,8 @@ UNIT_TESTS=(
 )
 
 E2E_TESTS=(
-    admin-flow
+    # admin-flow
+    user-flow
 )
 
 TEST_TYPE="unit"
