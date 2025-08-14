@@ -6,6 +6,8 @@ pub const REMOVE_FROM_DENY_LIST_INSTRUCTION: &[u8] = b"global:remove_from_deny_l
 pub const UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION: &[u8] = b"global:update_configuration_registry";
 pub const SET_ADMIN_INSTRUCTION: &[u8] = b"global:set_admin";
 pub const TOGGLE_SYSTEM_STATE_INSTRUCTION: &[u8] = b"global:toggle_system_state";
+pub const SET_DENY_LIST_AUTHORITY_INSTRUCTION: &[u8] = b"global:set_deny_list_authority";
+
 
 
 

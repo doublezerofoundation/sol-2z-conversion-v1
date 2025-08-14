@@ -1,0 +1,27 @@
+use anchor_lang::prelude::*;
+use crate::state::program_state::ProgramStateAccount;
+use crate::program::ConverterProgram;
+
+#[derive(Accounts)]
+pub struct SetDenyListAuthority<'info> {
+    #[account(mut)]
+    pub admin: Signer<'info>,
+
+    #[account(mut)]
+    pub program_state: Account<'info, ProgramStateAccount>,
+
+    // Validates that the program data account is the same as the program data account in the program
+    #[account(constraint = program.programdata_address()? == Some(program_data.key()))]
+    pub program: Program<'info, ConverterProgram>,
+
+    // Current upgrade authority has to sign this instruction
+    #[account(constraint = program_data.upgrade_authority_address == Some(admin.key()))]
+    pub program_data: Account<'info, ProgramData>,
+}
+
+impl<'info> SetDenyListAuthority<'info> {
+    pub fn process(&mut self, new_authority: Pubkey) -> Result<()> {
+        self.program_state.deny_list_authority = new_authority;
+        Ok(())
+    }
+}
