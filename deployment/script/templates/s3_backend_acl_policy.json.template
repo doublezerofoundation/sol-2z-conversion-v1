@@ -1,0 +1,32 @@
+{
+    "Version": "2012-10-17",
+    "Id": "S3TerraformBackendPolicy1622556456372",
+    "Statement": [
+        {
+            "Sid": "Deny_DeleteBucket",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:DeleteBucket",
+            "Resource": "arn:aws:s3:::$terraform_backend_bucket_name"
+        },
+        {
+            "Sid": "Deny_DeleteObjectVersion",
+            "Effect": "Deny",
+            "Principal": "*",
+            "Action": "s3:DeleteObjectVersion",
+            "Resource": "arn:aws:s3:::$terraform_backend_bucket_name/*"
+        },
+        {
+            "Sid": "AllowSSLRequestsOnly",
+            "Action": "s3:*",
+            "Effect": "Deny",
+            "Resource": "arn:aws:s3:::$terraform_backend_bucket_name/*",
+            "Condition": {
+                "Bool": {
+                "aws:SecureTransport": "false"
+                }
+            },
+            "Principal": "*"
+        }
+    ]
+}

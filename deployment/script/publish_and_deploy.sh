@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-ENV="dev3"
+ENV="dev"
 AWS_REGION="us-east-1"
-IMAGE_TAG="v1.0.0"
+IMAGE_TAG="v1.0.0-night"
 SERVICE_NAME=""
 ECR_REGISTRY=""
 ECR_REPOSITORY=""
@@ -35,8 +35,8 @@ help() {
     echo "  - indexer-service (ECR: double-zero-indexer-service)"
     echo ""
     echo "Examples:"
-    echo "  $0 publish --env prod --image-tag v2.0.0"
-    echo "  $0 publish --env prod --image-tag v2.0.0 --service-name swap-oracle-service"
+    echo "  $0 publish --image-tag v2.0.0"
+    echo "  $0 deploy --env prod --image-tag v2.0.0 --service-name swap-oracle-service"
     exit 1
 }
 
@@ -88,8 +88,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-IMAGE_TAG=$ENV-$IMAGE_TAG
-
 get_services_to_process() {
     if [[ -n "$SERVICE_NAME" ]]; then
         if [[ -z "${SERVICE_CONFIGS[$SERVICE_NAME]}" ]]; then
@@ -135,7 +133,7 @@ publish() {
         fi
 
         pushd "../../off-chain/$service" > /dev/null
-        ./build_and_deploy.sh --region "$AWS_REGION" --env "$ENV" --repository "$repository" --tag "$IMAGE_TAG"
+        ./build_and_deploy.sh --region "$AWS_REGION" --repository "$repository" --tag "$IMAGE_TAG"
         popd > /dev/null
 
         echo "✅ Successfully published $service"

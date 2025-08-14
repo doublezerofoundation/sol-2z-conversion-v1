@@ -3,7 +3,7 @@ import {HermesClient, PriceUpdate} from "@pythnetwork/hermes-client";
 import {HealthCheckResult, HealthStatus, PriceFeed, PricingServicesConfig} from "../../types/common";
 import {CacheService} from "../cache/cacheService";
 import axios from "axios";
-const ENV:string = process.env.ENV || 'dev';
+const ENV:string = process.env.ENVIRONMENT || 'dev';
 import {injectable} from "inversify";
 import SwapRateService from "../swap/swapRateService";
 

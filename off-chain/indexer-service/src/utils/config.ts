@@ -7,7 +7,7 @@ export interface Config {
   CONCURRENCY: number;
 }
 
-const ENV = process.env.ENV || "default_env";
+const ENV = process.env.ENVIRONMENT || "default_env";
 const configPath = path.resolve(__dirname, "../../config", `${ENV}.json`);
 
 let config: Config;

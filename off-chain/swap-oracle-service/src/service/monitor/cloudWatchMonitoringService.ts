@@ -2,7 +2,7 @@ import MetricsMonitoringService from "./metricsMonitoringService";
 import {CloudWatchClient, PutMetricDataCommand, PutMetricDataCommandInput} from "@aws-sdk/client-cloudwatch";
 import process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
-const ENV:string = process.env.ENV || 'dev';
+const ENV:string = process.env.ENVIRONMENT || 'dev';
 import {injectable} from "inversify";
 
 @injectable()

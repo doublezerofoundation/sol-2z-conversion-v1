@@ -9,7 +9,7 @@ import {HealthMonitoringService} from "../service/monitor/healthMonitoringServic
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
 const TWOZ_PRECISION = 1000000;
-const ENV:string = process.env.ENV || 'dev';
+const ENV:string = process.env.ENVIRONMENT || 'dev';
 @injectable()
 export default class SwapRateController {
     private priceServices: PricingService[];
