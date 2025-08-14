@@ -51,7 +51,7 @@ resource "aws_instance" "this" {
       region                     = var.region
       ecr_registry               = local.ecr_registry
       ecr_repository             = var.ecr_repository
-      image_tag                  = var.image_tag
+      image_tag                  = var.indexer_service_image_tag
       container_name             = var.container_name
       container_port             = var.container_port
       container_environment_vars = var.container_environment_vars
@@ -69,7 +69,7 @@ resource "aws_instance" "this" {
     { 
       Name = "${local.full_prefix}-service", 
       Environment = var.environment,
-      Service     = var.container_name
+      Service     = "double-zero-${var.container_name}"
     },
     var.additional_tags
   )
