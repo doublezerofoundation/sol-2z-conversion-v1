@@ -81,6 +81,6 @@ pub enum DoubleZeroError {
     #[msg("User is not authorized to do Dequeue Action")]
     UnauthorizedDequeuer, // 6024
 
-    [msg("Unauthorized Deny List Authority")]
+    #[msg("Unauthorized Deny List Authority")]
     UnauthorizedDenyListAuthority, // 6025
 }
