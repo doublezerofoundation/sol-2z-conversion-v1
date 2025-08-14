@@ -2,6 +2,8 @@ import { Connection, PublicKey, LAMPORTS_PER_SOL, Keypair } from "@solana/web3.j
 import path from "path";
 import fs from "fs";
 import * as anchor from "@coral-xyz/anchor";
+import { ConverterProgram } from "../../../target/types/converter_program";
+import { getProgramStatePDA } from "./pda-helper";
 
 export function getDefaultKeyPair(): Keypair {
     const keypairPath = path.resolve(
@@ -47,4 +49,10 @@ export async function airdrop(
         lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
         blockhash: (await connection.getLatestBlockhash()).blockhash
     });
+}
+
+export async function fetchProgramState(program: anchor.Program<ConverterProgram>) {
+    const programStatePDA = getProgramStatePDA(program.programId);
+    const programState = await program.account.programStateAccount.fetch(programStatePDA);
+    return programState;
 }
