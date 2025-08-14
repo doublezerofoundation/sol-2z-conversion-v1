@@ -38,7 +38,7 @@ pub struct UpdateDenyList<'info> {
 impl<'info> UpdateDenyList<'info> {
     pub fn add_to_deny_list(&mut self, address: Pubkey) -> Result<()> {
         // Ensure only admin can modify
-        self.program_state.assert_admin(&self.admin)?;
+        self.program_state.assert_deny_list_authority(&self.admin)?;
 
         if self.deny_list_registry.denied_addresses.contains(&address) {
             return err!(DoubleZeroError::AlreadyExistsInDenyList);
@@ -57,7 +57,7 @@ impl<'info> UpdateDenyList<'info> {
 
     pub fn remove_from_deny_list(&mut self, address: Pubkey) -> Result<()> {
         // Ensure only admin can modify
-        self.program_state.assert_admin(&self.admin)?;
+        self.program_state.assert_deny_list_authority(&self.admin)?;
 
         if !self.deny_list_registry.denied_addresses.contains(&address) {
             return err!(DoubleZeroError::AddressNotInDenyList);
