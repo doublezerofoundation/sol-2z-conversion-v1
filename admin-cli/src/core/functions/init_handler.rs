@@ -31,7 +31,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let payer = load_payer_from_env()?;
     let fills_account = Keypair::new();
 
-    let space = 504;
+    let space = 10_485_760;
     let rpc_client = RpcClient::new_with_commitment(admin_config.rpc_url, CommitmentConfig::confirmed());
     let rent = rpc_client.get_minimum_balance_for_rent_exemption(space)?;
 
