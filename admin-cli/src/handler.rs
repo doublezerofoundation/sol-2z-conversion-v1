@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use clap::Parser;
-
+use cli_common::common_functions::view_fills_registry;
 use crate::{
     command::Commands,
     core::{
@@ -18,7 +18,6 @@ use crate::{
         },
     },
 };
-use crate::core::functions::fills_registry;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -111,7 +110,7 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
 
         // View Fills Registry
         Some(Commands::ViewFills) => {
-            fills_registry::view_fills_registry()
+            view_fills_registry()
         }
 
         None => {

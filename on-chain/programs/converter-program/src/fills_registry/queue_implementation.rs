@@ -1,6 +1,6 @@
 use crate::{
     fills_registry::fills_registry::{FillsRegistry, Fill},
-    common::constant::MAX_TEMP_FILLS_QUEUE_SIZE
+    common::constant::MAX_FILLS_QUEUE_SIZE
 };
 use anchor_lang::prelude::*;
 
@@ -16,11 +16,11 @@ impl FillsRegistry {
     // Data Structure Implementation - Solana does not have implementation for queue
     /// Adds it to Queue
     pub fn enqueue(&mut self, fill: Fill) -> Result<()> {
-        if self.count as usize >= MAX_TEMP_FILLS_QUEUE_SIZE {
+        if self.count as usize >= MAX_FILLS_QUEUE_SIZE {
             return err!(FillRegistryError::RegistryFull);
         }
         self.fills[self.tail as usize] = fill;
-        self.tail = (self.tail + 1) % MAX_TEMP_FILLS_QUEUE_SIZE as u64;
+        self.tail = (self.tail + 1) % MAX_FILLS_QUEUE_SIZE as u64;
         self.count += 1;
         Ok(())
     }
@@ -29,7 +29,7 @@ impl FillsRegistry {
     pub fn dequeue(&mut self) -> Result<Fill> {
         require!(!self.is_empty(), FillRegistryError::RegistryEmpty);
         let fill = self.fills[self.head as usize]; // copy the Fill (Fill is Copy)
-        self.head = (self.head + 1) % MAX_TEMP_FILLS_QUEUE_SIZE as u64;
+        self.head = (self.head + 1) % MAX_FILLS_QUEUE_SIZE as u64;
         self.count -= 1;
         Ok(fill)
     }

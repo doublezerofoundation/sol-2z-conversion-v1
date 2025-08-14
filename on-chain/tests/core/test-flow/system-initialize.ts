@@ -1,7 +1,7 @@
 import {
     getConfigurationRegistryPDA,
     getDenyListRegistryPDA,
-    getProgramDataAccountPDA, 
+    getProgramDataAccountPDA,
     getProgramStatePDA
 } from "../utils/pda-helper";
 import {assert, expect} from "chai";
@@ -22,19 +22,17 @@ export async function systemInitializeAndVerify(
     const accounts: PublicKey[] = [
         getProgramStatePDA(program.programId),
         getConfigurationRegistryPDA(program.programId),
-        await initializeFillRegistry(program),
         getDenyListRegistryPDA(program.programId),
     ];
 
     // Accounts to be initialized should not exist before initialization
-    let [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] =
+    let [programStateExists, configRegistryExists, denyRegistryExists] =
         await Promise.all(
             accounts.map((pda) => accountExists(program.provider.connection, pda))
         );
 
     assert.isFalse(programStateExists, "Program State Account should not exist before initialization");
     assert.isFalse(configRegistryExists, "Configuration Registry should not exist before initialization");
-    assert.isFalse(fillsRegistryExists, "Fills Registry should not exist before initialization");
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
 
     // Initialize fills registry
@@ -54,7 +52,7 @@ export async function systemInitializeAndVerify(
             inputConfigs.minDiscountRate
         )
             .accounts({
-                tempFillsRegistry: fillsRegistryAddress,
+                fillsRegistry: fillsRegistryAddress,
                 authority: adminKeyPair.publicKey,
                 programData: programDataAccount
             })
@@ -66,9 +64,10 @@ export async function systemInitializeAndVerify(
         assert.fail("System initialization failed");
     }
 
-
+    let fillsRegistryExists: boolean;
+    accounts.push(fillsRegistryAddress);
     // Verify Existence of Initialized Accounts
-    [programStateExists, configRegistryExists, fillsRegistryExists, denyRegistryExists] =
+    [programStateExists, configRegistryExists, denyRegistryExists, fillsRegistryExists] =
         await Promise.all(
             accounts.map((pda) => accountExists(program.provider.connection, pda))
         );
@@ -97,6 +96,9 @@ export async function systemInitializeFail(
     expectedError: string
 ) {
     const programDataAccount = getProgramDataAccountPDA(program.programId);
+    // Initialize fills registry
+    const fillsRegistryAddress = await initializeFillRegistry(program);
+
     try {
         await program.methods.initializeSystem(
             configRegistryValues.oraclePubkey,
@@ -109,6 +111,7 @@ export async function systemInitializeFail(
             configRegistryValues.minDiscountRate
         )
             .accounts({
+                fillsRegistry: fillsRegistryAddress,
                 authority: adminKeyPair.publicKey,
                 programData: programDataAccount
             })

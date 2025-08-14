@@ -1,5 +1,6 @@
 use clap::Parser;
 use std::error::Error;
+use cli_common::common_functions::view_fills_registry;
 use crate::{
     command::Commands,
     core::{
@@ -35,6 +36,11 @@ pub async fn handle() -> Result<(), Box<dyn Error>> {
         // Displays current 2Z-to-SOL conversion price
         Some(Commands::GetPrice) => {
             query_handler::get_price().await
+        }
+
+        // View Fills Registry
+        Some(Commands::ViewFills) => {
+            view_fills_registry()
         }
 
         // Toggles system between active and paused states.

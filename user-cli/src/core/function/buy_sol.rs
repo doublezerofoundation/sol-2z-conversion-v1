@@ -45,7 +45,7 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
         None => find_or_initialize_associated_token_account(
             payer,
             token_mint_account_pda,
-            user_config.rpc_url
+            user_config.rpc_url.clone()
         )?
     };
 
@@ -57,15 +57,16 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
-    let fills_registry_pda = pda_helper::get_fills_registry_pda(program_id).0;
     let vault_account_pda = pda_helper::get_vault_pda(revenue_distribution_program).0;
-    let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(revenue_distribution_program).0;
+    let protocol_treasury_token_account_pda = 
+        pda_helper::get_protocol_treasury_token_account_pda(revenue_distribution_program).0;
+    let fills_registry = pda_helper::get_fills_registry_address(program_id, user_config.rpc_url)?;
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(deny_list_registry_pda, false),
-        AccountMeta::new(fills_registry_pda, false),
+        AccountMeta::new(fills_registry, false),
         AccountMeta::new(from_pub_key, false),
         AccountMeta::new(vault_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),

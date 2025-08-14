@@ -41,7 +41,7 @@ pub struct InitializeSystem<'info> {
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(zero)]
-    pub temp_fills_registry: AccountLoader<'info, FillsRegistry>,
+    pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(constraint = program.programdata_address()? == Some(program_data.key()))]
     pub program: Program<'info, ConverterProgram>,
     /// PDA holding upgrade authority info.
@@ -79,9 +79,9 @@ impl<'info> InitializeSystem<'info> {
         )?;
 
         // Initializing Fills Registry
-        self.temp_fills_registry.load_init()?;
+        self.fills_registry.load_init()?;
         // Store it in program state
-        self.program_state.fills_registry_address = self.temp_fills_registry.key();
+        self.program_state.fills_registry_address = self.fills_registry.key();
 
         // Set upgrade authority as admin
         self.program_state.admin = self.authority.key();
