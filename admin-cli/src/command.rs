@@ -71,6 +71,12 @@ pub enum Commands {
         admin: String,
     },
 
+    /// Sets the deny list authority of the system
+    SetDenyAuthority {
+        #[arg(short = 'a', required = true)]
+        authority: String,
+    },
+
     /// Initializes Mock Transfer Program Accounts
     InitMockProgram,
 

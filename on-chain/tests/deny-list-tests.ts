@@ -12,7 +12,8 @@ import {
     removeFromDenyListAndVerify,
     removeFromDenyListShouldFail,
     fetchDenyListRegistry,
-    verifyDenyListState
+    verifyDenyListState,
+    setDenyListAuthorityAndVerify
 } from "./core/test-flow/deny-list";
 import { setup } from "./core/setup";
 
@@ -22,6 +23,7 @@ describe("Deny List Tests", async () => {
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
+        await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
     });
 
     // Test addresses

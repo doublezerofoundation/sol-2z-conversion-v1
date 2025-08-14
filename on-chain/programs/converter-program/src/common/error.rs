@@ -77,4 +77,7 @@ pub enum DoubleZeroError {
 
     #[msg("Arithmetic Error has occurred")]
     ArithmeticError, // 6023
+
+    #[msg("Unauthorized Deny List Authority")]
+    UnauthorizedDenyListAuthority, // 6024
 }
