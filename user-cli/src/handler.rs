@@ -39,7 +39,7 @@ pub async fn handle() -> Result<(), Box<dyn Error>> {
         }
 
         // View Fills Registry
-        Some(Commands::ViewFills) => {
+        Some(Commands::GetFillsInfo) => {
             view_fills_registry()
         }
 

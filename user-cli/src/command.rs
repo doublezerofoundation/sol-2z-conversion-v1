@@ -21,5 +21,5 @@ pub enum Commands {
     GetQuantity,
 
     /// View Fills Registry, which tracks individual fill records and overall aggregate statistics
-    ViewFills
+    GetFillsInfo
 }
