@@ -1,6 +1,4 @@
-use anchor_client::{
-    anchor_lang::prelude::{borsh::BorshDeserialize, *},
-};
+use anchor_client::anchor_lang::prelude:: *;
 use cli_common::utils::return_data::ReturnData;
 
 #[derive(Debug, AnchorDeserialize)]

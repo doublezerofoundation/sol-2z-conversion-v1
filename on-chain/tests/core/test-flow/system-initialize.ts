@@ -147,8 +147,7 @@ export async function initializeFillRegistry(
     // initializing fills registry
     const fillsRegistryKeyPair = Keypair.generate();
     const space = 10_485_760; // 10MB max account size
-    const lamports =
-    await program.provider.connection.getMinimumBalanceForRentExemption(space);
+    const lamports = await program.provider.connection.getMinimumBalanceForRentExemption(space);
 
     const tx = new anchor.web3.Transaction().add(
         anchor.web3.SystemProgram.createAccount({
