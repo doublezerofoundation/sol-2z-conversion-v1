@@ -4,6 +4,7 @@ import idlJson from '../../idl/converter_program.json';
 
 import Config from '../utils/config';
 import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb';
+import { sendErrorNotification } from '../utils/notifications';
 
 const connection = new Connection(Config.RPC_URL, 'confirmed');
 const idl        = idlJson as Idl;
@@ -23,9 +24,18 @@ export async function processTx(sig: string) {
      if (err) {
           const errorName = handleTxError(sig, err);
           await writeSolanaError(sig, errorName ?? 'UnknownError', logMessages, slot, timestamp);
+          
+          // Notify admin via email
+          await sendErrorNotification({
+               signature: sig,
+               errorName: errorName ?? 'UnknownError',
+               slot,
+               timestamp,
+               logMessages
+          });
           return;
-     }
-
+     }     
+     
      const events = [...parser.parseLogs(logMessages)];
      for (const e of events) {
           console.log(`✅ [${timestamp}] Event ${e.name} @${sig}`, e.data);
