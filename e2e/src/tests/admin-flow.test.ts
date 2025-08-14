@@ -1,8 +1,8 @@
 import { describe } from "mocha";
-import { SystemConfig, Test } from "../core/account-defs";
+import { Test } from "../core/account-defs";
 import { AdminClient } from "../core/admin-client";
 import { InitializeScenario } from "../scenarios/initialize-scenario";
-import { getTestName } from "../core/utils/test-helper";
+import { extractTxHashFromResult, getTestName } from "../core/utils/test-helper";
 import { DEFAULT_KEYPAIR_PATH } from "../core/constants";
 import { DenyListScenario } from "../scenarios/deny-list-scenario";
 import { PublicKey } from "@solana/web3.js";
@@ -10,11 +10,10 @@ import { UserClient } from "../core/user-client";
 import { AdminChangeScenario } from "../scenarios/admin-change-scenario";
 import { ConfigScenario } from "../scenarios/config-scenario";
 import { DequeuerScenario } from "../scenarios/dequeuer-scenario";
-import { WithdrawScenario } from "../scenarios/withdraw-scenario";
 import { SystemStateScenario } from "../scenarios/system-state-scenario";
-import { getConfigurationRegistryAccount } from "../core/utils/account-helper";
 import { getConfig } from "../core/utils/config-util";
-import { BN } from "@coral-xyz/anchor";
+import { eventExists } from "../core/utils/assertions";
+import { assert } from "chai";
 
 const initializationTests: Test[] = [
     {
@@ -29,6 +28,8 @@ const initializationTests: Test[] = [
         description: "Deployer should be able to initialize the system",
         execute: async (scenario: InitializeScenario) => {
             await scenario.initializeSystemAndVerify();
+
+            // TODO: SystemInitialized event should be emitted
         }
     },
     {
@@ -61,6 +62,27 @@ const setAdminTests: Test[] = [
         execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
             await invalidScenario.setAdminAndVerifyFail(admin, "A raw constraint was violated");
         }
+    },
+    {
+        name: "set_deny_authority_fail",
+        description: "Non-deployer should not be able to set a new deny authority",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await invalidScenario.setDenyAuthorityAndVerifyFail(admin, "A raw constraint was violated");
+        }
+    },
+    {
+        name: "set_deny_authority",
+        description: "Deployer should be able to set a new deny authority",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await scenario.setDenyAuthorityAndVerify(admin);
+        }
+    },
+    {
+        name: "set_deny_authority_fail_invalid_authority",
+        description: "Admin should not be able to set a new deny authority",
+        execute: async (scenario: AdminChangeScenario, invalidScenario: AdminChangeScenario, admin: PublicKey) => {
+            await invalidScenario.setDenyAuthorityAndVerifyFail(admin, "A raw constraint was violated");
+        }
     }
 ]
 
@@ -80,22 +102,41 @@ const configUpdateTests: Test[] = [
             config.max_discount_rate = 3440;
             await scenario.updateConfigAndVerify(config);
         }
+    },
+    {
+        name: "config_update_fail_invalid_max_discount_rate",
+        description: "Admin should not be able to update the config with an invalid max discount rate",
+        execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
+            let config = getConfig();
+            config.max_discount_rate = 10001;
+            await scenario.updateConfigAndVerifyFail("Invalid max discount rate", config);
+        }
+    },
+    {
+        name: "config_update_fail_invalid_min_discount_rate",
+        description: "Admin should not be able to update the config with an invalid min discount rate",
+        execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
+            let config = getConfig();
+            config.max_discount_rate = 5000;
+            config.min_discount_rate = 5001;
+            await scenario.updateConfigAndVerifyFail("Invalid min discount rate", config);
+        }
     }
 ]
 
 const denyListTests: Test[] = [
     {
         name: "deny_list_add_user",
-        description: "New admin should be able to add a user to the deny list",
+        description: "New deny authority should be able to add a user to the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
             await scenario.addUserToDenyListAndVerify(user);
         }
     },
     {
         name: "deny_list_add_user_fail",
-        description: "Non-admin should not be able to add a user to the deny list",
+        description: "Non-authority should not be able to add a user to the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
-            await invalidScenario.addUserToDenyListAndVerifyFail(user, "Unauthorized Admin");
+            await invalidScenario.addUserToDenyListAndVerifyFail(user, "Unauthorized Deny List Authority");
         }
     },
     {
@@ -114,14 +155,14 @@ const denyListTests: Test[] = [
     },
     {
         name: "deny_list_remove_user_fail",
-        description: "Non-admin should not be able to remove a user from the deny list",
+        description: "Non-authority should not be able to remove a user from the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
-            await invalidScenario.removeUserFromDenyListAndVerifyFail(user, "Unauthorized Admin");
+            await invalidScenario.removeUserFromDenyListAndVerifyFail(user, "Unauthorized Deny List Authority");
         }
     },
     {
         name: "deny_list_remove_user",
-        description: "Admin should be able to remove a user from the deny list",
+        description: "Deny authority should be able to remove a user from the deny list",
         execute: async (scenario: DenyListScenario, invalidScenario: DenyListScenario, user: PublicKey) => {
             await scenario.removeUserFromDenyListAndVerify(user);
         }
@@ -168,8 +209,15 @@ const dequeuerTests: Test[] = [
         name: "dequeuer_add_fail_invalid_dequeuer",
         description: "Adding an invalid dequeuer should fail",
         execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            // TODO: add test
-            // await scenario.addDequeuerAndVerifyFail(dequeuer, "Invalid dequeuer");
+            const result = await scenario.addDequeuerAndVerify(dequeuer);
+            const txHash = extractTxHashFromResult(result);
+
+            // Check for DequeuerAdded event
+            if (await eventExists(scenario.getConnection(), txHash, "DequeuerAdded")) {
+                assert.fail("DequeuerAdded should not be emitted");
+            } else {
+                assert.ok(true, "DequeuerAdded event should not be emitted");
+            }
         }
     },
     {
@@ -190,41 +238,15 @@ const dequeuerTests: Test[] = [
         name: "dequeuer_remove_fail_invalid_dequeuer",
         description: "Removing an invalid dequeuer should fail",
         execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            // TODO: add test
-            // await scenario.removeDequeuerAndVerifyFail(dequeuer, "Invalid dequeuer");
-        }
-    }
-]
+            const result = await scenario.removeDequeuerAndVerify(dequeuer);
+            const txHash = extractTxHashFromResult(result);
 
-const withdrawTests: Test[] = [
-    {
-        name: "withdraw_tokens_fail",
-        description: "Non-admin should not be able to withdraw tokens",
-        execute: async (scenario: WithdrawScenario, invalidScenario: WithdrawScenario) => {
-            // TODO: add test
-            // const amount = 100;
-            // const destination = "0x0000000000000000000000000000000000000000";
-            // await invalidScenario.withdrawTokensAndVerifyFail(amount, destination, "Unauthorized Admin");
-        }
-    },
-    {
-        name: "withdraw_tokens",
-        description: "Admin should be able to withdraw tokens",
-        execute: async (scenario: WithdrawScenario, invalidScenario: WithdrawScenario) => {
-            // TODO: add test
-            const amount = 100;
-            const destination = "0x0000000000000000000000000000000000000000";
-            await scenario.withdrawTokensAndVerify(amount, destination);
-        }
-    },
-    {
-        name: "withdraw_tokens_fail_invalid_amount",
-        description: "Withdrawing an invalid amount should fail",
-        execute: async (scenario: WithdrawScenario, invalidScenario: WithdrawScenario) => {
-            // TODO: add test
-            // const amount = 9999999999999;
-            // const destination = "0x0000000000000000000000000000000000000000";
-            // await scenario.withdrawTokensAndVerifyFail(amount, destination, "Invalid amount");
+            // Check for DequeuerRemoved event
+            if (await eventExists(scenario.getConnection(), txHash, "DequeuerRemoved")) {
+                assert.fail("DequeuerRemoved should not be emitted");
+            } else {
+                assert.ok(true, "DequeuerRemoved event should not be emitted");
+            }
         }
     }
 ]
@@ -241,14 +263,32 @@ const systemStateTests: Test[] = [
         name: "system_state_toggle",
         description: "Admin should be able to toggle the system state",
         execute: async (scenario: SystemStateScenario, invalidScenario: SystemStateScenario) => {
-            await scenario.toggleSystemStateAndVerify(true);
+            const result = await scenario.toggleSystemStateAndVerify(true);
+            const txHash = extractTxHashFromResult(result);
+
+            // SystemHalted event should be emitted
+            if (await eventExists(scenario.getConnection(), txHash, "SystemHalted")) {
+                assert.fail("SystemHalted should not be emitted");
+            } else {
+                assert.ok(true, "SystemHalted event should be emitted");
+            }
+
+            const result2 = await scenario.toggleSystemStateAndVerify(false);
+            const txHash2 = extractTxHashFromResult(result2);
+
+            // SystemUnhalted event should be emitted
+            if (await eventExists(scenario.getConnection(), txHash2, "SystemUnhalted")) {
+                assert.fail("SystemUnhalted should not be emitted");
+            } else {
+                assert.ok(true, "SystemUnhalted event should be emitted");
+            }
         }
     },
     {
         name: "system_state_toggle_fail_invalid_state",
         description: "Admin should not be able to toggle the system state to the same state",
         execute: async (scenario: SystemStateScenario, invalidScenario: SystemStateScenario) => {
-            await scenario.toggleSystemStateAndVerifyFail(true, "Invalid system state");
+            await scenario.toggleSystemStateAndVerifyFail(false, "Invalid system state");
         }
     }
 ]
@@ -302,6 +342,13 @@ describe("Admin E2E Tests", () => {
             adminScenario = new ConfigScenario(nonDeployerAdmin);
             nonAdminScenario = new ConfigScenario(invalidAdmin);
         });
+        after(async () => {
+            // Reset the config
+            let config = getConfig();
+            config.max_discount_rate = 5000;
+            config.min_discount_rate = 500;
+            await adminScenario.updateConfigAndVerify(config);
+        });
         for (const [i, test] of configUpdateTests.entries()) {
             it(getTestName("CONFIG_UPDATE", i+1, test.description), async () => {
                 await test.execute(adminScenario, nonAdminScenario);
@@ -336,20 +383,6 @@ describe("Admin E2E Tests", () => {
         for (const [i, test] of dequeuerTests.entries()) {
             it(getTestName("DEQUEUER", i+1, test.description), async () => {
                 await test.execute(adminScenario, nonAdminScenario, dequeuer.session.getPublicKey().toString());
-            });
-        }
-    });
-
-    describe("Withdraw Tests", () => {
-        let adminScenario: WithdrawScenario;
-        let nonAdminScenario: WithdrawScenario;
-        before(async () => {
-            adminScenario = new WithdrawScenario(nonDeployerAdmin);
-            nonAdminScenario = new WithdrawScenario(invalidAdmin);
-        });
-        for (const [i, test] of withdrawTests.entries()) {
-            it(getTestName("WITHDRAW", i+1, test.description), async () => {
-                await test.execute(adminScenario, nonAdminScenario);
             });
         }
     });

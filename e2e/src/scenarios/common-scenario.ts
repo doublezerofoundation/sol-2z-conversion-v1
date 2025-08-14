@@ -1,5 +1,6 @@
-import { assert } from "chai";
 import { AdminClient } from "../core/admin-client";
+import { Connection } from "@solana/web3.js";
+import { assert } from "chai";
 
 export abstract class CommonScenario {
     protected readonly admin: AdminClient;
@@ -18,5 +19,9 @@ export abstract class CommonScenario {
             this.admin.session.logSessionInfo();
             assert.fail(`Expected error not thrown: ${expectedError}`);
         }
+    }
+
+    public getConnection(): Connection {
+        return this.admin.session.getConnection();
     }
 }

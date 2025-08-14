@@ -23,7 +23,7 @@ export const eventExists = async (connection: Connection, txSignature: string, e
     }
     const eventLog = logs.find((log) => log.includes(event));
     if (!eventLog) {
-        throw new Error(`Event ${event} not found in transaction ${txSignature}`);
+        return false;
     }
     return true;
 }

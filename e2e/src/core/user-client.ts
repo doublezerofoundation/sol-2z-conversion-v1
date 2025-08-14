@@ -12,4 +12,16 @@ export class UserClient {
         await client.session.initialize();
         return client;
     }
+
+    public async buySolCommand(amount: number): Promise<void> {
+        await this.session.executeCliCommand(`buy-sol -a ${amount}`);
+    }
+
+    public async getPriceCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`get-price`);
+    }
+
+    public async getQuantityCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`get-quantity`);
+    }
 }
