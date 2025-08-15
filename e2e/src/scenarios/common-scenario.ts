@@ -2,7 +2,6 @@ import { AdminClient } from "../core/admin-client";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
 import { FillsRegistry } from "../core/account-defs";
-import { getFillsRegistryPDA } from "../core/utils/pda-helper";
 import { getFillsRegistry } from "../core/utils/fills-registry";
 
 export abstract class CommonScenario {

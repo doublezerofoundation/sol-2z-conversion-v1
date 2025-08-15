@@ -1,6 +1,7 @@
 import { AdminClient } from "../core/admin-client";
 import { accountExists } from "../core/utils/assertions";
-import { getConfigurationRegistryPDA, getProgramStatePDA, getDenyListRegistryPDA, getFillsRegistryPDA } from "../core/utils/pda-helper";
+import { getFillsRegistryAccountAddress } from "../core/utils/fills-registry";
+import { getConfigurationRegistryPDA, getProgramStatePDA, getDenyListRegistryPDA } from "../core/utils/pda-helper";
 import { CommonScenario } from "./common-scenario";
 import { expect, assert } from "chai";
 
@@ -18,7 +19,7 @@ export class InitializeScenario extends CommonScenario {
         const pdas = await Promise.all([
             getConfigurationRegistryPDA(program.programId),
             getProgramStatePDA(program.programId),
-            getFillsRegistryPDA(program.programId),
+            getFillsRegistryAccountAddress(program),
             getDenyListRegistryPDA(program.programId),
         ]);
 
