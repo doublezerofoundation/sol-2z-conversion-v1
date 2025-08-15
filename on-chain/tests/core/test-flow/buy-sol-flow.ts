@@ -7,9 +7,13 @@ import {getTokenBalance} from "../utils/token-utils";
 import * as anchor from "@coral-xyz/anchor";
 import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 import {MockTransferProgram} from "../../../../mock-double-zero-program/target/types/mock_transfer_program";
-import {OraclePriceData} from "../utils/price-oracle";
+import {getOraclePriceData, OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
-import {getFillsRegistryAccountAddress} from "../utils/fills-registry";
+import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
+import {getConversionPriceAndVerify} from "./conversion-price";
+import {TOKEN_DECIMAL} from "../constants";
+import {mint2z} from "./mock-transfer-program";
+import {airdropVault} from "../utils/mock-transfer-program-utils";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
@@ -26,6 +30,8 @@ export async function buySolAndVerify(
     const solBalanceBefore = await program.provider.connection.getBalance(signer.publicKey);
     const vaultBalanceBefore = await program.provider.connection.getBalance(pdas.vault);
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
+
+    const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
 
     try {
         await program.methods.buySol(
@@ -82,6 +88,14 @@ export async function buySolAndVerify(
         vaultBalanceBefore - solBalanceChange,
         "Vault SOL Balance should decrease by solBalanceChange"
     )
+
+    // Check Fills Registry Values
+    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+    assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count + 1);
+    assert.equal(fillsRegistryAfter.fills.length, fillsRegistryBefore.fills.length + 1);
+    const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
+    assert.equal(fillEntry.solIn, solBalanceChange);
+    assert.equal(fillEntry.token2ZOut, tokenBalanceChange);
 }
 
 export async function buySolFail(
@@ -124,5 +138,27 @@ export async function buySolFail(
         return; // Exit early — test passes
     }
     assert.fail("It was able to do buy SOL");
+}
 
+export async function buySolSuccess(
+    program: Program<ConverterProgram>,
+    mockTransferProgram: Program<MockTransferProgram>,
+    senderTokenAccount: PublicKey,
+    signer: Keypair,
+    currentConfigs = DEFAULT_CONFIGS,
+    bidFactor: number = 1,
+) {
+    const oraclePriceData = await getOraclePriceData();
+    const askPrice = await getConversionPriceAndVerify(program);
+    const bidPrice = askPrice + bidFactor * TOKEN_DECIMAL;
+
+    // Ensure that user has sufficient 2Z
+    await mint2z(
+        mockTransferProgram,
+        senderTokenAccount,
+        bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+    );
+    // Ensure vault has funds.
+    await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+    await buySolAndVerify(program, mockTransferProgram, senderTokenAccount, bidPrice, signer, oraclePriceData, currentConfigs);
 }
