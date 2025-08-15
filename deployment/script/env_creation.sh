@@ -7,7 +7,6 @@ set -e
 # Script configuration
 SCRIPT_NAME="$(basename "$0")"
 VALID_COMMANDS=("create" "destroy")
-#VALID_ENVIRONMENTS=("dev" "staging" "prod")
 
 # Function to display usage
 usage() {
@@ -43,13 +42,18 @@ validate_arguments() {
         print_error_and_exit "Invalid command: ${COMMAND}. Valid commands: ${VALID_COMMANDS[*]}"
     fi
 
-#    if [[ ! " ${VALID_ENVIRONMENTS[*]} " =~ " ${ENVIRONMENT} " ]]; then
-#        print_error_and_exit "Invalid environment: ${ENVIRONMENT}. Valid environments: ${VALID_ENVIRONMENTS[*]}"
-#    fi
+    if [[ -z "${REGION}" ]]; then
+        print_error_and_exit "--region is required"
+    fi
+
+    if [[ -z "${ENVIRONMENT}" ]]; then
+        print_error_and_exit "--env is required"
+    fi
 
     if [[ -z "${RELEASE_TAG}" ]]; then
-        print_error_and_exit "Release tag is required"
+        print_error_and_exit "--release-tag is required"
     fi
+
 
     if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
         print_warning "Release tag '${RELEASE_TAG}' doesn't follow semantic versioning format (vX.Y.Z)"
@@ -76,7 +80,7 @@ setup_aws_environment() {
 }
 
 prepare_terraform_backend() {
-    local env_path="../environments/dev"
+    local env_path="../environments/"
 
     if [[ ! -d "${env_path}" ]]; then
         print_error_and_exit "Environment directory ${env_path} does not exist"
@@ -90,11 +94,11 @@ prepare_terraform_backend() {
     rm -rf ./backend_config.tf
 
     echo "Generating Terraform backend configuration..."
-    if [[ ! -f "../templates/backend_config.tf.template" ]]; then
+    if [[ ! -f "./templates/backend_config.tf.template" ]]; then
         print_error_and_exit "Backend configuration template not found at ../templates/backend_config.tf.template"
     fi
 
-    envsubst '$region $env_alias $account_id $release_tag' < '../templates/backend_config.tf.template' > backend_config.tf
+    envsubst '$region $env_alias $account_id $release_tag' < './templates/backend_config.tf.template' > backend_config.tf
 
     if [[ $? -ne 0 ]]; then
         print_error_and_exit "Failed to generate backend configuration"
@@ -165,13 +169,9 @@ main() {
     fi
 
     COMMAND="$1"
-    ENVIRONMENT="$2"
-    RELEASE_TAG="$3"
-
     AUTO_APPROVE=0
-    REGION="us-east-1"
 
-    shift 3
+    shift 1
     while [[ $# -gt 0 ]]; do
         case $1 in
             --auto-approve)
@@ -183,6 +183,14 @@ main() {
                 REGION="$2"
                 shift 2
                 ;;
+            --env)
+                ENVIRONMENT="$2"
+                shift 2
+                ;;
+            --release-tag)
+                RELEASE_TAG="$2"
+                shift 2
+                ;;
             -h|--help)
                 usage
                 exit 0
@@ -192,7 +200,6 @@ main() {
                 ;;
         esac
     done
-
     validate_arguments
     setup_aws_environment
     prepare_terraform_backend

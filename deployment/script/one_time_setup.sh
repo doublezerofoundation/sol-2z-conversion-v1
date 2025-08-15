@@ -3,7 +3,7 @@
 source ./common.sh
 
 set -e
-# Check if region argument is provided
+
 if [ $# -eq 0 ]; then
     echo "Usage: $0 <region>"
     echo "Example: $0 us-east-1"
@@ -31,7 +31,7 @@ function create_terrafrom_s3_backend_bucket()
         else
                 print_warning "Terraform S3 backend already exist!!!\n"
                 get_operator_approval 'Do you want to configure S3 bucket(Y/n): : ' 'y' 'Y'
-                configure_s3_bucket $bucket_name $2
+                configure_s3_bucket $bucket_name
 
         fi
 }
