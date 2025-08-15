@@ -42,3 +42,25 @@ export const eventExists = async (connection: Connection, txSignature: string, e
     }
     return false;
 }
+
+export const eventExistsInErrorLogs = async (errorLogs: string, eventName: string): Promise<boolean> => {
+    const coder = new BorshCoder(idl as Idl);
+
+    const regex = /Program\sdata:\s(\S+)\\n/gm;
+    const matches = regex.exec(errorLogs);
+    if (!matches) {
+        return false;
+    }
+
+    const base64Data = matches[1];
+    try {
+        const event = coder.events.decode(base64Data);
+        // console.log(event);
+        if (event?.name === eventName) {
+            return true;
+        }
+    } catch (_) {
+        // not an event log, skip
+    }
+    return false;
+}

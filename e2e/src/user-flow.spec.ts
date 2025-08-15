@@ -63,7 +63,7 @@ describe("User Flow Tests", () => {
         let scenario: DequeuerScenario;
 
         before(async () => {
-            scenario = new DequeuerScenario(nonDeployerAdmin);
+            scenario = new DequeuerScenario(nonDeployerAdmin, user);
         });
 
         for (const [i, test] of dequeuerUserTests.entries()) {

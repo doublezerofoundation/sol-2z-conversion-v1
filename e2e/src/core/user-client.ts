@@ -24,4 +24,12 @@ export class UserClient {
     public async getQuantityCommand(): Promise<string> {
         return await this.session.executeCliCommand(`get-quantity`);
     }
+
+    public async getFillsCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`get-fills-info`);
+    }
+
+    public async dequeueFillsCommand(maxSolValue: number): Promise<string> {
+        return await this.session.executeCliCommand(`dequeue-fills -a ${maxSolValue}`, "./cli/integration-cli");
+    }
 }

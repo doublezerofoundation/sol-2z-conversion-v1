@@ -1,6 +1,9 @@
 import { AdminClient } from "../core/admin-client";
 import { Connection, PublicKey } from "@solana/web3.js";
 import { assert } from "chai";
+import { FillsRegistry } from "../core/account-defs";
+import { getFillsRegistryPDA } from "../core/utils/pda-helper";
+import { getFillsRegistry } from "../core/utils/fills-registry";
 
 export abstract class CommonScenario {
     protected readonly admin: AdminClient;
@@ -55,5 +58,9 @@ export abstract class CommonScenario {
 
     public async mockTokenMint(amount: number, toUser: PublicKey): Promise<void> {
         await this.admin.mockTokenMintCommand(amount, toUser);
+    }
+
+    public async getFillsRegistry(): Promise<FillsRegistry> {
+        return await getFillsRegistry(this.admin.session.getProgram());
     }
 }

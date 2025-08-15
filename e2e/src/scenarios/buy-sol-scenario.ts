@@ -19,7 +19,7 @@ export class BuySolScenario extends CommonScenario {
     public async buySolAndVerify(amount: number): Promise<string> {
         const initialUser2ZBalance = await this.checkAndReimburseUser2ZBalance(amount);
         const initialUserSolBalance = await this.getUserSolBalance();
-        const initialVaultSolBalance = await this.checkAndReimburseVaultSolBalance(amount);
+        const initialVaultSolBalance = await this.checkAndReimburseVaultSolBalance();
         const initialVault2ZBalance = await this.getVault2ZBalance();
 
         const result = await this.user.buySolCommand(amount);
@@ -40,8 +40,7 @@ export class BuySolScenario extends CommonScenario {
 
     public async buySolAndVerifyFail(amount: number, errorMessage: string): Promise<string> {
         try {
-            const result = await this.user.buySolCommand(amount);
-            console.log(result);
+            await this.user.buySolCommand(amount);
             expect.fail("Buy Sol should fail");
         } catch (error) {
             this.handleExpectedError(error, errorMessage);
@@ -72,11 +71,10 @@ export class BuySolScenario extends CommonScenario {
         return tokenAmount;
     }
 
-    public async checkAndReimburseVaultSolBalance(bid: number): Promise<number> {
+    public async checkAndReimburseVaultSolBalance(): Promise<number> {
         const vaultSolBalance = await this.getVaultSolBalance();
+        const requiredAmount = getConfig().sol_quantity / LAMPORTS_PER_SOL;
 
-        const solQuantity = getConfig().sol_quantity / LAMPORTS_PER_SOL;
-        const requiredAmount = bid * solQuantity;
         if (vaultSolBalance >= requiredAmount) {
             return vaultSolBalance;
         }
