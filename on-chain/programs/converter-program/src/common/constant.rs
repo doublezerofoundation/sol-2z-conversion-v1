@@ -1,7 +1,7 @@
 // max sizes of Vec
 pub const MAX_AUTHORIZED_DEQUEUERS: u64 = 20;
 pub const MAX_DENY_LIST_SIZE: u64 = 50;
-pub const MAX_FILLS_QUEUE_SIZE: usize = 150000;
+pub const MAX_FILLS_QUEUE_SIZE: usize = 150000; //depends on account size
 
 /// Decimal precision for basis points
 pub const DECIMAL_PRECISION: u64 = 100;
