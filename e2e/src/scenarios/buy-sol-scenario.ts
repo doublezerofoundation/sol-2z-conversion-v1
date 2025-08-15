@@ -17,26 +17,35 @@ export class BuySolScenario extends CommonScenario {
     }
 
     public async buySolAndVerify(amount: number): Promise<string> {
-        const initial2ZBalance = await this.checkAndReimburseUser2ZBalance(amount);
-        const initialSolBalance = await this.getUserSolBalance();
+        const initialUser2ZBalance = await this.checkAndReimburseUser2ZBalance(amount);
+        const initialUserSolBalance = await this.getUserSolBalance();
+        const initialVaultSolBalance = await this.checkAndReimburseVaultSolBalance(amount);
+        const initialVault2ZBalance = await this.getVault2ZBalance();
 
         const result = await this.user.buySolCommand(amount);
 
-        const final2ZBalance = await this.getUser2ZBalance();
-        expect(final2ZBalance).to.be.lessThan(initial2ZBalance);
+        const finalUser2ZBalance = await this.getUser2ZBalance();
+        const finalUserSolBalance = await this.getUserSolBalance();
+        const finalVaultSolBalance = await this.getVaultSolBalance();
+        const finalVault2ZBalance = await this.getVault2ZBalance();
 
-        const finalSolBalance = await this.getUserSolBalance();
-        expect(finalSolBalance).to.be.greaterThan(initialSolBalance);
+        expect(finalUser2ZBalance).to.be.lessThan(initialUser2ZBalance);
+        expect(finalUserSolBalance).to.be.greaterThan(initialUserSolBalance);
+
+        expect(finalVaultSolBalance).to.be.lessThan(initialVaultSolBalance);
+        expect(finalVault2ZBalance).to.be.greaterThan(initialVault2ZBalance);
 
         return result;
     }
 
-    public async buySolAndVerifyFail(amount: number, errorMessage: string): Promise<void> {
+    public async buySolAndVerifyFail(amount: number, errorMessage: string): Promise<string> {
         try {
-            await this.user.buySolCommand(amount);
+            const result = await this.user.buySolCommand(amount);
+            console.log(result);
             expect.fail("Buy Sol should fail");
         } catch (error) {
             this.handleExpectedError(error, errorMessage);
+            return error!.toString();
         }
     }
 
@@ -61,6 +70,19 @@ export class BuySolScenario extends CommonScenario {
         }
 
         return tokenAmount;
+    }
+
+    public async checkAndReimburseVaultSolBalance(bid: number): Promise<number> {
+        const vaultSolBalance = await this.getVaultSolBalance();
+
+        const solQuantity = getConfig().sol_quantity / LAMPORTS_PER_SOL;
+        const requiredAmount = bid * solQuantity;
+        if (vaultSolBalance >= requiredAmount) {
+            return vaultSolBalance;
+        }
+
+        await this.airdropToMockVault(requiredAmount);
+        return vaultSolBalance + requiredAmount;
     }
 
     public async getUser2ZBalance(): Promise<number> {
