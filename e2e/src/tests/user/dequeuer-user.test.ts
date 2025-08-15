@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { Test } from "../../core/account-defs";
 import { DequeuerScenario } from "../../scenarios/dequeuer-scenario";
-import { BN } from "@coral-xyz/anchor";
 
 export const dequeuerUserTests: Test[] = [
     {
