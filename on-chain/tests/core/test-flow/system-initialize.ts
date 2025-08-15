@@ -44,9 +44,7 @@ export async function systemInitializeAndVerify(
         const tx = await program.methods.initializeSystem(
             inputConfigs.oraclePubkey,
             inputConfigs.solQuantity,
-            inputConfigs.slotThreshold,
             inputConfigs.priceMaximumAge,
-            inputConfigs.maxFillsStorage,
             inputConfigs.coefficient,
             inputConfigs.maxDiscountRate,
             inputConfigs.minDiscountRate
@@ -80,9 +78,7 @@ export async function systemInitializeAndVerify(
     // Verify config values are initialized as given.
     const configInConfigRegistry = await fetchCurrentConfiguration(program);
     assert.equal(configInConfigRegistry.oraclePubkey.toString(), inputConfigs.oraclePubkey.toString());
-    assert.equal(configInConfigRegistry.maxFillsStorage.toString(), inputConfigs.maxFillsStorage.toString());
     assert.equal(configInConfigRegistry.priceMaximumAge.toString(), inputConfigs.priceMaximumAge.toString());
-    assert.equal(configInConfigRegistry.slotThreshold.toString(), inputConfigs.slotThreshold.toString());
     assert.equal(configInConfigRegistry.solQuantity.toString(), inputConfigs.solQuantity.toString());
     assert.equal(configInConfigRegistry.coefficient.toString(), inputConfigs.coefficient.toString());
     assert.equal(configInConfigRegistry.maxDiscountRate.toString(), inputConfigs.maxDiscountRate.toString());
@@ -103,9 +99,7 @@ export async function systemInitializeFail(
         await program.methods.initializeSystem(
             configRegistryValues.oraclePubkey,
             configRegistryValues.solQuantity,
-            configRegistryValues.slotThreshold,
             configRegistryValues.priceMaximumAge,
-            configRegistryValues.maxFillsStorage,
             configRegistryValues.coefficient,
             configRegistryValues.maxDiscountRate,
             configRegistryValues.minDiscountRate

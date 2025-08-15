@@ -28,9 +28,7 @@ describe("Config Update Tests", async () => {
     const newConfig = {
       ...DEFAULT_CONFIGS,
       solQuantity: new anchor.BN(10000),
-      slotThreshold: new anchor.BN(100),
       priceMaximumAge: new anchor.BN(100),
-      maxFillsStorage: new anchor.BN(100),
       coefficient: new anchor.BN(100),
       maxDiscountRate: new anchor.BN(5600),
       minDiscountRate: new anchor.BN(440),

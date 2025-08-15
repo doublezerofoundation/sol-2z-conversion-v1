@@ -9,9 +9,7 @@ use crate::constant::MAX_FILLS_QUEUE_SIZE;
 pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey,
     pub sol_quantity: u64,
-    pub slot_threshold: u64,
     pub price_maximum_age: i64,
-    pub max_fills_storage: u64,
     pub authorized_dequeuers: Vec<Pubkey>,
     pub coefficient: u64,
     pub max_discount_rate: u64,
