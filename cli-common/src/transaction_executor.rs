@@ -12,7 +12,6 @@ use anchor_client::{
     },
     anchor_lang::{AccountDeserialize, AnchorDeserialize},
     solana_sdk::{
-        commitment_config::CommitmentConfig,
         instruction::Instruction,
         pubkey::Pubkey,
         signature::Signature,
@@ -20,6 +19,7 @@ use anchor_client::{
         transaction::Transaction,
     }
 };
+use solana_commitment_config::CommitmentConfig;
 use anchor_client::solana_sdk::signature::Keypair;
 use crate::{
     config::Config,
