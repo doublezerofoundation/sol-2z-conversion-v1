@@ -30,7 +30,7 @@ export async function initializeMockTransferSystemAndVerify(
 
     // Initialization
     try {
-        const tx = await program.methods.initialize()
+        await program.methods.initialize()
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID
             })
@@ -72,7 +72,7 @@ export async function mint2z(
 ) {
     const balanceBeforeMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
     try {
-        const tx = await program.methods.mint2Z(new anchor.BN(amount))
+        await program.methods.mint2Z(new anchor.BN(amount))
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 userTokenAccount: recipientTokenAccount
@@ -106,7 +106,7 @@ export async function buySol(
     const vaultBalanceBefore = await program.provider.connection.getBalance(pdas.vault);
 
     try {
-        const tx = await program.methods.buySol(
+        await program.methods.buySol(
             new anchor.BN(amount2Z),
             new anchor.BN(amountSol)
         )
@@ -163,7 +163,7 @@ export async function withdraw_2z(
         await getTokenBalance(program.provider.connection, pdas.protocolTreasury);
 
     try {
-        const tx = await program.methods.withdraw2Z(
+        await program.methods.withdraw2Z(
             new anchor.BN(amount2z)
         )
             .accounts({

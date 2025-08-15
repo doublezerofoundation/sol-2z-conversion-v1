@@ -170,7 +170,7 @@ export async function removeDequeuerExpectUnauthorized(
         const programStateAccount = getProgramStatePDA(program.programId);
         const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
 
-        const txSig = await program.methods
+        await program.methods
             .removeDequeuer(dequeuer)
             .accounts({
                 configurationRegistry: configRegistryAccount,
@@ -200,7 +200,6 @@ export async function removeDequeuerExpectUnauthorized(
 }
 
 export async function addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerList) {
-    let txSig;
     try {
         const programStateAccount = getProgramStatePDA(program.programId);
         const configRegistryAccount = getConfigurationRegistryPDA(program.programId);
@@ -220,7 +219,7 @@ export async function addDequeuerExpectMaxLimit(program, adminKeyPair, dequeuerL
         console.log("");
         //Try to add one more, should fail
         const extraDequeuer = anchor.web3.Keypair.generate().publicKey;
-        txSig = await program.methods
+        await program.methods
             .addDequeuer(extraDequeuer)
             .accounts({
                 configurationRegistry: configRegistryAccount,

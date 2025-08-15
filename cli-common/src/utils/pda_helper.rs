@@ -1,8 +1,11 @@
+use std::error::Error;
 use crate::seeds::{
-    CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS, FILLS_REGISTRY_SEEDS,
+    CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS,
     MOCK_2Z_TOKEN_MINT_SEED, MOCK_PROTOCOL_TREASURY_SEED, MOCK_VAULT_SEED, PROGRAM_STATE_SEEDS
 };
 use anchor_client::{anchor_lang::prelude::Pubkey, solana_sdk::bpf_loader_upgradeable};
+use crate::structs::ProgramStateAccount;
+use crate::transaction_executor::get_account_data;
 
 pub fn get_configuration_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
@@ -17,11 +20,10 @@ pub fn get_program_state_pda(program_id: Pubkey) -> (Pubkey, u8) {
     )
 }
 
-pub fn get_fills_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
-    Pubkey::find_program_address(
-        &[FILLS_REGISTRY_SEEDS],
-        &program_id,
-    )
+pub fn get_fills_registry_address(program_id: Pubkey, rpc_url: String) -> Result<Pubkey, Box<dyn Error>> {
+    let program_state_address = get_program_state_pda(program_id).0;
+    let program_state_account: ProgramStateAccount = get_account_data(rpc_url, program_state_address)?;
+    Ok(program_state_account.fills_registry_address)
 }
 
 pub fn get_deny_list_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {

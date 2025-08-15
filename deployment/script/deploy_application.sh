@@ -8,7 +8,7 @@ IMAGE_TAG="dev3-v1.0.0"
 CONTAINER_NAME="swap-oracle-service"
 ECR_REGISTRY=""
 ECR_REPOSITORY="double-zero-oracle-pricing-service"
-TERRAFORM_DIR="../regional"
+ENV_TERRAFORM_DIR="../environments/dev"
 successful_instances=()
 failed_instances=()
 
@@ -18,7 +18,6 @@ failed_instances=()
 # CONTAINER_NAME="indexer-service"
 # ECR_REGISTRY=""
 # ECR_REPOSITORY="double-zero-indexer-service"
-# TERRAFORM_DIR="../regional"
 # successful_instances=()
 # failed_instances=()
 
@@ -86,7 +85,7 @@ get_ecr_config(){
 find_ec2_instance(){
   INSTANCE_IDS=$(
      aws ec2 describe-instances --region "$AWS_REGION" \
-     --filters "Name=tag:Environment,Values=$ENV" \
+     --filters "Name=tag:Environment,Values=$ENV" "Name=tag:Service,Values=double-zero-$CONTAINER_NAME" \
     --query 'Reservations[].Instances[].InstanceId' \
     --output text)
   echo "instance $INSTANCE_IDS"
@@ -101,109 +100,227 @@ verify_ecr_image(){
   fi
 }
 
-get_redis_url_from_terraform(){
-  echo "Retrieving Redis URL from Terraform outputs..."
+update_pricing_service_image_tag() {
+    echo "=== Deploying Infrastructure with Image Tag: $IMAGE_TAG ==="
+    local plan_timeout_duration=300
+    local apply_timeout_duration=1800
 
-  if [[ ! -d "$TERRAFORM_DIR" ]]; then
-    echo "❌ Terraform directory not found: $TERRAFORM_DIR"
-    exit 1
-  fi
-
-  # Change to terraform directory and get the output
-   cd "$TERRAFORM_DIR" || {
-      echo "❌ Failed to change to terraform directory: $TERRAFORM_DIR"
-      exit 1
-  }
-  echo "Current directory: $(pwd)"
-  echo "Checking terraform state and configuration..."
-
-  echo "Running terraform output commands..."
-
-  # Get Redis endpoint with timeout and retry logic
-  echo "Getting Redis endpoint..."
-  local max_attempts=3
-  local attempt=1
-  local timeout_duration=60
-
-  while [[ $attempt -le $max_attempts ]]; do
-    echo "Attempt $attempt of $max_attempts..."
-
-    # Use timeout command to limit execution time
-    if REDIS_ENDPOINT=$(timeout $timeout_duration terraform output -raw redis_endpoint 2>&1); then
-      REDIS_ENDPOINT_EXIT_CODE=0
-      break
-    else
-      REDIS_ENDPOINT_EXIT_CODE=$?
-      echo "❌ Attempt $attempt failed (exit code: $REDIS_ENDPOINT_EXIT_CODE)"
-
-      if [[ $attempt -eq $max_attempts ]]; then
-        echo "❌ All attempts failed to get redis_endpoint from terraform output."
-        echo "Error output: $REDIS_ENDPOINT"
-        echo "Make sure:"
-        echo "   - Terraform is initialized (run 'terraform init')"
-        echo "   - Infrastructure has been applied (run 'terraform apply')"
-        echo "   - The Redis infrastructure is fully provisioned"
-        echo "   - The 'redis_endpoint' output exists in your terraform configuration"
-        echo "   - You have the necessary permissions to access the state"
-        cd - > /dev/null
+    # Change to terraform directory
+    cd "$ENV_TERRAFORM_DIR" || {
+        echo "❌ Failed to change to terraform directory: $ENV_TERRAFORM_DIR"
         exit 1
-      fi
+    }
 
-      echo "Waiting 10 seconds before retry..."
-      sleep 10
-      attempt=$((attempt + 1))
-    fi
-  done
+    echo "Running terraform plan with dynamic image tag..."
+    timeout $plan_timeout_duration terraform plan \
+        -var-file='./terraform.tfvars' \
+        -var="swap_oracle_service_image_tag=$IMAGE_TAG" \
+        -out=tfplan
 
-  # Get Redis port with timeout and retry logic
-  echo "Getting Redis port..."
-  attempt=1
+    local plan_exit_code=$?
 
-  while [[ $attempt -le $max_attempts ]]; do
-    echo "Attempt $attempt of $max_attempts for Redis port..."
-
-    if REDIS_PORT=$(timeout $timeout_duration terraform output -raw redis_port 2>&1); then
-      REDIS_PORT_EXIT_CODE=0
-      break
-    else
-      REDIS_PORT_EXIT_CODE=$?
-      echo "❌ Attempt $attempt failed (exit code: $REDIS_PORT_EXIT_CODE)"
-
-      if [[ $attempt -eq $max_attempts ]]; then
-        echo "❌ All attempts failed to get redis_port from terraform output."
-        echo "Error output: $REDIS_PORT"
-        echo "Make sure:"
-        echo "   - Terraform is initialized (run 'terraform init')"
-        echo "   - Infrastructure has been applied (run 'terraform apply')"
-        echo "   - The Redis infrastructure is fully provisioned"
-        echo "   - The 'redis_port' output exists in your terraform configuration"
-        echo "   - You have the necessary permissions to access the state"
-        cd - > /dev/null
+    if [[ $plan_exit_code -eq 124 ]]; then
+        echo "❌ Terraform plan timed out after $plan_timeout_duration seconds"
         exit 1
-      fi
-
-      echo "Waiting 10 seconds before retry..."
-      sleep 10
-      attempt=$((attempt + 1))
+    elif [[ $plan_exit_code -ne 0 ]]; then
+        echo "❌ Terraform plan failed with exit code: $plan_exit_code"
+        exit 1
     fi
-  done
 
-  if [[ -z "$REDIS_ENDPOINT" || "$REDIS_ENDPOINT" == "null" ]]; then
-    echo "❌ Redis endpoint output is empty or null. Check your Terraform configuration."
-    exit 1
-  fi
+    echo "✅ Terraform plan successful"
+    echo ""
+    echo "Plan saved to tfplan. Review the changes above."
+    echo -n "Do you want to apply these changes? (yes/no): "
+    read -r response
 
-  if [[ -z "$REDIS_PORT" || "$REDIS_PORT" == "null" ]]; then
-    echo "❌ Redis port output is empty or null. Check your Terraform configuration."
-    exit 1
-  fi
+    if [[ "$response" != "yes" ]]; then
+        echo "❌ Apply cancelled by user"
+        rm -f tfplan
+        exit 1
+    fi
 
-  echo "✅ Successfully retrieved Redis configuration:"
-  echo "REDIS_ENDPOINT: $REDIS_ENDPOINT"
-  echo "REDIS_PORT: $REDIS_PORT"
-  cd - > /dev/null
+    echo "Applying terraform changes..."
+    timeout $apply_timeout_duration terraform apply tfplan
+
+    local apply_exit_code=$?
+
+
+    if [[ $apply_exit_code -eq 124 ]]; then
+        echo "❌ Terraform apply timed out after $apply_timeout_duration seconds"
+        echo "The apply process may still be running in the background."
+        echo "Check the terraform state and AWS console to verify the deployment status."
+        exit 1
+    elif [[ $apply_exit_code -eq 0 ]]; then
+        echo "✅ Infrastructure deployment completed successfully"
+        echo "New image tag deployed: $IMAGE_TAG"
+
+        # Wait for infrastructure to be fully ready
+        echo "Waiting for infrastructure stabilization..."
+        wait_for_pricing_service_template_ready
+
+    else
+        echo "❌ Terraform apply failed with exit code: $apply_exit_code"
+        echo "Checking terraform state for any partial changes..."
+        terraform show -json > /dev/null 2>&1 || true
+        exit 1
+    fi
+
+    # Clean up plan file
+    rm -f tfplan
+
+    cd - > /dev/null
 }
 
+wait_for_pricing_service_template_ready() {
+    echo "Verifying infrastructure components are ready..."
+    local max_wait_time=600  # 10 minutes
+    local check_interval=30  # 30 seconds
+    local elapsed_time=0
+
+    while [[ $elapsed_time -lt $max_wait_time ]]; do
+        echo "Checking infrastructure status... (${elapsed_time}s elapsed)"
+
+        # Check if launch template was updated successfully
+        if check_pricing_service_launch_template_ready; then
+            echo "✅ Launch template is ready with new image tag"
+            break
+        fi
+
+        echo "Infrastructure not ready yet, waiting ${check_interval} seconds..."
+        sleep $check_interval
+        elapsed_time=$((elapsed_time + check_interval))
+    done
+
+    if [[ $elapsed_time -ge $max_wait_time ]]; then
+        echo "Infrastructure readiness check timed out after ${max_wait_time} seconds"
+        echo "The deployment may still be in progress. Check AWS console for current status."
+        return 1
+    fi
+
+    echo "✅ Infrastructure is ready for deployment"
+    return 0
+}
+
+check_pricing_service_launch_template_ready() {
+    local launch_template_name_pattern="doublezero-${ENV}-swap-oracle-lt"
+
+    # Get the exact launch template name and ID
+    local template_info
+    template_info=$(aws ec2 describe-launch-templates \
+        --region "$AWS_REGION" \
+        --filters "Name=launch-template-name,Values=${launch_template_name_pattern}*" \
+        --query 'LaunchTemplates[0].{Name:LaunchTemplateName,Id:LaunchTemplateId,LatestVersion:LatestVersionNumber}' \
+        --output json 2>/dev/null)
+
+    if [[ -z "$template_info" || "$template_info" == "null" ]]; then
+        echo "❌ Could not retrieve launch template information"
+        return 1
+    fi
+
+    local template_id=$(echo "$template_info" | jq -r '.Id')
+    local template_name=$(echo "$template_info" | jq -r '.Name')
+    local latest_version=$(echo "$template_info" | jq -r '.LatestVersion')
+
+    if [[ -z "$template_id" || "$template_id" == "null" || -z "$latest_version" || "$latest_version" == "null" ]]; then
+        echo "❌ Could not retrieve launch template details"
+        return 1
+    fi
+
+    echo "Found launch template: $template_name (ID: $template_id, Version: $latest_version)"
+
+    # Get user data using the launch template ID (more reliable than name)
+    local user_data
+    user_data=$(aws ec2 describe-launch-template-versions \
+        --region "$AWS_REGION" \
+        --launch-template-id "$template_id" \
+        --versions "$latest_version" \
+        --query 'LaunchTemplateVersions[0].LaunchTemplateData.UserData' \
+        --output text 2>/dev/null)
+
+    if [[ -n "$user_data" && "$user_data" != "None" ]]; then
+        # Decode base64 user data and check for image tag
+        local decoded_user_data
+        decoded_user_data=$(echo "$user_data" | base64 -d 2>/dev/null)
+
+        if echo "$decoded_user_data" | grep -q "IMAGE_TAG=\"${IMAGE_TAG}\""; then
+            echo "✅ Launch template already has the correct image tag: $IMAGE_TAG"
+
+            # Set the latest version as default
+            echo "Setting version $latest_version as default..."
+            aws ec2 modify-launch-template \
+                --region "$AWS_REGION" \
+                --launch-template-id "$template_id" \
+                --default-version "$latest_version"
+
+            if [[ $? -eq 0 ]]; then
+                echo "✅ Set launch template version $latest_version as default"
+                return 0
+            else
+                echo "❌ Failed to set launch template default version"
+                return 1
+            fi
+        else
+            echo "⚠️ Launch template exists but doesn't contain expected image tag: $IMAGE_TAG"
+            # Optionally show what image tag is currently in the user data
+            if echo "$decoded_user_data" | grep -q "IMAGE_TAG="; then
+                local current_tag=$(echo "$decoded_user_data" | grep -o 'IMAGE_TAG="[^"]*"' | head -1)
+                echo "Current image tag in launch template: $current_tag"
+            fi
+        fi
+    else
+        echo "⚠️ Launch template exists but has no user data or user data could not be retrieved"
+    fi
+
+    return 1
+}
+
+trigger_pricing_service_instance_refresh() {
+    echo "Triggering Auto Scaling Group instance refresh..."
+
+    local asg_name="doublezero-${ENV}-swap-oracle-asg"
+    echo "ASG Name: $asg_name"
+
+    # Verify ASG exists
+    if ! aws autoscaling describe-auto-scaling-groups \
+        --region "$AWS_REGION" \
+        --auto-scaling-group-names "$asg_name" \
+        --query 'AutoScalingGroups[0].AutoScalingGroupName' \
+        --output text &> /dev/null; then
+        echo "❌ Auto Scaling Group not found: $asg_name"
+        echo "Available ASGs:"
+        aws autoscaling describe-auto-scaling-groups \
+            --region "$AWS_REGION" \
+            --query 'AutoScalingGroups[].AutoScalingGroupName' \
+            --output table
+        exit 1
+    fi
+
+    local refresh_id
+    refresh_id=$(aws autoscaling start-instance-refresh \
+        --region "$AWS_REGION" \
+        --auto-scaling-group-name "$asg_name" \
+        --preferences MinHealthyPercentage=90,InstanceWarmup=300 \
+        --query 'InstanceRefreshId' \
+        --output text)
+
+    if [[ -n "$refresh_id" && "$refresh_id" != "None" ]]; then
+        echo "✅ Instance refresh initiated with ID: $refresh_id"
+        echo "New instances will use image tag: $IMAGE_TAG"
+        echo ""
+        echo "Monitor progress with:"
+        echo "aws autoscaling describe-instance-refreshes \\"
+        echo "  --region $AWS_REGION \\"
+        echo "  --auto-scaling-group-name $asg_name"
+        echo ""
+        echo "This process will:"
+        echo "1. Update the launch template with new image tag"
+        echo "2. Gradually replace instances (maintaining 90% healthy)"
+        echo "3. New instances will automatically pull and run the new image"
+    else
+        echo "❌ Failed to initiate instance refresh"
+        exit 1
+    fi
+}
 
 create_deployment_script() {
   local script_path="/tmp/container_deploy.sh"
@@ -251,7 +368,7 @@ docker run -d \
   --log-opt awslogs-region=$AWS_REGION  \
   --log-opt awslogs-stream=$INSTANCE_ID \
   --log-opt awslogs-create-group=true \
-  -e ENVIRONMENT=$ENVIRONMENT -e AWS_REGION=$AWS_REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT\
+  -e ENVIRONMENT=$ENVIRONMENT -e AWS_REGION=$AWS_REGION \
   -v /opt/app/logs:/app/logs \
   $FULL_IMAGE_URI
 
@@ -282,7 +399,6 @@ EOF
   chmod +x "$script_path"
   echo "$script_path"
 }
-
 
 deploy_application() {
   echo "Creating deployment script..."
@@ -333,7 +449,6 @@ deploy_application() {
   rm -f "$script_path"
   print_deployment_summary
 }
-
 
 monitor_deployment() {
   local command_id=$1
@@ -389,11 +504,16 @@ print_deployment_summary() {
   echo "All deployments completed successfully!"
 }
 
-# Main flow
-if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
-  get_redis_url_from_terraform
-fi
 get_ecr_config
-find_ec2_instance
 verify_ecr_image
-deploy_application
+
+if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
+  update_pricing_service_image_tag
+  trigger_pricing_service_instance_refresh
+
+else
+  find_ec2_instance
+  deploy_application
+  print_deployment_summary
+
+fi

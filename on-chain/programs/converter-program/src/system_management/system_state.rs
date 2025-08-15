@@ -13,7 +13,6 @@ use crate::{
 pub struct SystemState<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
-
     #[account(
         mut,
         seeds = [SeedPrefixes::ProgramState.as_bytes()],

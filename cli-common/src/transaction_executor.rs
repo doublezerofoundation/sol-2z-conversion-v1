@@ -20,6 +20,7 @@ use anchor_client::{
         transaction::Transaction,
     }
 };
+use anchor_client::solana_sdk::signature::Keypair;
 use crate::{
     config::Config,
     utils::{
@@ -40,6 +41,13 @@ use solana_transaction_status::{
 
 pub fn send_batch_instructions(
     instructions: Vec<Instruction>
+) -> Result<Signature, Box<dyn Error>> {
+    send_batch_instructions_with_signers(instructions, &[])
+}
+
+pub fn send_batch_instructions_with_signers(
+    instructions: Vec<Instruction>,
+    other_signers:  &[&Keypair],
 ) -> Result<Signature, Box<dyn Error>> {
     let payer = load_payer_from_env()?;
 
@@ -62,10 +70,13 @@ pub fn send_batch_instructions(
         ..RpcSendTransactionConfig::default()
     };
 
+    let mut signers: Vec<&Keypair> = vec![&payer];
+    signers.extend_from_slice(other_signers);
+
     let transaction = Transaction::new_signed_with_payer(
         &instructions,
         Some(&payer.pubkey()),
-        &[&payer],
+        &signers,
         recent_block_hash
     );
 
@@ -198,7 +209,6 @@ pub fn get_account_data<T: AccountDeserialize + AnchorDeserialize + Debug>(
 ) -> Result<T, Box<dyn Error>> {
     let client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
     let data = client.get_account_data(&account)?;
-
     let account = T::try_deserialize(&mut data.as_slice())?;
     Ok(account)
 }

@@ -53,25 +53,26 @@ The file should contain the following items.
 {
   "rpc_url": "http://127.0.0.1:8899",
   "program_id": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
-  "oracle_pubkey": "3fgp23WcdX4Sex6jRG444b3fZZXtgS4go8XaA8is3FSc",
-  "sol_quantity": 2121,
+  "double_zero_program_id": "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww",
+  "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
+  "sol_quantity": 25000000000,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "max_fills_storage": 234,
-  "skip_preflight": true,
-  "coefficient": 90,
+  "skip_preflight": false,
+  "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
+  "coefficient": 4500,
   "max_discount_rate": 5000,
   "min_discount_rate": 500
 }
 ```
 - `rpc_url`: The `Deploying cluster` from last step.
 - `program_id`: Public key of the anchor program.
+- `double_zero_program_id`: Public key of the Double Zero Program.
 - `skip_preflight`: Setting this to `true` will disable transaction preflight checks (which normally simulate the transaction and catch errors before sending) and enable error logging in the database.
 - `oracle_pubkey`: Public key of the oracle program.
 - `sol_quantity`: Quantity of SOL to be converted in a single transaction (in Lamports).
 - `slot_threshold`: Slot threshold for storing the trade history.
 - `price_maximum_age`: Maximum age of the oracle price.
-- `max_fills_storage`: Maximum number of fills to be stored.
 - `coefficient`: Coefficient of the discount calculation curve in basis points. (0-100000000) *see note below*
 - `max_discount_rate`: Maximum discount rate in basis points. (0-10000)
 - `min_discount_rate`: Minimum discount rate in basis points. (0-10000)
@@ -172,16 +173,6 @@ This command Initializes the system by creating the configuration registry, fill
 ```sh
 cargo run -p admin-cli -- init
 ```
-
-### Withdraw 2Z Tokens 
-Transfers specified tokens from protocol treasury to designated account.
-```sh
-cargo run -p admin-cli -- withdraw-tokens -a <TOKEN_AMOUNT> -t <DESTINATION_ACCOUNT>
-```
-
-- `-a`: Amount of 2Z tokens to withdraw from protocol treasury.
-- `-t`: Destination token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
-
  
 ### View Configuration
 Displays current configuration registry contents.
@@ -264,6 +255,12 @@ Displays all addresses in the deny list registry
 cargo run -p admin-cli -- view-deny-list 
 ```
 
+### View Fill Registry
+View Fills Registry, which tracks individual fill records and overall aggregate statistics
+```sh
+cargo run -p admin-cli -- view-deny-list 
+```
+
 ### Init Mock Transfer Program
 Initializes Mock Transfer Program Accounts
 ```sh
@@ -318,6 +315,20 @@ cargo run -p user-cli -- buy-sol -p <bid_price> -f <SOURCE_ACCOUNT>
 - `-p`: User's maximum acceptable purchase price
 - `-f`: Source token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
 
+### Get Fills Info
+View Fills Registry, which tracks individual fill records and overall aggregate statistics
+```sh
+cargo run -p user-cli -- get-fills-info 
+```
+
+## Integration CLI
+### Dequeue Fills
+Dequeues fills up to specified SOL amount. Returns total SOL and 2Z amounts processed. Only callable by authorized integrating contracts.
+```sh
+cargo run -p integration-cli -- dequeue-fills -a <max_sol_amount>
+```
+
+- `-a`: Maximum SOL amount to dequeue in this operation
 
 ## E2E Test Suite
 

@@ -1,4 +1,4 @@
-import {getFillsRegistryPDA, getMockProgramPDAs} from "../utils/pda-helper";
+import {getMockProgramPDAs} from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {BN, Program} from "@coral-xyz/anchor";
@@ -9,6 +9,7 @@ import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 import {MockTransferProgram} from "../../../../mock-double-zero-program/target/types/mock_transfer_program";
 import {OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
+import {getFillsRegistryAccountAddress} from "../utils/fills-registry";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
@@ -24,9 +25,10 @@ export async function buySolAndVerify(
     const protocolTreasuryBalanceBefore = await getTokenBalance(mockTransferProgram.provider.connection, pdas.protocolTreasury);
     const solBalanceBefore = await program.provider.connection.getBalance(signer.publicKey);
     const vaultBalanceBefore = await program.provider.connection.getBalance(pdas.vault);
+    const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
 
     try {
-        const tx = await program.methods.buySol(
+        await program.methods.buySol(
             new anchor.BN(bidPrice),
             {
                 swapRate: new BN(oraclePriceData.swapRate),
@@ -35,6 +37,7 @@ export async function buySolAndVerify(
             }
         )
             .accounts({
+                fillsRegistry: fillsRegistryAddress,
                 userTokenAccount: senderTokenAccount,
                 vaultAccount: pdas.vault,
                 protocolTreasuryTokenAccount: pdas.protocolTreasury,
@@ -91,6 +94,7 @@ export async function buySolFail(
     expectedError: string,
 ) {
     const pdas = getMockProgramPDAs(mockTransferProgram.programId);
+    const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
 
     try {
         await program.methods.buySol(
@@ -102,6 +106,7 @@ export async function buySolFail(
             }
         )
             .accounts({
+                fillsRegistry: fillsRegistryAddress,
                 userTokenAccount: senderTokenAccount,
                 vaultAccount: pdas.vault,
                 protocolTreasuryTokenAccount: pdas.protocolTreasury,

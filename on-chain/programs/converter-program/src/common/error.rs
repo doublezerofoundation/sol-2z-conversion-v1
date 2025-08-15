@@ -78,6 +78,9 @@ pub enum DoubleZeroError {
     #[msg("Arithmetic Error has occurred")]
     ArithmeticError, // 6023
 
+    #[msg("User is not authorized to do Dequeue Action")]
+    UnauthorizedDequeuer, // 6024
+
     #[msg("Unauthorized Deny List Authority")]
-    UnauthorizedDenyListAuthority, // 6024
+    UnauthorizedDenyListAuthority, // 6025
 }
