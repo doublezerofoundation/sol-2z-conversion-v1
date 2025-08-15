@@ -36,10 +36,10 @@ export async function systemInitializeAndVerify(
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
 
     // Initialize fills registry
-    const fillsRegistryAddress = await initializeFillRegistry(program);
+    const fillsRegistryAddress: PublicKey = await initializeFillRegistry(program);
 
     // Initialization
-    const programDataAccount = getProgramDataAccountPDA(program.programId);
+    const programDataAccount: PublicKey = getProgramDataAccountPDA(program.programId);
     try {
         const tx = await program.methods.initializeSystem(
             inputConfigs.oraclePubkey,
@@ -93,7 +93,7 @@ export async function systemInitializeFail(
 ) {
     const programDataAccount = getProgramDataAccountPDA(program.programId);
     // Initialize fills registry
-    await initializeFillRegistry(program);
+    const fillsRegistryAddress: PublicKey = await initializeFillRegistry(program);
 
     try {
         await program.methods.initializeSystem(
@@ -105,6 +105,7 @@ export async function systemInitializeFail(
             configRegistryValues.minDiscountRate
         )
             .accounts({
+                fillsRegistry: fillsRegistryAddress,
                 authority: adminKeyPair.publicKey,
                 programData: programDataAccount
             })
@@ -112,7 +113,6 @@ export async function systemInitializeFail(
             .rpc();
 
     } catch (error) {
-        // console.log("System initialization is rejected as expected");
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "System initialization is rejected as expected");
         return; // Exit early — test passes
