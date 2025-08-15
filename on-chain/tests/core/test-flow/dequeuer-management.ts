@@ -146,7 +146,7 @@ export async function addDequeuerExpectUnauthorized(
     } catch (e) {
         // Check for Unauthorized event in error logs
         if (e.logs) {
-            console.log(e.logs);
+            // console.log(e.logs);
             const event = findAnchorEventInLogs(e.logs, program.idl, "unauthorizedUser");
             expect(event, "Unauthorized event should be emitted").to.exist;
             if (event) {

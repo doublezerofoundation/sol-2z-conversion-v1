@@ -1,9 +1,8 @@
-import { expect } from "chai";
 import { AdminClient } from "../core/admin-client";
 import { accountExists } from "../core/utils/assertions";
 import { getConfigurationRegistryPDA, getProgramStatePDA, getDenyListRegistryPDA, getFillsRegistryPDA } from "../core/utils/pda-helper";
 import { CommonScenario } from "./common-scenario";
-import { assert } from "chai";
+import { expect, assert } from "chai";
 
 export class InitializeScenario extends CommonScenario {
     constructor(deployer: AdminClient) {

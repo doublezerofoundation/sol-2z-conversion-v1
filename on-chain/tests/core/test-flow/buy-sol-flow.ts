@@ -48,7 +48,7 @@ export async function buySolAndVerify(
             })
             .signers([signer])
             .rpc();
-        console.log("Buy Sol is successful. Transaction Hash", tx);
+        // console.log("Buy Sol is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Buy Sol  failed:", e);
         assert.fail("Buy Sol  failed");
@@ -118,7 +118,7 @@ export async function buySolFail(
             .signers([signer])
             .rpc();
     } catch (error) {
-        console.log("Buy SOL is rejected as expected");
+        // console.log("Buy SOL is rejected as expected");
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "Buy SOL is rejected as expected");
         return; // Exit early — test passes

@@ -32,8 +32,8 @@ describe("Config Update Tests", async () => {
       priceMaximumAge: new anchor.BN(100),
       maxFillsStorage: new anchor.BN(100),
       coefficient: new anchor.BN(100),
-      maxDiscountRate: new anchor.BN(100),
-      minDiscountRate: new anchor.BN(100),
+      maxDiscountRate: new anchor.BN(5600),
+      minDiscountRate: new anchor.BN(440),
     };
     await updateConfigsAndVerify(
       program,
