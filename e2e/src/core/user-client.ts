@@ -13,8 +13,8 @@ export class UserClient {
         return client;
     }
 
-    public async buySolCommand(amount: number): Promise<void> {
-        await this.session.executeCliCommand(`buy-sol -a ${amount}`);
+    public async buySolCommand(amount: number): Promise<string> {
+        return await this.session.executeCliCommand(`buy-sol --bid-price ${amount}`);
     }
 
     public async getPriceCommand(): Promise<string> {
@@ -23,5 +23,13 @@ export class UserClient {
 
     public async getQuantityCommand(): Promise<string> {
         return await this.session.executeCliCommand(`get-quantity`);
+    }
+
+    public async getFillsCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`get-fills-info`);
+    }
+
+    public async dequeueFillsCommand(maxSolValue: number): Promise<string> {
+        return await this.session.executeCliCommand(`dequeue-fills -a ${maxSolValue}`, "./cli/integration-cli");
     }
 }
