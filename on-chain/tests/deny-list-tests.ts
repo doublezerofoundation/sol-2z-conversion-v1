@@ -1,6 +1,3 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../target/types/converter_program";
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
 import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";

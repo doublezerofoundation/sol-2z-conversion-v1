@@ -93,7 +93,7 @@ export async function systemInitializeFail(
 ) {
     const programDataAccount = getProgramDataAccountPDA(program.programId);
     // Initialize fills registry
-    const fillsRegistryAddress = await initializeFillRegistry(program);
+    await initializeFillRegistry(program);
 
     try {
         await program.methods.initializeSystem(
