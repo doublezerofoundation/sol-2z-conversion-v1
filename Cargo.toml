@@ -17,8 +17,8 @@ anchor-spl = "0.31.1"
 
 # solana interface for CLI
 solana-commitment-config = "2.2.1"
-solana-system-interface = "2.0.0"
-solana-loader-v3-interface = "6.1.0"
+solana-system-interface = "1.0.0"
+solana-loader-v3-interface = "5.0.0"
 
 
 ## on-chain

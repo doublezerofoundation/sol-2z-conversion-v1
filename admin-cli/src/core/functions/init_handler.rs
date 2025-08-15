@@ -5,13 +5,9 @@ use anchor_client::{
         hash::hash,
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
-        signature::Signer,
-        system_instruction::create_account
-    }
-};
-use anchor_client::solana_client::rpc_client::RpcClient;
-use anchor_client::solana_sdk::{
-    signature::Keypair,
+        signature::{Signer, Keypair},
+    },
+    solana_client::rpc_client::RpcClient
 };
 use cli_common::{
     utils::ui,
@@ -23,6 +19,7 @@ use crate::core::{
     config::AdminConfig,
 };
 use solana_commitment_config::CommitmentConfig;
+use solana_system_interface::instruction::create_account;
 
 pub fn init() -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;

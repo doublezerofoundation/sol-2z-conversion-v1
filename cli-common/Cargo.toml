@@ -15,3 +15,4 @@ spl-token-2022 = { workspace = true }
 spl-associated-token-account = { workspace = true }
 bytemuck = {workspace = true}
 solana-commitment-config = { workspace = true }
+solana-loader-v3-interface = {workspace = true}
