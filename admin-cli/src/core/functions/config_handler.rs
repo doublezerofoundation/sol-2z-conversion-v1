@@ -40,9 +40,7 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
     let input = ConfigurationRegistryInput {
         oracle_pubkey: Some(admin_config.oracle_pubkey),
         sol_quantity: Some(admin_config.sol_quantity),
-        slot_threshold: Some(admin_config.slot_threshold),
         price_maximum_age: Some(admin_config.price_maximum_age),
-        max_fills_storage: Some(admin_config.max_fills_storage),
         coefficient: Some(admin_config.coefficient),
         max_discount_rate: Some(admin_config.max_discount_rate),
         min_discount_rate: Some(admin_config.min_discount_rate),
@@ -52,6 +50,10 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
+
+    println!("Configuration Registry PDA: {}", configuration_registry_pda);
+    println!("Program State PDA: {}", program_state_pda);
+    println!("Deny List Registry PDA: {}", deny_list_registry_pda);
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),

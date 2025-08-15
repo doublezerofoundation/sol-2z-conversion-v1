@@ -40,9 +40,7 @@ export const updateConfigsAndVerify = async (
     // verify whether config values were updated
     const updatedConfig = await fetchCurrentConfiguration(program);
     assert.equal(updatedConfig.oraclePubkey.toString(), input.oraclePubkey.toString());
-    assert.equal(updatedConfig.maxFillsStorage.toString(), input.maxFillsStorage.toString());
     assert.equal(updatedConfig.priceMaximumAge.toString(), input.priceMaximumAge.toString());
-    assert.equal(updatedConfig.slotThreshold.toString(), input.slotThreshold.toString());
     assert.equal(updatedConfig.solQuantity.toString(), input.solQuantity.toString());
     assert.equal(updatedConfig.coefficient.toString(), input.coefficient.toString());
     assert.equal(updatedConfig.maxDiscountRate.toString(), input.maxDiscountRate.toString());

@@ -9,9 +9,7 @@ use anchor_lang::prelude::*;
 pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey, // Public key of the swap oracle service
     pub sol_quantity: u64,
-    pub slot_threshold: u64,
     pub price_maximum_age: i64, // Maximum acceptable age for oracle price data
-    pub max_fills_storage: u64, // Maximum number of fills to store
     #[max_len(MAX_AUTHORIZED_DEQUEUERS)]
     pub authorized_dequeuers: Vec<Pubkey>, // Contracts authorized to dequeue fills
 
@@ -26,9 +24,7 @@ impl ConfigurationRegistry {
         &mut self,
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
-        slot_threshold: u64,
         price_maximum_age: i64,
-        max_fills_storage: u64,
         coefficient: u64,
         max_discount_rate: u64,
         min_discount_rate: u64,
@@ -45,9 +41,7 @@ impl ConfigurationRegistry {
 
         self.oracle_pubkey = oracle_pubkey;
         self.sol_quantity = sol_quantity;
-        self.slot_threshold = slot_threshold;
         self.price_maximum_age = price_maximum_age;
-        self.max_fills_storage = max_fills_storage;
         self.coefficient = coefficient;
         self.max_discount_rate = max_discount_rate;
         self.min_discount_rate = min_discount_rate;
@@ -61,14 +55,8 @@ impl ConfigurationRegistry {
         if let Some(sol_quantity) = input.sol_quantity {
             self.sol_quantity = sol_quantity;
         }
-        if let Some(slot_threshold) = input.slot_threshold {
-            self.slot_threshold = slot_threshold;
-        }
         if let Some(price_maximum_age) = input.price_maximum_age {
             self.price_maximum_age = price_maximum_age;
-        }
-        if let Some(max_fills_storage) = input.max_fills_storage {
-            self.max_fills_storage = max_fills_storage;
         }
         if let Some(coefficient) = input.coefficient {
             self.coefficient = coefficient;

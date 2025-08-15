@@ -13,6 +13,10 @@ pub fn set_admin(admin: String) -> Result<(), Box<dyn Error>> {
     let program_data_pda = pda_helper::get_program_data_account_pda(program_id);
     let admin_pubkey = Pubkey::from_str(&admin)?;
 
+    println!("Program State PDA: {}", program_state_pda);
+    println!("Program Data PDA: {}", program_data_pda);
+    println!("Setting Admin to {}", admin_pubkey);
+
     let mut data = hash(SET_ADMIN_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [
         data,
@@ -46,6 +50,10 @@ pub fn set_deny_authority(authority: String) -> Result<(), Box<dyn Error>> {
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let program_data_pda = pda_helper::get_program_data_account_pda(program_id);
     let authority_pubkey = Pubkey::from_str(&authority)?;
+
+    println!("Program State PDA: {}", program_state_pda);
+    println!("Program Data PDA: {}", program_data_pda);
+    println!("Setting Deny List Authority to {}", authority_pubkey);
 
     let mut data = hash(SET_DENY_LIST_AUTHORITY_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [

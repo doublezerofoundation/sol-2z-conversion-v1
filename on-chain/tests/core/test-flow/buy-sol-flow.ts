@@ -1,4 +1,4 @@
-import {getFillsRegistryPDA, getMockProgramPDAs} from "../utils/pda-helper";
+import {getMockProgramPDAs} from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {BN, Program} from "@coral-xyz/anchor";
@@ -28,7 +28,7 @@ export async function buySolAndVerify(
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
 
     try {
-        const tx = await program.methods.buySol(
+        await program.methods.buySol(
             new anchor.BN(bidPrice),
             {
                 swapRate: new BN(oraclePriceData.swapRate),

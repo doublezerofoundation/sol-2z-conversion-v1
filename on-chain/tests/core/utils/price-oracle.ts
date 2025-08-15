@@ -1,4 +1,4 @@
-import { PRICE_ORACLE_END_POINT } from "../constants";
+import {PRICE_ORACLE_END_POINT} from "../constants";
 
 export interface OraclePriceData {
     swapRate: number;
@@ -18,6 +18,5 @@ export const getOraclePriceData = async (): Promise<OraclePriceData> => {
     if (!response.ok) {
         throw new Error(`Failed to fetch price oracle data: ${response.statusText}`);
     }
-    const data = await response.json() as OraclePriceData;
-    return data;
+    return await response.json() as OraclePriceData;
 }

@@ -6,13 +6,12 @@ use anchor_client::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
         signature::Signer,
+        system_instruction::create_account
     }
 };
 use anchor_client::solana_client::rpc_client::RpcClient;
 use anchor_client::solana_sdk::{
-    commitment_config::CommitmentConfig,
     signature::Keypair,
-    system_instruction::create_account
 };
 use cli_common::{
     utils::ui,
@@ -23,6 +22,7 @@ use crate::core::{
     common::instruction::INITIALIZE_SYSTEM_INSTRUCTION,
     config::AdminConfig,
 };
+use solana_commitment_config::CommitmentConfig;
 
 pub fn init() -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
@@ -49,9 +49,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         data_initialize,
         admin_config.oracle_pubkey.to_bytes().to_vec(),
         admin_config.sol_quantity.to_le_bytes().to_vec(),
-        admin_config.slot_threshold.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
-        admin_config.max_fills_storage.to_le_bytes().to_vec(),
         admin_config.coefficient.to_le_bytes().to_vec(),
         admin_config.max_discount_rate.to_le_bytes().to_vec(),
         admin_config.min_discount_rate.to_le_bytes().to_vec(),
@@ -89,6 +87,10 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         &[&fills_account]
     )?;
     println!("Fills Registry Address: {}", fills_account.pubkey());
+    println!("Configuration Registry PDA: {}", configuration_registry_pda);
+    println!("Program State PDA: {}", program_state_pda);
+    println!("Deny List Registry PDA: {}", deny_list_registry_pda);
+    println!("Program Data PDA: {}", program_data_account_pda);
     println!("{} System has been successfully initialized", ui::OK);
     Ok(())
 }
