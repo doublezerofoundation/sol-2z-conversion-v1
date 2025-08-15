@@ -320,7 +320,7 @@ cargo run -p user-cli -- buy-sol -p <bid_price> -f <SOURCE_ACCOUNT>
 ### Get Fills Info
 View Fills Registry, which tracks individual fill records and overall aggregate statistics
 ```sh
-cargo run -p admin-cli -- get-fills-info 
+cargo run -p user-cli -- get-fills-info 
 ```
 
 ## Integration CLI
