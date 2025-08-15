@@ -87,6 +87,10 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         &[&fills_account]
     )?;
     println!("Fills Registry Address: {}", fills_account.pubkey());
+    println!("Configuration Registry PDA: {}", configuration_registry_pda);
+    println!("Program State PDA: {}", program_state_pda);
+    println!("Deny List Registry PDA: {}", deny_list_registry_pda);
+    println!("Program Data PDA: {}", program_data_account_pda);
     println!("{} System has been successfully initialized", ui::OK);
     Ok(())
 }

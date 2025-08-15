@@ -58,6 +58,9 @@ pub fn toggle_system_state(activate: bool, pause: bool) -> Result<(), Box<dyn Er
 
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
 
+    println!("Program State PDA: {}", program_state_pda);
+    println!("Setting System State (is_halted) to {:?}", set_to);
+
     let mut data = hash(TOGGLE_SYSTEM_STATE_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [data, vec![set_to as u8]].concat();
 
