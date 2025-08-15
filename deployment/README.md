@@ -125,7 +125,6 @@ Deploy regional-level resources for your target region:
 
 ### 4. Publish Artifacts
 **Before creating any environment, you must publish the service artifacts:**
-**Before creating any environment, you must publish the service artifacts:**
 ```shell
 # Publish artifacts with a release tag
 ./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
