@@ -173,16 +173,6 @@ This command Initializes the system by creating the configuration registry, fill
 ```sh
 cargo run -p admin-cli -- init
 ```
-
-### Withdraw 2Z Tokens 
-Transfers specified tokens from protocol treasury to designated account.
-```sh
-cargo run -p admin-cli -- withdraw-tokens -a <TOKEN_AMOUNT> -t <DESTINATION_ACCOUNT>
-```
-
-- `-a`: Amount of 2Z tokens to withdraw from protocol treasury.
-- `-t`: Destination token account address. (Optional, If not specified, defaults to signer's Associated Token Account)
-
  
 ### View Configuration
 Displays current configuration registry contents.
