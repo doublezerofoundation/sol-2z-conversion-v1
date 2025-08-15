@@ -4,9 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 export interface SystemConfig {
     oraclePubkey: PublicKey,
     solQuantity: BN,
-    slotThreshold: BN,
     priceMaximumAge: BN,
-    maxFillsStorage: BN,
     coefficient: BN,
     maxDiscountRate: BN,
     minDiscountRate: BN,

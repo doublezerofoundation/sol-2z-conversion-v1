@@ -62,9 +62,7 @@ impl<'info> InitializeSystem<'info> {
         &mut self,
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
-        slot_threshold: u64,
         price_maximum_age: i64,
-        max_fills_storage: u64,
         coefficient: u64,
         max_discount_rate: u64,
         min_discount_rate: u64
@@ -74,9 +72,7 @@ impl<'info> InitializeSystem<'info> {
         self.configuration_registry.initialize(
             oracle_pubkey,
             sol_quantity,
-            slot_threshold,
             price_maximum_age,
-            max_fills_storage,
             coefficient,
             max_discount_rate,
             min_discount_rate
@@ -112,6 +108,5 @@ impl<'info> InitializeSystem<'info> {
         bump_registry.program_state_bump = program_state_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
         Ok(())
-
     }
 }

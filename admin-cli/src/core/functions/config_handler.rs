@@ -40,9 +40,7 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
     let input = ConfigurationRegistryInput {
         oracle_pubkey: Some(admin_config.oracle_pubkey),
         sol_quantity: Some(admin_config.sol_quantity),
-        slot_threshold: Some(admin_config.slot_threshold),
         price_maximum_age: Some(admin_config.price_maximum_age),
-        max_fills_storage: Some(admin_config.max_fills_storage),
         coefficient: Some(admin_config.coefficient),
         max_discount_rate: Some(admin_config.max_discount_rate),
         min_discount_rate: Some(admin_config.min_discount_rate),

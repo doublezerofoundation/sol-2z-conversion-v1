@@ -5,8 +5,6 @@ import fs from "fs";
 export interface Config {
     oracle_pubkey: string;
     sol_quantity: number;
-    slot_threshold: number;
-    max_fills_storage: number;
     max_discount_rate: number;
     min_discount_rate: number;
     coefficient: number;

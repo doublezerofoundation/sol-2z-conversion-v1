@@ -35,9 +35,7 @@ pub mod converter_program {
         ctx: Context<InitializeSystem>,
         oracle_pubkey: Pubkey,
         sol_quantity: u64,
-        slot_threshold: u64,
         price_maximum_age: i64,
-        max_fills_storage: u64,
         coefficient: u64,
         max_discount_rate: u64,
         min_discount_rate: u64
@@ -54,9 +52,7 @@ pub mod converter_program {
         ctx.accounts.process(
             oracle_pubkey,
             sol_quantity,
-            slot_threshold,
             price_maximum_age,
-            max_fills_storage,
             coefficient,
             max_discount_rate,
             min_discount_rate
