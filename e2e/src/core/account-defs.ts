@@ -31,6 +31,22 @@ export interface DenyListRegistry {
     updateCount: BN,
 }
 
+export interface FillsRegistry {
+    totalSolPending: BN,
+    total2ZPending: BN,
+    lifetimeSolProcessed: BN,
+    lifetime2ZProcessed: BN,
+    fills: Fills[],
+    head: BN,
+    tail: BN,
+    count: BN,
+}
+
+export interface Fills {
+    solIn: BN,
+    token2zOut: BN,
+}
+
 export interface Test {
     name: string;
     description: string;

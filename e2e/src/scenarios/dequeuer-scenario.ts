@@ -3,10 +3,14 @@ import { AdminClient } from "../core/admin-client";
 import { assert, expect } from "chai";
 import { getDequeuerList } from "../core/utils/account-helper";
 import { PublicKey } from "@solana/web3.js";
+import { UserClient } from "../core/user-client";
 
 export class DequeuerScenario extends CommonScenario {
-    constructor(admin: AdminClient) {
+    private readonly dequeuer: UserClient | undefined;
+
+    constructor(admin: AdminClient, dequeuer?: UserClient) {
         super(admin);
+        this.dequeuer = dequeuer;
     }
 
     public async addDequeuerAndVerify(dequeuer: string) {
@@ -52,5 +56,44 @@ export class DequeuerScenario extends CommonScenario {
         } catch (error) {
             this.handleExpectedError(error, expectedError);
         }
+    }
+
+    public async dequeueFillsAndVerify(maxSolValue: number): Promise<string> {
+        const fillsRegistry = await this.getFillsRegistry();
+
+        if (!this.dequeuer) {
+            throw new Error("Dequeuer user not set");
+        }
+
+        const tx = await this.dequeuer.dequeueFillsCommand(maxSolValue);
+
+        const finalFillsRegistry = await this.getFillsRegistry();
+
+        expect(finalFillsRegistry.total2ZPending.toNumber()).to.be.lessThan(fillsRegistry.total2ZPending.toNumber());
+        expect(finalFillsRegistry.totalSolPending.toNumber()).to.be.lessThan(fillsRegistry.totalSolPending.toNumber());
+        expect(finalFillsRegistry.lifetime2ZProcessed.toNumber()).to.be.greaterThan(fillsRegistry.lifetime2ZProcessed.toNumber());
+        expect(finalFillsRegistry.lifetimeSolProcessed.toNumber()).to.be.greaterThan(fillsRegistry.lifetimeSolProcessed.toNumber());
+
+        return tx;
+    }
+
+    public async dequeueFillsAndVerifyFail(maxSolValue: number, expectedError: string) {
+        if (!this.dequeuer) {
+            throw new Error("Dequeuer user not set");
+        }
+
+        try {
+            await this.dequeuer.dequeueFillsCommand(maxSolValue);
+            assert.fail("Expected dequeue fills to fail");
+        } catch (error) {
+            this.handleExpectedError(error, expectedError);
+        }
+    }
+
+    public async getDequeuerUser(): Promise<UserClient> {
+        if (!this.dequeuer) {
+            throw new Error("Dequeuer user not set");
+        }
+        return this.dequeuer;
     }
 }

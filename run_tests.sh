@@ -15,6 +15,7 @@ UNIT_TESTS=(
 
 E2E_TESTS=(
     admin-flow
+    user-flow
 )
 
 TEST_TYPE="unit"
@@ -185,7 +186,7 @@ copy_cli_to_e2e() {
     mkdir -p ./e2e/cli
     cp ./target/debug/admin-cli ./e2e/cli/
     cp ./target/debug/user-cli ./e2e/cli/
-    # cp ./target/debug/integration-cli ./e2e/cli/
+    cp ./target/debug/integration-cli ./e2e/cli/
     cp ./config.json ./e2e/cli/
     log_success "CLI copied to the E2E directory"
 }

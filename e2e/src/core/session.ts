@@ -76,9 +76,9 @@ export abstract class Session {
         await this.program.provider.connection.requestAirdrop(this.keypair.publicKey, 100 * anchor.web3.LAMPORTS_PER_SOL);
     }
 
-    public async executeCliCommand(command: string): Promise<string> {
+    public async executeCliCommand(command: string, optionalExecutablePath?: string): Promise<string> {
         const privateKey = this.keypair.secretKey.toString();
-        const cliCommand = `export PRIVATE_KEY=${privateKey} && export DOUBLE_ZERO_CONFIG=./cli/config.json && ${this.executeDir} ${command}`;
+        const cliCommand = `export PRIVATE_KEY=${privateKey} && export DOUBLE_ZERO_CONFIG=./cli/config.json && ${optionalExecutablePath || this.executeDir} ${command}`;
 
         return new Promise((resolve, reject) => {
             exec(cliCommand, (error, stdout, stderr) => {
