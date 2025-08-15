@@ -1,9 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../target/types/converter_program";
 import {  getDefaultKeyPair } from "./core/utils/accounts";
-import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
-import {initializeSystemIfNeeded, systemInitializeAndVerify} from "./core/test-flow/system-initialize";
+import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {
   addDequeuerAndVerify,
   removeDequeuerAndVerify,

@@ -4,7 +4,6 @@ use crate::core::{
 };
 use anchor_client::solana_client::rpc_client::RpcClient;
 use anchor_client::solana_sdk::{
-    commitment_config::CommitmentConfig,
     hash::hash,
     instruction::{AccountMeta, Instruction},
     pubkey::Pubkey,
@@ -15,6 +14,7 @@ use cli_common::{
     utils::{env_var::load_payer_from_env, pda_helper},
 };
 use std::{error::Error, str::FromStr};
+use solana_commitment_config::CommitmentConfig;
 
 /// Adds an address to the deny list registry
 pub fn add_to_deny_list(address: String) -> Result<(), Box<dyn Error>> {

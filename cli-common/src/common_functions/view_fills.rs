@@ -1,10 +1,7 @@
 use std::{error::Error, str::FromStr};
 use anchor_client::{
     anchor_lang::prelude::Pubkey,
-    solana_sdk::{
-        native_token::LAMPORTS_PER_SOL,
-        commitment_config::CommitmentConfig
-    },
+    solana_sdk::native_token::LAMPORTS_PER_SOL,
     solana_client::rpc_client::RpcClient
 };
 use crate::{
@@ -13,11 +10,11 @@ use crate::{
     utils::{pda_helper, ui},
     config::Config
 };
+use solana_commitment_config::CommitmentConfig;
 
 pub fn view_fills_registry() -> Result<(), Box<dyn Error>> {
     let config = Config::load()?;
     let program_id = Pubkey::from_str(&config.program_id)?;
-    println!("summa");
 
     let fills_registry_address = pda_helper::get_fills_registry_address(program_id, config.rpc_url.clone())?;
     println!("Fills Registry Address: {}", fills_registry_address);

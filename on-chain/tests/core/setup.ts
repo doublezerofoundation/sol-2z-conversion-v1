@@ -1,12 +1,10 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../../target/types/converter_program";
-import { SystemConfig } from "./utils/configuration-registry";
+import {Program} from "@coral-xyz/anchor";
+import {ConverterProgram} from "../../target/types/converter_program";
 
 export const setup = async (): Promise<Program<ConverterProgram>> => {
   anchor.setProvider(anchor.AnchorProvider.env());
-  const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
-  return program;
+    return anchor.workspace.converterProgram as Program<ConverterProgram>;
 };
 
 export interface Test {

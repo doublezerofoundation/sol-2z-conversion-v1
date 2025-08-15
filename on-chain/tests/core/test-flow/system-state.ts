@@ -51,7 +51,7 @@ export const toggleSystemStateAndVerifyFail = async (
     const [programStateExists] = await Promise.all([
         accountExists(program.provider.connection, programStatePDA),
     ]);
-    assert.isTrue(programStateExists, "Program state should be initialzied");
+    assert.isTrue(programStateExists, "Program state should be initialized");
 
     try {
         await program.methods.toggleSystemState(set_to)

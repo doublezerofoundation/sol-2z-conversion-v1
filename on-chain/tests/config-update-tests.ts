@@ -1,13 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { setup } from "./core/setup";
-import { airdrop, getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
+import { airdrop, getRandomKeyPair } from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 
 describe("Config Update Tests", async () => {
   const program = await setup();
-  const adminKeyPair = getDefaultKeyPair();
 
   before("Initialize the system if needed", async () => {
     await initializeSystemIfNeeded(program)

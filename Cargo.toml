@@ -15,31 +15,36 @@ anchor-lang = "0.31.1"
 anchor-client = "0.31.1"
 anchor-spl = "0.31.1"
 
+# solana interface for CLI
+solana-commitment-config = "2.2.1"
+solana-system-interface = "2.0.0"
+solana-loader-v3-interface = "6.1.0"
+
 
 ## on-chain
 base64 = "0.22.1"
 brine-ed25519 = "0.2.0"
-bytemuck = { version = "1.20.0", features = ["min_const_generics"] }
+bytemuck = { version = "1.23.2", features = ["min_const_generics"] }
 
 # Workspace members (internal dependencies)
 cli-common = { path = "cli-common" }
 
 ### CLI Serialization
 serde="1.0.219"
-serde_json = "1.0.141"
+serde_json = "1.0.142"
 
 ### CLI Deserialization
-solana-transaction-status = "2.3.6"
+solana-transaction-status = "2.3.7"
 
 ### CLI
-clap = { version = "4.5.42", features = ["derive"] }
+clap = { version = "4.5.45", features = ["derive"] }
 rust_decimal = "1.37.2"
 spl-token-2022 = "9.0.0"
 spl-associated-token-account = "7.0.0"
 
 ## CLI Rest
-reqwest = { version = "0.11", features = ["json"] }
-tokio = { version = "1.47.0", features = ["full"] }
+reqwest = { version = "0.12.23", features = ["json"] }
+tokio = { version = "1.47.1", features = ["full"] }
 
 [profile.release]
 overflow-checks = true
