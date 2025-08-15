@@ -89,7 +89,42 @@ cd deployment/script
 - Configures bucket security settings (versioning, KMS encryption, access blocking)
 - Sets up IAM policies and resource tagging for governance
 
-### 2. Publish Artifacts
+### 2. Account-Level Infrastructure Setup
+Deploy account-level resources that are shared across all regions:
+
+```shell
+# Create account-level infrastructure
+./account_creation.sh create --region us-east-1
+# Or with auto-approval and specific region
+./account_creation.sh create --auto-approve --region us-east-1
+``` 
+
+**What this creates:**
+- Shared IAM roles and policies
+- Cross-region security configurations
+- Account-wide governance settings
+- Global resource tags and naming conventions
+
+### 3. Regional Infrastructure Setup
+
+Deploy regional-level resources for your target region:
+```bash
+# Create regional infrastructure for us-east-1
+./regional_creation.sh create --region us-east-1
+# Or with auto-approval
+./regional_creation.sh create --region us-east-1 --auto-approve
+``` 
+
+**What this creates:**
+- VPC and networking infrastructure
+- Regional security groups and NACLs
+- NAT gateways and internet gateways
+- Regional WAF configurations
+- Load balancer infrastructure
+- Regional ECR repositories
+
+### 4. Publish Artifacts
+**Before creating any environment, you must publish the service artifacts:**
 **Before creating any environment, you must publish the service artifacts:**
 ```shell
 # Publish artifacts with a release tag
@@ -97,14 +132,14 @@ cd deployment/script
 ```
 
 
-### 3. Create New Environment
+### 5. Create New Environment
 After publishing artifacts, create a complete new environment:
 ```shell
 # Create environment using the published release tag
 ./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
 ```
 
-### 4. Update Existing Environment
+### 6. Update Existing Environment
 For updating an existing environment with a new release:
 
 ```shell
@@ -176,10 +211,16 @@ For updating an existing environment with a new release:
 # 1. Initial setup (if not done)
 ./one_time_setup.sh us-east-1
 
-# 2. Publish artifacts FIRST
+# 2. Account level resource creation
+ ./account_creation.sh create --region us-east-1
+ 
+# 3. Regional Lvevel resource creation
+ ./regional_creation.sh create --region us-east-1
+
+# 4. Publish artifacts FIRST
 ./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
 
-# 3. Create environment using published artifacts
+# 5. Create environment using published artifacts
 ./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
 ```
 ### Strategy 2: Update Existing Environment
