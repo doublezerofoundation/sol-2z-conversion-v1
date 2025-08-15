@@ -3,9 +3,10 @@ import { AdminClient } from "../core/admin-client";
 import { TOKEN_DECIMALS } from "../core/constants";
 import { UserClient } from "../core/user-client";
 import { findOrInitializeAssociatedTokenAccount } from "../core/utils/account-helper";
-import { getMockDoubleZeroTokenMintPDA } from "../core/utils/pda-helper";
+import { getMockDoubleZeroTokenMintPDA, getMockProtocolTreasuryAccount, getMockVaultPDA } from "../core/utils/pda-helper";
 import { CommonScenario } from "./common-scenario";
 import { expect } from "chai";
+import { getConfig } from "../core/utils/config-util";
 
 export class BuySolScenario extends CommonScenario {
     private readonly user: UserClient;
@@ -16,8 +17,9 @@ export class BuySolScenario extends CommonScenario {
     }
 
     public async buySolAndVerify(amount: number): Promise<string> {
-        const initial2ZBalance = await this.checkAndReimburseUser2ZBalance();
+        const initial2ZBalance = await this.checkAndReimburseUser2ZBalance(amount);
         const initialSolBalance = await this.getUserSolBalance();
+
         const result = await this.user.buySolCommand(amount);
 
         const final2ZBalance = await this.getUser2ZBalance();
@@ -31,14 +33,14 @@ export class BuySolScenario extends CommonScenario {
 
     public async buySolAndVerifyFail(amount: number, errorMessage: string): Promise<void> {
         try {
-            await this.buySolAndVerify(amount);
+            await this.user.buySolCommand(amount);
             expect.fail("Buy Sol should fail");
         } catch (error) {
-            expect(error!.toString()).to.contain(errorMessage);
+            this.handleExpectedError(error, errorMessage);
         }
     }
 
-    public async checkAndReimburseUser2ZBalance(): Promise<number> {
+    public async checkAndReimburseUser2ZBalance(amount: number): Promise<number> {
         const ata = await findOrInitializeAssociatedTokenAccount(
             this.admin.session.getKeypair(),
             this.user.session.getPublicKey(),
@@ -48,11 +50,14 @@ export class BuySolScenario extends CommonScenario {
 
         const balance = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(ata);
         let tokenAmount = balance.value.uiAmount ?? 0;
-        if (tokenAmount >= 500 * TOKEN_DECIMALS) {
+        const solQuantity = getConfig().sol_quantity / LAMPORTS_PER_SOL;
+        const requiredAmount = amount * solQuantity;
+
+        if (tokenAmount >= requiredAmount) {
             // Do nothing
         } else {
-            await this.admin.mockTokenMintCommand(500, this.user.session.getPublicKey());
-            tokenAmount += 500 * TOKEN_DECIMALS;
+            await this.admin.mockTokenMintCommand(requiredAmount, this.user.session.getPublicKey());
+            tokenAmount += requiredAmount;
         }
 
         return tokenAmount;
@@ -70,9 +75,22 @@ export class BuySolScenario extends CommonScenario {
         return balance.value.uiAmount ?? 0;
     }
 
+    public async getVault2ZBalance(): Promise<number> {
+        const mockVaultPDA = await getMockProtocolTreasuryAccount(this.admin.session.getMockProgram().programId);
+        const mockVaultBalance = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(mockVaultPDA);
+        const balance = mockVaultBalance.value.uiAmount ?? 0;
+        return balance / TOKEN_DECIMALS;
+    }
+
     public async getUserSolBalance(): Promise<number> {
         const balance = await this.admin.session.getMockProgram().provider.connection.getBalance(this.user.session.getPublicKey());
         return balance / LAMPORTS_PER_SOL;
+    }
+
+    public async getVaultSolBalance(): Promise<number> {
+        const mockVaultPDA = await getMockVaultPDA(this.admin.session.getMockProgram().programId);
+        const mockVaultBalance = await this.admin.session.getMockProgram().provider.connection.getBalance(mockVaultPDA);
+        return mockVaultBalance / LAMPORTS_PER_SOL;
     }
 
     public getUserPublicKey(): PublicKey {

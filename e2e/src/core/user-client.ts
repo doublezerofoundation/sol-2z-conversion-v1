@@ -14,7 +14,7 @@ export class UserClient {
     }
 
     public async buySolCommand(amount: number): Promise<string> {
-        return await this.session.executeCliCommand(`buy-sol -a ${amount}`);
+        return await this.session.executeCliCommand(`buy-sol --bid-price ${amount}`);
     }
 
     public async getPriceCommand(): Promise<string> {

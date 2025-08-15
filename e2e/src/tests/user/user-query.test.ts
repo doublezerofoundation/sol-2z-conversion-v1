@@ -14,7 +14,7 @@ export const userQueryTests: Test[] = [
         description: "User should not be able to query the price if they are in the deny list",
         execute: async (scenario: UserQueryScenario) => {
             await scenario.addUserToDenyList(scenario.getUserPublicKey());
-            await scenario.getPriceAndVerifyFail("User is in the deny list");
+            await scenario.getPriceAndVerifyFail("User is blocked in the DenyList");
 
             // Reset deny list
             await scenario.removeUserFromDenyList(scenario.getUserPublicKey());

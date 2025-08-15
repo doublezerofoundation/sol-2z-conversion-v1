@@ -5,16 +5,16 @@ import { BuySolScenario } from "../../scenarios/buy-sol-scenario";
 
 export const userBuySolTests: Test[] = [
     {
-        name: "user_buy_sol_fail",
+        name: "user_buy_sol_fail_insufficient_funds",
         description: "User should not be able to buy SOL if they don't have enough 2Z",
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 5
-            await scenario.buySolAndVerifyFail(amount, "Insufficient funds");
+            await scenario.buySolAndVerifyFail(amount, "insufficient funds");
         }
     },
     {
-        name: "user_buy_sol_fail",
+        name: "user_buy_sol_fail_system_halted",
         description: "User should not be able to buy SOL if the system is halted",
         execute: async (scenario: BuySolScenario) => {
             await scenario.toggleSystemState(true);
@@ -25,11 +25,11 @@ export const userBuySolTests: Test[] = [
         }
     },
     {
-        name: "user_buy_sol_fail_for_deny_list",
+        name: "user_buy_sol_fail_deny_list",
         description: "User should not be able to buy SOL if they are in the deny list",
         execute: async (scenario: BuySolScenario) => {
             await scenario.addUserToDenyList(scenario.getUserPublicKey());
-            await scenario.buySolAndVerifyFail(20, "User is in the deny list");
+            await scenario.buySolAndVerifyFail(20, "User is blocked in the DenyList");
 
             // Reset deny list
             await scenario.removeUserFromDenyList(scenario.getUserPublicKey());
@@ -40,7 +40,7 @@ export const userBuySolTests: Test[] = [
         description: "User should be able to buy SOL if they have enough 2Z",
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
-            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 5
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
             await scenario.buySolAndVerify(amount);
         }
     }

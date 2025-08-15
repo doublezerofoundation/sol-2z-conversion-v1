@@ -21,9 +21,9 @@ export const systemStateTests: Test[] = [
 
             // SystemHalted event should be emitted
             if (await eventExists(scenario.getConnection(), txHash, "SystemHalted")) {
-                assert.fail("SystemHalted should not be emitted");
+                assert.ok(true, "SystemHalted should be emitted");
             } else {
-                assert.ok(true, "SystemHalted event should be emitted");
+                assert.fail("SystemHalted event should be emitted");
             }
 
             const result2 = await scenario.toggleSystemStateAndVerify(false);
@@ -31,9 +31,9 @@ export const systemStateTests: Test[] = [
 
             // SystemUnhalted event should be emitted
             if (await eventExists(scenario.getConnection(), txHash2, "SystemUnhalted")) {
-                assert.fail("SystemUnhalted should not be emitted");
+                assert.ok(true, "SystemUnhalted should be emitted");
             } else {
-                assert.ok(true, "SystemUnhalted event should be emitted");
+                assert.fail("SystemUnhalted event should be emitted");
             }
         }
     },

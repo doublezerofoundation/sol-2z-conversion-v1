@@ -4,7 +4,7 @@ import { Program } from "@coral-xyz/anchor";
 import { SystemConfig, SystemState } from "../account-defs";
 import { getConfigurationRegistryPDA, getProgramStatePDA } from "./pda-helper";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { createAssociatedTokenAccount, getAssociatedTokenAddressSync } from "@solana/spl-token";
+import { createAssociatedTokenAccount, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
 export const getProgramStateAccount = async (program: Program<ConverterProgram>) => {
     const programStatePDA = await getProgramStatePDA(program.programId);
@@ -30,16 +30,16 @@ export const findOrInitializeAssociatedTokenAccount = async (
     mint: PublicKey,
     program: Program<MockTransferProgram>
 ) => {
-    const associatedTokenAddress = getAssociatedTokenAddressSync(mint, ataOwner);
+    const associatedTokenAddress = getAssociatedTokenAddressSync(mint, ataOwner, false, TOKEN_2022_PROGRAM_ID);
 
     const accountInfo = await program.provider.connection.getAccountInfo(associatedTokenAddress);
 
     if (accountInfo) {
-        console.log("Associated Token exists with address ", associatedTokenAddress);
+        // console.log("Associated Token exists with address ", associatedTokenAddress);
         return associatedTokenAddress;
     }
 
-    console.log("Associated Token does not exists. Creating ...");
+    // console.log("Associated Token does not exists. Creating ...");
 
     return await createAssociatedTokenAccount(
         program.provider.connection,
@@ -48,6 +48,7 @@ export const findOrInitializeAssociatedTokenAccount = async (
         ataOwner,
         {
             commitment: "confirmed"
-        }
+        },
+        TOKEN_2022_PROGRAM_ID
     );
 }

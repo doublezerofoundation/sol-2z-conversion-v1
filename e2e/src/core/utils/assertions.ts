@@ -29,9 +29,9 @@ export const eventExists = async (connection: Connection, txSignature: string, e
     for (const log of logs) {
         if (log.startsWith("Program data: ")) {
             const base64Data = log.replace("Program data: ", "");
-            const data = Buffer.from(base64Data, "base64");
             try {
-                const event = coder.events.decode(data.toString());
+                const event = coder.events.decode(base64Data);
+                // console.log(event);
                 if (event?.name === eventName) {
                     return true;
                 }

@@ -30,10 +30,10 @@ export class UserQueryScenario extends CommonScenario {
 
     public async getPriceAndVerifyFail(errorMessage: string): Promise<void> {
         try {
-            await this.getPriceAndVerify();
+            await this.user.getPriceCommand();
             expect.fail("Get Price should fail");
         } catch (error) {
-            expect(error!.toString()).to.contain(errorMessage);
+            this.handleExpectedError(error, errorMessage);
         }
     }
 
@@ -55,7 +55,7 @@ export class UserQueryScenario extends CommonScenario {
             await this.getQuantityAndVerify();
             expect.fail("Get Quantity should fail");
         } catch (error) {
-            expect(error!.toString()).to.contain(errorMessage);
+            this.handleExpectedError(error, errorMessage);
         }
     }
 

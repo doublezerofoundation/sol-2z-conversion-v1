@@ -36,20 +36,20 @@ export class AdminClient {
         return await this.session.executeCliCommand(`view-system-state`);
     }
 
-    public async setAdminCommand(admin: string): Promise<void> {
-        await this.session.executeCliCommand(`set-admin -a ${admin}`);
+    public async setAdminCommand(admin: string): Promise<string> {
+        return await this.session.executeCliCommand(`set-admin -a ${admin}`);
     }
 
-    public async setDenyAuthorityCommand(authority: string): Promise<void> {
-        await this.session.executeCliCommand(`set-deny-authority -a ${authority}`);
+    public async setDenyAuthorityCommand(authority: string): Promise<string> {
+        return await this.session.executeCliCommand(`set-deny-authority -a ${authority}`);
     }
 
-    public async addUserToDenyListCommand(user: string): Promise<void> {
-        await this.session.executeCliCommand(`add-to-deny-list -a ${user}`);
+    public async addUserToDenyListCommand(user: string): Promise<string> {
+        return await this.session.executeCliCommand(`add-to-deny-list -a ${user}`);
     }
 
-    public async removeUserFromDenyListCommand(user: string): Promise<void> {
-        await this.session.executeCliCommand(`remove-from-deny-list -a ${user}`);
+    public async removeUserFromDenyListCommand(user: string): Promise<string> {
+        return await this.session.executeCliCommand(`remove-from-deny-list -a ${user}`);
     }
 
     public async viewDenyListCommand(): Promise<string> {
@@ -64,8 +64,8 @@ export class AdminClient {
         return await this.session.executeCliCommand(`remove-dequeuer -a ${dequeuer}`);
     }
 
-    public async initMockProgramCommand(): Promise<void> {
-        await this.session.executeCliCommand(`init-mock-program`);
+    public async initMockProgramCommand(): Promise<string> {
+        return await this.session.executeCliCommand(`init-mock-program`);
     }
 
     public async airdropToMockVaultCommand(amount: number): Promise<void> {
