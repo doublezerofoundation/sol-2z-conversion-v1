@@ -6,8 +6,8 @@ use crate::{
         events::init::SystemInitialized,
         seeds::seed_prefixes::SeedPrefixes
     },
-    configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
+    configuration_registry::configuration_registry_v2::ConfigurationRegistryV2,
+    deny_list_registry::deny_list_registry_v2::DenyListRegistryV2,
     fills_registry::fills_registry::FillsRegistry,
     state::program_state::ProgramStateAccount,
     program::ConverterProgram
@@ -19,11 +19,11 @@ pub struct InitializeSystem<'info> {
     #[account(
         init,
         payer = authority,
-        space = DISCRIMINATOR_SIZE + ConfigurationRegistry::INIT_SPACE,
+        space = DISCRIMINATOR_SIZE + ConfigurationRegistryV2::INIT_SPACE,
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump,
     )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,
+    pub configuration_registry: Account<'info, ConfigurationRegistryV2>,
     #[account(
         init,
         payer = authority,
@@ -35,11 +35,11 @@ pub struct InitializeSystem<'info> {
     #[account(
         init,
         payer = authority,
-        space = DISCRIMINATOR_SIZE + DenyListRegistry::INIT_SPACE,
+        space = DISCRIMINATOR_SIZE + DenyListRegistryV2::INIT_SPACE,
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
         bump,
     )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
+    pub deny_list_registry: Account<'info, DenyListRegistryV2>,
     #[account(zero)]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(

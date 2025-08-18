@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 use crate::{
-    configuration_registry::configuration_registry::ConfigurationRegistry,
+    configuration_registry::configuration_registry_v2::ConfigurationRegistryV2,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     state::program_state::ProgramStateAccount,
     common::seeds::seed_prefixes::SeedPrefixes,
@@ -24,7 +24,7 @@ pub struct ConfigurationRegistryUpdate<'info> {
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump = program_state.bump_registry.configuration_registry_bump
     )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,
+    pub configuration_registry: Account<'info, ConfigurationRegistryV2>,
     #[account(
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
         bump = program_state.bump_registry.program_state_bump,

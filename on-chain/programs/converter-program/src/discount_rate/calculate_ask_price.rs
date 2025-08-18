@@ -9,8 +9,8 @@ use crate::{
         constant::TOKEN_DECIMALS, error::DoubleZeroError, seeds::seed_prefixes::SeedPrefixes,
         structs::OraclePriceData, utils::attestation_utils::verify_attestation,
     },
-    configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
+    configuration_registry::configuration_registry_v2::ConfigurationRegistryV2,
+    deny_list_registry::deny_list_registry_v2::DenyListRegistryV2,
     discount_rate::discount_utils::{
         calculate_conversion_rate_with_discount, calculate_discount_rate,
     },
@@ -34,13 +34,13 @@ pub struct CalculateAskPrice<'info> {
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,
+    pub configuration_registry: Account<'info, ConfigurationRegistryV2>,
 
     #[account(
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
+    pub deny_list_registry: Account<'info, DenyListRegistryV2>,
 }
 
 impl<'info> CalculateAskPrice<'info> {
@@ -57,7 +57,7 @@ impl<'info> CalculateAskPrice<'info> {
         // checking attestation
         verify_attestation(
             &oracle_price_data,
-            self.configuration_registry.oracle_pubkey,
+            self.configuration_registry.price_oracle_pubkey,
             self.configuration_registry.price_maximum_age,
         )?;
 

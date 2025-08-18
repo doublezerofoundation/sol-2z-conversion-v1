@@ -16,15 +16,4 @@ impl SeedPrefixVersions {
             SeedPrefixVersions::DenyListRegistry => b"deny_list_v1",
         }
     }
-
-    // Note: will be implemented during migration ticket
-    // pub fn version(&self) -> &'static str {
-    //     match self {
-    //         SeedPrefixVersions::SOLVault => "v1",
-    //         SeedPrefixVersions::ProtocolTreasury => "v1",
-    //         SeedPrefixVersions::ConfigurationRegistry => "v1",
-    //         SeedPrefixVersions::ProgramState => "v1",
-    //         SeedPrefixVersions::DenyListRegistry => "v1",
-    //     }
-    // }
 }

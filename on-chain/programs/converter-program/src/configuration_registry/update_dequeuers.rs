@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::{
     state::program_state::ProgramStateAccount,
-    configuration_registry::configuration_registry::ConfigurationRegistry,
+    configuration_registry::configuration_registry_v2::ConfigurationRegistryV2,
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         events::dequeuer::*
@@ -16,7 +16,7 @@ pub struct UpdateDequeuers<'info> {
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump = program_state.bump_registry.configuration_registry_bump
     )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,  
+    pub configuration_registry: Account<'info, ConfigurationRegistryV2>,
     // Program state, to verify admin
     #[account(
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
