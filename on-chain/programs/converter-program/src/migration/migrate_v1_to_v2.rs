@@ -1,5 +1,5 @@
-use crate::common::seeds::seed_prefixes::SeedPrefixes as SeedPrefixesV2;
-use crate::common::seeds::seed_prefix_current_versions::SeedPrefixVersions as SeedPrefixesV1;
+use crate::common::seeds::seed_prefixes_v2::SeedPrefixesV2;
+use crate::common::seeds::seed_prefixes_v1::SeedPrefixesV1;
 use crate::common::constant::DISCRIMINATOR_SIZE;
 use anchor_lang::prelude::*;
 use crate::configuration_registry::configuration_registry::ConfigurationRegistry;

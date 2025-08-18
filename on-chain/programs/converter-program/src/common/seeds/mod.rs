@@ -1,3 +1,3 @@
-mod seed_prefixes_v1;
+pub mod seed_prefixes_v1;
 pub mod seed_prefixes;
-mod seed_prefix_v2;
+pub mod seed_prefixes_v2;
