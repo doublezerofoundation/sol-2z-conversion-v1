@@ -268,9 +268,7 @@ module "ec2" {
   swap_oracle_service_image_tag = var.swap_oracle_service_image_tag
   indexer_service_image_tag = var.indexer_service_image_tag
 
-  # # Use the IAM instance profile from the account level
-  # # This requires modifying the EC2 module to accept an instance profile name
-  # # instead of creating one internally
+  # Use the IAM instance profile from the account level
   instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name
 }
 
