@@ -11,6 +11,7 @@ UNIT_TESTS=(
     system-state-test
     buy-sol-test
     mock-transfer-program-test
+    dequeue-fills-test
 )
 
 E2E_TESTS=(

@@ -357,7 +357,7 @@ describe("Buy Sol Tests", () => {
             );
 
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 1000;
+            const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 10000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
