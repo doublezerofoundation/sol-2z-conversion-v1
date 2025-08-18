@@ -49,6 +49,7 @@ main() {
     log_info "Build and deploy completed successfully!"
     log_info "Docker Image URI: $IMAGE_TAG"
     log_info "Lambda S3 Location: s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY"
+    log_info "Lambda Build Tag: $BUILD_TAG"
 }
 
 build_metrics_api() {
@@ -107,7 +108,7 @@ package_lambda() {
     
     # Create ZIP file with all contents (quietly to avoid verbose output)
     log_info "Creating ZIP package..."
-    zip -r -q "$S3_OBJECT_KEY" . -x "*.DS_Store" "*.git*" "*.zip"
+    zip -r -q "$(basename "$S3_OBJECT_KEY")" . -x "*.DS_Store" "*.git*" "*.zip"
     
     cd - > /dev/null
     
@@ -126,6 +127,19 @@ package_lambda() {
 upload_to_s3() {
     log_info "Uploading Lambda package to S3..."
     
+    # Generate version information
+    local git_commit=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+    local git_branch=$(git branch --show-current 2>/dev/null || echo "unknown") 
+    local build_timestamp=$(date -u +%Y%m%d-%H%M%S)
+    local version_tag="${BUILD_TAG}-${build_timestamp}-${git_commit}"
+    
+    log_info "Build information:"
+    log_info "  - Build Tag: $BUILD_TAG"
+    log_info "  - Git Commit: $git_commit"
+    log_info "  - Git Branch: $git_branch"
+    log_info "  - Version Tag: $version_tag"
+    log_info "  - S3 Object Key: $S3_OBJECT_KEY"
+    
     # Check if bucket exists
     if ! aws s3api head-bucket --bucket "$S3_BUCKET_NAME" --region "$AWS_REGION" 2>/dev/null; then
         log_error "S3 bucket '$S3_BUCKET_NAME' does not exist or is not accessible."
@@ -133,14 +147,18 @@ upload_to_s3() {
         exit 1
     fi
     
-    # Upload with versioning
+    # Upload with comprehensive metadata
     aws s3 cp "$ZIP_FILE" "s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY" \
         --region "$AWS_REGION" \
-        --metadata "service=metrics-api,environment=$ENV,build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        --metadata \
+            "service=metrics-api" \
+            "environment=$ENV" \
+            "version-tag=$version_tag" \
+            "build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     
     # Get the version ID of the uploaded object
-    local version_id
-    version_id=$(aws s3api head-object \
+    local s3_version_id
+    s3_version_id=$(aws s3api head-object \
         --bucket "$S3_BUCKET_NAME" \
         --key "$S3_OBJECT_KEY" \
         --region "$AWS_REGION" \
@@ -148,16 +166,22 @@ upload_to_s3() {
         --output text)
     
     log_info "Lambda upload completed successfully!"
-    log_info "Version ID: $version_id"
+    log_info "S3 Version ID: $s3_version_id"
+    log_info "Custom Version Tag: $version_tag"
+    log_info "S3 Location: s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY"
     
-    # Optionally tag the version for easier identification
+    # Enhanced tagging with version information
     aws s3api put-object-tagging \
         --bucket "$S3_BUCKET_NAME" \
         --key "$S3_OBJECT_KEY" \
-        --version-id "$version_id" \
+        --version-id "$s3_version_id" \
         --region "$AWS_REGION" \
-        --tagging "TagSet=[{Key=Service,Value=metrics-api},{Key=Environment,Value=$ENV},{Key=BuildDate,Value=$(date -u +%Y-%m-%d)}]" \
-        2>/dev/null || log_warn "Failed to add tags to S3 object (non-critical)"
+        --tagging "TagSet=[
+            {Key=Service,Value=metrics-api},
+            {Key=Environment,Value=$ENV},
+            {Key=Version,Value=$version_tag}
+        ]" \
+        2>/dev/null || log_warn "Failed to add tags to S3 object"
 }
 
 # Handle script arguments

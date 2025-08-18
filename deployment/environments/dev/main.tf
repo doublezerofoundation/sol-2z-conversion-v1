@@ -121,6 +121,7 @@ module "metrics_lambda" {
   # S3 configuration for Lambda deployment
   s3_bucket_name = module.s3.bucket_name
   s3_object_key = "metrics-api.zip"
+  s3_object_version = var.lambda_s3_version != "" ? var.lambda_s3_version : null
   s3_access_policy_arn = module.s3.lambda_s3_access_policy_arn
 
   # Lambda configuration

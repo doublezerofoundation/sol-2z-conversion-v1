@@ -209,3 +209,9 @@ variable "indexer_service_image_tag" {
   type        = string
   default     = "latest"
 }
+
+variable "lambda_s3_version" {
+  description = "S3 version ID for the Lambda function deployment package"
+  type        = string
+  default     = ""
+}

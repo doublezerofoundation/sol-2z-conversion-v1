@@ -42,3 +42,6 @@ enable_metrics_api = true
 
 swap_oracle_service_image_tag = "dev3-v1.0.0"
 indexer_service_image_tag = "dev3-v1.0.0"
+
+# metrics lambda configuration
+lambda_s3_version = "" # Leave empty to use the latest version
