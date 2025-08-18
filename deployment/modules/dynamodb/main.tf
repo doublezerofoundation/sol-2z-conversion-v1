@@ -109,7 +109,12 @@ resource "aws_dynamodb_table" "solana_error" {
     hash_key        = "timestamp"
     projection_type = "ALL"
   }
-
+  global_secondary_index {
+    name            = "slot_timestamp_idx"
+    hash_key        = "slot"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
   tags = local.common_tags
 }
 
@@ -147,6 +152,12 @@ resource "aws_dynamodb_table" "fill_dequeue" {
   global_secondary_index {
     name            = "timestamp_idx"
     hash_key        = "timestamp"
+    projection_type = "ALL"
+  }
+   global_secondary_index {
+    name            = "sol_dequeued_timestamp_idx"
+    hash_key        = "sol_dequeued"
+    range_key       = "timestamp"
     projection_type = "ALL"
   }
 
@@ -201,6 +212,18 @@ resource "aws_dynamodb_table" "deny_list_action" {
   global_secondary_index {
     name            = "timestamp_idx"
     hash_key        = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
+    name            = "update_count_by_timestamp_idx"
+    hash_key        = "update_count"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
+    name            = "action_by_timestamp_idx"
+    hash_key        = "action_by"
+    range_key       = "timestamp"
     projection_type = "ALL"
   }
 
