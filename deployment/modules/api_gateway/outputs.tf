@@ -64,3 +64,24 @@ output "custom_domain_target_domain_name" {
   description = "The target domain name for the custom domain"
   value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.this[0].regional_domain_name : null
 }
+
+# Metrics Service Outputs
+output "metrics_resource_id" {
+  description = "The ID of the metrics resource"
+  value       = var.enable_metrics_api ? module.metrics_service[0].metrics_resource_id : null
+}
+
+output "buys_resource_id" {
+  description = "The ID of the buys resource"
+  value       = var.enable_metrics_api ? module.metrics_service[0].buys_resource_id : null
+}
+
+output "errors_resource_id" {
+  description = "The ID of the errors resource"
+  value       = var.enable_metrics_api ? module.metrics_service[0].errors_resource_id : null
+}
+
+output "dequeues_resource_id" {
+  description = "The ID of the dequeues resource"
+  value       = var.enable_metrics_api ? module.metrics_service[0].dequeues_resource_id : null
+}

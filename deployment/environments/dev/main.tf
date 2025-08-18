@@ -103,29 +103,52 @@ module "metrics_waf" {
   log_retention_days = var.log_retention_days
 }
 
+# S3 bucket for Lambda deployment artifacts
+module "s3" {
+  source = "../../modules/s3"
+
+  name_prefix = "doublezero-${var.environment}"
+  environment = var.environment
+}
+
 # Lambda function for Metrics Service
 module "metrics_lambda" {
   source = "../../modules/lambda"
 
-  name_prefix = "metrics-service-${var.environment}"
+  name_prefix = "doublezero-${var.environment}"
   environment = var.environment
 
+  # S3 configuration for Lambda deployment
+  s3_bucket_name = module.s3.bucket_name
+  s3_object_key = "metrics-api.zip"
+  s3_access_policy_arn = module.s3.lambda_s3_access_policy_arn
+
   # Lambda configuration
-  runtime = "nodejs18.x"
-  handler = "index.handler"
-  memory_size = 128
-  timeout = 30
+  lambda_runtime = "nodejs18.x"
+  lambda_handler = "metrics-api/handler.handler"
+  lambda_memory_size = 256
+  lambda_timeout = 30
 
-  # Empty source code path to use the temporary file with default code
-  source_code_path = ""
-
-  # Environment variables if needed
+  # Environment variables
   environment_variables = {
     ENVIRONMENT = var.environment
+    LOG_LEVEL = "INFO"
   }
 
-  # API Gateway execution ARN (will be used to grant Lambda invoke permissions)
-  api_gateway_execution_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
+  # Database resources (DynamoDB tables)
+  database_resources = flatten([
+    module.dynamodb.all_table_arns,
+    [for arn in module.dynamodb.all_table_arns : "${arn}/*"]
+  ])
+
+  # VPC configuration for Lambda
+  vpc_config = {
+    subnet_ids         = module.network.private_subnet_ids
+    security_group_ids = [module.network.ec2_security_group_id]
+  }
+
+  # API Gateway ARN for permissions
+  api_gateway_arn = "arn:aws:execute-api:${var.aws_region}:${data.aws_caller_identity.current.account_id}:*"
 
   # Logging configuration
   log_retention_days = var.log_retention_days
@@ -168,6 +191,7 @@ module "pricing_api_gateway" {
 
   name_prefix = "pricing-service-${var.environment}"
   enable_pricing_service = true
+  enable_metrics_api = false
   environment = var.environment
   waf_acl_arn = module.pricing_waf.web_acl_arn
 
@@ -195,13 +219,14 @@ module "metrics_api_gateway" {
   source = "../../modules/api_gateway"
 
   name_prefix = "metrics-service-${var.environment}"
-  enable_pricing_service = false
+  enable_pricing_service = var.enable_pricing_service
+  enable_metrics_api = var.enable_metrics_api
   environment = var.environment
   waf_acl_arn = module.metrics_waf.web_acl_arn
 
   # API Gateway configuration for Lambda integration
   integration_type = "LAMBDA"
-  lambda_invoke_arn = module.metrics_lambda.invoke_arn
+  metrics_lambda_invoke_arn = module.metrics_lambda.lambda_invoke_arn
 
   # These are not used for Lambda integration but are required by the module
   nlb_dns_name    = ""

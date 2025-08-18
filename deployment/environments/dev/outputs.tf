@@ -67,22 +67,22 @@ output "metrics_web_acl_name" {
 # Metrics Lambda Outputs
 output "metrics_lambda_function_name" {
   description = "The name of the Metrics Lambda function"
-  value       = module.metrics_lambda.function_name
+  value       = module.metrics_lambda.lambda_function_name
 }
 
 output "metrics_lambda_function_arn" {
   description = "The ARN of the Metrics Lambda function"
-  value       = module.metrics_lambda.function_arn
+  value       = module.metrics_lambda.lambda_function_arn
 }
 
 output "metrics_lambda_invoke_arn" {
   description = "The invoke ARN of the Metrics Lambda function"
-  value       = module.metrics_lambda.invoke_arn
+  value       = module.metrics_lambda.lambda_invoke_arn
 }
 
 output "metrics_lambda_role_arn" {
   description = "The ARN of the IAM role for the Metrics Lambda function"
-  value       = module.metrics_lambda.role_arn
+  value       = module.metrics_lambda.lambda_role_arn
 }
 
 # EC2 Outputs

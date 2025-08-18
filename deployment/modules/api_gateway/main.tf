@@ -43,7 +43,7 @@ resource "aws_api_gateway_integration" "default" {
   # Conditional configuration based on integration type
   integration_http_method = var.integration_type == "LAMBDA" ? "POST" : "ANY"
   type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP"
-  uri                     = var.integration_type == "LAMBDA" ? var.lambda_invoke_arn : "http://${var.nlb_dns_name}/{method.request.path.proxy}"
+  uri                     = var.integration_type == "LAMBDA" ? var.metrics_lambda_invoke_arn : "http://${var.nlb_dns_name}/{method.request.path.proxy}"
 
   # Connection settings only apply to HTTP integration
   connection_type = var.integration_type == "LAMBDA" ? null : var.connection_type
@@ -74,7 +74,7 @@ resource "aws_api_gateway_integration" "root" {
   # Conditional configuration based on integration type
   integration_http_method = var.integration_type == "LAMBDA" ? "POST" : "ANY"
   type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP"
-  uri                     = var.integration_type == "LAMBDA" ? var.lambda_invoke_arn : "http://${var.nlb_dns_name}/"
+  uri                     = var.integration_type == "LAMBDA" ? var.metrics_lambda_invoke_arn : "http://${var.nlb_dns_name}/"
 
   # Connection settings only apply to HTTP integration
   connection_type = var.integration_type == "LAMBDA" ? null : var.connection_type
@@ -119,6 +119,15 @@ module "pricing_service"  {
   nlb_dns_name = var.nlb_dns_name
   parent_id = aws_api_gateway_resource.v1.id
 }
+
+module "metrics_service" {
+  count  = var.enable_metrics_api ? 1 : 0
+  source = "./modules/metrics_service_api"
+  api_id = aws_api_gateway_rest_api.this.id
+  lambda_invoke_arn = var.metrics_lambda_invoke_arn
+  parent_id = aws_api_gateway_resource.v1.id
+}
+
 # Create CloudWatch Log Group for API Gateway
 resource "aws_cloudwatch_log_group" "api_gateway" {
   name              = "/aws/apigateway/${var.name_prefix}-api-${var.environment}"
@@ -146,6 +155,7 @@ resource "aws_api_gateway_deployment" "this" {
       aws_api_gateway_method.root.id,
       aws_api_gateway_integration.root.id,
       var.enable_pricing_service ? try(module.pricing_service[0], null) : null,
+      var.enable_metrics_api ? try(module.metrics_service[0], null) : null,
 
     ]))
   }

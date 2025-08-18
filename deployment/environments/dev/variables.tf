@@ -185,3 +185,15 @@ variable "enable_indexer_service" {
   type        = bool
   default     = false
 }
+
+variable "enable_pricing_service" {
+  description = "Enable the pricing service API Gateway"
+  type        = bool
+  default     = false
+}
+
+variable "enable_metrics_api" {
+  description = "Enable the metrics API Gateway"
+  type        = bool
+  default     = false
+}
