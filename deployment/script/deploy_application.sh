@@ -504,6 +504,61 @@ print_deployment_summary() {
   echo "All deployments completed successfully!"
 }
 
+update_lambda() {
+  echo ""
+  echo "================== METRICS LAMBDA UPDATE =================="
+  echo "Updating Lambda function with latest S3 package..."
+  
+  local lambda_function_name="doublezero-${ENV}-metrics-api"
+  local s3_bucket_name="doublezero-${ENV}-lambda-deployments"
+  local s3_object_key="metrics-api.zip"
+  
+  echo "Environment: $ENV"
+  echo "Lambda Function: $lambda_function_name"
+  echo "S3 Location: s3://$s3_bucket_name/$s3_object_key"
+  echo
+  
+  # Check if Lambda function exists
+  if ! aws lambda get-function --function-name "$lambda_function_name" --region "$AWS_REGION" --no-cli-pager >/dev/null 2>&1; then
+    echo "❌ Lambda function '$lambda_function_name' not found"
+    echo "Please ensure the function exists and you have proper permissions"
+    return 1
+  fi
+  
+  # Get S3 object version for tracking
+  local s3_version
+  s3_version=$(aws s3api head-object --bucket "$s3_bucket_name" --key "$s3_object_key" --region "$AWS_REGION" --query 'VersionId' --output text 2>/dev/null || echo "null")
+  
+  echo "🔄 Updating Lambda function code..."
+  if aws lambda update-function-code \
+      --function-name "$lambda_function_name" \
+      --s3-bucket "$s3_bucket_name" \
+      --s3-key "$s3_object_key" \
+      --region "$AWS_REGION" \
+      --no-cli-pager >/dev/null 2>&1; then
+    
+    echo "✅ Lambda function updated successfully!"
+    
+    # Log deployment for tracking
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] $lambda_function_name updated with S3 version: $s3_version" >> "/tmp/lambda-deployments.log"
+    
+    # Get function info
+    echo
+    echo "=== Updated Function Info ==="
+    aws lambda get-function --function-name "$lambda_function_name" --region "$AWS_REGION" \
+        --query '{FunctionName:Configuration.FunctionName,LastModified:Configuration.LastModified,Version:Configuration.Version,Runtime:Configuration.Runtime,Handler:Configuration.Handler,CodeSize:Configuration.CodeSize}' \
+        --output table \
+        --no-cli-pager
+    
+    echo "📝 Deployment logged to: /tmp/lambda-deployments.log"
+    echo "✅ Lambda deployment completed successfully!"
+  else
+    echo "❌ Failed to update Lambda function"
+    return 1
+  fi
+}
+
 get_ecr_config
 verify_ecr_image
 
@@ -514,4 +569,5 @@ if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
 else
   find_ec2_instance
   deploy_application
+  update_lambda
 fi
