@@ -37,6 +37,11 @@ resource "aws_cloudwatch_log_group" "container_logs" {
   retention_in_days = 7
 }
 
+data "aws_ecr_image" "app_image" {
+  repository_name = var.ecr_repository
+  image_tag       = var.indexer_service_image_tag
+}
+
 resource "aws_instance" "this" {
   ami                    = var.ami_id != "" ? var.ami_id : data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
@@ -58,6 +63,7 @@ resource "aws_instance" "this" {
     })
   )
 
+  depends_on = [data.aws_ecr_image.app_image]
   root_block_device {
     volume_size = var.root_volume_size
     volume_type = "gp3"

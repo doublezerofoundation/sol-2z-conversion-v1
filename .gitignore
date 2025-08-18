@@ -56,6 +56,10 @@ no_llvm_build
 # Created by nix dev shell / .envrc
 src/tools/nix-dev-shell/flake.lock
 
+
+*s3_backend_acl*.json
+*backend_config.tf
+
 ## ICE reports
 rustc-ice-*.txt
 

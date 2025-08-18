@@ -1,11 +1,9 @@
 #!/bin/bash
 set -e
 
-ENV="dev3"
-AWS_REGION="us-east-1"
-IMAGE_TAG="v1.0.0"
+source ./common.sh
+
 SERVICE_NAME=""
-ECR_REGISTRY=""
 ECR_REPOSITORY=""
 
 # Service configurations
@@ -17,16 +15,14 @@ SERVICE_CONFIGS["indexer-service"]="double-zero-indexer-service"
 help() {
     echo "Usage: $0 [COMMAND] [OPTIONS]"
     echo "Commands:"
-    echo "  publish                     Publish service(s) to ECR"
-    echo "  deploy                      Deploy service(s)"
-    echo "  publish-and-deploy          Publish and deploy service(s)"
+    echo "  publish-artifacts                     publish-artifacts service(s) to ECR"
+    echo "  upgrade                               install service(s)"
+    echo "  publish-artifacts-and-upgrade         publish-artifacts and install service(s)"
     echo ""
     echo "Options:"
     echo "  --env ENV                   Environment"
-    echo "  --region REGION             AWS Region (default: us-east-1)"
-    echo "  --image-tag TAG             Docker image tag"
-    echo "  --service-name NAME         Service name (swap-oracle-service|indexer-service)"
-    echo "                              If not specified, both services will be processed"
+    echo "  --region REGION             AWS Region"
+    echo "  --release-tag TAG           Release tag"
     echo "  --ecr-repository REPO       ECR repository name (overrides default)"
     echo "  -h, --help                  Display this help message"
     echo ""
@@ -35,26 +31,15 @@ help() {
     echo "  - indexer-service (ECR: double-zero-indexer-service)"
     echo ""
     echo "Examples:"
-    echo "  $0 publish --env prod --image-tag v2.0.0"
-    echo "  $0 publish --env prod --image-tag v2.0.0 --service-name swap-oracle-service"
+    echo "  $0 publish-artifacts --release-tag v2.0.0"
+    echo "  $0 upgrade --env prod --release-tag v2.0.0 --service-name swap-oracle-service"
     exit 1
 }
 
 COMMAND="$1"
 shift
 
-# Validate command
-case $COMMAND in
-    publish|deploy|publish-and-deploy)
-        ;;
-    -h|--help)
-        help
-        ;;
-    *)
-        echo "Error: Unknown command '$COMMAND'"
-        help
-        ;;
-esac
+
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -66,12 +51,8 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
-        --image-tag)
-            IMAGE_TAG="$2"
-            shift 2
-            ;;
-        --service-name)
-            SERVICE_NAME="$2"
+        --release-tag)
+            RELEASE_TAG="$2"
             shift 2
             ;;
         --ecr-repository)
@@ -88,19 +69,32 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-IMAGE_TAG=$ENV-$IMAGE_TAG
+case $COMMAND in
+    publish-artifacts|upgrade|publish-artifacts-and-upgrade)
+        if [[ -z "$AWS_REGION" ]]; then
+            print_error_and_exit "--region is required"
+        fi
+
+        if [[ -z "$RELEASE_TAG" ]]; then
+            print_error_and_exit "release-tag is required"
+        fi
+
+        if [[ "$COMMAND" == "upgrade" || "$COMMAND" == "publish-artifacts-and-upgrade" ]] && [[ -z "$ENV" ]]; then
+            print_error_and_exit "--env is required for $COMMAND command"
+        fi
+
+        ;;
+    -h|--help)
+        help
+        ;;
+    *)
+        echo "Error: Unknown command '$COMMAND'"
+        help
+        ;;
+esac
 
 get_services_to_process() {
-    if [[ -n "$SERVICE_NAME" ]]; then
-        if [[ -z "${SERVICE_CONFIGS[$SERVICE_NAME]}" ]]; then
-            echo "Error: Invalid service name '$SERVICE_NAME'"
-            echo "Available services:" "${!SERVICE_CONFIGS[@]}"
-            exit 1
-        fi
-        echo "$SERVICE_NAME"
-    else
-        echo "${!SERVICE_CONFIGS[@]}"
-    fi
+      echo "${!SERVICE_CONFIGS[@]}"
 }
 
 get_ecr_repository() {
@@ -115,11 +109,10 @@ get_ecr_repository() {
 echo "=== Deployment Configuration ==="
 echo "Environment: $ENV"
 echo "AWS Region: $AWS_REGION"
-echo "Image Tag: $IMAGE_TAG"
-echo "Service Name: ${SERVICE_NAME:-'ALL SERVICES'}"
+echo "Release Tag: $RELEASE_TAG"
 echo "================================"
 
-publish() {
+publish_artifacts() {
     local services=($(get_services_to_process))
 
     for service in "${services[@]}"; do
@@ -130,12 +123,11 @@ publish() {
         echo "ECR Repository: $repository"
 
         if [[ ! -d "../../off-chain/$service" ]]; then
-            echo "Error: Offchain component directory not found: $service"
-            exit 1
+            print_error_and_exit "Offchain component directory not found: $service"
         fi
 
         pushd "../../off-chain/$service" > /dev/null
-        ./build_and_deploy.sh --region "$AWS_REGION" --env "$ENV" --repository "$repository" --tag "$IMAGE_TAG"
+        ./build_and_deploy.sh --region "$AWS_REGION" --repository "$repository" --tag "$RELEASE_TAG"
         popd > /dev/null
 
         echo "✅ Successfully published $service"
@@ -143,7 +135,7 @@ publish() {
     done
 }
 
-deploy() {
+upgrade() {
     local services=($(get_services_to_process))
 
     for service in "${services[@]}"; do
@@ -153,7 +145,7 @@ deploy() {
         echo "Service: $service"
         echo "ECR Repository: $repository"
 
-        ./deploy_application.sh --env $ENV --region $AWS_REGION --image-tag $IMAGE_TAG --ecr-repository $repository --container-name $service
+        ./deploy_update.sh --env "$ENV" --region "$AWS_REGION" --release-tag "$RELEASE_TAG" --ecr-repository "$repository" --container-name "$service"
 
         echo "✅ Successfully deployed $service"
         echo ""
@@ -167,15 +159,15 @@ main() {
     echo ""
 
     case $COMMAND in
-        publish)
-            publish
+        publish-artifacts)
+            publish_artifacts
             ;;
-        deploy)
-            deploy
+        upgrade)
+            upgrade
             ;;
-        publish-and-deploy)
-            publish
-            deploy
+        publish-artifacts-and-upgrade)
+            publish_artifacts
+            upgrade
             ;;
     esac
 

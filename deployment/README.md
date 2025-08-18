@@ -23,221 +23,288 @@ The infrastructure is organized into three levels:
 
 ```
 deployment/
-├── account/                # Account-level resources
+├── account/                # Account-level Terraform resources
 │   ├── main.tf             # Main Terraform configuration
 │   ├── variables.tf        # Input variables
 │   └── outputs.tf          # Output values
-├── regional/               # Regional-level resources
+├── regional/               # Regional-level Terraform resources
 │   ├── main.tf             # Main Terraform configuration
 │   ├── variables.tf        # Input variables
 │   └── outputs.tf          # Output values
-├── environments/           # Environment-specific resources
-│   ├── dev/                # Development environment
-│   │   ├── main.tf         # Main Terraform configuration
-│   │   ├── variables.tf    # Input variables
-│   │   ├── outputs.tf      # Output values
-│   │   └── terraform.tfvars # Variable values
-│   ├── staging/            # Staging environment (create as needed)
-│   └── prod/               # Production environment (create as needed)
-└── modules/                # Reusable modules
-    ├── vpc/                # VPC module
-    ├── waf/                # WAF module
-    ├── api_gateway/        # API Gateway module
-    ├── load_balancer/      # Load Balancer module
-    └── ec2/                # EC2 module with auto-scaling
+├── environments/           # Environment-specific Terraform resources
+│   ├── main.tf             # Main Terraform configuration
+│   ├── variables.tf        # Input variables
+│   ├── outputs.tf          # Output values
+│   ├── terraform.tfvars    # Variable values
+│   └── templates/          # Terraform template files
+│       └── backend_config.tf.template
+├── modules/                # Reusable Terraform modules
+│   ├── vpc/                # VPC module
+│   ├── waf/                # WAF module
+│   ├── api_gateway/        # API Gateway module
+│   ├── load_balancer/      # Load Balancer module
+│   └── ec2/                # EC2 module with auto-scaling
+└── script/                 # DevOps deployment and management scripts
+    ├── common.sh           # Common functions and utilities
+    ├── one_time_setup.sh   # Initial AWS infrastructure setup
+    ├── release.sh          # Artifact publishing and deployment
+    ├── env_creation.sh     # Environment creation and destruction
+    ├── deploy_update.sh    # Service deployment and updates
+    ├── script.py           # Python utility for Solana keypair management
+    └── templates/          # Script template files
+        └── s3_backend_acl_policy.json.template
 ```
+
 
 ## Prerequisites
 
-- [Terraform](https://www.terraform.io/downloads.html) (v1.0.0 or later)
-- AWS CLI configured with appropriate credentials
-- S3 bucket for Terraform state called doublezero-terraform-state-bucket  (optional, for remote state)
-- DynamoDB Table for Terraform lock called doublezero-terraform-locks with partition key LockID (string) (optional, for remote state)
+- **Terraform** (v1.0.0 or later)
+- **AWS CLI** configured with appropriate credentials
+- **Docker** installed and configured
+- **Python 3** with pip (for keypair management)
+- **Base64 utility** available on the system
+- **AWS IAM permissions** for:
+   - ECR (Elastic Container Registry)
+   - EC2 instances and Auto Scaling Groups
+   - SSM (Systems Manager)
+   - S3 (for Terraform state)
+   - CloudWatch Logs
+   - Parameter Store
 
-## Usage
+## Quick Start Guide
 
-The infrastructure should be deployed in the following order:
+### 1. Initial Setup (One-Time)
 
-1. Account-level resources
-2. Regional-level resources
-3. Environment-level resources
-
-### Account-Level Deployment
-
-```bash
-# Navigate to the account directory
-cd deployment/account
-
-# Initialize Terraform
-terraform init
-
-# Plan the deployment
-terraform plan
-
-# Apply the changes
-terraform apply
-```
-
-### Regional-Level Deployment
+Before deploying any environments, configure the AWS foundation:
 
 ```bash
-# Navigate to the regional directory
-cd deployment/regional
+# Navigate to the script directory
+cd deployment/script
 
-# Initialize Terraform
-terraform init
-
-# Plan the deployment
-terraform plan
-
-# Apply the changes
-terraform apply
+# Run one-time setup for your target region
+./one_time_setup.sh us-east-1
 ```
+**What this does:**
+- Creates Terraform state S3 bucket: `doublezero-terraform-state-{account-id}`
+- Configures bucket security settings (versioning, KMS encryption, access blocking)
+- Sets up IAM policies and resource tagging for governance
 
-### Environment-Level Deployment
-#### Pre request
-You have to publish off-chain component images to ECR. (image tag <env-name>-<version>)
+### 2. Account-Level Infrastructure Setup
+Deploy account-level resources that are shared across all regions:
 
+```shell
+# Create account-level infrastructure
+./account_creation.sh create --region us-east-1
+# Or with auto-approval and specific region
+./account_creation.sh create --auto-approve --region us-east-1
+``` 
+
+**What this creates:**
+- Shared IAM roles and policies
+- Cross-region security configurations
+- Account-wide governance settings
+- Global resource tags and naming conventions
+
+### 3. Regional Infrastructure Setup
+
+Deploy regional-level resources for your target region:
 ```bash
-# Navigate to the environment directory
-cd deployment/environments/dev
+# Create regional infrastructure for us-east-1
+./regional_creation.sh create --region us-east-1
+# Or with auto-approval
+./regional_creation.sh create --region us-east-1 --auto-approve
+``` 
 
-# Initialize Terraform
-terraform init
+**What this creates:**
+- VPC and networking infrastructure
+- Regional security groups and NACLs
+- NAT gateways and internet gateways
+- Regional WAF configurations
+- Load balancer infrastructure
+- Regional ECR repositories
 
-# Plan the deployment
-terraform plan
-
-# Apply the changes
-terraform apply
+### 4. Publish Artifacts
+**Before creating any environment, you must publish the service artifacts:**
+```shell
+# Publish artifacts with a release tag
+./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
 ```
 
-### Destroying Infrastructure
 
-To destroy the infrastructure, follow the reverse order:
-
-1. Environment-level resources
-2. Regional-level resources
-3. Account-level resources
-
-```bash
-# Destroy environment-level resources
-cd deployment/environments/dev
-terraform destroy
-
-# Destroy regional-level resources
-cd ../../regional
-terraform destroy
-
-# Destroy account-level resources
-cd ../account
-terraform destroy
+### 5. Create New Environment
+After publishing artifacts, create a complete new environment:
+```shell
+# Create environment using the published release tag
+./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
 ```
 
-## Environment Configuration
+### 6. Update Existing Environment
+For updating an existing environment with a new release:
 
-Each environment (dev, staging, prod) has its own directory under `environments/` with its own Terraform configuration files and variable values.
-
-### Example: Creating a New Environment
-
-1. Create a new directory for the environment:
-
-```bash
-mkdir -p deployment/environments/staging
+```shell
+# Publish new artifacts and upgrade environment in one command
+./release.sh publish-artifacts-and-upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test
 ```
 
-2. Copy the Terraform configuration files from an existing environment:
+## Deployment Scripts Reference
+### Core Scripts
+#### `one_time_setup.sh`
+**Purpose**: Initialize AWS foundation infrastructure
+``` bash
+./one_time_setup.sh <aws-region>
 
-```bash
-cp deployment/environments/dev/main.tf deployment/environments/staging/
-cp deployment/environments/dev/variables.tf deployment/environments/staging/
-cp deployment/environments/dev/outputs.tf deployment/environments/staging/
-cp deployment/environments/dev/terraform.tfvars deployment/environments/staging/
+# Example
+./one_time_setup.sh us-east-1
+```
+**Features:**
+- Creates secure S3 backend for Terraform state
+- Configures proper IAM policies and encryption
+- Sets up resource tagging for cost management
+
+#### `release.sh`
+**Purpose**: Artifact publishing and deployment management
+``` bash
+# Publish artifacts only (required before creating environments)
+./release.sh publish-artifacts --region <region> --release-tag <tag> 
+
+# Deploy to existing environment
+./release.sh upgrade --region <region> --release-tag <tag> --env <environment> 
+
+# Publish and deploy in one command
+./release.sh publish-artifacts-and-upgrade --region <region> --release-tag <tag> --env <environment>
+
+# Examples
+./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
+./release.sh upgrade --region us-east-1 --release-tag v3.0.0-nightly --env dev-test 
+./release.sh publish-artifacts-and-upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test
 ```
 
-3. Edit the `terraform.tfvars` file to set appropriate values for the staging environment:
+**Features:**
+- Automated ECR integration and image verification
+- Health checks and deployment monitoring
+- Comprehensive error handling and rollback capabilities
 
-```bash
-# Update environment name
-environment = "staging"
+#### `env_creation.sh`
+**Purpose**: Create and manage complete environments
+``` bash
+# Create environment (artifacts must be published first)
+./env_creation.sh create --env <environment> --release-tag <tag> --region <region> [--auto-approve]
 
-# Update other environment-specific values as needed
-instance_type = "t3.small"  # Example: use larger instances in staging
-asg_min_size = 2
-asg_max_size = 10
-asg_desired_capacity = 3
+# Destroy environment
+./env_creation.sh destroy --env <environment> --release-tag <tag> --region <region> [--auto-approve]
+
+# Examples
+./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
+./env_creation.sh destroy --env staging --release-tag v2.8.5 --region us-west-2 --auto-approve
+```
+**Features:**
+- Dynamic Terraform backend configuration
+- Environment validation and safety checks
+- Interactive approval process (unless auto-approve specified)
+- Complete infrastructure lifecycle management
+
+
+## Deployment Strategies
+### Strategy 1: Complete New Environment Setup
+``` bash
+# 1. Initial setup (if not done)
+./one_time_setup.sh us-east-1
+
+# 2. Account level resource creation
+ ./account_creation.sh create --region us-east-1
+ 
+# 3. Regional Lvevel resource creation
+ ./regional_creation.sh create --region us-east-1
+
+# 4. Publish artifacts FIRST
+./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
+
+# 5. Create environment using published artifacts
+./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
+```
+### Strategy 2: Update Existing Environment
+``` bash
+# Single command for publish and deploy to existing environment
+./release.sh publish-artifacts-and-upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test
+```
+### Strategy 3: Staged Deployment
+``` bash
+# 1. Publish artifacts first
+./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.2-nightly
+
+# 2. Deploy to specific services as needed
+./release.sh upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test --service-name swap-oracle-service
 ```
 
-4. Deploy the new environment:
-
-```bash
-# Deploy account-level resources (if not already deployed)
-cd deployment/account
-terraform init
-terraform apply
-
-# Deploy regional-level resources (if not already deployed)
-cd ../regional
-terraform init
-terraform apply -var-file=../environments/staging/terraform.tfvars
-
-# Deploy environment-level resources
-cd ../environments/staging
-terraform init
-terraform apply
+## Solana Keypair Management
+The deployment includes a Python utility for managing Solana keypairs:
+### Installation
+``` bash
+pip install solders base58
 ```
-
-## Remote State and Data Sources
-
-Each level of the infrastructure uses a separate remote state file in the S3 bucket:
-
-- Account level: `account/terraform.tfstate`
-- Regional level: `regional/terraform.tfstate`
-- Environment level: `environments/dev/terraform.tfstate` (and similar for other environments)
-
-The regional and environment levels use data sources to access the outputs from the account level:
-
-```terraform
-# Data source to get account-level outputs
-data "terraform_remote_state" "account" {
-  backend = "s3"
-  config = {
-    bucket         = "doublezero-terraform-state-bucket"
-    key            = "account/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "doublezero-terraform-locks"
-    encrypt        = true
-  }
-}
-
-# Example: Using account-level outputs
-resource "example_resource" "example" {
-  instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name
-}
+### Usage
+#### Generate New Keypair
+``` bash
+cd deployment/script
+python3 script.py
 ```
-
-The environment level also uses data sources to access the outputs from the regional level:
-
-```terraform
-# Data source to get regional-level outputs
-data "terraform_remote_state" "regional" {
-  backend = "s3"
-  config = {
-    bucket         = "doublezero-terraform-state-bucket"
-    key            = "regional/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "doublezero-terraform-locks"
-    encrypt        = true
-  }
-}
-
-# Example: Using regional-level outputs
-resource "example_resource" "example" {
-  vpc_id = data.terraform_remote_state.regional.outputs.vpc_id
-}
+#### Load Existing Keypair
+``` bash
+python3 script.py <keypair.json>
 ```
+**Features:**
+- Generates secure Solana keypairs
+- Base58 encoding for AWS Parameter Store integration
+- JSON file support for existing keypairs
+### Parameter Store Integration
+Update AWS Parameter Store with the Base58 encoded secret key for secure storage and retrieval.
 
-This approach allows each level to be managed independently while still being able to reference resources from other levels.
+## Important Deployment Order
+⚠️ **Critical**: Always follow this order for new environments:
+1. **One-time setup** (if not done): `./one_time_setup.sh us-east-1`
+2. **Publish artifacts**: `./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly`
+3. **Create environment**: `./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1`
+
+**Why this order matters:**
+- Environment creation expects the Docker images to exist in ECR with the specified release tag
+- Publishing artifacts builds and pushes the Docker images to ECR
+- The Terraform configuration references these images during infrastructure provisioning
+
+## Security and Best Practices
+### Infrastructure Security
+- **Encrypted State**: Terraform state stored with KMS encryption in S3
+- **Access Control**: IAM least-privilege access patterns
+- **Resource Tagging**: Comprehensive tagging for governance and cost tracking
+- **Network Security**: EC2 instances in private subnets with security groups
+
+### Container Security
+- **ECR Integration**: Secure container registry with AWS authentication
+- **Image Verification**: Pre-deployment validation of container images
+- **Centralized Logging**: CloudWatch integration for all services
+
+### Operational Excellence
+- **Semantic Versioning**: Consistent release tag format enforcement
+- **Environment Progression**: Recommended dev → staging → prod workflow
+- **Monitoring**: Comprehensive deployment status tracking and health checks
+- **Rollback Capabilities**: Automatic rollback for failed deployments
+
+## Troubleshooting
+### Common Issues and Solutions
+#### Artifact Publishing Issues
+- **Missing Docker Images**: Ensure `publish-artifacts` command completed successfully before creating environments
+- **ECR Authentication**: Verify AWS credentials have ECR push/pull permissions
+- **Build Failures**: Check the off-chain service directories exist and build scripts are executable
+
+#### Environment Creation Issues
+- **Missing Release Tag**: Verify the release tag exists in ECR using `aws ecr list-images`
+- **Terraform Backend**: Ensure one-time setup completed successfully
+- **Resource Conflicts**: Use unique environment names to avoid naming conflicts
+
+#### Deployment Failures
+- **Instance Connectivity**: Verify SSM agent is running on target EC2 instances
+- **Service Health**: Check CloudWatch logs for application-specific issues
+- **Container Issues**: Verify container starts successfully with the specified image tag
+
 
 ## Modules
 
@@ -260,61 +327,6 @@ Creates an Application Load Balancer with target groups, listeners, and health c
 ### EC2 Module
 
 Creates EC2 instances with auto-scaling, launch templates, IAM roles, and CloudWatch alarms.
-
-## Customization
-
-### Adding Custom Rules to WAF
-
-Edit the `modules/waf/main.tf` file to add custom rules to the WAF Web ACL.
-
-### Modifying Auto-Scaling Policies
-
-Edit the `modules/ec2/main.tf` file to modify the auto-scaling policies and alarms.
-
-### Changing Health Check Settings
-
-Edit the `modules/load_balancer/main.tf` file to modify the health check settings.
-
-## Outputs
-
-After applying the Terraform configuration, various outputs will be displayed, including:
-
-- VPC ID and subnet IDs
-- WAF Web ACL ID and ARN
-- API Gateway endpoint URL
-- Load Balancer DNS name
-- Auto Scaling Group name
-
-These outputs can be used to access and manage the deployed resources.
-
-## Security Considerations
-
-- The WAF is configured with AWS managed rule sets for common vulnerabilities.
-- EC2 instances are placed in private subnets for enhanced security.
-- Security groups are configured with least privilege access.
-- HTTPS can be enabled by providing a certificate ARN in the environment configuration.
-
-## Monitoring and Logging
-
-- CloudWatch alarms are configured for the Load Balancer and EC2 instances.
-- API Gateway and WAF logs are sent to CloudWatch Logs.
-- EC2 instances have the CloudWatch agent installed for system and application monitoring.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Terraform initialization fails**:
-   - Ensure AWS credentials are properly configured.
-   - Check S3 bucket permissions if using remote state.
-
-2. **Resource creation fails**:
-   - Check AWS service quotas.
-   - Verify subnet availability in the selected availability zones.
-
-3. **Health checks fail**:
-   - Verify security group rules allow health check traffic.
-   - Check the health check path and port configuration.
 
 ### Getting Help
 

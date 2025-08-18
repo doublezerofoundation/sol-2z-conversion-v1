@@ -186,12 +186,7 @@ variable "enable_indexer_service" {
   default     = false
 }
 
-variable "swap_oracle_service_image_tag" {
-  description = "Docker image tag to pull from ECR"
-  type        = string
-}
-
-variable "indexer_service_image_tag" {
+variable "release_tag" {
   description = "Docker image tag to pull from ECR"
   type        = string
 }

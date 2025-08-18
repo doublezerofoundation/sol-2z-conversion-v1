@@ -18,7 +18,7 @@ export const decodeAndValidateReturnData = (returnData: ReturnData, programId: s
     return Buffer.from(base64String, "base64");
 };
 
-export const getUint64FromBuffer = (buffer: Uint8Array) => {
+export const getUint64FromBuffer = (buffer: Uint8Array, byteOffset = 0) => {
     const dataView = new DataView(buffer.buffer, buffer.byteOffset, buffer.byteLength);
-    return dataView.getBigUint64(0, true); // true for little-endian
+    return dataView.getBigUint64(byteOffset, true); // true for little-endian
 };
