@@ -1,7 +1,9 @@
-import { Connection, PublicKey, LAMPORTS_PER_SOL, Keypair } from "@solana/web3.js";
+import {Connection, Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import path from "path";
 import fs from "fs";
 import * as anchor from "@coral-xyz/anchor";
+import {ConverterProgram} from "../../../target/types/converter_program";
+import {getProgramStatePDA} from "./pda-helper";
 
 export function getDefaultKeyPair(): Keypair {
     const keypairPath = path.resolve(
@@ -30,6 +32,12 @@ export async function airdropToActivateAccount(
     }
 }
 
+export async function getRandomKeyPair(connection: Connection): Promise<Keypair> {
+    const keypair = anchor.web3.Keypair.generate();
+    await airdrop(connection, keypair.publicKey);
+    return keypair;
+}
+
 export async function airdrop(
     connection: Connection,
     pubkey: PublicKey,
@@ -41,4 +49,9 @@ export async function airdrop(
         lastValidBlockHeight: (await connection.getLatestBlockhash()).lastValidBlockHeight,
         blockhash: (await connection.getLatestBlockhash()).blockhash
     });
+}
+
+export async function fetchProgramState(program: anchor.Program<ConverterProgram>) {
+    const programStatePDA = getProgramStatePDA(program.programId);
+    return await program.account.programStateAccount.fetch(programStatePDA);
 }

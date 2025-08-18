@@ -8,9 +8,7 @@ import { ConverterProgram } from "../../../target/types/converter_program";
 export interface SystemConfig {
     oraclePubkey: PublicKey,
     solQuantity: BN,
-    slotThreshold: BN,
     priceMaximumAge: BN,
-    maxFillsStorage: BN,
     coefficient: BN,
     maxDiscountRate: BN,
     minDiscountRate: BN,
@@ -20,10 +18,8 @@ export interface SystemConfig {
 export const DEFAULT_CONFIGS: SystemConfig = {
     oraclePubkey: new PublicKey("3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj"),
     solQuantity: new anchor.BN(25 * LAMPORTS_PER_SOL),
-    slotThreshold: new anchor.BN(134),
     priceMaximumAge: new anchor.BN(324),
-    maxFillsStorage: new anchor.BN(50),
-    coefficient: new anchor.BN(90),
+    coefficient: new anchor.BN(4500),
     maxDiscountRate: new anchor.BN(50 * BPS),
     minDiscountRate: new anchor.BN(10 * BPS),
 };
@@ -34,9 +30,7 @@ export async function fetchCurrentConfiguration(program: anchor.Program<Converte
     return {
         oraclePubkey: configurationRegistry.oraclePubkey,
         solQuantity: configurationRegistry.solQuantity,
-        slotThreshold: configurationRegistry.slotThreshold,
         priceMaximumAge: configurationRegistry.priceMaximumAge,
-        maxFillsStorage: configurationRegistry.maxFillsStorage,
         coefficient: configurationRegistry.coefficient,
         maxDiscountRate: configurationRegistry.maxDiscountRate,
         minDiscountRate: configurationRegistry.minDiscountRate,

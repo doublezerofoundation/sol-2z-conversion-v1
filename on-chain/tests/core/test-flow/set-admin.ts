@@ -8,8 +8,8 @@ import { assert, expect } from "chai";
 
 export const setAdminAndVerify = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     new_admin: PublicKey,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const pdas = await Promise.all([
         getProgramStatePDA(program.programId),
@@ -30,7 +30,7 @@ export const setAdminAndVerify = async (
     assert.isTrue(programDataExists, "Program data should be initialzied");
 
     try {
-        const tx = await program.methods.setAdmin(new_admin)
+        await program.methods.setAdmin(new_admin)
         .accounts({
             admin: adminKeypair.publicKey,
             programData: programDataPDA,
@@ -57,7 +57,7 @@ export const setAdminAndVerifyFail = async (
         getProgramDataAccountPDA(program.programId),
     ]);
 
-    const [programStatePDA, programDataPDA] = pdas;
+    const [_, programDataPDA] = pdas;
 
     let [programStateExists, programDataExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))
@@ -67,7 +67,7 @@ export const setAdminAndVerifyFail = async (
     assert.isTrue(programDataExists, "Program data should be initialzied");
 
     try {
-        const tx = await program.methods.setAdmin(new_admin)
+        await program.methods.setAdmin(new_admin)
         .accounts({
             admin: adminKeypair.publicKey,
             programData: programDataPDA,

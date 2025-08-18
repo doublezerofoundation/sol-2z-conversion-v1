@@ -1,10 +1,10 @@
 import {Request, Response} from 'express';
-import {PricingService} from "../service/pricing/pricingService";
+import {IPricingService} from "../service/pricing/IPricingService";
 import {HealthCheckResult, PriceRate, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestaion/attestationService";
 import {CacheService} from "../service/cache/cacheService";
-import MetricsMonitoringService from "../service/monitor/metricsMonitoringService";
+import IMetricsMonitoringService from "../service/monitor/IMetricsMonitoringService";
 import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
@@ -12,13 +12,13 @@ const TWOZ_PRECISION = 1000000;
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 @injectable()
 export default class SwapRateController {
-    private priceServices: PricingService[];
+    private priceServices: IPricingService[];
 
     constructor(
         @inject(TYPES.PricingServiceFactory) private pricingServiceFactory: PricingServiceFactory,
         @inject(TYPES.AttestationService) private attestationService: AttestationService,
         @inject(TYPES.CacheService) private cacheService: CacheService,
-        @inject(TYPES.MetricsMonitoringService) private metricsMonitoringService: MetricsMonitoringService,
+        @inject(TYPES.MetricsMonitoringService) private metricsMonitoringService: IMetricsMonitoringService,
         @inject(TYPES.HealthMonitoringService) private healthMonitoringService: HealthMonitoringService,
         @inject(TYPES.CircuitBreakerService) private circuitBreakerService: CircuitBreakerService,
 

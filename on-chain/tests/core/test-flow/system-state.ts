@@ -7,8 +7,8 @@ import { assert, expect } from "chai";
 
 export const toggleSystemStateAndVerify = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     set_to: boolean,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const [programStatePDA] = await Promise.all([
         getProgramStatePDA(program.programId),
@@ -40,9 +40,9 @@ export const toggleSystemStateAndVerify = async (
 
 export const toggleSystemStateAndVerifyFail = async (
     program: Program<ConverterProgram>,
-    adminKeypair: Keypair = getDefaultKeyPair(),
     set_to: boolean,
     expectedError: string,
+    adminKeypair: Keypair = getDefaultKeyPair(),
 ) => {
     const [programStatePDA] = await Promise.all([
         getProgramStatePDA(program.programId),
@@ -51,7 +51,7 @@ export const toggleSystemStateAndVerifyFail = async (
     const [programStateExists] = await Promise.all([
         accountExists(program.provider.connection, programStatePDA),
     ]);
-    assert.isTrue(programStateExists, "Program state should be initialzied");
+    assert.isTrue(programStateExists, "Program state should be initialized");
 
     try {
         await program.methods.toggleSystemState(set_to)

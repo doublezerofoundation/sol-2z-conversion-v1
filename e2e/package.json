@@ -1,0 +1,30 @@
+{
+  "name": "e2e",
+  "version": "1.0.0",
+  "description": "End to End (e2e) Test suite for Double Zero",
+  "license": "ISC",
+  "author": "MeridianLabs",
+  "main": "index.js",
+  "scripts": {
+    "admin-flow": "mocha -r ts-node/esm 'src/admin-flow.spec.ts'",
+    "user-flow": "mocha -r ts-node/esm 'src/user-flow.spec.ts'"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "^0.31.1",
+    "@solana/spl-token": "^0.4.13",
+    "@solana/web3.js": "^1.98.4",
+    "chai": "4.5.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.11.30",
+    "mocha": "^10.2.0",
+    "solana-test-validator-js": "^1.0.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.4"
+  },
+  "mocha": {
+    "timeout": 20000
+  }
+}

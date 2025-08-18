@@ -1,24 +1,26 @@
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
-import { getDenyListRegistryPDA } from "../utils/pda-helper";
-import { getDefaultKeyPair } from "../utils/accounts";
+import { getDenyListRegistryPDA, getProgramDataAccountPDA, getProgramStatePDA } from "../utils/pda-helper";
+import { fetchProgramState, getDefaultKeyPair } from "../utils/accounts";
+import { Program } from "@coral-xyz/anchor";
+import { ConverterProgram } from "../../../target/types/converter_program";
 
 export async function addToDenyListAndVerify(
-    program,
+    program: Program<ConverterProgram>,
     addressToAdd: PublicKey,
     authorityKeyPair: Keypair = getDefaultKeyPair()
 ) {
     const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
-    
+
     // Get deny list before adding
     const denyListBefore = await program.account.denyListRegistry.fetch(denyListRegistryPda);
     const beforeCount = denyListBefore.deniedAddresses.length;
     const beforeUpdateCount = denyListBefore.updateCount;
-    
+
     // Verify address is not already in the list
     const isAlreadyDenied = denyListBefore.deniedAddresses.some(addr => addr.equals(addressToAdd));
     assert.isFalse(isAlreadyDenied, "Address should not already be in deny list");
-    
+
     // Add to deny list
     const tx = await program.methods.addToDenyList(addressToAdd)
         .accounts({
@@ -26,24 +28,24 @@ export async function addToDenyListAndVerify(
         })
         .signers([authorityKeyPair])
         .rpc();
-    
+
     // Verify the addition
     const denyListAfter = await program.account.denyListRegistry.fetch(denyListRegistryPda);
-    
+
     assert.equal(denyListAfter.deniedAddresses.length, beforeCount + 1, "Deny list size should increase by 1");
     assert.equal(denyListAfter.updateCount.toNumber(), beforeUpdateCount.toNumber() + 1, "Update count should increase by 1");
-    
+
     const isNowDenied = denyListAfter.deniedAddresses.some(addr => addr.equals(addressToAdd));
     assert.isTrue(isNowDenied, "Address should now be in deny list");
-    
+
     // Verify timestamp was updated
     assert.isAbove(denyListAfter.lastUpdated.toNumber(), 0, "Last updated timestamp should be set");
-    
+
     return tx;
 }
 
 export async function addToDenyListShouldFail(
-    program,
+    program: Program<ConverterProgram>,
     addressToAdd: PublicKey,
     expectedError: string,
     authorityKeyPair: Keypair = getDefaultKeyPair()
@@ -55,30 +57,30 @@ export async function addToDenyListShouldFail(
             })
             .signers([authorityKeyPair])
             .rpc();
-        
+
         assert.fail("Expected transaction to fail");
     } catch (error) {
-        console.log(error.message);
+        // console.log(error.message);
         assert.include(error.message, expectedError, `Expected error containing "${expectedError}"`);
     }
 }
 
 export async function removeFromDenyListAndVerify(
-    program,
+    program: Program<ConverterProgram>,
     addressToRemove: PublicKey,
     authorityKeyPair: Keypair = getDefaultKeyPair()
 ) {
     const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
-    
+
     // Get deny list before removing
     const denyListBefore = await program.account.denyListRegistry.fetch(denyListRegistryPda);
     const beforeCount = denyListBefore.deniedAddresses.length;
     const beforeUpdateCount = denyListBefore.updateCount;
-    
+
     // Verify address is in the list
-    const isDenied = denyListBefore.deniedAddresses.some(addr => addr.equals(addressToRemove));
+    const isDenied = denyListBefore.deniedAddresses.some((addr: { equals: (arg0: PublicKey) => any; }) => addr.equals(addressToRemove));
     assert.isTrue(isDenied, "Address should be in deny list before removal");
-    
+
     // Remove from deny list
     const tx = await program.methods.removeFromDenyList(addressToRemove)
         .accounts({
@@ -86,24 +88,24 @@ export async function removeFromDenyListAndVerify(
         })
         .signers([authorityKeyPair])
         .rpc();
-    
+
     // Verify the removal
     const denyListAfter = await program.account.denyListRegistry.fetch(denyListRegistryPda);
-    
+
     assert.equal(denyListAfter.deniedAddresses.length, beforeCount - 1, "Deny list size should decrease by 1");
     assert.equal(denyListAfter.updateCount.toNumber(), beforeUpdateCount.toNumber() + 1, "Update count should increase by 1");
-    
+
     const isStillDenied = denyListAfter.deniedAddresses.some(addr => addr.equals(addressToRemove));
     assert.isFalse(isStillDenied, "Address should no longer be in deny list");
-    
+
     // Verify timestamp was updated
     assert.isAtLeast(denyListAfter.lastUpdated.toNumber(), denyListBefore.lastUpdated.toNumber(), "Last updated timestamp should be at least as recent");
-    
+
     return tx;
 }
 
 export async function removeFromDenyListShouldFail(
-    program,
+    program: Program<ConverterProgram>,
     addressToRemove: PublicKey,
     expectedError: string,
     authorityKeyPair: Keypair = getDefaultKeyPair()
@@ -115,35 +117,82 @@ export async function removeFromDenyListShouldFail(
             })
             .signers([authorityKeyPair])
             .rpc();
-        
+
         assert.fail("Expected transaction to fail");
     } catch (error) {
         assert.include(error.message, expectedError, `Expected error containing "${expectedError}"`);
     }
 }
 
-export async function fetchDenyListRegistry(program) {
+export async function fetchDenyListRegistry(program: Program<ConverterProgram>) {
     const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
     return await program.account.denyListRegistry.fetch(denyListRegistryPda);
 }
 
 export async function verifyDenyListState(
-    program,
+    program: Program<ConverterProgram>,
     expectedAddresses: PublicKey[],
     expectedUpdateCount?: number
 ) {
     const denyList = await fetchDenyListRegistry(program);
-    
+
     assert.equal(denyList.deniedAddresses.length, expectedAddresses.length, "Deny list should have expected number of addresses");
-    
+
     for (const expectedAddr of expectedAddresses) {
         const isPresent = denyList.deniedAddresses.some(addr => addr.equals(expectedAddr));
         assert.isTrue(isPresent, `Address ${expectedAddr.toString()} should be in deny list`);
     }
-    
+
     if (expectedUpdateCount !== undefined) {
         assert.equal(denyList.updateCount.toNumber(), expectedUpdateCount, "Update count should match expected value");
     }
-    
+
     return denyList;
+}
+
+export const setDenyListAuthorityAndVerify = async (
+    program: Program<ConverterProgram>,
+    newDenyListAuthority: PublicKey,
+    adminKeyPair: Keypair = getDefaultKeyPair()
+) => {
+    const programStatePda = getProgramStatePDA(program.programId);
+    const programDataPda = getProgramDataAccountPDA(program.programId);
+
+    const tx = await program.methods.setDenyListAuthority(newDenyListAuthority)
+        .accounts({
+            admin: adminKeyPair.publicKey,
+            programState: programStatePda,
+            programData: programDataPda
+        })
+        .signers([adminKeyPair])
+        .rpc();
+
+    const programStateAccount = await fetchProgramState(program);
+    assert.equal(programStateAccount.denyListAuthority.toString(), newDenyListAuthority.toString(), "Deny list authority should be set");
+
+    return tx;
+}
+
+export const setDenyListAuthorityShouldFail = async (
+    program: Program<ConverterProgram>,
+    newDenyListAuthority: PublicKey,
+    expectedError: string,
+    adminKeyPair: Keypair = getDefaultKeyPair()
+) => {
+    const programStatePda = getProgramStatePDA(program.programId);
+    const programDataPda = getProgramDataAccountPDA(program.programId);
+    try {
+        await program.methods.setDenyListAuthority(newDenyListAuthority)
+            .accounts({
+                admin: adminKeyPair.publicKey,
+                programState: programStatePda,
+                programData: programDataPda
+            })
+            .signers([adminKeyPair])
+            .rpc();
+
+        assert.fail("Expected transaction to fail");
+    } catch (error) {
+        assert.include(error!.toString(), expectedError, `Expected error containing "${expectedError}"`);
+    }
 }

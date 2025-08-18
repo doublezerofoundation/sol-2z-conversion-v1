@@ -19,10 +19,7 @@ use crate::{
         },
         structs::OraclePriceData,
     },
-    state::{
-        trade_registry::TradeRegistry,
-        program_state::ProgramStateAccount
-    },
+    state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
@@ -49,19 +46,13 @@ pub struct BuySol<'info> {
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(
         mut,
-        seeds = [SeedPrefixes::FillsRegistry.as_bytes()],
-        bump = program_state.bump_registry.fills_registry_bump,
+        constraint = fills_registry.key() == program_state.fills_registry_address
     )]
-    pub fills_registry: Account<'info, FillsRegistry>,
-    #[account(
-        mut,
-        seeds = [SeedPrefixes::TradeRegistry.as_bytes()],
-        bump = program_state.bump_registry.trade_registry_bump,
-    )]
-    pub trade_registry: Account<'info, TradeRegistry>,
+    pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
         mut,
         token::mint = double_zero_mint,
+        constraint = user_token_account.owner == signer.key()
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
     #[account(mut)]
@@ -71,11 +62,12 @@ pub struct BuySol<'info> {
         token::mint = double_zero_mint,
     )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
+    /// CHECK: program address - TODO: implement address validations
     #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    /// CHECK: program address - TODO: implement validations
+    /// CHECK: program address - TODO: implement address validations
     pub revenue_distribution_program: AccountInfo<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -183,13 +175,9 @@ impl<'info> BuySol<'info> {
         )?;
 
         // Add it to fills registry
-        self.fills_registry.add_fill_to_fills_registry(
+        self.fills_registry.load_mut()?.add_trade_to_fills_registry(
             sol_quantity,
-            tokens_required,
-            clock.unix_timestamp,
-            self.signer.key(),
-            clock.epoch,
-            self.configuration_registry.max_fills_storage as usize,
+            tokens_required
         )?;
 
         // Update the last trade slot
@@ -205,11 +193,6 @@ impl<'info> BuySol<'info> {
             epoch: clock.epoch,
         });
 
-        // Adding it to Trade History
-        self.trade_registry.update_trade_registry(
-            clock.epoch,
-            sol_quantity
-        )?;
         Ok(())
     }
 }

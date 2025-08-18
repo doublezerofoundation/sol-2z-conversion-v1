@@ -1,10 +1,10 @@
 import {ConfigField, PricingServicesConfig, PricingServiceType, TYPES} from "../types/common";
 import {ConfigUtil, configUtil} from "../utils/configUtil";
 import PythPricingService from "../service/pricing/pythPricingService";
-import {PricingService} from "../service/pricing/pricingService";
+import {IPricingService} from "../service/pricing/IPricingService";
 import {inject, injectable} from "inversify";
 import {CacheService} from "../service/cache/cacheService";
-import SwapRateService from "../service/swap/swapRateService";
+import ISwapRateService from "../service/swap/ISwapRateService";
 
 @injectable()
 export class PricingServiceFactory {
@@ -12,11 +12,11 @@ export class PricingServiceFactory {
     constructor(
         @inject(TYPES.ConfigUtil) private configUtil: ConfigUtil,
         @inject(TYPES.CacheService) private cacheService: CacheService,
-        @inject(TYPES.SwapRateService) private swapRateService: SwapRateService,
+        @inject(TYPES.SwapRateService) private swapRateService: ISwapRateService,
     ) {
 
     }
-    create(): PricingService[] {
+    create(): IPricingService[] {
         const pricingServicesConfig = this.configUtil.get<any>(ConfigField.PRICING_SERVICES);
         return pricingServicesConfig.map(config =>
             this.createPricingService(config)
@@ -24,7 +24,7 @@ export class PricingServiceFactory {
 
     }
 
-    private createPricingService(config: PricingServicesConfig): PricingService {
+    private createPricingService(config: PricingServicesConfig): IPricingService {
         switch (config.type) {
             case PricingServiceType.PYTH:
                 const pythService = new PythPricingService(config);

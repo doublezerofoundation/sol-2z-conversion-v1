@@ -1,4 +1,4 @@
-import {PricingService} from "../pricing/pricingService";
+import {IPricingService} from "../pricing/IPricingService";
 import {HealthCheckResult, HealthStatus, TYPES} from "../../types/common";
 import {PricingServiceFactory} from "../../factory/serviceFactory";
 import { injectable, inject } from 'inversify';
@@ -7,7 +7,7 @@ import {CircuitBreakerService} from "./circuitBreakerService";
 
 @injectable()
 export class HealthMonitoringService {
-    private pricingServices: PricingService[]
+    private pricingServices: IPricingService[]
     private monitoringData: HealthCheckResult[] = []
 
     constructor(

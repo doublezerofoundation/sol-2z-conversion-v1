@@ -1,9 +1,6 @@
 import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../target/types/converter_program";
 import {  getDefaultKeyPair } from "./core/utils/accounts";
-import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
-import {initializeSystemIfNeeded, systemInitializeAndVerify} from "./core/test-flow/system-initialize";
+import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {
   addDequeuerAndVerify,
   removeDequeuerAndVerify,
@@ -11,14 +8,15 @@ import {
   removeDequeuerExpectUnauthorized,
   addDequeuerExpectMaxLimit,
 } from "./core/test-flow/dequeuer-management";
+import { setup } from "./core/setup";
 
-describe("Dequeuer Management Tests", () => {
+describe("Dequeuer Management Tests", async () => {
+  const program = await setup();
+
   before("Initialize the system if needed", async () => {
     await initializeSystemIfNeeded(program)
   });
 
-  anchor.setProvider(anchor.AnchorProvider.env());
-  const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
   const adminKeyPair = getDefaultKeyPair();
   const nonAdmin = anchor.web3.Keypair.generate();
   const dequeuer = anchor.web3.Keypair.generate().publicKey;

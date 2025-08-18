@@ -1,27 +1,38 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
 import { Keypair } from "@solana/web3.js";
-import { ConverterProgram } from "../target/types/converter_program";
 import { getDefaultKeyPair } from "./core/utils/accounts";
 import { setAdminAndVerify, setAdminAndVerifyFail } from "./core/test-flow/set-admin";
+import { setup } from "./core/setup";
+import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
+import { setDenyListAuthorityAndVerify, setDenyListAuthorityShouldFail } from "./core/test-flow/deny-list";
 
-describe("Admin Change Tests", () => {
-  // Configure the client to use the local cluster.
-  anchor.setProvider(anchor.AnchorProvider.env());
-
-  const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
+describe("Admin Change Tests", async () => {
+  const program = await setup();
   const adminKeyPair = getDefaultKeyPair();
+
+  before("Initialize the system if needed", async () => {
+    await initializeSystemIfNeeded(program)
+  });
 
   it("Program deployer can set admin", async () => {
     const newAdmin = Keypair.generate();
-    await setAdminAndVerify(program, adminKeyPair, newAdmin.publicKey);
+    await setAdminAndVerify(program, newAdmin.publicKey, adminKeyPair);
 
     // Revert: Set admin back to adminKeyPair
-    await setAdminAndVerify(program, adminKeyPair, adminKeyPair.publicKey);
+    await setAdminAndVerify(program, adminKeyPair.publicKey, adminKeyPair);
   });
 
   it("Should fail to set admin if not program deployer", async () => {
     const newAdmin = Keypair.generate();
     await setAdminAndVerifyFail(program, newAdmin, adminKeyPair.publicKey, "A raw constraint was violated");
+  });
+
+  it("Program deployer can set deny list authority", async () => {
+    const newDenyListAuthority = Keypair.generate();
+    await setDenyListAuthorityAndVerify(program, newDenyListAuthority.publicKey);
+  });
+
+  it("Should fail to set deny list authority if not program deployer", async () => {
+    const newDenyListAuthority = Keypair.generate();
+    await setDenyListAuthorityShouldFail(program, newDenyListAuthority.publicKey, "A raw constraint was violated", newDenyListAuthority);
   });
 });

@@ -14,7 +14,7 @@ describe("System Initialization Tests", () => {
 
   it("Person who doesn't have upgrade authority should not init the system!", async () => {
     const nonAdminUserKeyPair = anchor.web3.Keypair.generate();
-    await airdropToActivateAccount(program.provider.connection, nonAdminUserKeyPair.publicKey);
+    await airdropToActivateAccount(program.provider.connection, nonAdminUserKeyPair.publicKey, 5000000000);
     await systemInitializeFail(
         program,
         nonAdminUserKeyPair,

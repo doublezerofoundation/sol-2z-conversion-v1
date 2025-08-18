@@ -13,7 +13,7 @@ use cli_common::{
     transaction_executor::{get_account_data, send_instruction_with_return_data},
     utils::{
         pda_helper::{
-            self, get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
+            get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
         },
         ui,
     },
@@ -29,7 +29,7 @@ pub fn get_quantity() -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&user_config.program_id)?;
 
     println!("{}, Reading configuration registry...", ui::WAITING);
-    let config_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
+    let config_registry_pda = get_configuration_registry_pda(program_id).0;
     let config_registry: ConfigurationRegistry =
         get_account_data(user_config.rpc_url, config_registry_pda)?;
     let sol_quantity_in_sol = config_registry.sol_quantity/ LAMPORTS_PER_SOL;

@@ -1,10 +1,11 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program} from "@coral-xyz/anchor";
 import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
+import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
 import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
 import {initializeMockTransferSystemIfNeeded, mint2z} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
-import {getMockProgramPDAs} from "./core/utils/pda-helper";
+import {getMockProgramPDAs, getProgramStatePDA} from "./core/utils/pda-helper";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {buySolAndVerify, buySolFail} from "./core/test-flow/buy-sol-flow";
 import {ConverterProgram} from "../target/types/converter_program";
@@ -15,15 +16,16 @@ import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData} from "./core/utils/price-oracle";
 import {BPS, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
-import {addToDenyListAndVerify, removeFromDenyListAndVerify} from "./core/test-flow/deny-list";
+import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
+import { assert } from "chai";
 
 describe("Buy Sol Tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
     const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
-    const mockTransferProgram = anchor.workspace.mockTransferProgram as Program<MockTransferProgram>;
+    const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as anchor.Idl, anchor.getProvider());
     let adminKeyPair: Keypair = getDefaultKeyPair();
     let mockTransferProgramPDAs;
     let tokenAccountForUser: PublicKey;
@@ -37,12 +39,13 @@ describe("Buy Sol Tests", () => {
             mockTransferProgram,
             adminKeyPair,
         )
+        // Set deny list authority to admin
+        await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
 
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
             program,
-            adminKeyPair,
-            DEFAULT_CONFIGS
+            {...DEFAULT_CONFIGS, coefficient: new anchor.BN(1)}
         );
 
         currentConfigs = DEFAULT_CONFIGS;
@@ -66,13 +69,14 @@ describe("Buy Sol Tests", () => {
     after("Change configs to Default", async () => {
         await updateConfigsAndVerify(
             program,
-            adminKeyPair,
             DEFAULT_CONFIGS
         );
     });
 
 
     describe("Happy Path", async() => {
+        let lastTradeSlot: number;
+
         it("User does buySOL at higher price than Ask Price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
@@ -95,13 +99,15 @@ describe("Buy Sol Tests", () => {
                 userKeyPair,
                 oraclePriceData
             );
+
+            lastTradeSlot = (await program.account.programStateAccount.fetch(getProgramStatePDA(program.programId))).lastTradeSlot.toNumber();
         });
 
         it("should fail to do buy sol for price less than ask price", async () => {
 
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
-            const bidPrice = askPrice - 1000;
+            const bidPrice = askPrice - 100000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
@@ -120,6 +126,11 @@ describe("Buy Sol Tests", () => {
                 oraclePriceData,
                 "Provided bid is too low"
             );
+        });
+
+        it("Last trade slot should be updated with buy sol transaction", async () => {
+            const currentSlot = await program.provider.connection.getSlot();
+            assert(currentSlot > lastTradeSlot, "Current slot should be greater than last trade slot");
         });
     });
 
@@ -150,7 +161,7 @@ describe("Buy Sol Tests", () => {
 
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
-            const bidPrice = askPrice - 1;
+            const bidPrice = askPrice - 1000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
@@ -284,7 +295,7 @@ describe("Buy Sol Tests", () => {
     describe("Market Halting Check", async () => {
         it("should fail to do buy sol during market halt", async () => {
             // Make system to halt stage
-            await toggleSystemStateAndVerify(program, adminKeyPair, true);
+            await toggleSystemStateAndVerify(program, true);
 
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
@@ -309,7 +320,7 @@ describe("Buy Sol Tests", () => {
         });
 
         it("User should be able to do buy SOL after market gets Opened", async () => {
-            await toggleSystemStateAndVerify(program, adminKeyPair, false);
+            await toggleSystemStateAndVerify(program, false);
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z
@@ -338,16 +349,15 @@ describe("Buy Sol Tests", () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
-                maxDiscountRate: new anchor.BN(15 * BPS),
+                maxDiscountRate: new anchor.BN(55 * BPS),
             };
             await updateConfigsAndVerify(
                 program,
-                adminKeyPair,
                 currentConfigs
             );
 
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 3;
+            const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 1000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
@@ -373,7 +383,6 @@ describe("Buy Sol Tests", () => {
         it("should fail to do buy sol with invalid signature", async () => {
             await updateConfigsAndVerify(
                 program,
-                adminKeyPair,
                 DEFAULT_CONFIGS
             );
             currentConfigs = DEFAULT_CONFIGS;

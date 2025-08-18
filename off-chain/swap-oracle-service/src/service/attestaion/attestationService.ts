@@ -6,8 +6,14 @@ import {keccak256} from "js-sha3";
 import { injectable, inject } from 'inversify';
 import {TYPES} from "../../types/common";
 
+export interface IAttestationService {
+    createAttestation(data: AttestationData):Promise<string>;
+    createSecp256k1Attestation(dada: AttestationData):Promise<AttestationResult>;
+}
+
+
 @injectable()
-export class AttestationService {
+export class AttestationService implements IAttestationService {
 
 
     constructor(@inject(TYPES.KeyManager) private keyManager: KeyManager) {}
@@ -21,7 +27,6 @@ export class AttestationService {
         const message = getUtf8Encoder().encode(messageString);
 
         const signedBytes = await signBytes(keys.keyPair.privateKey, message);
-        console.log("signedBytes: ", signedBytes)
         const base64SignedBytes = Buffer.from(signedBytes).toString('base64');
         console.log("base64 encoded signedBytes: ", base64SignedBytes)
 

@@ -69,9 +69,18 @@ pub enum DoubleZeroError {
     #[msg("Invalid conversion rate")]
     InvalidConversionRate, // 6021
 
+    #[msg("Address not found in Deny List")]
+    AddressNotInDenyList, // 6021
+
     #[msg("System is halted")]
     SystemIsHalted, // 6022
 
     #[msg("Arithmetic Error has occurred")]
     ArithmeticError, // 6023
+
+    #[msg("User is not authorized to do Dequeue Action")]
+    UnauthorizedDequeuer, // 6024
+
+    #[msg("Unauthorized Deny List Authority")]
+    UnauthorizedDenyListAuthority, // 6025
 }

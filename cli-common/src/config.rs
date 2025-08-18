@@ -4,7 +4,7 @@ use std::{
     path::Path,
     error::Error
 };
-use crate::constant::CONFIG_FILE_PATH;
+use crate::{constant::CONFIG_FILE_PATH, utils::env_var::load_config_path_from_env};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
@@ -14,9 +14,7 @@ pub struct Config {
     pub double_zero_program_id: String,
     pub oracle_pubkey: Option<String>,
     pub sol_quantity: Option<u64>,
-    pub slot_threshold: Option<u64>,
     pub price_maximum_age: Option<i64>,
-    pub max_fills_storage: Option<u64>,
     pub skip_preflight: bool,
     pub price_oracle_end_point: Option<String>,
     pub coefficient: Option<u64>,
@@ -26,8 +24,11 @@ pub struct Config {
 
 impl Config {
     pub fn load() -> Result<Self, Box<dyn Error>> {
-        let config_path = CONFIG_FILE_PATH;
-        if Path::new(config_path).exists() {
+        let config_path = match load_config_path_from_env() {
+            Ok(path) => path,
+            Err(_) => CONFIG_FILE_PATH.to_string(),
+        };
+        if Path::new(&config_path).exists() {
             match fs::read_to_string(config_path) {
                 Ok(contents) => {
                     match serde_json::from_str(&contents) {
