@@ -3,7 +3,6 @@ import { Seeds } from "../enums/seeds";
 
 const CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
 const PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
-const FILLS_REGISTRY_SEED = Seeds.FILLS_REGISTRY_SEED;
 const DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
 const MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
 const MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
@@ -17,15 +16,10 @@ export async function getConfigurationRegistryPDA(programId: PublicKey) {
         programId
     )[0]
 }
+
 export async function getProgramStatePDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(PROGRAM_STATE_SEED)],
-        programId
-    )[0]
-}
-export async function getFillsRegistryPDA(programId: PublicKey) {
-    return PublicKey.findProgramAddressSync(
-        [Buffer.from(FILLS_REGISTRY_SEED)],
         programId
     )[0]
 }

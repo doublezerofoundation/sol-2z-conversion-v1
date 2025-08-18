@@ -7,4 +7,4 @@ pub const RETRY_DELAY: u64 = 2;
 pub const DECIMAL_PRECISION: u64 = 100;
 
 pub const TOKEN_DECIMALS: u64 = 1_000_000;
-pub const MAX_FILLS_QUEUE_SIZE: usize = 150000;
+pub const MAX_FILLS_QUEUE_SIZE: usize = 650000;

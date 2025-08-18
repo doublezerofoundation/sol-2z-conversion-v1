@@ -209,6 +209,14 @@ cargo run -p admin-cli -- set-admin -a <ADMIN_ACCOUNT>
 
 - `-a`: Admin account public key.
 
+### Set Deny Authority
+Sets the deny authority of the system.
+```sh
+cargo run -p admin-cli -- set-deny-authority -a <DENY_AUTHORITY_ACCOUNT>
+```
+
+- `-a`: Deny authority account public key.
+
 ### Add Dequeuer
 Add a dequeuer address to the authorized list
 ```sh
