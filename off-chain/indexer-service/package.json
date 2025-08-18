@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "build:metrics-api": "tsc && npm run package:metrics-api",
+    "package:metrics-api": "mkdir -p dist/metrics-api && cp -r dist/src/metrics-api/* dist/metrics-api/ && cp package.json dist/metrics-api/",
+    "deploy:metrics-api": "./deploy-metrics-api.sh",
     "dev": "ts-node ./src/index.ts",
     "test": "jest --maxWorkers=2",
     "test:watch": "jest --watch",
@@ -22,6 +25,7 @@
     "bs58": "^6.0.0"
   },
   "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.0.14",
     "jest": "^30.0.5",
