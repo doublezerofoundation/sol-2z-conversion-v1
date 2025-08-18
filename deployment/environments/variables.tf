@@ -186,6 +186,18 @@ variable "enable_indexer_service" {
   default     = false
 }
 
+variable "enable_pricing_service" {
+  description = "Enable the Pricing Service API Gateway"
+  type        = bool
+  default     = false
+}
+
+variable "enable_metrics_api" {
+  description = "Enable the Metrics Service API Gateway"
+  type        = bool
+  default     = false
+}
+
 variable "release_tag" {
   description = "Docker image tag to pull from ECR"
   type        = string
