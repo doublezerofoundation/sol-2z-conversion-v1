@@ -26,6 +26,7 @@ pub struct MigrateV1ToV2<'info> {
     )]
     pub configuration_registry_new: Account<'info, ConfigurationRegistryV2>,
     #[account(
+        mut,
         seeds = [SeedPrefixesV2::ProgramState.as_bytes()],
         bump,
     )]
@@ -33,7 +34,8 @@ pub struct MigrateV1ToV2<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixesV1::DenyListRegistry.as_bytes()],
-        bump
+        bump,
+        close = admin
     )]
     pub deny_list_registry_old: Account<'info, DenyListRegistry>,
     #[account(
@@ -66,14 +68,12 @@ impl<'info> MigrateV1ToV2<'info> {
         // doing the changes for replacement/ removal
         self.configuration_registry_new.price_oracle_pubkey = self.configuration_registry_old.oracle_pubkey;
         self.configuration_registry_new.sol_amount = self.configuration_registry_old.sol_quantity;
-        
+
         // migration of denylist registry
         self.deny_list_registry_new.denied_addresses = self.deny_list_registry_old.denied_addresses.clone();
         self.deny_list_registry_new.denied_addresses = self.deny_list_registry_old.denied_addresses.clone();
         self.deny_list_registry_new.update_count = self.deny_list_registry_old.update_count;
         self.deny_list_registry_new.new_field = 0; // add some value to new field
-        
-
         Ok(())
     }
 

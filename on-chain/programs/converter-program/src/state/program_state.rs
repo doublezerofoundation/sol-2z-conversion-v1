@@ -9,7 +9,6 @@ use crate::{
 #[account]
 #[derive(InitSpace, Debug)]
 pub struct ProgramStateAccount {
-    // We don't do any changes here. just version upgrade
     pub admin: Pubkey,
     pub fills_registry_address: Pubkey,
     pub is_halted: bool,  // Indicates whether the system accepts conversion requests

@@ -26,6 +26,7 @@ pub struct RollbackV2toV1<'info> {
     )]
     pub configuration_registry_new: Account<'info, ConfigurationRegistry>,
     #[account(
+        mut,
         seeds = [SeedPrefixesV1::ProgramState.as_bytes()],
         bump,
     )]
@@ -33,7 +34,8 @@ pub struct RollbackV2toV1<'info> {
     #[account(
         mut,
         seeds = [SeedPrefixesV2::DenyListRegistry.as_bytes()],
-        bump
+        bump,
+        close = admin
     )]
     pub deny_list_registry_old: Account<'info, DenyListRegistryV2>,
     #[account(

@@ -1,4 +1,4 @@
-use crate::common::seeds::seed_prefixes_v2::SeedPrefixesV2;
+use crate::common::seeds::seed_prefixes_v1::SeedPrefixesV1;
 
 #[derive(Debug, Clone, Copy)]
 pub enum SeedPrefixes {
@@ -11,9 +11,9 @@ impl SeedPrefixes {
     pub fn as_bytes(&self) -> &'static [u8] {
         // Use current versions by default
         let current_version = match self {
-            SeedPrefixes::ConfigurationRegistry => SeedPrefixesV2::ConfigurationRegistry,
-            SeedPrefixes::ProgramState => SeedPrefixesV2::ProgramState,
-            SeedPrefixes::DenyListRegistry => SeedPrefixesV2::DenyListRegistry,
+            SeedPrefixes::ConfigurationRegistry => SeedPrefixesV1::ConfigurationRegistry,
+            SeedPrefixes::ProgramState => SeedPrefixesV1::ProgramState,
+            SeedPrefixes::DenyListRegistry => SeedPrefixesV1::DenyListRegistry,
         };
         current_version.as_bytes()
     }

@@ -139,7 +139,6 @@ pub mod converter_program {
             ctx.bumps.configuration_registry_new,
             ctx.bumps.deny_list_registry_new
         )?;
-
         ctx.accounts.process()
     }
 
