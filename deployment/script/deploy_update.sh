@@ -1,20 +1,14 @@
 #!/bin/bash
 set -e
+source ./common.sh
 
-
-ENV="dev3"
-AWS_REGION="us-east-1"
-IMAGE_TAG="dev3-v1.0.0"
-CONTAINER_NAME="swap-oracle-service"
-ECR_REGISTRY=""
-ECR_REPOSITORY="double-zero-oracle-pricing-service"
-ENV_TERRAFORM_DIR="../environments/dev"
+ENV_TERRAFORM_DIR="../environments"
 successful_instances=()
 failed_instances=()
 
 # ENV="dev1"
 # AWS_REGION="us-east-1"
-# IMAGE_TAG="dev1-v1.0.6"
+# RELEASE_TAG="dev1-v1.0.6"
 # CONTAINER_NAME="indexer-service"
 # ECR_REGISTRY=""
 # ECR_REPOSITORY="double-zero-indexer-service"
@@ -32,8 +26,8 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
-        --image-tag)
-            IMAGE_TAG="$2"
+        --release-tag)
+            RELEASE_TAG="$2"
             shift 2
             ;;
         --container-name)
@@ -69,7 +63,7 @@ done
 echo "=== Deployment Configuration ==="
 echo "Environment: $ENV"
 echo "AWS Region: $AWS_REGION"
-echo "Image Tag: $IMAGE_TAG"
+echo "Image Tag: $RELEASE_TAG"
 echo "Container Name: $CONTAINER_NAME"
 echo "ECR Repository: $ECR_REPOSITORY"
 echo "ECR Registry: ${ECR_REGISTRY:-'(will be auto-detected)'}"
@@ -92,39 +86,89 @@ find_ec2_instance(){
 }
 
 verify_ecr_image(){
-  echo "verify the ecr image $ECR_REPOSITORY  $IMAGE_TAG"
-  if aws ecr describe-images --region "$AWS_REGION" --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$IMAGE_TAG" &> /dev/null; then
+  echo "verify the ecr image $ECR_REPOSITORY  $RELEASE_TAG"
+  if aws ecr describe-images --region "$AWS_REGION" --repository-name "$ECR_REPOSITORY" --image-ids imageTag="$RELEASE_TAG" &> /dev/null; then
     echo "ECR image found"
   else
     echo "ECR image not found"
   fi
 }
 
+setup_aws_environment() {
+    echo "Setting up AWS environment..."
+
+    aws_account_id=$(aws sts get-caller-identity --query 'Account' --output text)
+    if [[ $? -ne 0 ]]; then
+        print_error_and_exit "Failed to get AWS account ID. Please check your AWS credentials."
+    fi
+
+    export env_alias="${ENV}"
+    export region="${AWS_REGION}"
+    export account_id="${aws_account_id}"
+    export release_tag="${RELEASE_TAG}"
+
+    echo "AWS Account ID: ${account_id}"
+    echo "Environment: ${env_alias}"
+    echo "Region: ${region}"
+    echo "Release Tag: ${release_tag}"
+}
+
+prepare_terraform_backend() {
+    local env_path="../environments/"
+
+    if [[ ! -d "${env_path}" ]]; then
+        print_error_and_exit "Environment directory ${env_path} does not exist"
+    fi
+
+    cd "${env_path}"
+
+    echo "Cleaning previous Terraform state..."
+    rm -rf ./.terraform
+    rm -rf ./.terraform.lock.hcl
+    rm -rf ./backend_config.tf
+
+    echo "Generating Terraform backend configuration..."
+    if [[ ! -f "./templates/backend_config.tf.template" ]]; then
+        print_error_and_exit "Backend configuration template not found at ../templates/backend_config.tf.template"
+    fi
+
+    envsubst '$region $env_alias $account_id $release_tag' < './templates/backend_config.tf.template' > backend_config.tf
+
+    if [[ $? -ne 0 ]]; then
+        print_error_and_exit "Failed to generate backend configuration"
+    fi
+
+    echo "Backend configuration generated successfully"
+}
+
 update_pricing_service_image_tag() {
-    echo "=== Deploying Infrastructure with Image Tag: $IMAGE_TAG ==="
+    echo "=== Deploying Infrastructure with Image Tag: $RELEASE_TAG ==="
     local plan_timeout_duration=300
     local apply_timeout_duration=1800
 
-    # Change to terraform directory
-    cd "$ENV_TERRAFORM_DIR" || {
-        echo "❌ Failed to change to terraform directory: $ENV_TERRAFORM_DIR"
-        exit 1
-    }
+    prepare_terraform_backend
+
+    echo "Initializing Terraform..."
+    terraform init
+    if [[ $? -ne 0 ]]; then
+        print_error_and_exit "Terraform initialization failed"
+    fi
+
 
     echo "Running terraform plan with dynamic image tag..."
     timeout $plan_timeout_duration terraform plan \
         -var-file='./terraform.tfvars' \
-        -var="swap_oracle_service_image_tag=$IMAGE_TAG" \
+        -var="release_tag=$release_tag" \
+        -var="environment=$env_alias" \
+        -var="aws_region=$region" \
         -out=tfplan
 
     local plan_exit_code=$?
 
     if [[ $plan_exit_code -eq 124 ]]; then
-        echo "❌ Terraform plan timed out after $plan_timeout_duration seconds"
-        exit 1
+        print_error_and_exit "Terraform plan timed out after $plan_timeout_duration seconds"
     elif [[ $plan_exit_code -ne 0 ]]; then
-        echo "❌ Terraform plan failed with exit code: $plan_exit_code"
-        exit 1
+        print_error_and_exit "Terraform plan failed with exit code: $plan_exit_code"
     fi
 
     echo "✅ Terraform plan successful"
@@ -146,26 +190,21 @@ update_pricing_service_image_tag() {
 
 
     if [[ $apply_exit_code -eq 124 ]]; then
-        echo "❌ Terraform apply timed out after $apply_timeout_duration seconds"
         echo "The apply process may still be running in the background."
         echo "Check the terraform state and AWS console to verify the deployment status."
-        exit 1
+        print_error_and_exit "Terraform apply timed out after $apply_timeout_duration seconds"
     elif [[ $apply_exit_code -eq 0 ]]; then
         echo "✅ Infrastructure deployment completed successfully"
-        echo "New image tag deployed: $IMAGE_TAG"
-
-        # Wait for infrastructure to be fully ready
+        echo "New image tag deployed: $RELEASE_TAG"
         echo "Waiting for infrastructure stabilization..."
         wait_for_pricing_service_template_ready
 
     else
-        echo "❌ Terraform apply failed with exit code: $apply_exit_code"
         echo "Checking terraform state for any partial changes..."
         terraform show -json > /dev/null 2>&1 || true
-        exit 1
+        print_error_and_exit "Terraform apply failed with exit code: $apply_exit_code"
     fi
 
-    # Clean up plan file
     rm -f tfplan
 
     cd - > /dev/null
@@ -203,8 +242,6 @@ wait_for_pricing_service_template_ready() {
 
 check_pricing_service_launch_template_ready() {
     local launch_template_name_pattern="doublezero-${ENV}-swap-oracle-lt"
-
-    # Get the exact launch template name and ID
     local template_info
     template_info=$(aws ec2 describe-launch-templates \
         --region "$AWS_REGION" \
@@ -227,8 +264,6 @@ check_pricing_service_launch_template_ready() {
     fi
 
     echo "Found launch template: $template_name (ID: $template_id, Version: $latest_version)"
-
-    # Get user data using the launch template ID (more reliable than name)
     local user_data
     user_data=$(aws ec2 describe-launch-template-versions \
         --region "$AWS_REGION" \
@@ -238,14 +273,11 @@ check_pricing_service_launch_template_ready() {
         --output text 2>/dev/null)
 
     if [[ -n "$user_data" && "$user_data" != "None" ]]; then
-        # Decode base64 user data and check for image tag
         local decoded_user_data
         decoded_user_data=$(echo "$user_data" | base64 -d 2>/dev/null)
 
-        if echo "$decoded_user_data" | grep -q "IMAGE_TAG=\"${IMAGE_TAG}\""; then
-            echo "✅ Launch template already has the correct image tag: $IMAGE_TAG"
-
-            # Set the latest version as default
+        if echo "$decoded_user_data" | grep -q "IMAGE_TAG=\"${RELEASE_TAG}\""; then
+            echo "✅ Launch template already has the correct image tag: $RELEASE_TAG"
             echo "Setting version $latest_version as default..."
             aws ec2 modify-launch-template \
                 --region "$AWS_REGION" \
@@ -260,10 +292,9 @@ check_pricing_service_launch_template_ready() {
                 return 1
             fi
         else
-            echo "⚠️ Launch template exists but doesn't contain expected image tag: $IMAGE_TAG"
-            # Optionally show what image tag is currently in the user data
-            if echo "$decoded_user_data" | grep -q "IMAGE_TAG="; then
-                local current_tag=$(echo "$decoded_user_data" | grep -o 'IMAGE_TAG="[^"]*"' | head -1)
+            echo "⚠️ Launch template exists but doesn't contain expected image tag: $RELEASE_TAG"
+            if echo "$decoded_user_data" | grep -q "RELEASE_TAG="; then
+                local current_tag=$(echo "$decoded_user_data" | grep -o 'RELEASE_TAG="[^"]*"' | head -1)
                 echo "Current image tag in launch template: $current_tag"
             fi
         fi
@@ -305,7 +336,7 @@ trigger_pricing_service_instance_refresh() {
 
     if [[ -n "$refresh_id" && "$refresh_id" != "None" ]]; then
         echo "✅ Instance refresh initiated with ID: $refresh_id"
-        echo "New instances will use image tag: $IMAGE_TAG"
+        echo "New instances will use image tag: $RELEASE_TAG"
         echo ""
         echo "Monitor progress with:"
         echo "aws autoscaling describe-instance-refreshes \\"
@@ -334,7 +365,7 @@ ENVIRONMENT=${ENV@Q}
 AWS_REGION=${AWS_REGION@Q}
 ECR_REGISTRY=${ECR_REGISTRY@Q}
 ECR_REPOSITORY=${ECR_REPOSITORY@Q}
-IMAGE_TAG=${IMAGE_TAG@Q}
+IMAGE_TAG=${RELEASE_TAG@Q}
 CONTAINER_NAME=${CONTAINER_NAME@Q}
 REDIS_PORT="${REDIS_PORT}"
 REDIS_ENDPOINT="${REDIS_ENDPOINT}"
@@ -432,7 +463,7 @@ deploy_application() {
       --document-name "AWS-RunShellScript" \
       --targets "Key=InstanceIds,Values=$instance_id" \
       --parameters "commands=$commands_json" \
-      --comment "Deploy container on $instance_id with tag $IMAGE_TAG" \
+      --comment "Deploy container on $instance_id with tag $RELEASE_TAG" \
       --query 'Command.CommandId' \
       --output text)
 
@@ -561,7 +592,7 @@ update_lambda() {
 
 get_ecr_config
 verify_ecr_image
-
+setup_aws_environment
 if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
   update_pricing_service_image_tag
   trigger_pricing_service_instance_refresh

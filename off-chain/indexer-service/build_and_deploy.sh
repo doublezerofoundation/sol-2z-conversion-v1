@@ -187,10 +187,6 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
-        --env)
-            ENV="$2"
-            shift 2
-            ;;
         --repository)
             ECR_REPOSITORY_NAME="$2"
             shift 2
@@ -211,7 +207,6 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo "Options:"
             echo "  --region REGION         AWS region (default: us-east-1)"
-            echo "  --env ENV               Environment (default: dev1)"
             echo "  --repository NAME       ECR repository name (default: double-zero-indexer-service)"
             echo "  --tag TAG               Build tag (default: latest)"
             echo "  --bucket BUCKET         S3 bucket for Lambda deployments (default: doublezero-{env}-lambda-deployments)"

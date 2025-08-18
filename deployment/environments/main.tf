@@ -8,14 +8,6 @@ terraform {
     }
   }
 
-  # Backend configuration for environment-level state
-  backend "s3" {
-    bucket         = "doublezero-terraform-state-bucket"
-    key            = "environments/dev1/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "doublezero-terraform-locks"
-    encrypt        = true
-  }
 }
 
 provider "aws" {
@@ -61,7 +53,7 @@ data "aws_caller_identity" "current" {}
 # Network Module - Creates network components at the environment level (NAT Gateway and Security Groups)
 # Subnets are now created at the regional level
 module "network" {
-  source = "../../modules/network"
+  source = "../modules/network"
 
   vpc_id             = data.terraform_remote_state.regional.outputs.vpc_id
   internet_gateway_id = data.terraform_remote_state.regional.outputs.internet_gateway_id
@@ -75,7 +67,7 @@ module "network" {
 
 # Web Application Firewall (WAF) for Pricing Service
 module "pricing_waf" {
-  source = "../../modules/waf"
+  source = "../modules/waf"
 
   name_prefix = "pricing-service-${var.environment}"
   environment = var.environment
@@ -90,7 +82,7 @@ module "pricing_waf" {
 
 # Web Application Firewall (WAF) for Metrics Service
 module "metrics_waf" {
-  source = "../../modules/waf"
+  source = "../modules/waf"
 
   name_prefix = "metrics-service-${var.environment}"
   environment = var.environment
@@ -113,7 +105,7 @@ module "s3" {
 
 # Lambda function for Metrics Service
 module "metrics_lambda" {
-  source = "../../modules/lambda"
+  source = "../modules/lambda"
 
   name_prefix = "doublezero-${var.environment}"
   environment = var.environment
@@ -168,7 +160,7 @@ resource "aws_api_gateway_vpc_link" "this" {
 
 # Network Load Balancer
 module "load_balancer" {
-  source = "../../modules/load_balancer"
+  source = "../modules/load_balancer"
 
   name_prefix     = "doublezero-${var.environment}"
   environment     = var.environment
@@ -188,7 +180,7 @@ module "load_balancer" {
 
 # API Gateway for Pricing Service
 module "pricing_api_gateway" {
-  source = "../../modules/api_gateway"
+  source = "../modules/api_gateway"
 
   name_prefix = "pricing-service-${var.environment}"
   enable_pricing_service = true
@@ -217,7 +209,7 @@ module "pricing_api_gateway" {
 
 # API Gateway for Metrics Service
 module "metrics_api_gateway" {
-  source = "../../modules/api_gateway"
+  source = "../modules/api_gateway"
 
   name_prefix = "metrics-service-${var.environment}"
   enable_pricing_service = var.enable_pricing_service
@@ -250,7 +242,7 @@ module "metrics_api_gateway" {
 
 # EC2 Instances with Auto Scaling
 module "ec2" {
-  source = "../../modules/ec2"
+  source = "../modules/ec2"
 
   environment       = var.environment
   name_prefix       = "doublezero-${var.environment}"
@@ -266,8 +258,8 @@ module "ec2" {
   redis_port = data.terraform_remote_state.regional.outputs.redis_port
   enable_swap_oracle_service = var.enable_swap_oracle_service
   enable_indexer_service     = var.enable_indexer_service
-  swap_oracle_service_image_tag = var.swap_oracle_service_image_tag
-  indexer_service_image_tag = var.indexer_service_image_tag
+  swap_oracle_service_image_tag = var.release_tag
+  indexer_service_image_tag = var.release_tag
 
   # Use the IAM instance profile from the account level
   instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name
@@ -324,13 +316,13 @@ resource "aws_api_gateway_base_path_mapping" "metrics_mapping" {
 }
 
 module "dynamodb" {
-  source       = "../../modules/dynamodb"
+  source       = "../modules/dynamodb"
   name_prefix  = "doublezero-${var.environment}"
   environment  = var.environment
 }
 
 module "sns" {
-  source            = "../../modules/sns"
+  source            = "../modules/sns"
   name_prefix       = "doublezero-${var.environment}"     
   environment       = var.environment
   email_subscribers = [] # add admin email addresses for error notifications

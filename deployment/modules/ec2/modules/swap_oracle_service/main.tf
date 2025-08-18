@@ -23,14 +23,30 @@ locals {
 }
 
 # CloudWatch Log Groups
-resource "aws_cloudwatch_log_group" "docker_logs" {
-  name              = "/ec2/${var.environment}/service"
+resource "aws_cloudwatch_log_group" "container_logs" {
+  name              = "/ec2/${var.environment}/${var.container_name}"
+  retention_in_days = 7
+}
+
+resource "aws_cloudwatch_log_group" "user_data_logs" {
+  name              = "/ec2/${var.environment}/${var.container_name}/user_data"
   retention_in_days = 7
 }
 
 resource "aws_cloudwatch_log_group" "application_logs" {
   name              = "/ec2/${var.environment}/application"
   retention_in_days = 7
+}
+
+data "aws_ecr_image" "app_image" {
+  repository_name = var.ecr_repository
+  image_tag       = var.swap_oracle_service_image_tag
+}
+
+# Local value to ensure image validation
+locals {
+  validated_image_uri = "${local.ecr_registry}/${var.ecr_repository}:${var.swap_oracle_service_image_tag}"
+  image_exists        = data.aws_ecr_image.app_image.id != null
 }
 
 # Launch Template
@@ -60,6 +76,8 @@ resource "aws_launch_template" "this" {
       redis_port                 = var.redis_port
     })
   )
+
+  depends_on = [data.aws_ecr_image.app_image]
 
   block_device_mappings {
     device_name = "/dev/xvda"

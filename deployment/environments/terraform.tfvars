@@ -1,7 +1,7 @@
 # Development Environment Configuration
 
 # General
-environment = "dev1"
+environment = "dev3"
 aws_region  = "us-east-1"
 
 # VPC Configuration
@@ -40,8 +40,6 @@ enable_indexer_service     = true
 enable_pricing_service = false
 enable_metrics_api = true
 
-swap_oracle_service_image_tag = "dev1-v1.0.11"
-indexer_service_image_tag = "dev1-v1.0.11"
-
 # metrics lambda configuration
 lambda_s3_version = "" # Leave empty to use the latest version
+release_tag = "v1.0.0"
