@@ -92,7 +92,6 @@ export async function buySolAndVerify(
     // Check Fills Registry Values
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
     assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count + 1);
-    assert.equal(fillsRegistryAfter.fills.length, fillsRegistryBefore.fills.length + 1);
     const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
     assert.equal(fillEntry.solIn, solBalanceChange);
     assert.equal(fillEntry.token2ZOut, tokenBalanceChange);

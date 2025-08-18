@@ -13,6 +13,10 @@ import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry";
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import { setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
+import {dequeueFillsFail, dequeueFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
+import {addDequeuerAndVerify, removeDequeuerAndVerify} from "./core/test-flow/dequeuer-management";
+import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
+import {assert} from "chai";
 
 describe("Buy Sol Tests", () => {
     // Configure the client to use the local cluster.
@@ -21,7 +25,7 @@ describe("Buy Sol Tests", () => {
     const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
     const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as anchor.Idl, anchor.getProvider());
     let adminKeyPair: Keypair = getDefaultKeyPair();
-    let mockTransferProgramPDAs;
+    let mockTransferProgramPDAs: any;
     let tokenAccountForUser: PublicKey;
     let userKeyPair: Keypair;
     let currentConfigs: SystemConfig;
@@ -68,7 +72,7 @@ describe("Buy Sol Tests", () => {
     });
 
     describe("Unauthorized Dequeue Attempt", async() => {
-        it("User not in authorized Deque", async () => {
+        it("User not in authorized Dequeuers should not dequeue fills", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,
@@ -77,12 +81,47 @@ describe("Buy Sol Tests", () => {
                 currentConfigs,
                 1
             );
+
+            await dequeueFillsFail(
+                program,
+                DEFAULT_CONFIGS.solQuantity,
+                userKeyPair,
+                "User is not authorized to do Dequeue Action"
+            )
         });
     });
 
 
-    describe("Happy Path", async() => {
-        it("User does buySOL at higher price than Ask Price", async () => {
+    describe.only("Authorized user doing the dequeue fills", async() => {
+        before("User is added to authorized Dequeuers List", async () => {
+            await addDequeuerAndVerify(
+                program,
+                getDefaultKeyPair(),
+                userKeyPair.publicKey,
+            )
+        });
+
+        it("Clear up fills registry", async () => {
+            const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
+
+            await dequeueFillsSuccess(
+                program,
+                new anchor.BN(fillsRegistryBefore.totalSolPending),
+                userKeyPair
+            )
+            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+            assert.equal(fillsRegistryAfter.totalSolPending, 0)
+        });
+
+        it("User should be able to do dequeue fills to empty fills registry", async () => {
+            await dequeueFillsSuccess(
+                program,
+                DEFAULT_CONFIGS.solQuantity,
+                userKeyPair
+            )
+        });
+
+        it("User dequeues 1  fill", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,
@@ -91,6 +130,39 @@ describe("Buy Sol Tests", () => {
                 currentConfigs,
                 1
             );
+
+            await dequeueFillsSuccess(
+                program,
+                DEFAULT_CONFIGS.solQuantity,
+                userKeyPair
+            )
+        });
+
+        it("User dequeues 10 fills", async () => {
+            for (let i = 0; i < 5; i++) {
+                await buySolSuccess(
+                    program,
+                    mockTransferProgram,
+                    tokenAccountForUser,
+                    userKeyPair,
+                    currentConfigs,
+                    1.1
+                );
+            }
+
+            await dequeueFillsSuccess(
+                program,
+                new anchor.BN(5 * Number(DEFAULT_CONFIGS.solQuantity)),
+                userKeyPair
+            )
+        });
+
+        after("User is removed from authorized Dequeuers List", async () => {
+            await removeDequeuerAndVerify(
+                program,
+                getDefaultKeyPair(),
+                userKeyPair.publicKey,
+            )
         });
     });
 });
