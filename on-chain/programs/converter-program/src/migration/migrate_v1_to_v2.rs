@@ -71,7 +71,7 @@ impl<'info> MigrateV1ToV2<'info> {
 
         // migration of denylist registry
         self.deny_list_registry_new.denied_addresses = self.deny_list_registry_old.denied_addresses.clone();
-        self.deny_list_registry_new.last_updated = self.deny_list_registry_old.last_updated.clone();
+        self.deny_list_registry_new.last_updated = self.deny_list_registry_old.last_updated;
         self.deny_list_registry_new.update_count = self.deny_list_registry_old.update_count;
         self.deny_list_registry_new.new_field = 0; // add some value to new field
         Ok(())
