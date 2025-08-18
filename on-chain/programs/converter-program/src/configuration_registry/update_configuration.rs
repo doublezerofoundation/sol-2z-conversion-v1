@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::{
     configuration_registry::configuration_registry_v2::ConfigurationRegistryV2,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
+    deny_list_registry::deny_list_registry_v2::DenyListRegistryV2,
     state::program_state::ProgramStateAccount,
     common::seeds::seed_prefixes::SeedPrefixes,
     AccountInfo
@@ -34,7 +34,7 @@ pub struct ConfigurationRegistryUpdate<'info> {
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
+    pub deny_list_registry: Account<'info, DenyListRegistryV2>,
     #[account(mut)]
     pub admin: Signer<'info>,
 }

@@ -9,6 +9,7 @@ mod fills_registry;
 mod initialize;
 mod state;
 mod user_flow;
+mod migration;
 
 use system_management::set_admin::*;
 use system_management::set_deny_list_authority::*;
