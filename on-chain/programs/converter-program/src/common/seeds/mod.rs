@@ -1,2 +1,2 @@
-mod seed_prefix_current_versions;
+mod seed_prefix_v1;
 pub mod seed_prefixes;
