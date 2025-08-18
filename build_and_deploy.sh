@@ -55,6 +55,47 @@ handle_on_chain() {
   [[ "$restart_validator" == true ]] && cmd+=("--restart-validator")
   [[ -n "$mode" ]] && cmd+=("-m" "$mode")
   "${cmd[@]}"
+  
+  # Copy converter program IDL to indexer-service
+  copy_idl_to_indexer
+}
+
+copy_idl_to_indexer() {
+  log_section "Copying Converter Program IDL to Indexer Service..."
+  
+  local source_idl="./on-chain/target/idl/converter_program.json"
+  local dest_idl_dir="./off-chain/indexer-service/idl"
+  local dest_idl="$dest_idl_dir/converter_program.json"
+  
+  # Check if source IDL exists
+  if [[ ! -f "$source_idl" ]]; then
+    log_error "Source IDL file not found: $source_idl"
+    log_error "Make sure the on-chain program has been built successfully."
+    return 1
+  fi
+  
+  # Create destination directory if it doesn't exist
+  if [[ ! -d "$dest_idl_dir" ]]; then
+    log_info "Creating IDL directory: $dest_idl_dir"
+    mkdir -p "$dest_idl_dir"
+  fi
+  
+  # Copy the IDL file
+  log_info "Copying IDL from: $source_idl"
+  log_info "Copying IDL to: $dest_idl"
+  
+  if cp "$source_idl" "$dest_idl"; then
+    log_success "Successfully copied converter_program.json to indexer-service/idl/"
+    
+    # Show file info
+    local file_size=$(du -h "$dest_idl" | cut -f1)
+    local file_date=$(date -r "$dest_idl" '+%Y-%m-%d %H:%M:%S')
+    log_info "IDL file size: $file_size"
+    log_info "IDL file date: $file_date"
+  else
+    log_error "Failed to copy IDL file"
+    return 1
+  fi
 }
 
 handle_mock_double_zero_program() {
