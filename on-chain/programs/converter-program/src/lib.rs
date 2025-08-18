@@ -131,7 +131,8 @@ pub mod converter_program {
         ctx.accounts.process(max_sol_amount)
     }
 
-    //////////////////////// Migration ////////////////////////
+    //////////////////////// Example Migration ////////////////////////
+    //////////////////////// !!! Only as an example ////////////////////////
     pub fn migrate_v1_to_v2(
         ctx: Context<MigrateV1ToV2>,
     ) -> Result<()> {
