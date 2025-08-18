@@ -1,10 +1,6 @@
 use crate::{
     state::program_state::ProgramStateAccount,
-    common::{
-        constant::MAX_DENY_LIST_SIZE,
-        seeds::seed_prefixes::SeedPrefixes,
-        // error::DoubleZeroError,
-    }
+    common::seeds::seed_prefixes::SeedPrefixes
 };
 use anchor_lang::prelude::*;
 
@@ -12,7 +8,8 @@ use anchor_lang::prelude::*;
 #[account]
 #[derive(InitSpace, Debug)]
 pub struct DenyListRegistryV2 {
-    #[max_len(MAX_DENY_LIST_SIZE)]
+    // we increase the size also
+    #[max_len(100)]
     pub denied_addresses: Vec<Pubkey>,
     pub last_updated: i64,
     pub update_count: u64, // For audit purposes

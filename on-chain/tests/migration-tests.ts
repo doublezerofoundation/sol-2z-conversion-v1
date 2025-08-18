@@ -1,6 +1,6 @@
 import { setup } from "./core/setup";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
-import {assert} from "chai";
+import {assert, expect} from "chai";
 import {accountExists, getDefaultKeyPair} from "./core/utils/accounts";
 import {PublicKey} from "@solana/web3.js";
 import {getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA} from "./core/utils/pda-helper";
@@ -54,6 +54,14 @@ describe("Migration Tests", async () => {
         assert.isFalse(configRegistryV2Exists, "Configuration Registry V2 should not exist before migration");
         assert.isFalse(denyRegistryV2Exists, "Deny List Registry V2 should not exist before migration");
 
+        const configurationRegistryV1 = await program.account.configurationRegistry.fetch(
+            getConfigurationRegistryPDA(program.programId)
+        );
+
+        const denyListV1 = await program.account.denyListRegistry.fetch(
+            getDenyListRegistryPDA(program.programId)
+        );
+
         try {
             await program.methods.migrateV1ToV2()
                 .accounts({
@@ -83,6 +91,27 @@ describe("Migration Tests", async () => {
         assert.equal(programState.bumpRegistry.configurationRegistryBump, getConfigurationV2RegistryPDA(program.programId)[1]);
         assert.equal(programState.bumpRegistry.denyListRegistryBump, getDenyListRegistryV2PDA(program.programId)[1]);
 
+        const configurationRegistryV2 = await program.account.configurationRegistryV2.fetch(
+            getConfigurationV2RegistryPDA(program.programId)[0]
+        );
+
+        // assert configuration values are correctly migrated
+        assert.equal(Number(configurationRegistryV2.solAmount), Number(configurationRegistryV1.solQuantity));
+        assert.equal(configurationRegistryV2.priceOraclePubkey.toBase58(), configurationRegistryV1.oraclePubkey.toBase58());
+        assert.equal(Number(configurationRegistryV2.priceMaximumAge), Number(configurationRegistryV1.priceMaximumAge));
+        expect(configurationRegistryV2.authorizedDequeuers).to.deep.equal(configurationRegistryV1.authorizedDequeuers);
+        assert.equal(Number(configurationRegistryV2.coefficient), Number(configurationRegistryV1.coefficient));
+        assert.equal(Number(configurationRegistryV2.maxDiscountRate), Number(configurationRegistryV1.maxDiscountRate));
+        assert.equal(Number(configurationRegistryV2.minDiscountRate), Number(configurationRegistryV1.minDiscountRate));
+
+        const denyListV2 = await program.account.denyListRegistryV2.fetch(
+            getDenyListRegistryV2PDA(program.programId)[0]
+        );
+        // assert deny list values are correctly migrated
+        assert.equal(Number(denyListV2.updateCount), Number(denyListV1.updateCount));
+        assert.equal(Number(denyListV2.lastUpdated), Number(denyListV1.lastUpdated));
+        assert.equal(Number(denyListV2.newField), 0);
+
     });
 
     it("Rollback to V1 from V2", async () => {
@@ -90,6 +119,13 @@ describe("Migration Tests", async () => {
             await Promise.all(
                 accounts.map((pda) => accountExists(program.provider.connection, pda))
             );
+
+        const configurationRegistryV2 = await program.account.configurationRegistryV2.fetch(
+            getConfigurationV2RegistryPDA(program.programId)[0]
+        );
+        const denyListV2 = await program.account.denyListRegistryV2.fetch(
+            getDenyListRegistryV2PDA(program.programId)[0]
+        );
 
         assert.isTrue(programStateExists, "Program State Account should exist before migration");
         assert.isFalse(configRegistryV1Exists, "Configuration Registry V1 should not exist before migration");
@@ -126,5 +162,25 @@ describe("Migration Tests", async () => {
         // check bump values has been updated
         assert.equal(programState.bumpRegistry.configurationRegistryBump, v1BumpValues[0]);
         assert.equal(programState.bumpRegistry.denyListRegistryBump, v1BumpValues[1]);
+
+        const configurationRegistryV1 = await program.account.configurationRegistry.fetch(
+            getConfigurationRegistryPDA(program.programId)
+        );
+
+        // assert configuration values are correctly migrated
+        assert.equal(Number(configurationRegistryV1.solQuantity), Number(configurationRegistryV2.solAmount));
+        assert.equal(configurationRegistryV1.oraclePubkey.toBase58(), configurationRegistryV2.priceOraclePubkey.toBase58());
+        assert.equal(Number(configurationRegistryV1.priceMaximumAge), Number(configurationRegistryV2.priceMaximumAge));
+        expect(configurationRegistryV1.authorizedDequeuers).to.deep.equal(configurationRegistryV2.authorizedDequeuers);
+        assert.equal(Number(configurationRegistryV1.coefficient), Number(configurationRegistryV2.coefficient));
+        assert.equal(Number(configurationRegistryV1.maxDiscountRate), Number(configurationRegistryV2.maxDiscountRate));
+        assert.equal(Number(configurationRegistryV1.minDiscountRate), Number(configurationRegistryV2.minDiscountRate));
+
+        const denyListV1 = await program.account.denyListRegistry.fetch(
+            getDenyListRegistryPDA(program.programId)
+        );
+        // assert deny list values are correctly migrated
+        assert.equal(Number(denyListV1.updateCount), Number(denyListV2.updateCount));
+        assert.equal(Number(denyListV1.lastUpdated), Number(denyListV2.lastUpdated));
     });
 });
