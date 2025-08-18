@@ -4,7 +4,7 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 
-// Mock Struct demonstrating the upgrades
+// Sample Struct demonstrating the upgrades
 #[account]
 #[derive(InitSpace, Debug)]
 pub struct ConfigurationRegistryV2 {

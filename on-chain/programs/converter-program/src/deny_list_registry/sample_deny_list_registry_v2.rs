@@ -8,7 +8,7 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 
-// Mock struct. to test upgrades
+// Sample struct. to test upgrades
 #[account]
 #[derive(InitSpace, Debug)]
 pub struct DenyListRegistryV2 {
