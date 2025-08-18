@@ -1,7 +1,7 @@
 # Development Environment Configuration
 
 # General
-environment = "dev1"
+environment = "dev3"
 aws_region  = "us-east-1"
 
 # VPC Configuration
@@ -37,5 +37,4 @@ health_check_unhealthy_threshold = 3
 enable_swap_oracle_service = true
 enable_indexer_service     = true
 
-swap_oracle_service_image_tag = "dev3-v1.0.0"
-indexer_service_image_tag = "dev3-v1.0.0"
+release_tag = "v1.0.0"

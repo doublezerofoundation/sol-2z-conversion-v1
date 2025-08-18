@@ -9,14 +9,6 @@ terraform {
     }
   }
 
-  # Backend configuration for regional-level state
-  backend "s3" {
-    bucket         = "doublezero-terraform-state-bucket"
-    key            = "regional/terraform.tfstate"
-    region         = "us-east-1"
-    dynamodb_table = "doublezero-terraform-locks"
-    encrypt        = true
-  }
 }
 
 provider "aws" {
