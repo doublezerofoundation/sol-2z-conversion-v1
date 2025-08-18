@@ -138,7 +138,7 @@ describe("Buy Sol Tests", () => {
             )
         });
 
-        it("User dequeues 10 fills", async () => {
+        it("User dequeues 5 fills", async () => {
             for (let i = 0; i < 5; i++) {
                 await buySolSuccess(
                     program,
