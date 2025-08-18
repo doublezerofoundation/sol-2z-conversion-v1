@@ -1,8 +1,8 @@
 import container from "../src/factory/serviceContainer";
 import {ConfigField, TYPES} from "../src/types/common";
 import {MockRedisCacheService} from "./mock/MockRedisCacheService";
-import {ConfigUtil} from "../lib/utils/configUtil";
-import PythPricingService from "../lib/service/pricing/pythPricingService";
+import {ConfigUtil} from "../src/utils/configUtil";
+import PythPricingService from "../src/service/pricing/pythPricingService";
 import ISwapRateService from "../src/service/swap/ISwapRateService";
 import {assert} from "chai";
 
