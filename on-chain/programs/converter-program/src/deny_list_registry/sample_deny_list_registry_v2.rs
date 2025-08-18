@@ -37,47 +37,4 @@ pub struct UpdateDenyList<'info> {
     pub admin: Signer<'info>,
 }
 
-impl<'info> UpdateDenyList<'info> {
-    // use if needed
-    
-    // pub fn add_to_deny_list(&mut self, address: Pubkey) -> Result<()> {
-    //     // Ensure only admin can modify
-    //     self.program_state.assert_deny_list_authority(&self.admin)?;
-    // 
-    //     if self.deny_list_registry.denied_addresses.contains(&address) {
-    //         return err!(DoubleZeroError::AlreadyExistsInDenyList);
-    //     }
-    // 
-    //     if self.deny_list_registry.denied_addresses.len() >= MAX_DENY_LIST_SIZE as usize {
-    //         return err!(DoubleZeroError::DenyListFull);
-    //     }
-    // 
-    //     self.deny_list_registry.denied_addresses.push(address);
-    //     self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
-    //     self.deny_list_registry.update_count += 1;
-    // 
-    //     Ok(())
-    // }
-    // 
-    // pub fn remove_from_deny_list(&mut self, address: Pubkey) -> Result<()> {
-    //     // Ensure only admin can modify
-    //     self.program_state.assert_deny_list_authority(&self.admin)?;
-    // 
-    //     if !self.deny_list_registry.denied_addresses.contains(&address) {
-    //         return err!(DoubleZeroError::AddressNotInDenyList);
-    //     }
-    // 
-    //     let position = self
-    //         .deny_list_registry
-    //         .denied_addresses
-    //         .iter()
-    //         .position(|&x| x == address)
-    //         .ok_or(ErrorCode::ConstraintRaw)?;
-    // 
-    //     self.deny_list_registry.denied_addresses.remove(position);
-    //     self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
-    //     self.deny_list_registry.update_count += 1;
-    // 
-    //     Ok(())
-    // }
-}
+// Methods has to be implemented
