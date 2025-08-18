@@ -39,3 +39,6 @@ enable_indexer_service     = true
 
 enable_pricing_service = false
 enable_metrics_api = true
+
+swap_oracle_service_image_tag = "dev3-v1.0.0"
+indexer_service_image_tag = "dev3-v1.0.0"

@@ -1,17 +1,17 @@
-import { expect } from "chai";
 import { AdminClient } from "../core/admin-client";
 import { accountExists } from "../core/utils/assertions";
-import { getConfigurationRegistryPDA, getProgramStatePDA, getDenyListRegistryPDA, getFillsRegistryPDA } from "../core/utils/pda-helper";
+import { getFillsRegistryAccountAddress } from "../core/utils/fills-registry";
+import { getConfigurationRegistryPDA, getProgramStatePDA, getDenyListRegistryPDA } from "../core/utils/pda-helper";
 import { CommonScenario } from "./common-scenario";
-import { assert } from "chai";
+import { expect, assert } from "chai";
 
 export class InitializeScenario extends CommonScenario {
     constructor(deployer: AdminClient) {
         super(deployer);
     }
 
-    public async initializeSystemAndVerify(): Promise<void> {
-        await this.admin.initializeSystemCommand();
+    public async initializeSystemAndVerify(): Promise<string> {
+        const result = await this.admin.initializeSystemCommand();
 
         // Verify that the system is initialized
         const program = this.admin.session.getProgram();
@@ -19,7 +19,7 @@ export class InitializeScenario extends CommonScenario {
         const pdas = await Promise.all([
             getConfigurationRegistryPDA(program.programId),
             getProgramStatePDA(program.programId),
-            getFillsRegistryPDA(program.programId),
+            getFillsRegistryAccountAddress(program),
             getDenyListRegistryPDA(program.programId),
         ]);
 
@@ -35,6 +35,8 @@ export class InitializeScenario extends CommonScenario {
         expect(stateRegExists).to.be.true;
         expect(fillsRegExists).to.be.true;
         expect(denyListRegExists).to.be.true;
+
+        return result;
     }
 
     public async initializeSystemAndVerifyFail(expectedError: string = ""): Promise<void> {

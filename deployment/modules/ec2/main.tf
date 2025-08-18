@@ -12,6 +12,7 @@ module "swap_oracle_service_ec2" {
   target_group_arns = var.target_group_arns
   redis_endpoint    = var.redis_endpoint
   instance_profile_name = var.instance_profile_name
+  swap_oracle_service_image_tag = var.swap_oracle_service_image_tag
 }
 
 module "indexer_service_ec2" {
@@ -25,4 +26,5 @@ module "indexer_service_ec2" {
   security_groups   = var.security_groups
   target_group_arns = var.target_group_arns
   instance_profile_name = var.instance_profile_name
+  indexer_service_image_tag = var.indexer_service_image_tag
 }

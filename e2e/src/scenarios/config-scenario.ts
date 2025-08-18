@@ -18,15 +18,16 @@ export class ConfigScenario extends CommonScenario {
 
         expect(actualConfig.oraclePubkey.toString()).to.equal(expectedConfig.oracle_pubkey);
         expect(actualConfig.solQuantity.toString()).to.equal(expectedConfig.sol_quantity.toString());
-        expect(actualConfig.slotThreshold.toString()).to.equal(expectedConfig.slot_threshold.toString());
-        expect(actualConfig.maxFillsStorage.toString()).to.equal(expectedConfig.max_fills_storage.toString());
         expect(actualConfig.coefficient.toString()).to.equal(expectedConfig.coefficient.toString());
         expect(actualConfig.maxDiscountRate.toString()).to.equal(expectedConfig.max_discount_rate.toString());
         expect(actualConfig.minDiscountRate.toString()).to.equal(expectedConfig.min_discount_rate.toString());
     }
 
-    public async updateConfigAndVerifyFail(expectedError: string) {
+    public async updateConfigAndVerifyFail(expectedError: string, config?: Config) {
         try {
+            if (config) {
+                updateConfig(config);
+            }
             await this.admin.updateConfigsCommand();
             assert.fail("Expected update config to fail");
         } catch (error) {

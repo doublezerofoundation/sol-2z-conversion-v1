@@ -1,7 +1,6 @@
 import {createAccount, TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 import {getDefaultKeyPair} from "./accounts";
 import {Connection, Keypair, PublicKey} from "@solana/web3.js";
-import {TOKEN_DECIMAL} from "../constants";
 
 export async function createTokenAccount(
     connection: Connection,

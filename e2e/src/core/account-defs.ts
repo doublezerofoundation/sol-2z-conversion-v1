@@ -4,9 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 export interface SystemConfig {
     oraclePubkey: PublicKey,
     solQuantity: BN,
-    slotThreshold: BN,
     priceMaximumAge: BN,
-    maxFillsStorage: BN,
     coefficient: BN,
     maxDiscountRate: BN,
     minDiscountRate: BN,
@@ -17,6 +15,7 @@ export interface SystemState {
     isHalted: boolean,
     bumpRegistry: BumpRegistry,
     lastTradeSlot: BN,
+    denyListAuthority: PublicKey,
 }
 
 export interface BumpRegistry {
@@ -30,6 +29,22 @@ export interface DenyListRegistry {
     deniedAddresses: PublicKey[],
     lastUpdated: BN,
     updateCount: BN,
+}
+
+export interface FillsRegistry {
+    totalSolPending: BN,
+    total2ZPending: BN,
+    lifetimeSolProcessed: BN,
+    lifetime2ZProcessed: BN,
+    fills: Fills[],
+    head: BN,
+    tail: BN,
+    count: BN,
+}
+
+export interface Fills {
+    solIn: BN,
+    token2zOut: BN,
 }
 
 export interface Test {

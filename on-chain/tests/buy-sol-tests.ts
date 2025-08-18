@@ -16,7 +16,7 @@ import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData} from "./core/utils/price-oracle";
 import {BPS, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
-import {addToDenyListAndVerify, removeFromDenyListAndVerify} from "./core/test-flow/deny-list";
+import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
 import { assert } from "chai";
 
@@ -39,6 +39,8 @@ describe("Buy Sol Tests", () => {
             mockTransferProgram,
             adminKeyPair,
         )
+        // Set deny list authority to admin
+        await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
 
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
@@ -347,7 +349,7 @@ describe("Buy Sol Tests", () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
-                maxDiscountRate: new anchor.BN(15 * BPS),
+                maxDiscountRate: new anchor.BN(55 * BPS),
             };
             await updateConfigsAndVerify(
                 program,

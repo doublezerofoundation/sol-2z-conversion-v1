@@ -25,4 +25,21 @@ export class AdminChangeScenario extends CommonScenario {
             this.handleExpectedError(error, expectedError);
         }
     }
+
+    public async setDenyAuthorityAndVerify(authority: PublicKey): Promise<void> {
+        await this.admin.setDenyAuthorityCommand(authority.toString());
+
+        // Verify that the deny authority is set
+        const state = await getProgramStateAccount(this.admin.session.getProgram());
+        expect(state.denyListAuthority.toString()).to.equal(authority.toString());
+    }
+
+    public async setDenyAuthorityAndVerifyFail(authority: PublicKey, expectedError: string): Promise<void> {
+        try {
+            await this.admin.setDenyAuthorityCommand(authority.toString());
+            assert.fail("Expected error not thrown");
+        } catch (error) {
+            this.handleExpectedError(error, expectedError);
+        }
+    }
 }

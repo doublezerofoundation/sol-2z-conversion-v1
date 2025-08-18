@@ -15,6 +15,7 @@ UNIT_TESTS=(
 
 E2E_TESTS=(
     admin-flow
+    user-flow
 )
 
 TEST_TYPE="unit"
@@ -68,6 +69,7 @@ log_warning() { [[ $QUIET_MODE -eq 0 ]] && echo -e "⚠️  \033[38;5;179m[WARNI
 log_error() { echo -e "✖️  \033[38;5;203m[ERROR]\033[0m $1"; }
 log_section() {
     [[ $QUIET_MODE -eq 0 ]] && {
+        echo ""
         echo -e "\n\033[38;5;244m──────────────────────────────────────────────\033[0m"
         echo -e "🔹 \033[38;5;245m$1\033[0m"
         echo -e "\033[38;5;244m──────────────────────────────────────────────\033[0m\n"
@@ -184,7 +186,7 @@ copy_cli_to_e2e() {
     mkdir -p ./e2e/cli
     cp ./target/debug/admin-cli ./e2e/cli/
     cp ./target/debug/user-cli ./e2e/cli/
-    # cp ./target/debug/integration-cli ./e2e/cli/
+    cp ./target/debug/integration-cli ./e2e/cli/
     cp ./config.json ./e2e/cli/
     log_success "CLI copied to the E2E directory"
 }

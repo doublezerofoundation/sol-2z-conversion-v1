@@ -8,6 +8,8 @@ import { exec } from "child_process";
 import { Program } from "@coral-xyz/anchor";
 import { DEFAULT_RPC_URL } from "./constants";
 import idlJson from "../../../on-chain/target/idl/converter_program.json";
+import { MockTransferProgram } from "../../../mock-double-zero-program/target/types/mock_transfer_program";
+import mockIdl from "../../../mock-double-zero-program/target/idl/mock_transfer_program.json";
 
 export enum SessionType {
     ADMIN = "admin",
@@ -20,6 +22,7 @@ export abstract class Session {
     private rpcUrl: string;
     private sessionType: SessionType;
     private program: anchor.Program<ConverterProgram>;
+    private mockProgram: anchor.Program<MockTransferProgram>;
 
     protected abstract getBinaryPath(): string;
     protected abstract getSessionType(): SessionType;
@@ -55,6 +58,7 @@ export abstract class Session {
         });
         anchor.setProvider(provider);
         this.program = new anchor.Program(idl, provider);
+        this.mockProgram = new anchor.Program(mockIdl, provider);
     }
 
     public async logSessionInfo(): Promise<void> {
@@ -72,9 +76,9 @@ export abstract class Session {
         await this.program.provider.connection.requestAirdrop(this.keypair.publicKey, 100 * anchor.web3.LAMPORTS_PER_SOL);
     }
 
-    public async executeCliCommand(command: string): Promise<string> {
+    public async executeCliCommand(command: string, optionalExecutablePath?: string): Promise<string> {
         const privateKey = this.keypair.secretKey.toString();
-        const cliCommand = `export PRIVATE_KEY=${privateKey} && export DOUBLE_ZERO_CONFIG=./cli/config.json && ${this.executeDir} ${command}`;
+        const cliCommand = `export PRIVATE_KEY=${privateKey} && export DOUBLE_ZERO_CONFIG=./cli/config.json && ${optionalExecutablePath || this.executeDir} ${command}`;
 
         return new Promise((resolve, reject) => {
             exec(cliCommand, (error, stdout, stderr) => {
@@ -99,7 +103,15 @@ export abstract class Session {
         return this.program;
     }
 
+    public getMockProgram(): Program<MockTransferProgram> {
+        return this.mockProgram;
+    }
+
     public getPublicKey(): PublicKey {
         return this.keypair.publicKey;
+    }
+
+    public getKeypair(): Keypair {
+        return this.keypair;
     }
 }

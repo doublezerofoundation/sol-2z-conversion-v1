@@ -1,6 +1,3 @@
-import * as anchor from "@coral-xyz/anchor";
-import { Program } from "@coral-xyz/anchor";
-import { ConverterProgram } from "../target/types/converter_program";
 import { PublicKey, Keypair } from "@solana/web3.js";
 import { assert } from "chai";
 import { airdropToActivateAccount, getDefaultKeyPair } from "./core/utils/accounts";
@@ -12,7 +9,8 @@ import {
     removeFromDenyListAndVerify,
     removeFromDenyListShouldFail,
     fetchDenyListRegistry,
-    verifyDenyListState
+    verifyDenyListState,
+    setDenyListAuthorityAndVerify
 } from "./core/test-flow/deny-list";
 import { setup } from "./core/setup";
 
@@ -22,6 +20,7 @@ describe("Deny List Tests", async () => {
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
+        await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
     });
 
     // Test addresses

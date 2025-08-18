@@ -2,20 +2,19 @@ import { describe } from "mocha";
 import { getConversionPriceAndVerify, getConversionPriceToFail } from "./core/test-flow/conversion-price";
 import { getOraclePriceData, OraclePriceData } from "./core/utils/price-oracle";
 import { Keypair } from "@solana/web3.js";
-import { addToDenyListAndVerify, removeFromDenyListAndVerify } from "./core/test-flow/deny-list";
+import { addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify } from "./core/test-flow/deny-list";
 import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
-import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
-import { updateConfigsAndVerify } from "./core/test-flow/change-configs";
-import * as anchor from "@coral-xyz/anchor";
 import { assert } from "chai";
-import { buySolAndVerify } from "./core/test-flow/buy-sol-flow";
+import { getDefaultKeyPair } from "./core/utils/accounts";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
+        // Set deny list authority to admin
+        await setDenyListAuthorityAndVerify(program, getDefaultKeyPair().publicKey);
     });
 
     it("should get conversion price", async () => {

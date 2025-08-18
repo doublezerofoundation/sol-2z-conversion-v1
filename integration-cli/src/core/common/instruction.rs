@@ -1,2 +1,2 @@
 // Define your instructions here
-// pub const BUY_SOL_INSTRUCTION: &[u8] = b"global:buy_sol";
+pub const DEQUEUE_FILLS_INSTRUCTION: &[u8] = b"global:dequeue_fills";

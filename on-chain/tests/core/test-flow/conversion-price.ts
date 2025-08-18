@@ -81,7 +81,7 @@ export const getConversionPriceToFail = async (
     signer: Keypair = getDefaultKeyPair(),
 ) => {
     try {
-        const signature = await program.methods.getConversionRate({
+        await program.methods.getConversionRate({
             swapRate: new BN(oraclePriceData.swapRate),
             timestamp: new BN(oraclePriceData.timestamp),
             signature: oraclePriceData.signature,

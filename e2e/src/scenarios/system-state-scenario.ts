@@ -15,9 +15,11 @@ export class SystemStateScenario extends CommonScenario {
     }
 
     public async toggleSystemStateAndVerify(setHalted: boolean) {
-        await this.admin.toggleSystemStateCommand(setHalted);
+        const tx = await this.admin.toggleSystemStateCommand(setHalted);
         const state = await this.admin.viewSystemStateCommand();
         expect(state).to.contain(setHalted ? "Paused" : "Active");
+
+        return tx;
     }
 
     public async toggleSystemStateAndVerifyFail(setHalted: boolean, expectedError: string) {

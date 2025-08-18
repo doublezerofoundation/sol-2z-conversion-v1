@@ -30,13 +30,13 @@ export async function initializeMockTransferSystemAndVerify(
 
     // Initialization
     try {
-        const tx = await program.methods.initialize()
+        await program.methods.initialize()
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID
             })
             .signers([adminKeyPair])
             .rpc();
-        console.log("System Initialization is successful. Transaction Hash", tx);
+        // console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
@@ -72,13 +72,13 @@ export async function mint2z(
 ) {
     const balanceBeforeMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
     try {
-        const tx = await program.methods.mint2Z(new anchor.BN(amount))
+        await program.methods.mint2Z(new anchor.BN(amount))
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 userTokenAccount: recipientTokenAccount
             })
             .rpc();
-        console.log("Token Mint is successful. Transaction Hash", tx);
+        // console.log("Token Mint is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Token Mint  failed:", e);
         assert.fail("Token Mint  failed");
@@ -106,7 +106,7 @@ export async function buySol(
     const vaultBalanceBefore = await program.provider.connection.getBalance(pdas.vault);
 
     try {
-        const tx = await program.methods.buySol(
+        await program.methods.buySol(
             new anchor.BN(amount2Z),
             new anchor.BN(amountSol)
         )
@@ -117,7 +117,7 @@ export async function buySol(
             })
             .signers([signer])
             .rpc();
-        console.log("Buy Sol is successful. Transaction Hash", tx);
+        // console.log("Buy Sol is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Buy Sol  failed:", e);
         assert.fail("Buy Sol  failed");
@@ -163,7 +163,7 @@ export async function withdraw_2z(
         await getTokenBalance(program.provider.connection, pdas.protocolTreasury);
 
     try {
-        const tx = await program.methods.withdraw2Z(
+        await program.methods.withdraw2Z(
             new anchor.BN(amount2z)
         )
             .accounts({
@@ -173,7 +173,7 @@ export async function withdraw_2z(
             })
             .signers([signer])
             .rpc();
-        console.log("Withdraw 2Z is successful. Transaction Hash", tx);
+        // console.log("Withdraw 2Z is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Withdraw 2Z failed:", e);
         assert.fail("Withdraw 2Z failed");

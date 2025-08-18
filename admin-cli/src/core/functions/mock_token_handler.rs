@@ -1,10 +1,9 @@
 use std::{error::Error, str::FromStr};
 
 use anchor_client::{
-    anchor_lang::solana_program::system_program,
+    anchor_lang::system_program,
     solana_client::rpc_client::RpcClient,
     solana_sdk::{
-        commitment_config::CommitmentConfig,
         hash::hash,
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
@@ -12,6 +11,7 @@ use anchor_client::{
         sysvar::rent,
     },
 };
+use solana_commitment_config::CommitmentConfig;
 
 use cli_common::{
     transaction_executor,

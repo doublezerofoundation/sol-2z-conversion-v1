@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use clap::Parser;
-
+use cli_common::common_functions::view_fills::view_fills_registry;
 use crate::{
     command::Commands,
     core::{
@@ -18,7 +18,6 @@ use crate::{
         },
     },
 };
-use crate::core::functions::fills_registry;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -89,6 +88,11 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             admin_handler::set_admin(admin)
         }
 
+        // Setting the deny list authority of the system
+        Some(Commands::SetDenyAuthority { authority }) => {
+            admin_handler::set_deny_authority(authority)
+        }
+
         // Initializing the mock transfer program
         Some(Commands::InitMockProgram) => {
             mock_token_handler::init()
@@ -111,7 +115,7 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
 
         // View Fills Registry
         Some(Commands::ViewFills) => {
-            fills_registry::view_fills_registry()
+            view_fills_registry()
         }
 
         None => {

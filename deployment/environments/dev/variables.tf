@@ -197,3 +197,13 @@ variable "enable_metrics_api" {
   type        = bool
   default     = false
 }
+
+variable "swap_oracle_service_image_tag" {
+  description = "Docker image tag to pull from ECR"
+  type        = string
+}
+
+variable "indexer_service_image_tag" {
+  description = "Docker image tag to pull from ECR"
+  type        = string
+}
