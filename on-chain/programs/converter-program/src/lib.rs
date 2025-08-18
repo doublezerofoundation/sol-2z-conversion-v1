@@ -24,6 +24,7 @@ use initialize::init_system::*;
 use user_flow::buy_sol::*;
 use fills_registry::dequeue_fills::*;
 use fills_registry::fills_registry::*;
+use migration::migrate_v1_to_v2::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
 #[program]
@@ -127,5 +128,18 @@ pub mod converter_program {
         max_sol_amount: u64,
     ) -> Result<DequeueFillsResult> {
         ctx.accounts.process(max_sol_amount)
+    }
+
+    //////////////////////// Migration ////////////////////////
+    pub fn migrate_v1_to_v2(
+        ctx: Context<MigrateV1ToV2>,
+        max_sol_amount: u64,
+    ) -> Result<()> {
+        ctx.accounts.set_bumps(
+            ctx.bumps.configuration_registry_new,
+            ctx.bumps.deny_list_registry_new
+        )?;
+
+        ctx.accounts.process()
     }
 }
