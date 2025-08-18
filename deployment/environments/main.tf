@@ -97,7 +97,7 @@ module "metrics_waf" {
 
 # S3 bucket for Lambda deployment artifacts
 module "s3" {
-  source = "../../modules/s3"
+  source = "../modules/s3"
 
   name_prefix = "doublezero-${var.environment}"
   environment = var.environment
