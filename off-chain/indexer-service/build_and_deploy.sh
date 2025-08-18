@@ -150,11 +150,7 @@ upload_to_s3() {
     # Upload with comprehensive metadata
     aws s3 cp "$ZIP_FILE" "s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY" \
         --region "$AWS_REGION" \
-        --metadata \
-            "service=metrics-api" \
-            "environment=$ENV" \
-            "version-tag=$version_tag" \
-            "build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        --metadata "service=metrics-api,environment=$ENV,version-tag=$version_tag,build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     
     # Get the version ID of the uploaded object
     local s3_version_id

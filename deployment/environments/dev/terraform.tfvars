@@ -40,8 +40,8 @@ enable_indexer_service     = true
 enable_pricing_service = false
 enable_metrics_api = true
 
-swap_oracle_service_image_tag = "dev3-v1.0.0"
-indexer_service_image_tag = "dev3-v1.0.0"
+swap_oracle_service_image_tag = "dev1-v1.0.11"
+indexer_service_image_tag = "dev1-v1.0.11"
 
 # metrics lambda configuration
 lambda_s3_version = "" # Leave empty to use the latest version

@@ -514,6 +514,4 @@ if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
 else
   find_ec2_instance
   deploy_application
-  print_deployment_summary
-
 fi
