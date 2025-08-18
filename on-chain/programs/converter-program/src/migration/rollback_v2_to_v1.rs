@@ -9,47 +9,47 @@ use crate::deny_list_registry::deny_list_registry_v2::DenyListRegistryV2;
 use crate::state::program_state::ProgramStateAccount;
 
 #[derive(Accounts)]
-pub struct MigrateV1ToV2<'info> {
+pub struct RollbackV2toV1<'info> {
     #[account(
         mut,
-        seeds = [SeedPrefixesV1::ConfigurationRegistry.as_bytes()],
+        seeds = [SeedPrefixesV2::ConfigurationRegistry.as_bytes()],
         bump,
         close = admin
     )]
-    pub configuration_registry_old: Account<'info, ConfigurationRegistry>,
+    pub configuration_registry_old: Account<'info, ConfigurationRegistryV2>,
     #[account(
         init,
         payer = admin,
-        space = DISCRIMINATOR_SIZE + ConfigurationRegistryV2::INIT_SPACE,
-        seeds = [SeedPrefixesV2::ConfigurationRegistry.as_bytes()],
+        space = DISCRIMINATOR_SIZE + ConfigurationRegistry::INIT_SPACE,
+        seeds = [SeedPrefixesV1::ConfigurationRegistry.as_bytes()],
         bump,
     )]
-    pub configuration_registry_new: Account<'info, ConfigurationRegistryV2>,
+    pub configuration_registry_new: Account<'info, ConfigurationRegistry>,
     #[account(
-        seeds = [SeedPrefixesV2::ProgramState.as_bytes()],
+        seeds = [SeedPrefixesV1::ProgramState.as_bytes()],
         bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
         mut,
-        seeds = [SeedPrefixesV1::DenyListRegistry.as_bytes()],
+        seeds = [SeedPrefixesV2::DenyListRegistry.as_bytes()],
         bump
     )]
-    pub deny_list_registry_old: Account<'info, DenyListRegistry>,
+    pub deny_list_registry_old: Account<'info, DenyListRegistryV2>,
     #[account(
         init,
         payer = admin,
-        space = DISCRIMINATOR_SIZE + DenyListRegistryV2::INIT_SPACE,
-        seeds = [SeedPrefixesV2::DenyListRegistry.as_bytes()],
+        space = DISCRIMINATOR_SIZE + DenyListRegistry::INIT_SPACE,
+        seeds = [SeedPrefixesV1::DenyListRegistry.as_bytes()],
         bump,
     )]
-    pub deny_list_registry_new: Account<'info, DenyListRegistryV2>,
+    pub deny_list_registry_new: Account<'info, DenyListRegistry>,
     pub system_program: Program<'info, System>,
     #[account(mut)]
     pub admin: Signer<'info>,
 }
 
-impl<'info> MigrateV1ToV2<'info> {
+impl<'info> RollbackV2toV1<'info> {
     pub fn process(&mut self) -> Result<()> {
         // Authentication and authorization
         self.program_state.assert_admin(&self.admin)?;
@@ -64,19 +64,17 @@ impl<'info> MigrateV1ToV2<'info> {
         self.configuration_registry_new.min_discount_rate = self.configuration_registry_old.min_discount_rate;
 
         // doing the changes for replacement/ removal
-        self.configuration_registry_new.price_oracle_pubkey = self.configuration_registry_old.oracle_pubkey;
-        self.configuration_registry_new.sol_amount = self.configuration_registry_old.sol_quantity;
-        
+        self.configuration_registry_new.oracle_pubkey = self.configuration_registry_old.price_oracle_pubkey;
+        self.configuration_registry_new.sol_quantity = self.configuration_registry_old.sol_amount;
+
         // migration of denylist registry
         self.deny_list_registry_new.denied_addresses = self.deny_list_registry_old.denied_addresses.clone();
         self.deny_list_registry_new.denied_addresses = self.deny_list_registry_old.denied_addresses.clone();
         self.deny_list_registry_new.update_count = self.deny_list_registry_old.update_count;
-        self.deny_list_registry_new.new_field = 0; // add some value to new field
-        
+        // discard the new field
 
         Ok(())
     }
-
     pub fn set_bumps(
         &mut self,
         configuration_registry_bump: u8,
