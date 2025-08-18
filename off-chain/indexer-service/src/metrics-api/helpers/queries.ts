@@ -1,5 +1,5 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { DynamoDBDocumentClient, QueryCommand, QueryCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DynamoDBDocumentClient, QueryCommand, QueryCommandInput, ScanCommand, ScanCommandInput } from "@aws-sdk/lib-dynamodb";
 import { BuyEventData, ErrorEventData, DequeueEventData, DenyListActionData, DDBTable, EventType } from "../common";
 
 const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
@@ -49,11 +49,10 @@ export async function queryBuyEvents(fromTimestamp: number, toTimestamp: number)
  * Query error events between timestamps
  */
 export async function queryErrorEvents(fromTimestamp: number, toTimestamp: number): Promise<ErrorEventData[]> {
-     // Using the timestamp_idx GSI 
-     const params: QueryCommandInput = {
+     // Using scan with filter
+     const params: ScanCommandInput = {
           TableName: `${table_prefix}-${DDBTable.SOLANA_ERROR}`,
-          IndexName: "timestamp_idx",
-          KeyConditionExpression: "#timestamp BETWEEN :from AND :to",
+          FilterExpression: "#timestamp BETWEEN :from AND :to",
           ExpressionAttributeNames: {
                "#timestamp": "timestamp"
           },
@@ -68,12 +67,12 @@ export async function queryErrorEvents(fromTimestamp: number, toTimestamp: numbe
      let lastEvaluatedKey = undefined;
      
      do {
-          const queryParams: QueryCommandInput = {
+          const scanParams: ScanCommandInput = {
                ...params,
                ExclusiveStartKey: lastEvaluatedKey
           };
           
-          const result = await ddbDocClient.send(new QueryCommand(queryParams));
+          const result = await ddbDocClient.send(new ScanCommand(scanParams));
           if (result.Items) {
                items.push(...(result.Items as ErrorEventData[]));
           }
@@ -87,11 +86,10 @@ export async function queryErrorEvents(fromTimestamp: number, toTimestamp: numbe
  * Query dequeue events between timestamps
  */
 export async function queryDequeueEvents(fromTimestamp: number, toTimestamp: number): Promise<DequeueEventData[]> {
-     // Using the timestamp_idx GSI
-     const params: QueryCommandInput = {
+     // Using scan with filter
+     const params: ScanCommandInput = {
           TableName: `${table_prefix}-${DDBTable.FILL_DEQUEUE}`,
-          IndexName: "timestamp_idx",
-          KeyConditionExpression: "#timestamp BETWEEN :from AND :to",
+          FilterExpression: "#timestamp BETWEEN :from AND :to",
           ExpressionAttributeNames: {
                "#timestamp": "timestamp"
           },
@@ -106,12 +104,12 @@ export async function queryDequeueEvents(fromTimestamp: number, toTimestamp: num
      let lastEvaluatedKey = undefined;
      
      do {
-          const queryParams: QueryCommandInput = {
+          const scanParams: ScanCommandInput = {
                ...params,
                ExclusiveStartKey: lastEvaluatedKey
           };
           
-          const result = await ddbDocClient.send(new QueryCommand(queryParams));
+          const result = await ddbDocClient.send(new ScanCommand(scanParams));
           if (result.Items) {
                items.push(...(result.Items as DequeueEventData[]));
           }
@@ -125,11 +123,10 @@ export async function queryDequeueEvents(fromTimestamp: number, toTimestamp: num
  * Query deny list actions between timestamps
  */
 export async function queryDenyListActions(fromTimestamp: number, toTimestamp: number): Promise<DenyListActionData[]> {
-     // Using the timestamp_idx GSI
-     const params: QueryCommandInput = {
+     // Using scan with filter
+     const params: ScanCommandInput = {
           TableName: `${table_prefix}-${DDBTable.DENY_LIST_ACTION}`,
-          IndexName: "timestamp_idx",
-          KeyConditionExpression: "#timestamp BETWEEN :from AND :to",
+          FilterExpression: "#timestamp BETWEEN :from AND :to",
           ExpressionAttributeNames: {
                "#timestamp": "timestamp"
           },
@@ -144,12 +141,12 @@ export async function queryDenyListActions(fromTimestamp: number, toTimestamp: n
      let lastEvaluatedKey = undefined;
      
      do {
-          const queryParams: QueryCommandInput = {
+          const scanParams: ScanCommandInput = {
                ...params,
                ExclusiveStartKey: lastEvaluatedKey
           };
           
-          const result = await ddbDocClient.send(new QueryCommand(queryParams));
+          const result = await ddbDocClient.send(new ScanCommand(scanParams));
           if (result.Items) {
                items.push(...(result.Items as DenyListActionData[]));
           }
