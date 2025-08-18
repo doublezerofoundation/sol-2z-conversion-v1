@@ -20,8 +20,8 @@ use crate::{
         structs::OraclePriceData,
     },
     state::program_state::ProgramStateAccount,
-    configuration_registry::configuration_registry_v2::ConfigurationRegistryV2,
-    deny_list_registry::deny_list_registry_v2::DenyListRegistryV2,
+    configuration_registry::configuration_registry::ConfigurationRegistry,
+    deny_list_registry::deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
     discount_rate::calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
 };
@@ -32,7 +32,7 @@ pub struct BuySol<'info> {
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
-    pub configuration_registry: Account<'info, ConfigurationRegistryV2>,
+    pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
         mut,
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
@@ -43,7 +43,7 @@ pub struct BuySol<'info> {
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
-    pub deny_list_registry: Account<'info, DenyListRegistryV2>,
+    pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(
         mut,
         constraint = fills_registry.key() == program_state.fills_registry_address
@@ -96,13 +96,13 @@ impl<'info> BuySol<'info> {
         // checking attestation
         verify_attestation(
             &oracle_price_data,
-            self.configuration_registry.price_oracle_pubkey,
+            self.configuration_registry.oracle_pubkey,
             self.configuration_registry.price_maximum_age
         )?;
 
         let clock = Clock::get()?;
 
-        let sol_quantity = self.configuration_registry.sol_amount;
+        let sol_quantity = self.configuration_registry.sol_quantity;
         // call util function to get current ask price
         let ask_price = calculate_conversion_rate_with_oracle_price_data(
             oracle_price_data,
