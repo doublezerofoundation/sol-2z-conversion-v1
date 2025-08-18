@@ -2,10 +2,8 @@
   "compilerOptions": {
       "module": "commonjs",
       "moduleResolution": "node",
-      "pretty": true,
       "sourceMap": true,
       "skipLibCheck": true,
-      "declaration": true,
       "resolveJsonModule": true,
       "target": "es2020",
       "experimentalDecorators": true,
@@ -20,10 +18,10 @@
   },
   "include": [
       "src/**/*",
-      "test/**/*"
   ],
   "exclude": [
       "node_modules",
-      "lib"
+      "lib",
+      "test"
   ]
 }
