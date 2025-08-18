@@ -12,6 +12,7 @@ UNIT_TESTS=(
     buy-sol-test
     mock-transfer-program-test
     dequeue-fills-test
+    migration-test
 )
 
 E2E_TESTS=(
