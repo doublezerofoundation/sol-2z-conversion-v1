@@ -49,16 +49,13 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
 
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
-    let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
 
     println!("Configuration Registry PDA: {}", configuration_registry_pda);
     println!("Program State PDA: {}", program_state_pda);
-    println!("Deny List Registry PDA: {}", deny_list_registry_pda);
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new_readonly(program_state_pda, false),
-        AccountMeta::new_readonly(deny_list_registry_pda, false),
         AccountMeta::new(payer.pubkey(), true),
     ];
 

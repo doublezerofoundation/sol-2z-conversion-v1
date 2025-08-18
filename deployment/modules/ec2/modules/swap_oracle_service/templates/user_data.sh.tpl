@@ -81,6 +81,7 @@ docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   --log-opt awslogs-group="/ec2/${environment}/${container_name}" \
   --log-opt awslogs-region=$REGION \
   --log-opt awslogs-stream=$INSTANCE_ID \
+  --log-opt awslogs-create-group=true \
   -v /opt/app/logs:/app/logs \
   -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT -e INSTANCE_ID=$INSTANCE_ID \
   $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

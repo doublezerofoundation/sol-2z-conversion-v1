@@ -26,8 +26,5 @@ RUN npm ci --only=production
 
 COPY --from=builder /app/dist ./dist
 
-# environment variables
-ARG ENV=dev1
-ENV ENV=$ENV 
     
 CMD ["node", "dist/src/index.js"]

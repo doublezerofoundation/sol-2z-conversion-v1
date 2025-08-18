@@ -45,10 +45,6 @@ while [[ $# -gt 0 ]]; do
             AWS_REGION="$2"
             shift 2
             ;;
-        --env)
-            ENV="$2"
-            shift 2
-            ;;
         --repository)
             ECR_REPOSITORY_NAME="$2"
             shift 2
@@ -77,6 +73,5 @@ SERVICE_NAME="swap-oracle-service"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
 BUILD_TAG="${BUILD_TAG:-latest}"
-ENV="${ENV:-dev3}"
 
 main
