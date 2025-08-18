@@ -150,9 +150,9 @@ deploy it to the environment.
 #### Example Usage
 Build and Deploy a Single Workspace
 ```sh
-./build_and_deploy.sh -w on-chain --restart-validator
-./build_and_deploy.sh -w mock-double-zero-program --restart-validator
-./build_and_deploy.sh -w run-tests --mode unit
+./provision.sh -w on-chain --restart-validator
+./provision.sh -w mock-double-zero-program --restart-validator
+./provision.sh -w run-tests --mode unit
 ```
 
 ### Export the Private Key

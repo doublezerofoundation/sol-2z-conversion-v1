@@ -93,11 +93,15 @@ while [[ $# -gt 0 ]]; do
             workspace="$2"
             shift 2
             ;;
+        -s|--subcommand)
+            subcommand="$2"
+            shift 2
+            ;;
         -m|--mode)
             mode="$2"
             shift 2
             ;;
-        -r|--restart-validator)
+        -rv|--restart-validator)
             restart_validator=true
             shift
             ;;
@@ -105,6 +109,23 @@ while [[ $# -gt 0 ]]; do
             show_help
             exit 0
             ;;
+        -r|--region)
+            region="$2"
+            shift 2
+            ;;
+        -e|--env)
+            env="$2"
+            shift 2
+            ;;
+        --repository)
+            repository="$2"
+            shift 2
+            ;;
+        --tag)
+            tag="$2"
+            shift 2
+            ;;
+
         *)
             log_warning "Unknown option: $1"
             show_help
@@ -132,6 +153,9 @@ case "$workspace" in
     ;;
   run-tests)
     handle_run_tests
+    ;;
+  deployment)
+    handle_deployment
     ;;
   *)
     log_error "Invalid workspace specified. Please use 'converter-program', 'admin-cli', 'integration-cli' or 'user-cli'."
