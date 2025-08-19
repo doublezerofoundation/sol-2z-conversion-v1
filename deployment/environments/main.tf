@@ -298,7 +298,7 @@ module "dynamodb" {
 }
 
 module "sns" {
-  source            = "../../modules/sns"
+  source            = "../modules/sns"
   name_prefix       = "doublezero-${var.environment}"     
   environment       = var.environment
   email_subscribers = [] # add admin email addresses for error notifications

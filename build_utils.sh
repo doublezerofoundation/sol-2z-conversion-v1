@@ -96,18 +96,66 @@ build_project() {
     log_info "Project built successfully"
 }
 
+build_project_sync() {
+    log_info "Building TypeScript project..."
+    npm run build
+
+    local timeout=30
+    local counter=0
+
+    while [ ! -d "lib" ] && [ $counter -lt $timeout ]; do
+        sleep 1
+        counter=$((counter + 1))
+        log_info "Waiting for lib directory... ($counter/$timeout)"
+    done
+
+    if [ ! -d "lib" ]; then
+        log_error "lib directory was not created after $timeout seconds"
+        exit 1
+    fi
+
+    sleep 2
+    log_info "Project built successfully"
+}
+
+remove_directory() {
+    local dir_name=$1
+    local timeout=${2:-30}
+
+    if [ -d "$dir_name" ]; then
+        log_info "Removing $dir_name..."
+        rm -rf "$dir_name"
+
+        # Wait for directory to be fully removed
+        local counter=0
+        while [ -d "$dir_name" ] && [ $counter -lt $timeout ]; do
+            sleep 1
+            counter=$((counter + 1))
+            if [ $((counter % 5)) -eq 0 ]; then
+                log_info "Still waiting for $dir_name removal... ($counter/$timeout)"
+            fi
+        done
+
+        if [ -d "$dir_name" ]; then
+            log_error "Failed to remove $dir_name after $timeout seconds"
+            return 1
+        fi
+
+        log_info "Successfully removed $dir_name"
+    fi
+    return 0
+}
+
+
 clean_project() {
     log_info "Cleaning build artifacts..."
 
-    if [ -d "node_modules" ]; then
-        rm -rf node_modules
-        log_info "Removed node_modules"
-    fi
 
-    if [ -d "lib" ]; then
-        rm -rf lib
-        log_info "Removed dist"
-    fi
+    remove_directory "node_modules" 30
+    remove_directory "lib" 10
+    remove_directory "dist" 10
+
+    sync
 
     log_info "Clean completed"
 }

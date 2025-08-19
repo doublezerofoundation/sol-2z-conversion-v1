@@ -83,4 +83,10 @@ pub enum DoubleZeroError {
 
     #[msg("Unauthorized Deny List Authority")]
     UnauthorizedDenyListAuthority, // 6025
+
+    #[msg("FillsRegistry is full — cannot enqueue.")]
+    RegistryFull, //6026
+
+    #[msg("FillsRegistry is empty — cannot dequeue.")]
+    RegistryEmpty, //6027
 }
