@@ -35,20 +35,33 @@ log_section() {
 }
 
 show_help() {
+  if [[ $workspace == "deployment" ]]; then
+    show_deployment_help
+    exit 1
+  fi
+
   echo "Usage: $0 [OPTIONS]"
   echo ""
-  echo "Build and deploy script for Converter Program"
+  echo "Provision Script"
   echo ""
   echo "OPTIONS:"
-  echo "  -w, --workspace Workspace      Set the workspace (on-chain, admin-cli, user-cli, integration-cli, mock-double-zero-program)."
-  echo "  -m, --mode Mode  -m, --mode Mode   Set the mode of operation ([deploy_only, build_only, build_and_deploy] for on-chain & mock-double-zero-program, [unit, e2e] for tests)."
-  echo "  -r, --restart-validator Start/ Restart validator (Only in the local net, Only for on-chain deployment)"
-  echo "  -h, --help          Show this help message"
-  echo ""
+  echo "  -w, --workspace Workspace      Set the workspace (on-chain, admin-cli, user-cli, integration-cli, mock-double-zero-program, deployment)."
+  echo "  -m, --mode                     Set the mode of operation ([deploy_only, build_only, build_and_deploy] for on-chain & mock-double-zero-program, [unit, e2e] for tests)."
+  echo "  -rv, --restart-validator       Start/ Restart validator (Only in the local net, Only for on-chain deployment)"
+  echo "  -sc --sub-command              Sub command for handle deployment (Required for deployment workspace)"
+  echo "  -a, --action                   deployment Action (Required for deployment workspace)"
+  echo "  --release-tag                  Release tag of the off-chain"
+  echo "  -e,--env                       Deployment Environment"
+  echo "  -r,--region                    Deployment Region"
+  echo "  -h, --help                     Show this help message"
   echo "Example:"
   echo "  ./build_and_deploy.sh -w on-chain --mode build_and_deploy --restart-validator"
   echo "  ./build_and_deploy.sh -w run-tests --mode unit"
 }
+
+VALID_SUB_COMMANDS=("account" "environment" "regional" "release")
+ACTIONS=("create" "destroy" "publish-artifacts" "upgrade" "publish-and-upgrade" "help")
+
 
 handle_on_chain() {
   cmd=(./on-chain/build_and_deploy.sh)
@@ -80,11 +93,98 @@ handle_cli_build() {
   log_info "Successfully built the $cli_name-cli program"
 }
 
+show_deployment_help() {
+    if [[ -z $SUB_COMMAND ]]; then
+      validate_subcommand
+    fi
+    if [[ -z $ACTION ]]; then
+      log_error "-a|--action is required"
+    fi
+    if [[ -n $SUB_COMMAND ]]; then
+      show_sub_command_help
+    fi
+
+
+}
+show_sub_command_help() {
+    pushd "./deployment/script" > /dev/null
+
+    validate_subcommand
+    echo "$PWD"
+
+
+    if [[ $SUB_COMMAND == "account" ]]; then
+      echo "Run account provision"
+      ./account_creation.sh --help
+    elif [[ $SUB_COMMAND == "environment" ]]; then
+      echo "Run environment provision"
+      ./env_creation.sh --help
+    elif [[ $SUB_COMMAND == "regional" ]]; then
+      echo "Run regional provision"
+      ./regional_creation.sh --help
+    elif [[ $SUB_COMMAND == "release" ]]; then
+      echo "Run release provision"
+      ./release.sh --help
+    fi
+
+    popd > /dev/null
+
+
+
+}
+validate_subcommand() {
+  echo $SUB_COMMAND
+  if [[ -z "$SUB_COMMAND" ]]; then
+    log_error "Sub Command is required for workplace: ${workspace}"
+    log_error "Available Sub commands: ${VALID_SUB_COMMANDS[*]}"
+    exit 1
+
+  fi
+  if [[ ! " ${VALID_SUB_COMMANDS[*]} " =~ " ${SUB_COMMAND} " ]]; then
+      log_error "Invalid sub command: ${SUB_COMMAND} for workplace ${workspace}. Valid commands: ${VALID_SUB_COMMANDS[*]}"
+      exit 1
+  fi
+}
+
+valid_action() {
+    if [[ ! " ${ACTIONS[*]} " =~ " ${ACTION} " ]]; then
+        log_error "Invalid action: ${ACTION}. Valid commands: ${ACTIONS[*]}"
+        exit 1
+    fi
+
+}
+
+handle_deployment() {
+  echo "Deployment trigger"
+  validate_subcommand
+  valid_action
+  echo "$PWD"
+  pushd "./deployment/script" > /dev/null
+
+
+  if [[ $SUB_COMMAND == "account" ]]; then
+    echo "Run account provision"
+    ./account_creation.sh --action "$ACTION" --region "$REGION"
+  elif [[ $SUB_COMMAND == "environment" ]]; then
+    echo "Run environment provision"
+    ./env_creation.sh --action "$ACTION" --region "$REGION" --env "$ENV" --release-tag "$RELEASE_TAG"
+  elif [[ $SUB_COMMAND == "regional" ]]; then
+    echo "Run regional provision"
+    ./regional_creation.sh --action "$ACTION" --region "$REGION"
+  elif [[ $SUB_COMMAND == "release" ]]; then
+    echo "Run release provision"
+    ./release.sh --action "$ACTION" --region "$REGION" --env "$ENV" --release-tag "$RELEASE_TAG"
+  fi
+
+  popd > /dev/null
+
+}
+
 
 cd "$(dirname "$0")" || exit 1
 
 echo "================================================================================================"
-echo "         					BUILD_AND_DEPLOY (DOUBLE ZERO) "
+echo "         					PROVISION (DOUBLE ZERO) "
 echo "================================================================================================"
 
 while [[ $# -gt 0 ]]; do
@@ -93,8 +193,12 @@ while [[ $# -gt 0 ]]; do
             workspace="$2"
             shift 2
             ;;
-        -s|--subcommand)
-            subcommand="$2"
+        -sc|--sub-command)
+            SUB_COMMAND="$2"
+            shift 2
+            ;;
+        -a|--action)
+            ACTION="$2"
             shift 2
             ;;
         -m|--mode)
@@ -110,19 +214,15 @@ while [[ $# -gt 0 ]]; do
             exit 0
             ;;
         -r|--region)
-            region="$2"
+            REGION="$2"
             shift 2
             ;;
         -e|--env)
-            env="$2"
+            ENV="$2"
             shift 2
             ;;
-        --repository)
-            repository="$2"
-            shift 2
-            ;;
-        --tag)
-            tag="$2"
+        --release-tag)
+            RELEASE_TAG="$2"
             shift 2
             ;;
 

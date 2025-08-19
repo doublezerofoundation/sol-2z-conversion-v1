@@ -8,31 +8,15 @@ set -e
 SCRIPT_NAME="$(basename "$0")"
 VALID_COMMANDS=("create" "destroy")
 
-# Function to display usage
-usage() {
+
+help() {
     cat << EOF
-Usage: $SCRIPT_NAME <command> <environment> <release_tag> [options]
-
-Commands:
-    create      Create the specified environment
-    destroy     Destroy the specified environment
-
-Environment:
-    dev         Development environment
-    staging     Staging environment
-    prod        Production environment
-
-Arguments:
-    release_tag    Release tag to use for service image (required)
-
 Options:
+    --release-tag     Release tag to use for service image (required)
+    --env             Environment alias
+    --action          create | destroy
     --auto-approve    Skip interactive approval prompts
     --region          AWS region (default: us-east-1)
-
-Examples:
-    $SCRIPT_NAME create dev v1.2.3
-    $SCRIPT_NAME destroy dev v1.2.3 --auto-approve
-    $SCRIPT_NAME create prod v2.0.0 --region us-west-2
 
 EOF
 }
@@ -168,10 +152,7 @@ main() {
         exit 1
     fi
 
-    COMMAND="$1"
     AUTO_APPROVE=0
-
-    shift 1
     while [[ $# -gt 0 ]]; do
         case $1 in
             --auto-approve)
@@ -183,6 +164,10 @@ main() {
                 REGION="$2"
                 shift 2
                 ;;
+            --action)
+                COMMAND="$2"
+                shift 2
+                ;;
             --env)
                 ENVIRONMENT="$2"
                 shift 2
@@ -192,7 +177,7 @@ main() {
                 shift 2
                 ;;
             -h|--help)
-                usage
+                help
                 exit 0
                 ;;
             *)

@@ -29,7 +29,7 @@ Make sure you have rustc installed. Choose this version using this command.
 ```sh
 rustup default 1.88.0
 ```
-
+## TODO added dependencies for deployement node,terraform,jq,typescript python
 ## Set Up Local Validator
 Make sure to update the Solana CLI config to localhost.
 ```sh
