@@ -1,7 +1,4 @@
-use crate::{
-    common::{constant::MAX_AUTHORIZED_DEQUEUERS, error::DoubleZeroError},
-    configuration_registry::update_configuration::ConfigurationRegistryInput,
-};
+use crate::common::constant::MAX_AUTHORIZED_DEQUEUERS;
 use anchor_lang::prelude::*;
 
 // Sample Struct demonstrating the upgrades

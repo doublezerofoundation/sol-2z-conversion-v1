@@ -3,10 +3,10 @@ use crate::common::seeds::seed_prefixes_v1::SeedPrefixesV1;
 use crate::common::constant::DISCRIMINATOR_SIZE;
 use anchor_lang::prelude::*;
 use crate::configuration_registry::configuration_registry::ConfigurationRegistry;
-use crate::configuration_registry::sample_configuration_registry_v2::ConfigurationRegistryV2;
-use crate::deny_list_registry::deny_list_registry::DenyListRegistry;
-use crate::deny_list_registry::sample_deny_list_registry_v2::DenyListRegistryV2;
-use crate::state::program_state::ProgramStateAccount;
+use crate::deny_list_registry::DenyListRegistry;
+use crate::migration::sample_configuration_registry_v2::ConfigurationRegistryV2;
+use crate::migration::sample_deny_list_registry_v2::DenyListRegistryV2;
+use crate::program_state::ProgramStateAccount;
 
 #[derive(Accounts)]
 pub struct RollbackV2toV1<'info> {
@@ -77,6 +77,7 @@ impl<'info> RollbackV2toV1<'info> {
 
         Ok(())
     }
+    
     pub fn set_bumps(
         &mut self,
         configuration_registry_bump: u8,

@@ -21,6 +21,12 @@ impl FillsRegistry {
         Ok(())
     }
 
+    /// Updates the first entry of the queue
+    pub fn update_front(&mut self, fill: Fill) -> Result<()> {
+        self.fills[self.head as usize] = fill;
+        Ok(())
+    }
+
     /// Remove & Return the old entry - FIFO
     pub fn dequeue(&mut self) -> Result<Fill> {
         require!(!self.is_empty(), DoubleZeroError::RegistryEmpty);
@@ -29,22 +35,3 @@ impl FillsRegistry {
         self.count -= 1;
         Ok(fill)
     }
-
-    /// Return the old entry - FIFO : Does Not Remove
-    pub fn peek(&self) -> Result<&Fill> {
-        require!(!self.is_empty(), DoubleZeroError::RegistryEmpty);
-        let fill = &self.fills[self.head as usize];
-        Ok(fill)
-    }
-
-    /// Updates the first entry of the queue
-    pub fn update_front(&mut self, fill: Fill) -> Result<()> {
-        self.fills[self.head as usize] = fill;
-        Ok(())
-    }
-
-    /// Checks whether the queue is empty
-    pub fn is_empty(&self) -> bool {
-        self.count == 0
-    }
-}

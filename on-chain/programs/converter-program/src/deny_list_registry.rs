@@ -1,5 +1,5 @@
 use crate::{
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     common::{
         constant::MAX_DENY_LIST_SIZE,
         seeds::seed_prefixes::SeedPrefixes,

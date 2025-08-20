@@ -6,6 +6,7 @@ pub enum SeedPrefixesV1 {
     ConfigurationRegistry,
     ProgramState,
     DenyListRegistry,
+    WithdrawAuthority
 }
 
 impl SeedPrefixesV1 {
@@ -14,6 +15,7 @@ impl SeedPrefixesV1 {
             SeedPrefixesV1::ConfigurationRegistry => b"system_config_v1",
             SeedPrefixesV1::ProgramState => b"state_v1",
             SeedPrefixesV1::DenyListRegistry => b"deny_list_v1",
+            SeedPrefixesV1::WithdrawAuthority => b"withdraw_authority",
         }
     }
 }

@@ -30,84 +30,36 @@ pub struct DequeueFillsResult {
 }
 
 impl FillsRegistry {
-    pub fn add_trade_to_fills_registry(
-        &mut self,
-        sol_in: u64,
-        token_2z_out: u64,
-    ) -> Result<()> {
-        // Add it to fills registry
-        let fill = Fill {
-            sol_in,
-            token_2z_out,
-        };
-
-        self.enqueue(fill)?;
-        self.total_sol_pending += sol_in;
-        self.total_2z_pending += token_2z_out;
+    // Data Structure Implementation - Solana does not have implementation for queue
+    /// Adds it to Queue
+    pub fn enqueue(&mut self, fill: Fill) -> Result<()> {
+        if self.count as usize >= MAX_FILLS_QUEUE_SIZE {
+            return err!(DoubleZeroError::RegistryFull);
+        }
+        self.fills[self.tail as usize] = fill;
+        self.tail = (self.tail + 1) % MAX_FILLS_QUEUE_SIZE as u64;
+        self.count += 1;
         Ok(())
     }
 
-    pub fn dequeue_fills(
-        &mut self,
-        max_sol_amount: u64,
-    ) -> Result<DequeueFillsResult> {
-        let mut sol_dequeued = 0u64;
-        let mut token_2z_dequeued = 0u64;
-        let mut fills_consumed = 0u64;
-
-        require!(!self.is_empty(), DoubleZeroError::EmptyFillsRegistry);
-
-        // Consume fills until max_sol_amount reached
-        while !self.is_empty() && sol_dequeued < max_sol_amount {
-            let next_entry = self.peek()?;
-            let remaining_sol_amount = max_sol_amount.checked_sub(sol_dequeued)
-                .ok_or(DoubleZeroError::ArithmeticError)?;
-
-            let dequeued_fill = if next_entry.sol_in <= remaining_sol_amount {
-                // Full dequeue
-                self.dequeue()?
-            } else {
-                // Partial dequeue
-                let token_2z_dequeued = next_entry.token_2z_out
-                    .checked_mul(remaining_sol_amount)
-                    .ok_or(DoubleZeroError::ArithmeticError)?
-                    .checked_div(next_entry.sol_in)
-                    .ok_or(DoubleZeroError::ArithmeticError)?;
-
-                // Updated Remainder Fill
-                let remainder_fill = Fill {
-                    sol_in: next_entry.sol_in.checked_sub(remaining_sol_amount)
-                        .ok_or(DoubleZeroError::ArithmeticError)?,
-                    token_2z_out: next_entry.token_2z_out.checked_sub(token_2z_dequeued)
-                        .ok_or(DoubleZeroError::ArithmeticError)?,
-                };
-                self.update_front(remainder_fill)?;
-
-                // Dequeued Fills
-                let fill = Fill {
-                    sol_in: remaining_sol_amount,
-                    token_2z_out: token_2z_dequeued,
-                };
-
-                fill
-            };
-
-            sol_dequeued += dequeued_fill.sol_in;
-            token_2z_dequeued += dequeued_fill.token_2z_out;
-            fills_consumed += 1;
-        }
-
-        // Update registry statistics
-        self.total_sol_pending -= sol_dequeued;
-        self.total_2z_pending -= token_2z_dequeued;
-        self.lifetime_sol_processed += sol_dequeued;
-        self.lifetime_2z_processed += token_2z_dequeued;
-
-        Ok(DequeueFillsResult {
-            sol_dequeued,
-            token_2z_dequeued,
-            fills_consumed,
-        })
+    /// Remove & Return the old entry - FIFO
+    pub fn dequeue(&mut self) -> Result<Fill> {
+        require!(!self.is_empty(), DoubleZeroError::RegistryEmpty);
+        let fill = self.fills[self.head as usize]; // copy the Fill (Fill is Copy)
+        self.head = (self.head + 1) % MAX_FILLS_QUEUE_SIZE as u64;
+        self.count -= 1;
+        Ok(fill)
     }
 
+    /// Return the old entry - FIFO : Does Not Remove
+    pub fn peek(&self) -> Result<&Fill> {
+        require!(!self.is_empty(), DoubleZeroError::RegistryEmpty);
+        let fill = &self.fills[self.head as usize];
+        Ok(fill)
+    }
+
+    /// Checks whether the queue is empty
+    pub fn is_empty(&self) -> bool {
+        self.count == 0
+    }
 }
