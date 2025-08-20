@@ -13,13 +13,8 @@ export interface OraclePriceData {
 }
 
 // Mock the price oracle data
-export const getOraclePriceData = async (): Promise<OraclePriceData> => {
-    // Generate random swap rate and timestamp
-    const swapRate = (Math.random() * 3) + 19; // 19 - 22 range
-    // convert to integer
+export const getOraclePriceDataFor = async (swapRate: number, timestamp: number): Promise<OraclePriceData> => {
     const swapRateInt = Math.floor(swapRate * TOKEN_DECIMAL);
-    const timestamp = Date.now();
-
     const attestation = await generateRandomAttestation(swapRateInt, timestamp);
 
     return {
@@ -27,6 +22,13 @@ export const getOraclePriceData = async (): Promise<OraclePriceData> => {
         timestamp,
         signature: attestation,
     } as OraclePriceData;
+}
+
+export const getOraclePriceData = async (): Promise<OraclePriceData> => {
+    const swapRate = (Math.random() * 3) + 19; // 19 - 22 range
+    const timestamp = Date.now();
+
+    return getOraclePriceDataFor(swapRate, timestamp)
 }
 
 const generateRandomAttestation = async (swapRate: number, timestamp: number): Promise<string> => {

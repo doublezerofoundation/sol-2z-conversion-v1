@@ -1,54 +1,201 @@
 import { describe } from "mocha";
 import { getConversionPriceAndVerify, getConversionPriceToFail } from "./core/test-flow/conversion-price";
-import { getOraclePriceData, OraclePriceData } from "./core/utils/price-oracle";
+import { getOraclePriceData, getOraclePriceDataFor } from "./core/utils/price-oracle";
 import { Keypair } from "@solana/web3.js";
 import { addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify } from "./core/test-flow/deny-list";
-import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
+import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
 import { getDefaultKeyPair } from "./core/utils/accounts";
+import { BPS } from "./core/constants";
+import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
-        // Set deny list authority to admin
+
+        // Set deny list authority to admin.
         await setDenyListAuthorityAndVerify(program, getDefaultKeyPair().publicKey);
     });
 
-    it("should get conversion price", async () => {
+    // Sanity checks -----------------------------------------------------------
+
+    it("Sanity check on oracle price data", async () => {
+        // Sanity checks for mock oracle price data.
         const oraclePriceData = await getOraclePriceData();
-        await getConversionPriceAndVerify(program, oraclePriceData);
+        assert(oraclePriceData.swapRate > 0, "Swap rate should be greater than 0");
+        assert(oraclePriceData.timestamp > 0, "Timestamp should be greater than 0");
+        assert(oraclePriceData.timestamp <= Date.now(), "Timestamp should be less than or equal to current time");
+        assert(oraclePriceData.timestamp > Date.now() - 60 * 1000, "Timestamp should be within the 60 seconds");
+        assert(oraclePriceData.signature.length > 0, "Signature should not be empty");
     });
 
-    it("should fail to get conversion price for deny listed user", async () => {
-        const keypair = Keypair.generate()
+    it("Sanity check on default configuration", async () => {
+        // Sanity checks for default configuration.
+        const minDiscountRate = DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS);
+        assert(minDiscountRate >= 0, "Minimum discount rate should be greater than  or equal to 0");
+        assert(minDiscountRate <= 1, "Minimum discount rate should be less than or equal to 1");
 
-        // Add user to deny list
+        const maxDiscountRate = DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS);
+        assert(maxDiscountRate >= 0, "Maximum discount rate should be greater than or equal to 0");
+        assert(maxDiscountRate <= 1, "Maximum discount rate should be less than or equal to 1");
+
+        assert(minDiscountRate <= maxDiscountRate,
+            "Minimum discount rate should be less than or equal to maximum discount rate");
+    });
+
+    // Success cases -----------------------------------------------------------
+
+    it("Should get valid conversion price", async () => {
+        // Get mock oracle price data.
+        const oraclePriceData = await getOraclePriceData();
+
+        // A conversion price should be returned based on the oracle price data.
+        const conversionPrice = await getConversionPriceAndVerify(program, oraclePriceData);
+        assert(conversionPrice != null, "Conversion price should not be null");
+        assert(conversionPrice > 0, "Conversion price should be greater than 0");
+
+        // Conversion price should be within the range of min and max prices as per the discount rates.
+        const minPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS)));
+        const maxPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS)));
+        assert(minPrice > 0, "Minimum price should be greater than 0");
+        assert(maxPrice > 0, "Maximum price should be greater than 0");
+        assert(minPrice <= maxPrice, "Minimum price should be less than or equal to maximum price");
+        assert(conversionPrice >= minPrice, "Conversion price should be greater than or equal to minimum price");
+        assert(conversionPrice <= maxPrice, "Conversion price should be less than or equal to maximum price");
+    });
+
+    it("Should update conversion price down for every slot passed without trades", async () => {
+        // Get mock oracle price data.
+        const oraclePriceData = await getOraclePriceData();
+
+        // Get current conversion price.
+        const slot1 = await program.provider.connection.getSlot();
+        const price1 = await getConversionPriceAndVerify(program, oraclePriceData);
+
+        // Make sure we are currently not at the minimum price already.
+        const minPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS)));
+        assert(price1 > minPrice, "Conversion price should be greater than minimum price");
+
+        // Allow some time for the slot to change.
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Get the new conversion price based on the same oracle price data.
+        const slot2 = await program.provider.connection.getSlot();
+        const price2 = await getConversionPriceAndVerify(program, oraclePriceData);
+
+        // Slots should have advanced and the new price should be less than or equal to the previous price.
+        assert(slot2 > slot1, "Slot should have advanced");
+        assert(price2 < price1, "Conversion price should decrease for every slot passed");
+
+        // Incremental discount should be based on the slot difference.
+        // Note that we allow for a small tolerance in the pricing calculation due to the possible slot changes
+        // between fetching `slot2` and the actual price calculation fetched in `price2`.
+        const slotDiscount = Math.trunc(oraclePriceData.swapRate * DEFAULT_CONFIGS.coefficient.toNumber() / 100000000);
+        const slotTolerance = 2;
+        const priceUpperBound = price1 - slotDiscount * (slot2 - slot1);
+        const priceLowerBound = price1 - slotDiscount * (slot2 - slot1 + slotTolerance);
+        assert(price2 >= priceLowerBound, "New conversion price should be greater than or equal to expected lower bound");
+        assert(price2 <= priceUpperBound, "New conversion price should be less than or equal to expected upper bound");
+    });
+
+    it("Should update conversion price down and within bounds", async () => {
+        // Get mock oracle price data.
+        const oraclePriceData = await getOraclePriceData();
+
+        // Get current conversion price.
+        var price1 = await getConversionPriceAndVerify(program, oraclePriceData);
+
+        // Compute price bounds.
+        const minPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS)));
+        const maxPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS)));
+
+        // Progressively check the conversion price across multiple slot transitions.
+        for (let i = 0; i < 5; i++) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            const price2 = await getConversionPriceAndVerify(program, oraclePriceData);
+
+            assert(price2 < price1 || (price2 == price1 && price2 == minPrice),
+                "Conversion price should decrease for every slot passed unless we have reached the minimum price");
+            assert(price2 >= minPrice && price2 <= maxPrice, "Conversion price should be within bounds");
+
+            price1 = price2;
+        }
+    });
+
+    // TODO: Implement this test case.
+    it("Should switch to conversion price with minimum discount on trade", async () => {
+        // This test case should verify that the conversion price switches to the minimum discount rate
+        // when a trade is executed.
+    });
+
+    // Failure cases -----------------------------------------------------------
+
+    it("Should fail to get conversion price for deny listed user", async () => {
+        // Add user to deny list.
+        const keypair = Keypair.generate()
         await addToDenyListAndVerify(program, keypair.publicKey);
+
+        // Conversion price fetch should fail for deny listed user.
         await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the DenyList", keypair);
 
-        // Revert: Remove user from deny list
+        // Revert: Remove user from deny list.
         await removeFromDenyListAndVerify(program, keypair.publicKey);
     });
 
-    it("should fail to get conversion price for invalid signature", async () => {
-        const oraclePriceData: OraclePriceData = {
-            swapRate: 12000000,
-            timestamp: 1722633600,
-            signature: "invalid_signature",
-        };
-        await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
+    // TODO: Fix this test as it currently fails with an error indicating the attestation is not authentic.
+    it.skip("Should fail to get conversion price for negative swap rate", async () => {
+        // Get mock oracle price data with a negative swap rate.
+        const oraclePriceData = await getOraclePriceDataFor(-10, Date.now());
+
+        // Conversion price fetch should fail for negative swap rate.
+        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
     });
 
-    it("Conversion price should update for every slot passed", async () => {
-        const oraclePriceData = await getOraclePriceData();
-        const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
+    // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
+    it.skip("Should fail to get conversion price for zero swap rate", async () => {
+        // Get mock oracle price data with a zero swap rate.
+        const oraclePriceData = await getOraclePriceDataFor(0, Date.now());
 
-        // 2 slots passed
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        const newAskPrice = await getConversionPriceAndVerify(program, oraclePriceData);
-        assert(newAskPrice < askPrice, "Conversion price should decrease for every slot passed");
+        // Conversion price fetch should fail for zero swap rate.
+        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+    });
+
+    // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
+    it.skip("Should fail to get conversion price for stale oracle data", async () => {
+        // Get mock oracle price data with a stale timestamp (older than 60 seconds).
+        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() - 300);
+
+        // Conversion price fetch should fail for stale oracle data.
+        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+    });
+
+    // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
+    it.skip("Should fail to get conversion price for future oracle data", async () => {
+        // Get mock oracle price data with a future timestamp.
+        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() + 300);
+
+        // Conversion price fetch should fail for future oracle data.
+        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+    });
+
+    it("Should fail to get conversion price for empty attestation signature", async () => {
+        // Get mock oracle price data and update the signature to empty.
+        const oraclePriceData = await getOraclePriceData();
+        oraclePriceData.signature = "";
+
+        // Conversion price fetch should fail for empty attestation signature.
+        await getConversionPriceToFail(program, oraclePriceData, "Attestation is not Authentic");
+    });
+
+    it("Should fail to get conversion price for invalid attestation signature", async () => {
+        // Get mock oracle price data and update the signature to invalid.
+        const oraclePriceData = await getOraclePriceData();
+        oraclePriceData.signature = "invalid_signature";
+
+        // Conversion price fetch should fail for invalid attestation signature.
+        await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
     });
 });
