@@ -10,7 +10,7 @@ use crate::{
         structs::OraclePriceData, utils::attestation_utils::verify_attestation,
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
+    deny_list_registry::DenyListRegistry,
     discount_rate::discount_utils::{
         calculate_conversion_rate_with_discount, calculate_discount_rate,
     },
