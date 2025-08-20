@@ -1,4 +1,4 @@
-import {PublicKey} from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
 export const TOKEN_DECIMAL = 10 ** 6;
@@ -15,4 +15,3 @@ export namespace Seeds {
     export const MOCK_CONFIG_ACCOUNT = "config";
     export const MOCK_REVENUE_DISTRIBUTION_JOURNAL = "jour";
 }
-export const PRICE_ORACLE_END_POINT = "https://gwimfax068.execute-api.us-east-1.amazonaws.com/qa3/api/v1/swap-rate\n";
