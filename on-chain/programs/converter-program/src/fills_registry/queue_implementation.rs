@@ -37,6 +37,12 @@ impl FillsRegistry {
         Ok(fill)
     }
 
+    /// Updates the first entry of the queue
+    pub fn update_front(&mut self, fill: Fill) -> Result<()> {
+        self.fills[self.head as usize] = fill;
+        Ok(())
+    }
+
     /// Checks whether the queue is empty
     pub fn is_empty(&self) -> bool {
         self.count == 0

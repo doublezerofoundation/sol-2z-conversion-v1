@@ -92,7 +92,7 @@ describe("Buy Sol Tests", () => {
     });
 
 
-    describe.only("Authorized user doing the dequeue fills", async() => {
+    describe("Authorized user doing the dequeue fills", async() => {
         before("User is added to authorized Dequeuers List", async () => {
             await addDequeuerAndVerify(
                 program,
@@ -113,11 +113,12 @@ describe("Buy Sol Tests", () => {
             assert.equal(fillsRegistryAfter.totalSolPending, 0)
         });
 
-        it("User should be able to do dequeue fills to empty fills registry", async () => {
-            await dequeueFillsSuccess(
+        it("User gets error when doing dequeue from empty fills registry", async () => {
+            await dequeueFillsFail(
                 program,
                 DEFAULT_CONFIGS.solQuantity,
-                userKeyPair
+                userKeyPair,
+                "Trying To Dequeue From Empty Fills Registry"
             )
         });
 
