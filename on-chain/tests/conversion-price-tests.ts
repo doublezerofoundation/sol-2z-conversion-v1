@@ -12,6 +12,9 @@ import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
+    
+    // Set a TTL for the oracle price data to be considered valid.
+    const TTL = 300;
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
@@ -28,14 +31,14 @@ describe("Conversion Price Tests", async () => {
         assert(oraclePriceData.swapRate > 0, "Swap rate should be greater than 0");
         assert(oraclePriceData.timestamp > 0, "Timestamp should be greater than 0");
         assert(oraclePriceData.timestamp <= Date.now(), "Timestamp should be less than or equal to current time");
-        assert(oraclePriceData.timestamp > Date.now() - 60 * 1000, "Timestamp should be within the 60 seconds");
+        assert(oraclePriceData.timestamp > Date.now() - 60 * 1000, "Timestamp should be within 60 seconds");
         assert(oraclePriceData.signature.length > 0, "Signature should not be empty");
     });
 
     it("Sanity check on default configuration", async () => {
         // Sanity checks for default configuration.
         const minDiscountRate = DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS);
-        assert(minDiscountRate >= 0, "Minimum discount rate should be greater than  or equal to 0");
+        assert(minDiscountRate >= 0, "Minimum discount rate should be greater than or equal to 0");
         assert(minDiscountRate <= 1, "Minimum discount rate should be less than or equal to 1");
 
         const maxDiscountRate = DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS);
@@ -106,7 +109,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceData();
 
         // Get current conversion price.
-        var price1 = await getConversionPriceAndVerify(program, oraclePriceData);
+        let price1 = await getConversionPriceAndVerify(program, oraclePriceData);
 
         // Compute price bounds.
         const minPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS)));
@@ -166,7 +169,7 @@ describe("Conversion Price Tests", async () => {
     // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
     it.skip("Should fail to get conversion price for stale oracle data", async () => {
         // Get mock oracle price data with a stale timestamp (older than 60 seconds).
-        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() - 300);
+        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() - TTL);
 
         // Conversion price fetch should fail for stale oracle data.
         await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
@@ -175,7 +178,7 @@ describe("Conversion Price Tests", async () => {
     // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
     it.skip("Should fail to get conversion price for future oracle data", async () => {
         // Get mock oracle price data with a future timestamp.
-        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() + 300);
+        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() + TTL);
 
         // Conversion price fetch should fail for future oracle data.
         await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
