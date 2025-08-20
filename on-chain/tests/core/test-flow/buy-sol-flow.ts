@@ -148,7 +148,7 @@ export async function buySolSuccess(
     bidFactor: number = 1,
 ) {
     const oraclePriceData = await getOraclePriceData();
-    const askPrice = await getConversionPriceAndVerify(program);
+    const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
     const bidPrice = askPrice + bidFactor * TOKEN_DECIMAL;
 
     // Ensure that user has sufficient 2Z
