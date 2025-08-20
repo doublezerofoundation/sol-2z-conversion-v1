@@ -41,3 +41,9 @@ enable_metrics_api = true
 
 # Release Tag
 release_tag = "v1.0.0"
+
+# SNS Configuration
+email_subscribers = [
+  # "admin@example.com",
+  # "alerts@example.com"
+]

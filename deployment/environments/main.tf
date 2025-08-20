@@ -325,7 +325,7 @@ module "sns" {
   source            = "../modules/sns"
   name_prefix       = "doublezero-${var.environment}"     
   environment       = var.environment
-  email_subscribers = [] # add admin email addresses for error notifications
+  email_subscribers = var.email_subscribers
   additional_tags   = { Project = "DoubleZero" }
 }
 

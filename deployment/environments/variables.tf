@@ -203,3 +203,10 @@ variable "release_tag" {
   type        = string
   default     = "latest"
 }
+
+# SNS Configuration
+variable "email_subscribers" {
+  description = "List of email addresses to subscribe to error notifications"
+  type        = list(string)
+  default     = []
+}
