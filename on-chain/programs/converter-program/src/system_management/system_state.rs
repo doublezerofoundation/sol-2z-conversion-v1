@@ -6,7 +6,7 @@ use crate::{
         events::system::{SystemHalted, SystemUnhalted},
         seeds::seed_prefixes::SeedPrefixes,
     },
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
 };
 
 #[derive(Accounts)]
