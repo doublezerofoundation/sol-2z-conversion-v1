@@ -101,6 +101,7 @@ $$
 \gamma * 10000 = 4500
 $$
 
+# DEPLOYMENT
 
 ## Deploy the Anchor Program
 ### Keypair for the programs
@@ -154,6 +155,107 @@ Build and Deploy a Single Workspace
 ./provision.sh -w mock-double-zero-program --restart-validator
 ./provision.sh -w run-tests --mode unit
 ```
+
+
+# Off Chain Deployment Guide
+## Prerequisites
+Before starting the deployment process, ensure you have the following dependencies installed:
+- **Node.js v22.17.0** and npm package manager
+- **Terraform v1.12.2** (for infrastructure as code)
+- **jq-1.7** (for JSON processing)
+- **TypeScript ^5.9.2** compiler
+- **Python 3.12.3** (for scripting support)
+- **AWS CLI v2.18.12** configured with appropriate credentials
+- **Docker version 28.3.3** (for containerization)
+
+
+## Deployment Architecture
+The deployment consists of four main components:
+1. **Account Resources** - AWS account-level infrastructure
+2. **Regional Resources** - Region-specific infrastructure
+3. **Application Deployment** - Publishing artifacts and upgrading applications
+4. **Environment Creation** - Environment-specific resources
+
+
+## Step-by-Step Deployment Process
+### 1. Account Resource Creation
+Create foundational AWS account-level resources:
+``` bash
+./provision.sh -w deployment -sc account -a create --region us-west-1
+```
+**Purpose:** Sets up IAM roles, and shared resources needed across all regions and environments.
+### 2. Regional Resource Creation
+Create region-specific infrastructure components:
+``` bash
+./provision.sh -w deployment -sc regional -a create --region us-west-1
+```
+**What this creates:**
+- VPC and networking components
+- Security groups
+- Load balancers
+- ECR repositories
+- CloudWatch log groups
+
+### 3. Publish Artifacts
+Build and publish application artifacts to ECR:
+``` bash
+./provision.sh -w deployment -sc release -a publish-artifacts --region us-west-1 --release-tag dev1-test-v5.2.1
+```
+**What this does:**
+- Builds Docker images for all services
+- Tags images with the specified release tag
+- Pushes images to ECR repositories
+- Creates deployment artifacts
+
+### 4. Environment Creation
+Create environment-specific infrastructure and deploy applications:
+``` bash
+./provision.sh -w deployment -sc environment -a create --env dev1-test --region us-west-1 --release-tag dev1-test-v5.2.1
+```
+**What this creates:**
+- ECS/EC2 instances for the environment
+- Environment-specific databases
+- Application load balancers
+- Auto Scaling Groups
+- Environment configuration
+- Deploys applications with specified release tag
+
+### 5. Application Upgrade
+Upgrade existing environment with new release:
+``` bash
+./provision.sh -w deployment -sc release -a publish-and-upgrade --env dev1-test --region us-west-1 --release-tag dev1-test-v4.2.1
+```
+**What this does:**
+- Publishes new artifacts
+- Updates launch templates
+- Triggers rolling deployment
+- Validates deployment success
+
+## Additional Operations
+### Environment Destruction
+To tear down an environment:
+``` bash
+./provision.sh -w deployment -sc environment -a destroy --env dev1-test --region us-west-1 --release-tag dev1-test-v4.2.1
+```
+### Regional Resource Cleanup
+To destroy regional resources:
+``` bash
+./provision.sh -w deployment -sc regional -a destroy --region us-west-1
+```
+## Deployment Flow Summary
+``` mermaid
+graph TD
+    A[Account Resources] --> B[Regional Resources]
+    B --> C[Publish Artifacts]
+    C --> D[Environment Creation]
+    D --> E[Application Running]
+    E --> F[Upgrade Application]
+    F --> E
+```
+
+
+
+
 
 ### Export the Private Key
 To use CLI, It is essential to export the private key\

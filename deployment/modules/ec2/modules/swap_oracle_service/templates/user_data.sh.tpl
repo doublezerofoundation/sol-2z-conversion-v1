@@ -81,7 +81,6 @@ docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   --log-opt awslogs-group="/ec2/${environment}/${container_name}" \
   --log-opt awslogs-region=$REGION \
   --log-opt awslogs-stream=$INSTANCE_ID \
-  --log-opt awslogs-create-group=true \
   -v /opt/app/logs:/app/logs \
   -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e REDIS_ENDPOINT=$REDIS_ENDPOINT -e REDIS_PORT=$REDIS_PORT -e INSTANCE_ID=$INSTANCE_ID \
   $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
@@ -137,12 +136,12 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'EOF'
         "collect_list": [
           {
             "file_path": "/var/log/user-data.log",
-            "log_group_name": "/ec2/${environment}/user-data",
+            "log_group_name": "/ec2/${environment}/${container_name}/user_data",
             "log_stream_name": "{instance_id}"
           },
           {
             "file_path": "/opt/app/logs/*.log",
-            "log_group_name": "/ec2/${environment}/application",
+            "log_group_name": "/ec2/${environment}/${container_name}/application",
             "log_stream_name": "{instance_id}"
           }
         ]

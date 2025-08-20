@@ -190,3 +190,8 @@ variable "release_tag" {
   description = "Docker image tag to pull from ECR"
   type        = string
 }
+
+variable "accountId" {
+  description = "aws account id"
+  type        = string
+}

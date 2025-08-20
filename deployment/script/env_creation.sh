@@ -102,7 +102,7 @@ create_environment() {
     fi
 
     echo "Planning Terraform changes..."
-    terraform plan -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -out=tfplan
+    terraform plan -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}" -out=tfplan
     if [[ $? -ne 0 ]]; then
         print_error_and_exit "Terraform planning failed"
     fi
@@ -112,7 +112,7 @@ create_environment() {
         terraform apply -auto-approve tfplan
     else
         echo "run with confirmation prompt"
-        terraform apply -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}"
+        terraform apply -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}"
     fi
 
 
@@ -134,9 +134,9 @@ destroy_environment() {
     fi
 
     if [[ $AUTO_APPROVE -eq 1 ]]; then
-        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}"  -auto-approve
+        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}"  -auto-approve
     else
-        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}"
+        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}"
     fi
 
     if [[ $? -ne 0 ]]; then
@@ -148,7 +148,7 @@ destroy_environment() {
 
 main() {
     if [[ $# -lt 3 ]]; then
-        usage
+        help
         exit 1
     fi
 

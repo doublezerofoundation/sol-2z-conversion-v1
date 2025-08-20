@@ -46,6 +46,7 @@ while [[ $# -gt 0 ]]; do
         *)
             echo "Unknown option: $1"
             help
+            exit 0
             ;;
     esac
 done
@@ -146,7 +147,7 @@ main() {
         upgrade)
             upgrade
             ;;
-        publish-artifacts-and-upgrade)
+        publish-and-upgrade)
             publish_artifacts
             upgrade
             ;;

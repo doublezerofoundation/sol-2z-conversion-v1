@@ -27,7 +27,7 @@ provider "aws" {
 data "terraform_remote_state" "account" {
   backend = "s3"
   config = {
-    bucket         = "doublezero-terraform-state-bucket"
+    bucket         = "doublezero-terraform-state-bucket" // TODO need to change after apply account changes
     key            = "account/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
@@ -39,8 +39,8 @@ data "terraform_remote_state" "account" {
 data "terraform_remote_state" "regional" {
   backend = "s3"
   config = {
-    bucket         = "doublezero-terraform-state-bucket"
-    key            = "regional/terraform.tfstate"
+    bucket         = "doublezero-terraform-state-${var.accountId}"
+    key            = "regional/${var.aws_region}/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
     encrypt        = true

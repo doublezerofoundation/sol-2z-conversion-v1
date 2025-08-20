@@ -23,11 +23,23 @@ provider "aws" {
   }
 }
 
+
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+locals {
+  availability_zones = slice(data.aws_availability_zones.available.names, 0, 2)
+  public_subnet_cidrs  = [for i, az in local.availability_zones : cidrsubnet(var.vpc_cidr, 8, i + 1)]
+  private_subnet_cidrs = [for i, az in local.availability_zones : cidrsubnet(var.vpc_cidr, 8, i + 11)]
+}
+
+
 # Data source to get account-level outputs
 data "terraform_remote_state" "account" {
   backend = "s3"
   config = {
-    bucket         = "doublezero-terraform-state-bucket"
+    bucket         = "doublezero-terraform-state-bucket" // TODO need to change after apply account changes
     key            = "account/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
@@ -45,10 +57,10 @@ module "vpc" {
 
 # Create public subnets
 resource "aws_subnet" "public" {
-  count             = length(var.public_subnet_cidrs)
+  count             = length(local.public_subnet_cidrs)
   vpc_id            = module.vpc.vpc_id
-  cidr_block        = var.public_subnet_cidrs[count.index]
-  availability_zone = var.availability_zones[count.index % length(var.availability_zones)]
+  cidr_block        = local.public_subnet_cidrs[count.index]
+  availability_zone = local.availability_zones[count.index % length(local.availability_zones)]
   map_public_ip_on_launch = true
 
   tags = {
@@ -58,10 +70,10 @@ resource "aws_subnet" "public" {
 
 # Create private subnets
 resource "aws_subnet" "private" {
-  count             = length(var.private_subnet_cidrs)
+  count             = length(local.private_subnet_cidrs)
   vpc_id            = module.vpc.vpc_id
-  cidr_block        = var.private_subnet_cidrs[count.index]
-  availability_zone = var.availability_zones[count.index % length(var.availability_zones)]
+  cidr_block        = local.private_subnet_cidrs[count.index]
+  availability_zone = local.availability_zones[count.index % length(local.availability_zones)]
 
   tags = {
     Name = "${var.name_prefix}-private-subnet-${count.index + 1}"
@@ -167,7 +179,7 @@ module "redis" {
   name_prefix         = var.name_prefix
   vpc_id             = module.vpc.vpc_id
   subnet_ids         = aws_subnet.private[*].id
-  allowed_cidr_blocks = var.private_subnet_cidrs
+  allowed_cidr_blocks = local.private_subnet_cidrs
   node_type          = "cache.t3.micro"
   num_cache_clusters = 1
 
