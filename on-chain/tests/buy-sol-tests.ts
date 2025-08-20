@@ -74,10 +74,10 @@ describe("Buy Sol Tests", () => {
     });
 
 
-    describe.only("Happy Path", async() => {
+    describe("Happy Path", async() => {
         let lastTradeSlot: number;
 
-        it.only("User does buySOL at higher price than Ask Price", async () => {
+        it("User does buySOL at higher price than Ask Price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
             const bidPrice = askPrice + 2 * TOKEN_DECIMAL;
