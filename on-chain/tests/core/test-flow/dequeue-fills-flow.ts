@@ -89,7 +89,6 @@ export async function dequeueFillsFail(
             .signers([signer])
             .rpc();
     } catch (error) {
-        console.log(error);
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "Buy SOL is rejected as expected");
         return; // Exit early — test passes
