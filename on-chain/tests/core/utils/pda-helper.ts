@@ -2,7 +2,6 @@ import {PublicKey} from "@solana/web3.js";
 import {BPF_UPGRADEABLE_LOADER_ID, Seeds} from "../constants";
 import CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
 import PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
-import FILLS_REGISTRY_SEED = Seeds.FILLS_REGISTRY_SEED;
 import DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
 import MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
 import MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
@@ -20,12 +19,6 @@ export function getConfigurationRegistryPDA(programId: PublicKey) {
 export function getProgramStatePDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(PROGRAM_STATE_SEED)],
-        programId
-    )[0]
-}
-export function getFillsRegistryPDA(programId: PublicKey) {
-    return PublicKey.findProgramAddressSync(
-        [Buffer.from(FILLS_REGISTRY_SEED)],
         programId
     )[0]
 }
