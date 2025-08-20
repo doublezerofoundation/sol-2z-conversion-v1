@@ -3,13 +3,13 @@
 mod system_management;
 mod common;
 pub mod configuration_registry;
-mod deny_list_registry;
 mod discount_rate;
 mod fills_registry;
-mod initialize;
+mod init_system;
 mod state;
-mod user_flow;
+mod buy_sol;
 mod migration;
+mod deny_list_registry;
 
 use system_management::set_admin::*;
 use system_management::set_deny_list_authority::*;
@@ -18,10 +18,10 @@ use anchor_lang::prelude::*;
 use common::structs::*;
 use configuration_registry::update_configuration::*;
 use configuration_registry::update_dequeuers::*;
-use deny_list_registry::deny_list_registry::*;
 use discount_rate::calculate_ask_price::*;
-use initialize::init_system::*;
-use user_flow::buy_sol::*;
+use init_system::*;
+use buy_sol::*;
+use deny_list_registry::*;
 use fills_registry::dequeue_fills::*;
 use fills_registry::fills_registry::*;
 use migration::migrate_v1_to_v2::*;
@@ -48,7 +48,8 @@ pub mod converter_program {
         ctx.accounts.set_bumps(
             ctx.bumps.configuration_registry,
             ctx.bumps.program_state,
-            ctx.bumps.deny_list_registry
+            ctx.bumps.deny_list_registry,
+            ctx.bumps.withdraw_authority
         )?;
 
         // Calling Init instruction
