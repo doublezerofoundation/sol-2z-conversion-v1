@@ -44,6 +44,7 @@ release_tag = "v1.0.0"
 
 # SNS Configuration
 email_subscribers = [
-  # "admin@example.com",
-  # "alerts@example.com"
+#   "admin@yourdomain.com",
+#   "alerts@yourdomain.com", 
+#   "devops@yourdomain.com"
 ]
