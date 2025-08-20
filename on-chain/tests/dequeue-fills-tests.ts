@@ -18,7 +18,7 @@ import {addDequeuerAndVerify, removeDequeuerAndVerify} from "./core/test-flow/de
 import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
 import {assert} from "chai";
 
-describe("Buy Sol Tests", () => {
+describe("Dequeue Fills Tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -29,6 +29,9 @@ describe("Buy Sol Tests", () => {
     let tokenAccountForUser: PublicKey;
     let userKeyPair: Keypair;
     let currentConfigs: SystemConfig;
+    let maxSolAmount: number;
+    let expectedTokenDequeued: number;
+    let expectedFillsConsumed: number;
 
     before("Set up the system", async() => {
         await initializeSystemIfNeeded(program);
@@ -104,10 +107,16 @@ describe("Buy Sol Tests", () => {
         it("Clear up fills registry", async () => {
             const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
 
+            maxSolAmount = fillsRegistryBefore.totalSolPending;
+            expectedTokenDequeued = fillsRegistryBefore.total2ZPending;
+            expectedFillsConsumed = fillsRegistryBefore.count
+
             await dequeueFillsSuccess(
                 program,
-                new anchor.BN(fillsRegistryBefore.totalSolPending),
-                userKeyPair
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenDequeued,
+                expectedFillsConsumed
             )
             const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
             assert.equal(fillsRegistryAfter.totalSolPending, 0)
@@ -123,39 +132,97 @@ describe("Buy Sol Tests", () => {
         });
 
         it("User dequeues 1  fill", async () => {
-            await buySolSuccess(
+            const bidFactor = 1.1;
+            const askPrice = await buySolSuccess(
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
                 currentConfigs,
-                1
+                bidFactor
             );
+
+            maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
+            expectedTokenDequeued = maxSolAmount *  Math.floor(askPrice * bidFactor) / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = 1
 
             await dequeueFillsSuccess(
                 program,
-                DEFAULT_CONFIGS.solQuantity,
-                userKeyPair
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenDequeued,
+                expectedFillsConsumed
             )
         });
 
-        it("User dequeues 5 fills", async () => {
-            for (let i = 0; i < 5; i++) {
-                await buySolSuccess(
-                    program,
-                    mockTransferProgram,
-                    tokenAccountForUser,
-                    userKeyPair,
-                    currentConfigs,
-                    1.1
+        it("User dequeues 6 fills", async () => {
+            const bidFactor = 1.12;
+            const numOfBuySols = 6;
+            const askPrices: number[] = [];
+            for (let i = 0; i < numOfBuySols; i++) {
+                askPrices.push(
+                    await buySolSuccess(
+                        program,
+                        mockTransferProgram,
+                        tokenAccountForUser,
+                        userKeyPair,
+                        currentConfigs,
+                        bidFactor
+                    )
                 );
             }
 
+            maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity);
+            expectedTokenDequeued = askPrices.reduce((sum: number, askPrice: number): number => {
+                const adjustedPrice = Math.floor(askPrice * bidFactor);
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                return sum + solAmount;
+            }, 0);
+            expectedFillsConsumed = numOfBuySols
+
             await dequeueFillsSuccess(
                 program,
-                new anchor.BN(5 * Number(DEFAULT_CONFIGS.solQuantity)),
-                userKeyPair
-            )
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenDequeued,
+                expectedFillsConsumed
+            );
+        });
+
+        it("Partial Dequeue Fills", async () => {
+            const bidFactor = 2.12;
+            const askPrices: number[] = [];
+            for (let i = 0; i < 5; i++) {
+                askPrices.push(
+                    await buySolSuccess(
+                        program,
+                        mockTransferProgram,
+                        tokenAccountForUser,
+                        userKeyPair,
+                        currentConfigs,
+                        bidFactor
+                    )
+                );
+            }
+
+            // planning to dequeue 3.321 fills
+            maxSolAmount = Math.floor(3.321 * Number(DEFAULT_CONFIGS.solQuantity));
+            const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
+
+            expectedTokenDequeued =
+                solQuantity * Math.floor(askPrices[0] * bidFactor) / LAMPORTS_PER_SOL +
+                solQuantity * Math.floor(askPrices[1] * bidFactor) / LAMPORTS_PER_SOL +
+                solQuantity * Math.floor(askPrices[2] * bidFactor) / LAMPORTS_PER_SOL +
+                (maxSolAmount - 3 * solQuantity) * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = 4
+
+            await dequeueFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                Math.floor(expectedTokenDequeued),
+                expectedFillsConsumed
+            );
         });
 
         after("User is removed from authorized Dequeuers List", async () => {

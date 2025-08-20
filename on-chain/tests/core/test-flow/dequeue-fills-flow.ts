@@ -7,12 +7,14 @@ import {decodeAndValidateReturnData, getUint64FromBuffer, ReturnData} from "../u
 
 export async function dequeueFillsSuccess(
     program: Program<ConverterProgram>,
-    maxSolAmount: BN,
+    maxSolAmount: number,
     signer: Keypair,
+    expectedTokenDequeued: number,
+    expectedFillsConsumed: number
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
-    const signature = await program.methods.dequeueFills(maxSolAmount)
+    const signature = await program.methods.dequeueFills(new BN(maxSolAmount))
         .accounts({
             fillsRegistry: fillsRegistryAddress,
             signer: signer.publicKey
@@ -53,24 +55,11 @@ export async function dequeueFillsSuccess(
     }
 
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-    const fills: Fill[] = fillsRegistryBefore.fills;
-    let solDequeued: number = 0;
-    let tokenDequeued: number = 0;
-    let fillsConsumed: number = 0;
-    while (fills.length > 0 &&
-        solDequeued + fills[0].solIn <= Number(maxSolAmount)) {
-        solDequeued += fills[0].solIn;
-        tokenDequeued += fills[0].token2ZOut;
-        fillsConsumed += 1
-        fills.splice(0, 1);
-    }
 
     // Check Output values
-    assert.equal(resultSolDequeued, solDequeued);
-    assert.equal(resultTokenDequeued, tokenDequeued);
-    assert.equal(resultFillsConsumed, fillsConsumed);
-    expect(fillsRegistryAfter.fills).to.deep.equal(fills);
-    assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count - fillsConsumed);
+    assert.equal(resultSolDequeued, maxSolAmount);
+    assert.equal(resultTokenDequeued, expectedTokenDequeued);
+    assert.equal(resultFillsConsumed, expectedFillsConsumed);
 }
 
 export async function dequeueFillsFail(

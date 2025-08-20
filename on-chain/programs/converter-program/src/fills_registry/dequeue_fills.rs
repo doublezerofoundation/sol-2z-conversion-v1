@@ -11,7 +11,8 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     fills_registry::fills_registry::{
         FillsRegistry,
-        DequeueFillsResult
+        DequeueFillsResult,
+        Fill
     },
 };
 
@@ -55,18 +56,45 @@ impl<'info> DequeueFills<'info> {
         let mut token_2z_dequeued = 0u64;
         let mut fills_consumed = 0u64;
 
+        require!(!fills_registry.is_empty(), DoubleZeroError::EmptyFillsRegistry);
+
         // Consume fills until max_sol_amount reached
-        while !fills_registry.is_empty() {
-            let next_fill_amount = fills_registry.peek()?.sol_in;
-            // Check if adding this fill would exceed max_sol_amount
-            let new_total = sol_dequeued.checked_add(next_fill_amount)
+        while !fills_registry.is_empty() && sol_dequeued < max_sol_amount {
+            let next_entry = fills_registry.peek()?;
+            let remaining_sol_amount = max_sol_amount.checked_sub(sol_dequeued)
                 .ok_or(DoubleZeroError::ArithmeticError)?;
 
-            if new_total > max_sol_amount { break; }
+            let dequeued_fill = if next_entry.sol_in <= remaining_sol_amount {
+                // Full dequeue
+                fills_registry.dequeue()?
+            } else {
+                // Partial dequeue
+                let token_2z_dequeued = next_entry.token_2z_out
+                    .checked_mul(remaining_sol_amount)
+                    .ok_or(DoubleZeroError::ArithmeticError)?
+                    .checked_div(next_entry.sol_in)
+                    .ok_or(DoubleZeroError::ArithmeticError)?;
 
-            let fill = fills_registry.dequeue()?;
-            sol_dequeued += fill.sol_in;
-            token_2z_dequeued += fill.token_2z_out;
+                // Updated Remainder Fill
+                let remainder_fill = Fill {
+                    sol_in: next_entry.sol_in.checked_sub(remaining_sol_amount)
+                        .ok_or(DoubleZeroError::ArithmeticError)?,
+                    token_2z_out: next_entry.token_2z_out.checked_sub(token_2z_dequeued)
+                        .ok_or(DoubleZeroError::ArithmeticError)?,
+                };
+                fills_registry.update_front(remainder_fill)?;
+
+                // Dequeued Fills
+                let fill = Fill {
+                    sol_in: remaining_sol_amount,
+                    token_2z_out: token_2z_dequeued,
+                };
+
+                fill
+            };
+
+            sol_dequeued += dequeued_fill.sol_in;
+            token_2z_dequeued += dequeued_fill.token_2z_out;
             fills_consumed += 1;
         }
 
