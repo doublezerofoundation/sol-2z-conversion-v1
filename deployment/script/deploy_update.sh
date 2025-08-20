@@ -161,6 +161,7 @@ update_pricing_service_image_tag() {
         -var="release_tag=$release_tag" \
         -var="environment=$env_alias" \
         -var="aws_region=$region" \
+        -var="accountId=${account_id}" \
         -out=tfplan
 
     local plan_exit_code=$?
