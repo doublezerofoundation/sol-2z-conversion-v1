@@ -2,6 +2,19 @@
 
 set -euo pipefail
 
+# Cleanup function to restore configs on exit
+cleanup() {
+    if [ -f "$SCRIPT_DIR/config/default.json.bak" ]; then
+        mv "$SCRIPT_DIR/config/default.json.bak" "$SCRIPT_DIR/config/default.json" 2>/dev/null || true
+    fi
+    if [ -f "$SCRIPT_DIR/config/prod.json.bak" ]; then
+        mv "$SCRIPT_DIR/config/prod.json.bak" "$SCRIPT_DIR/config/prod.json" 2>/dev/null || true
+    fi
+}
+
+# Set trap to ensure cleanup happens on script exit
+trap cleanup EXIT
+
 # Source utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../build_utils.sh"
@@ -10,7 +23,7 @@ SERVICE_NAME="double-zero-indexer-service"
 AWS_REGION="${AWS_REGION:-us-east-1}"
 ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
 BUILD_TAG="${BUILD_TAG:-latest}"
-ENV="${ENV:-dev1}"
+ENV="${ENV:-dev5}"
 S3_BUCKET_NAME="${S3_BUCKET_NAME:-doublezero-${ENV}-lambda-deployments}"
 S3_OBJECT_KEY="${S3_OBJECT_KEY:-metrics-api.zip}"
 BUILD_DIR="$SCRIPT_DIR/lambda-build"
@@ -26,6 +39,7 @@ main() {
     ACCOUNT_ID=$(get_account_id)
     ECR_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
     IMAGE_TAG="$ECR_URI/$ECR_REPOSITORY_NAME:$BUILD_TAG"
+    S3_VERSIONED_KEY="metrics-api/${BUILD_TAG}/${S3_OBJECT_KEY}"
 
     log_info "AWS Account ID: $ACCOUNT_ID"
     log_info "ECR URI: $ECR_URI"
@@ -36,6 +50,9 @@ main() {
     clean_project
     npm_install
     build_project
+    
+    # Populate config files with AWS-specific values
+    populate_config_files
 
     # Build and deploy metrics API Lambda
     build_metrics_api
@@ -46,10 +63,13 @@ main() {
 
     push_image $IMAGE_TAG
 
+    # Clean up - restore original config files
+    restore_config_files
+
     log_info "Build and deploy completed successfully!"
     log_info "Docker Image URI: $IMAGE_TAG"
-    log_info "Lambda S3 Location: s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY"
-    log_info "Lambda Build Tag: $BUILD_TAG"
+    log_info "Lambda S3 Location: s3://$S3_BUCKET_NAME/$S3_VERSIONED_KEY"
+    log_info "Release Tag: $BUILD_TAG"
 }
 
 build_metrics_api() {
@@ -138,7 +158,7 @@ upload_to_s3() {
     log_info "  - Git Commit: $git_commit"
     log_info "  - Git Branch: $git_branch"
     log_info "  - Version Tag: $version_tag"
-    log_info "  - S3 Object Key: $S3_OBJECT_KEY"
+    log_info "  - S3 Versioned Key: $S3_VERSIONED_KEY"
     
     # Check if bucket exists
     if ! aws s3api head-bucket --bucket "$S3_BUCKET_NAME" --region "$AWS_REGION" 2>/dev/null; then
@@ -148,43 +168,82 @@ upload_to_s3() {
     fi
     
     # Upload with comprehensive metadata
-    aws s3 cp "$ZIP_FILE" "s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY" \
+    aws s3 cp "$ZIP_FILE" "s3://$S3_BUCKET_NAME/$S3_VERSIONED_KEY" \
         --region "$AWS_REGION" \
-        --metadata "service=metrics-api,environment=$ENV,version-tag=$version_tag,build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-    
-    # Get the version ID of the uploaded object
-    local s3_version_id
-    s3_version_id=$(aws s3api head-object \
-        --bucket "$S3_BUCKET_NAME" \
-        --key "$S3_OBJECT_KEY" \
-        --region "$AWS_REGION" \
-        --query 'VersionId' \
-        --output text)
+        --metadata "service=metrics-api,environment=$ENV,version-tag=$version_tag,release-tag=$BUILD_TAG,build-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     
     log_info "Lambda upload completed successfully!"
-    log_info "S3 Version ID: $s3_version_id"
     log_info "Custom Version Tag: $version_tag"
-    log_info "S3 Location: s3://$S3_BUCKET_NAME/$S3_OBJECT_KEY"
+    log_info "Release Tag: $BUILD_TAG"
+    log_info "S3 Location: s3://$S3_BUCKET_NAME/$S3_VERSIONED_KEY"
     
     # Enhanced tagging with version information
     aws s3api put-object-tagging \
         --bucket "$S3_BUCKET_NAME" \
-        --key "$S3_OBJECT_KEY" \
-        --version-id "$s3_version_id" \
+        --key "$S3_VERSIONED_KEY" \
         --region "$AWS_REGION" \
         --tagging "TagSet=[
             {Key=Service,Value=metrics-api},
             {Key=Environment,Value=$ENV},
-            {Key=Version,Value=$version_tag}
+            {Key=Version,Value=$version_tag},
+            {Key=ReleaseTag,Value=$BUILD_TAG}
         ]" \
         2>/dev/null || log_warn "Failed to add tags to S3 object"
 }
 
+populate_config_files() {
+    log_info "Populating config files with AWS-specific values..."
+    
+    log_info "Config population parameters:"
+    log_info "  - Account ID: $ACCOUNT_ID"
+    log_info "  - AWS Region: $AWS_REGION"
+    log_info "  - Environment: $ENV"
+    
+    # Create backup copies before modifying
+    cp "$SCRIPT_DIR/config/default.json" "$SCRIPT_DIR/config/default.json.bak"
+    cp "$SCRIPT_DIR/config/prod.json" "$SCRIPT_DIR/config/prod.json.bak"
+    
+    # Replace placeholders in default.json
+    sed -i "s/{{ACCOUNT_ID}}/$ACCOUNT_ID/g" "$SCRIPT_DIR/config/default.json"
+    sed -i "s/{{AWS_REGION}}/$AWS_REGION/g" "$SCRIPT_DIR/config/default.json"
+    sed -i "s/{{ENV}}/$ENV/g" "$SCRIPT_DIR/config/default.json"
+    
+    # Replace placeholders in prod.json
+    sed -i "s/{{ACCOUNT_ID}}/$ACCOUNT_ID/g" "$SCRIPT_DIR/config/prod.json"
+    sed -i "s/{{AWS_REGION}}/$AWS_REGION/g" "$SCRIPT_DIR/config/prod.json"
+    sed -i "s/{{ENV}}/$ENV/g" "$SCRIPT_DIR/config/prod.json"
+    
+    log_info "Updated configuration files:"
+    log_info "default.json SNS ARN: $(grep 'SNS_ERROR_TOPIC_ARN' "$SCRIPT_DIR/config/default.json")"
+    log_info "prod.json SNS ARN: $(grep 'SNS_ERROR_TOPIC_ARN' "$SCRIPT_DIR/config/prod.json")"
+    
+    log_info "Config files populated successfully"
+}
+
+restore_config_files() {
+    log_info "Restoring original config files..."
+    
+    # Restore from backups if they exist
+    if [ -f "$SCRIPT_DIR/config/default.json.bak" ]; then
+        mv "$SCRIPT_DIR/config/default.json.bak" "$SCRIPT_DIR/config/default.json"
+    fi
+    
+    if [ -f "$SCRIPT_DIR/config/prod.json.bak" ]; then
+        mv "$SCRIPT_DIR/config/prod.json.bak" "$SCRIPT_DIR/config/prod.json"
+    fi
+    
+    log_info "Original config files restored"
+}
+
 # Handle script arguments
 while [[ $# -gt 0 ]]; do
-    case $1 in
+    case $1 in\
         --region)
             AWS_REGION="$2"
+            shift 2
+            ;;
+        --env)
+            ENV="$2"
             shift 2
             ;;
         --repository)
@@ -207,8 +266,9 @@ while [[ $# -gt 0 ]]; do
             echo "Usage: $0 [options]"
             echo "Options:"
             echo "  --region REGION         AWS region (default: us-east-1)"
+            echo "  --env ENV               Environment (default: dev5)"
             echo "  --repository NAME       ECR repository name (default: double-zero-indexer-service)"
-            echo "  --tag TAG               Build tag (default: latest)"
+            echo "  --tag TAG               Build/Release tag (default: latest)"
             echo "  --bucket BUCKET         S3 bucket for Lambda deployments (default: doublezero-{env}-lambda-deployments)"
             echo "  --key KEY               S3 object key for Lambda ZIP (default: metrics-api.zip)"
             echo "  --help                  Show this help message"
