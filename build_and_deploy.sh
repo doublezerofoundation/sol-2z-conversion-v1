@@ -65,7 +65,7 @@ handle_mock_double_zero_program() {
 }
 
 handle_run_tests() {
-  cmd=(./on-chain/run_tests.sh)
+  cmd=(./run_tests.sh)
   [[ -n "$mode" ]] && cmd+=("-m" "$mode")
   "${cmd[@]}"
 }
