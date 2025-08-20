@@ -6,6 +6,7 @@ use anchor_client::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
         signature::{Signer, Keypair},
+        sysvar::rent
     },
     solana_client::rpc_client::RpcClient
 };
@@ -52,20 +53,22 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         admin_config.min_discount_rate.to_le_bytes().to_vec(),
     ].concat();
 
-
     // Getting necessary accounts
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
     let program_data_account_pda = pda_helper::get_program_data_account_pda(program_id);
+    let withdraw_authority_pda = pda_helper::get_withdraw_authority_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(deny_list_registry_pda, false),
         AccountMeta::new(fills_account.pubkey(), false),
+        AccountMeta::new(withdraw_authority_pda, false),
         AccountMeta::new(program_id, false),
         AccountMeta::new(program_data_account_pda, false),
+        AccountMeta::new_readonly(rent::id(), false),    // rent
         AccountMeta::new(system_program::ID, false),
         AccountMeta::new(payer.pubkey(), true),
     ];
@@ -87,6 +90,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     println!("Configuration Registry PDA: {}", configuration_registry_pda);
     println!("Program State PDA: {}", program_state_pda);
     println!("Deny List Registry PDA: {}", deny_list_registry_pda);
+    println!("Withdraw Authority PDA: {}", withdraw_authority_pda);
     println!("Program Data PDA: {}", program_data_account_pda);
     println!("{} System has been successfully initialized", ui::OK);
     Ok(())

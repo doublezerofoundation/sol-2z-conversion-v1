@@ -18,7 +18,8 @@ describe("Conversion Price Tests", async () => {
     });
 
     it("should get conversion price", async () => {
-        await getConversionPriceAndVerify(program);
+        const oraclePriceData = await getOraclePriceData();
+        await getConversionPriceAndVerify(program, oraclePriceData);
     });
 
     it("should fail to get conversion price for deny listed user", async () => {
@@ -42,11 +43,12 @@ describe("Conversion Price Tests", async () => {
     });
 
     it("Conversion price should update for every slot passed", async () => {
-        const askPrice = await getConversionPriceAndVerify(program);
+        const oraclePriceData = await getOraclePriceData();
+        const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
 
         // 2 slots passed
         await new Promise(resolve => setTimeout(resolve, 2000));
-        const newAskPrice = await getConversionPriceAndVerify(program);
+        const newAskPrice = await getConversionPriceAndVerify(program, oraclePriceData);
         assert(newAskPrice < askPrice, "Conversion price should decrease for every slot passed");
     });
 });

@@ -8,9 +8,7 @@ import { getDefaultKeyPair } from "../utils/accounts";
 import { getProgramStatePDA } from "../utils/pda-helper";
 import { fetchCurrentConfiguration } from "../utils/configuration-registry";
 
-export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, signer: Keypair = getDefaultKeyPair()) => {
-    const oraclePriceData = await getOraclePriceData();
-
+export const getConversionPriceAndVerify = async (program: Program<ConverterProgram>, oraclePriceData: OraclePriceData, signer: Keypair = getDefaultKeyPair()) => {
     const {lastTradeSlot} = await program.account.programStateAccount.fetch(getProgramStatePDA(program.programId));
     const currentSlot = await program.provider.connection.getSlot();
     const {coefficient, maxDiscountRate, minDiscountRate} = await fetchCurrentConfiguration(program);

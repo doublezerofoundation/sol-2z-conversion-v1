@@ -92,7 +92,7 @@ describe("Buy Sol Tests", () => {
     });
 
 
-    describe.only("Authorized user doing the dequeue fills", async() => {
+    describe("Authorized user doing the dequeue fills", async() => {
         before("User is added to authorized Dequeuers List", async () => {
             await addDequeuerAndVerify(
                 program,

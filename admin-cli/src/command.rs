@@ -27,15 +27,6 @@ pub enum Commands {
         pause: bool,
     },
 
-    /// Withdrawing from protocol treasury to designated account
-    WithdrawTokens {
-        #[arg(short = 'a', long, required = true)]
-        token_amount: String,
-
-        #[arg(short = 't', long, required = true)]
-        to_account: String,
-    },
-
     /// Add a dequeuer address to the authorized list
     AddDequeuer {
         /// Address to add

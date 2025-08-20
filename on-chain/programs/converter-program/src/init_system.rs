@@ -1,15 +1,19 @@
 use anchor_lang::prelude::*;
-
+use anchor_lang::solana_program::{
+    program::invoke,
+};
+use solana_system_interface::instruction::transfer;
 use crate::{
     common::{
         constant::DISCRIMINATOR_SIZE,
         events::init::SystemInitialized,
-        seeds::seed_prefixes::SeedPrefixes
+        seeds::seed_prefixes::SeedPrefixes,
+        error::DoubleZeroError
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
+    deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     program::ConverterProgram
 };
 
@@ -43,14 +47,20 @@ pub struct InitializeSystem<'info> {
     #[account(zero)]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
-        constraint = program.programdata_address()? == Some(program_data.key()) 
+        mut,
+        seeds = [SeedPrefixes::WithdrawAuthority.as_bytes()],
+        bump
     )]
+    pub withdraw_authority: SystemAccount<'info>,
     pub program: Program<'info, ConverterProgram>,
-    /// PDA holding upgrade authority info.
+    // Current upgrade authority has to sign this instruction
     #[account(
-        constraint = program_data.upgrade_authority_address == Some(authority.key())
-    )]
+        // Panics if program data is not legitimate.
+        address = program.programdata_address()?.unwrap(),
+        constraint = program_data.upgrade_authority_address == Some(authority.key()))
+    ]
     pub program_data: Account<'info, ProgramData>,
+    pub rent: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>,
     /// current upgrade have to sign
     #[account(mut)]
@@ -68,14 +78,19 @@ impl<'info> InitializeSystem<'info> {
         min_discount_rate: u64
     ) -> Result<()> {
 
-        // Initialize configuration_registry registry with provided values
-        self.configuration_registry.initialize(
-            oracle_pubkey,
-            sol_quantity,
-            price_maximum_age,
-            coefficient,
-            max_discount_rate,
-            min_discount_rate
+        // Transfer minimum amount to withdraw_authority to initialize
+        // Rent exempt the withdraw_authority
+        let minimum_balance = self.rent.minimum_balance(0);
+
+        let sol_transfer_ix = transfer(
+            &self.authority.key(),
+            &self.withdraw_authority.key(),
+            minimum_balance,
+        );
+
+        invoke(
+            &sol_transfer_ix,
+            &[self.authority.to_account_info(), self.withdraw_authority.to_account_info()],
         )?;
 
         // Initializing Fills Registry
@@ -90,10 +105,28 @@ impl<'info> InitializeSystem<'info> {
         // Set last trade slot to current slot
         self.program_state.last_trade_slot = Clock::get()?.slot;
 
+        // Validate D_max is between 0 and 1 and D_max is greater than D_min
+        if max_discount_rate > 10000 || max_discount_rate < min_discount_rate {
+            return err!(DoubleZeroError::InvalidMaxDiscountRate);
+        }
+        
+        // Setting initial configurations
+
+        // Validate D_min is between 0 and D_max
+        if min_discount_rate > max_discount_rate {
+            return err!(DoubleZeroError::InvalidMinDiscountRate);
+        }
+
+        self.configuration_registry.oracle_pubkey = oracle_pubkey;
+        self.configuration_registry.sol_quantity = sol_quantity;
+        self.configuration_registry.price_maximum_age = price_maximum_age;
+        self.configuration_registry.coefficient = coefficient;
+        self.configuration_registry.max_discount_rate = max_discount_rate;
+        self.configuration_registry.min_discount_rate = min_discount_rate;
+
         msg!("System is Initialized");
         emit!(SystemInitialized {});
         Ok(())
-
     }
 
     pub fn set_bumps(
@@ -101,12 +134,14 @@ impl<'info> InitializeSystem<'info> {
         configuration_registry_bump: u8,
         program_state_bump: u8,
         deny_list_registry_bump: u8,
+        withdraw_authority_bump: u8,
     )-> Result<()> {
 
         let bump_registry = &mut self.program_state.bump_registry;
         bump_registry.configuration_registry_bump = configuration_registry_bump;
         bump_registry.program_state_bump = program_state_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
+        bump_registry.withdraw_authority_bump = withdraw_authority_bump;
         Ok(())
     }
 }

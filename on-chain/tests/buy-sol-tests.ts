@@ -79,7 +79,7 @@ describe("Buy Sol Tests", () => {
 
         it("User does buySOL at higher price than Ask Price", async () => {
             const oraclePriceData = await getOraclePriceData();
-            const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice + 2 * TOKEN_DECIMAL;
 
             // Ensure that user has sufficient 2Z
@@ -106,7 +106,7 @@ describe("Buy Sol Tests", () => {
         it("should fail to do buy sol for price less than ask price", async () => {
 
             const oraclePriceData = await getOraclePriceData();
-            const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice - 100000;
             // Ensure that user has sufficient 2Z
             await mint2z(
@@ -137,7 +137,7 @@ describe("Buy Sol Tests", () => {
     describe("Edge cases", async() => {
         it("User does buySOL at same price as Ask Price", async () => {
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = await getConversionPriceAndVerify(program, userKeyPair);
+            const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
@@ -160,7 +160,7 @@ describe("Buy Sol Tests", () => {
         it("should fail to do buy sol for price slightly less than ask price", async () => {
 
             const oraclePriceData = await getOraclePriceData();
-            const askPrice = await getConversionPriceAndVerify(program, userKeyPair);
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice - 1000;
             // Ensure that user has sufficient 2Z
             await mint2z(
@@ -357,7 +357,7 @@ describe("Buy Sol Tests", () => {
             );
 
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = await getConversionPriceAndVerify(program, userKeyPair) + 10000;
+            const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair) + 10000;
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
