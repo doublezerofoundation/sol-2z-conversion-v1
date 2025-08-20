@@ -1,4 +1,4 @@
-use crate::common::{constant::MAX_AUTHORIZED_DEQUEUERS};
+use crate::common::constant::MAX_AUTHORIZED_DEQUEUERS;
 use anchor_lang::prelude::*;
 
 // Sample Struct demonstrating the upgrades

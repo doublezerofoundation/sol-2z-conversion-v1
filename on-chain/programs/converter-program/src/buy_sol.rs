@@ -13,18 +13,18 @@ use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
-        utils::attestation_utils::verify_attestation,
+        attestation_utils::verify_attestation,
         events::{
             trade::{TradeEvent, BidTooLowEvent},
             system::{AccessByDeniedPerson, AccessDuringSystemHalt}
         },
         structs::OraclePriceData,
     },
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::DenyListRegistry,
-    fills_registry::fills_registry::FillsRegistry,
-    discount_rate::calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
+    fills_registry::fills_registry::{FillsRegistry, Fill},
+    calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
 };
 
 #[derive(Accounts)]
@@ -172,7 +172,7 @@ impl<'info> BuySol<'info> {
             AccountMeta::new_readonly(self.system_program.key(), false)
         ];
 
-        // call cpi for settlement
+        // call cpi for sol withdrawal
         let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol"
         let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
         cpi_data = [
@@ -202,10 +202,14 @@ impl<'info> BuySol<'info> {
         )?;
 
         // Add it to fills registry
-        self.fills_registry.load_mut()?.add_trade_to_fills_registry(
-            sol_quantity,
-            tokens_required
-        )?;
+        let fills_registry = &mut self.fills_registry.load_mut()?;
+        let fill = Fill {
+            sol_in: sol_quantity,
+            token_2z_out: tokens_required,
+        };
+        fills_registry.enqueue(fill)?;
+        fills_registry.total_sol_pending += sol_quantity;
+        fills_registry.total_2z_pending += tokens_required;
 
         // Update the last trade slot
         self.program_state.last_trade_slot = clock.slot;

@@ -2,7 +2,7 @@ use anchor_lang::prelude::*;
 use crate::{
     common::seeds::seed_prefixes::SeedPrefixes,
     program::ConverterProgram,
-    state::program_state::ProgramStateAccount
+    program_state::ProgramStateAccount
 };
 
 #[derive(Accounts)]

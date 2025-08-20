@@ -7,12 +7,13 @@ use crate::{
     common::{
         constant::DISCRIMINATOR_SIZE,
         events::init::SystemInitialized,
-        seeds::seed_prefixes::SeedPrefixes
+        seeds::seed_prefixes::SeedPrefixes,
+        error::DoubleZeroError
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     program::ConverterProgram
 };
 
@@ -92,16 +93,6 @@ impl<'info> InitializeSystem<'info> {
             &[self.authority.to_account_info(), self.withdraw_authority.to_account_info()],
         )?;
 
-        // Initialize configuration_registry registry with provided values
-        self.configuration_registry.initialize(
-            oracle_pubkey,
-            sol_quantity,
-            price_maximum_age,
-            coefficient,
-            max_discount_rate,
-            min_discount_rate
-        )?;
-
         // Initializing Fills Registry
         self.fills_registry.load_init()?;
         // Store it in program state
@@ -113,6 +104,25 @@ impl<'info> InitializeSystem<'info> {
 
         // Set last trade slot to current slot
         self.program_state.last_trade_slot = Clock::get()?.slot;
+
+        // Validate D_max is between 0 and 1 and D_max is greater than D_min
+        if max_discount_rate > 10000 || max_discount_rate < min_discount_rate {
+            return err!(DoubleZeroError::InvalidMaxDiscountRate);
+        }
+        
+        // Setting initial configurations
+
+        // Validate D_min is between 0 and D_max
+        if min_discount_rate > max_discount_rate {
+            return err!(DoubleZeroError::InvalidMinDiscountRate);
+        }
+
+        self.configuration_registry.oracle_pubkey = oracle_pubkey;
+        self.configuration_registry.sol_quantity = sol_quantity;
+        self.configuration_registry.price_maximum_age = price_maximum_age;
+        self.configuration_registry.coefficient = coefficient;
+        self.configuration_registry.max_discount_rate = max_discount_rate;
+        self.configuration_registry.min_discount_rate = min_discount_rate;
 
         msg!("System is Initialized");
         emit!(SystemInitialized {});

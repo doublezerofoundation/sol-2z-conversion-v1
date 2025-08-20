@@ -6,7 +6,7 @@ use crate::configuration_registry::configuration_registry::ConfigurationRegistry
 use crate::deny_list_registry::DenyListRegistry;
 use crate::migration::sample_configuration_registry_v2::ConfigurationRegistryV2;
 use crate::migration::sample_deny_list_registry_v2::DenyListRegistryV2;
-use crate::state::program_state::ProgramStateAccount;
+use crate::program_state::ProgramStateAccount;
 
 #[derive(Accounts)]
 pub struct MigrateV1ToV2<'info> {

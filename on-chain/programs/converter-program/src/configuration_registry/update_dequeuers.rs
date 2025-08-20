@@ -1,10 +1,12 @@
 use anchor_lang::prelude::*;
 use crate::{
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
     common::{
         seeds::seed_prefixes::SeedPrefixes,
-        events::dequeuer::*
+        events::dequeuer::*,
+        constant::MAX_AUTHORIZED_DEQUEUERS,
+        error::DoubleZeroError
     }
 };
 
@@ -35,26 +37,37 @@ impl<'info> UpdateDequeuers<'info> {
         // Ensure only admin can modify
         self.program_state.assert_admin(&self.admin)?;
 
-        if self.configuration_registry.add_dequeuer(new_pubkey)? {
+        if !self.configuration_registry.authorized_dequeuers.contains(&new_pubkey) {
+            // Enforce the maximum limit
+            let authorized_dequeuers_length = self.configuration_registry.authorized_dequeuers.len() as u64;
+            require!(
+                authorized_dequeuers_length < MAX_AUTHORIZED_DEQUEUERS,
+                DoubleZeroError::MaxAuthorizedDequeuersReached
+            );
+            self.configuration_registry.authorized_dequeuers.push(new_pubkey);
+
             emit!(DequeuerAdded {
                 added_by: self.admin.key(),
                 dequeuer: new_pubkey,
             });
         }
-
         Ok(())
     }
 
     pub fn remove_dequeuer(&mut self, remove_pubkey: Pubkey) -> Result<()> {
         // Ensure only admin can modify
         self.program_state.assert_admin(&self.admin)?;
-        if self.configuration_registry.remove_dequeuer(remove_pubkey)? {
+
+        let dequeuers = &mut self.configuration_registry.authorized_dequeuers;
+        let before_len = dequeuers.len();
+        dequeuers.retain(|pk| pk != &remove_pubkey);
+
+        if dequeuers.len() != before_len {
             emit!(DequeuerRemoved {
                 removed_by: self.admin.key(),
                 dequeuer: remove_pubkey,
             });
         }
-
         Ok(())
     }
 }

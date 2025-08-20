@@ -7,7 +7,7 @@ use crate::{
         error::DoubleZeroError,
         events::dequeuer::FillsDequeuedEvent,
     },
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
     fills_registry::fills_registry::{
         FillsRegistry,
@@ -47,8 +47,40 @@ impl<'info> DequeueFills<'info> {
             self.configuration_registry.authorized_dequeuers.contains(signer_key),
             DoubleZeroError::UnauthorizedDequeuer
         );
+        
+        let fills_registry = &mut self.fills_registry.load_mut()?;
+        
+        // Dequeue Fills
+        let mut sol_dequeued = 0u64;
+        let mut token_2z_dequeued = 0u64;
+        let mut fills_consumed = 0u64;
 
-        let dequeue_fills_result = self.fills_registry.load_mut()?.dequeue_fills(max_sol_amount)?;
+        // Consume fills until max_sol_amount reached
+        while !fills_registry.is_empty() {
+            let next_fill_amount = fills_registry.peek()?.sol_in;
+            // Check if adding this fill would exceed max_sol_amount
+            let new_total = sol_dequeued.checked_add(next_fill_amount)
+                .ok_or(DoubleZeroError::ArithmeticError)?;
+
+            if new_total > max_sol_amount { break; }
+
+            let fill = fills_registry.dequeue()?;
+            sol_dequeued += fill.sol_in;
+            token_2z_dequeued += fill.token_2z_out;
+            fills_consumed += 1;
+        }
+
+        // Update registry statistics
+        fills_registry.total_sol_pending -= sol_dequeued;
+        fills_registry.total_2z_pending -= token_2z_dequeued;
+        fills_registry.lifetime_sol_processed += sol_dequeued;
+        fills_registry.lifetime_2z_processed += token_2z_dequeued;
+
+        let dequeue_fills_result = DequeueFillsResult {
+            sol_dequeued,
+            token_2z_dequeued,
+            fills_consumed,
+        };
 
         emit!(FillsDequeuedEvent {
             requester: self.signer.key(),
