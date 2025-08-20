@@ -14,27 +14,6 @@ export interface ValidationError {
 }
 
 /**
- * Validate API key from request headers
- */
-export function validateApiKey(headers: Record<string, string | undefined>): ValidationError | null {
-    const apiKey = headers['X-API-Key'] || headers['x-api-key'];
-    if (!apiKey) {
-        return {
-            code: 'UNAUTHORIZED',
-            message: 'API Key required',
-            statusCode: 401
-        };
-    }
-    
-    // TODO: Validate API key against your key store
-    // if (!await validateApiKey(apiKey)) {
-    //     return { code: 'INVALID_API_KEY', message: 'Invalid API key', statusCode: 401 };
-    // }
-    
-    return null;
-}
-
-/**
  * Validate and parse date range parameters
  */
 export function validateDateRange(queryStringParameters: { [key: string]: string | undefined } | null): ValidatedRequest | ValidationError {

@@ -25,7 +25,6 @@ resource "aws_api_gateway_method" "buys_get" {
   resource_id   = aws_api_gateway_resource.buys.id
   http_method   = "GET"
   authorization = "NONE"
-  api_key_required = true
 
   request_parameters = {
     "method.request.querystring.from" = true
@@ -115,7 +114,6 @@ resource "aws_api_gateway_method" "errors_get" {
   resource_id   = aws_api_gateway_resource.errors.id
   http_method   = "GET"
   authorization = "NONE"
-  api_key_required = true
 
   request_parameters = {
     "method.request.querystring.from" = true
@@ -205,7 +203,6 @@ resource "aws_api_gateway_method" "dequeues_get" {
   resource_id   = aws_api_gateway_resource.dequeues.id
   http_method   = "GET"
   authorization = "NONE"
-  api_key_required = true
 
   request_parameters = {
     "method.request.querystring.from" = true

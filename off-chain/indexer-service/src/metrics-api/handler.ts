@@ -1,5 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
-import { validateApiKey, validateDateRange, isValidationError } from './helpers/validation';
+import { validateDateRange, isValidationError } from './helpers/validation';
 import { createErrorResponse } from './helpers/response';
 import { handleBuysMetrics } from './handlers/buys';
 import { handleErrorsMetrics } from './handlers/errors';
@@ -12,13 +12,7 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     console.log('Received event:', JSON.stringify(event, null, 2));
     
     try {
-        const { httpMethod, resource, queryStringParameters, headers } = event;
-        
-        // Validate API Key
-        const apiKeyError = validateApiKey(headers);
-        if (apiKeyError) {
-            return createErrorResponse(apiKeyError.statusCode, apiKeyError.code, apiKeyError.message);
-        }
+        const { httpMethod, resource, queryStringParameters } = event;
         
         // Validate date range parameters  
         const validatedRequest = validateDateRange(queryStringParameters);
