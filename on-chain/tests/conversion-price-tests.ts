@@ -129,7 +129,7 @@ describe("Conversion Price Tests", async () => {
     });
 
     // TODO: Implement this test case.
-    it("Should switch to conversion price with minimum discount on trade", async () => {
+    it.skip("Should switch to conversion price with minimum discount on trade", async () => {
         // This test case should verify that the conversion price switches to the minimum discount rate
         // when a trade is executed.
     });
