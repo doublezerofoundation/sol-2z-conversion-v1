@@ -1,6 +1,8 @@
-import { expect } from "chai";
+import { assert, expect } from "chai";
 import { Test } from "../../core/account-defs";
 import { DequeuerScenario } from "../../scenarios/dequeuer-scenario";
+import { extractTxHashFromResult } from "../../core/utils/test-helper";
+import { eventExists } from "../../core/utils/assertions";
 
 export const dequeuerUserTests: Test[] = [
     {
@@ -23,14 +25,22 @@ export const dequeuerUserTests: Test[] = [
             // Add dequeuer to list
             await scenario.addDequeuer(dequeuer.session.getPublicKey());
 
-            const fillsRegistry = await scenario.getFillsRegistry();
+            await scenario.dequeueFillsAndVerify(30);
+        }
+    },
+    {
+        name: "fills_dequeued_event_should_be_emitted_when_dequeuer_dequeues_fills",
+        description: "Fills dequeued event should be emitted when dequeuer dequeues fills",
+        execute: async (scenario: DequeuerScenario) => {
+            // Dequeue all fills
+            const result = await scenario.dequeueFillsAndVerify(200);
 
-            await scenario.dequeueFillsAndVerify(200);
-
-            const finalFillsRegistry = await scenario.getFillsRegistry();
-
-            expect(finalFillsRegistry.lifetime2ZProcessed.toNumber()).to.be.equal(fillsRegistry.total2ZPending.toNumber());
-            expect(finalFillsRegistry.lifetimeSolProcessed.toNumber()).to.be.equal(fillsRegistry.totalSolPending.toNumber());
+            let txHash = extractTxHashFromResult(result);
+            if (await eventExists(scenario.getConnection(), txHash, "FillsDequeuedEvent")) {
+                assert.ok(true);
+            } else {
+                assert.fail("FillsDequeuedEvent not found");
+            }
         }
     },
     {

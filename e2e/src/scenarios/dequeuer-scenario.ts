@@ -2,8 +2,9 @@ import { CommonScenario } from "./common-scenario";
 import { AdminClient } from "../core/admin-client";
 import { assert, expect } from "chai";
 import { getDequeuerList } from "../core/utils/account-helper";
-import { PublicKey } from "@solana/web3.js";
+import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { UserClient } from "../core/user-client";
+import { getConfig } from "../core/utils/config-util";
 
 export class DequeuerScenario extends CommonScenario {
     private readonly dequeuer: UserClient | undefined;
@@ -59,6 +60,13 @@ export class DequeuerScenario extends CommonScenario {
     }
 
     public async dequeueFillsAndVerify(maxSolValue: number): Promise<string> {
+        // Check if maxSolValue is less than sol quantity
+        // If true, then no fills will be dequeued
+        const config = getConfig();
+        const solQuantity = config.sol_quantity;if (maxSolValue * LAMPORTS_PER_SOL < solQuantity) {
+            throw new Error(`Max sol value ${maxSolValue} is less than sol quantity ${solQuantity}`);
+        }
+
         const fillsRegistry = await this.getFillsRegistry();
 
         if (!this.dequeuer) {
@@ -67,12 +75,24 @@ export class DequeuerScenario extends CommonScenario {
 
         const tx = await this.dequeuer.dequeueFillsCommand(maxSolValue);
 
+        maxSolValue = maxSolValue * LAMPORTS_PER_SOL;
+        // Multiple of solQuantity
+        const expectedSolConsumption = maxSolValue - (maxSolValue % solQuantity);
+
         const finalFillsRegistry = await this.getFillsRegistry();
 
+        const { total2ZPending, totalSolPending, lifetime2ZProcessed, lifetimeSolProcessed } = fillsRegistry;
+
+        if (totalSolPending.toNumber() > expectedSolConsumption) {
+            expect(finalFillsRegistry.totalSolPending.toNumber()).to.be.equal(totalSolPending.toNumber() - expectedSolConsumption);
+            expect(finalFillsRegistry.lifetimeSolProcessed.toNumber()).to.be.equal(lifetimeSolProcessed.toNumber() + expectedSolConsumption);
+        } else {
+            expect(finalFillsRegistry.totalSolPending.toNumber()).to.be.equal(0);
+            expect(finalFillsRegistry.lifetimeSolProcessed.toNumber()).to.be.equal(lifetimeSolProcessed.toNumber() + totalSolPending.toNumber());
+        }
+
         expect(finalFillsRegistry.total2ZPending.toNumber()).to.be.lessThan(fillsRegistry.total2ZPending.toNumber());
-        expect(finalFillsRegistry.totalSolPending.toNumber()).to.be.lessThan(fillsRegistry.totalSolPending.toNumber());
         expect(finalFillsRegistry.lifetime2ZProcessed.toNumber()).to.be.greaterThan(fillsRegistry.lifetime2ZProcessed.toNumber());
-        expect(finalFillsRegistry.lifetimeSolProcessed.toNumber()).to.be.greaterThan(fillsRegistry.lifetimeSolProcessed.toNumber());
 
         return tx;
     }
