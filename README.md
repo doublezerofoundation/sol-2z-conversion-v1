@@ -196,6 +196,29 @@ Create region-specific infrastructure components:
 - ECR repositories
 - CloudWatch log groups
 
+### Solana Keypair Management
+The deployment includes a Python utility for managing Solana keypairs:
+#### Installation
+``` bash
+pip install solders base58
+```
+### Usage
+#### Generate New Keypair
+``` bash
+cd deployment/script
+python3 script.py
+```
+#### Load Existing Keypair
+``` bash
+python3 script.py <keypair.json>
+```
+**Features:**
+- Generates secure Solana keypairs
+- Base58 encoding for AWS Parameter Store integration
+- JSON file support for existing keypairs
+### Parameter Store Integration
+Update AWS Parameter Store with the Base58 encoded secret key for secure storage and retrieval.
+
 ### 3. Publish Artifacts
 Build and publish application artifacts to ECR:
 ``` bash
