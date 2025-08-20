@@ -21,10 +21,10 @@ variable "s3_object_key" {
   default     = "metrics-api.zip"
 }
 
-variable "s3_object_version" {
-  description = "Specific S3 object version to deploy (leave empty for latest)"
+variable "release_tag" {
+  description = "Release tag for versioned deployments (e.g., v1.0.0)"
   type        = string
-  default     = ""
+  default     = "latest"
 }
 
 variable "s3_access_policy_arn" {

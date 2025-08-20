@@ -36,10 +36,8 @@ health_check_unhealthy_threshold = 3
 # Off-chain Service Configuration
 enable_swap_oracle_service = false
 enable_indexer_service     = true
-
 enable_pricing_service = false
 enable_metrics_api = true
 
-# metrics lambda configuration
-lambda_s3_version = "" # Leave empty to use the latest version
+# Release Tag
 release_tag = "v1.0.0"

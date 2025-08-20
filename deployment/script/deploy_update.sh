@@ -6,15 +6,6 @@ ENV_TERRAFORM_DIR="../environments"
 successful_instances=()
 failed_instances=()
 
-# ENV="dev1"
-# AWS_REGION="us-east-1"
-# RELEASE_TAG="dev1-v1.0.6"
-# CONTAINER_NAME="indexer-service"
-# ECR_REGISTRY=""
-# ECR_REPOSITORY="double-zero-indexer-service"
-# successful_instances=()
-# failed_instances=()
-
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -538,15 +529,18 @@ print_deployment_summary() {
 update_lambda() {
   echo ""
   echo "================== METRICS LAMBDA UPDATE =================="
-  echo "Updating Lambda function with latest S3 package..."
+  echo "Updating Lambda function with provided S3 package..."
   
   local lambda_function_name="doublezero-${ENV}-metrics-api"
   local s3_bucket_name="doublezero-${ENV}-lambda-deployments"
   local s3_object_key="metrics-api.zip"
+  # Use versioned S3 path: metrics-api/{release_tag}/metrics-api.zip
+  local s3_versioned_key="metrics-api/${RELEASE_TAG}/${s3_object_key}"
   
   echo "Environment: $ENV"
+  echo "Release Tag: $RELEASE_TAG"
   echo "Lambda Function: $lambda_function_name"
-  echo "S3 Location: s3://$s3_bucket_name/$s3_object_key"
+  echo "S3 Location: s3://$s3_bucket_name/$s3_versioned_key"
   echo
   
   # Check if Lambda function exists
@@ -556,15 +550,11 @@ update_lambda() {
     return 1
   fi
   
-  # Get S3 object version for tracking
-  local s3_version
-  s3_version=$(aws s3api head-object --bucket "$s3_bucket_name" --key "$s3_object_key" --region "$AWS_REGION" --query 'VersionId' --output text 2>/dev/null || echo "null")
-  
   echo "🔄 Updating Lambda function code..."
   if aws lambda update-function-code \
       --function-name "$lambda_function_name" \
       --s3-bucket "$s3_bucket_name" \
-      --s3-key "$s3_object_key" \
+      --s3-key "$s3_versioned_key" \
       --region "$AWS_REGION" \
       --no-cli-pager >/dev/null 2>&1; then
     
@@ -572,7 +562,7 @@ update_lambda() {
     
     # Log deployment for tracking
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    echo "[$timestamp] $lambda_function_name updated with S3 version: $s3_version" >> "/tmp/lambda-deployments.log"
+    echo "[$timestamp] $lambda_function_name updated with release tag: $RELEASE_TAG" >> "/tmp/lambda-deployments.log"
     
     # Get function info
     echo

@@ -78,10 +78,9 @@ resource "aws_lambda_function" "metrics_api" {
   timeout      = var.lambda_timeout
   memory_size  = var.lambda_memory_size
 
-  # Reference S3 bucket and object
+  # Reference S3 bucket and object with versioned path structure
   s3_bucket         = var.s3_bucket_name
-  s3_key           = var.s3_object_key
-  s3_object_version = var.s3_object_version != "" ? var.s3_object_version : null
+  s3_key           = "metrics-api/${var.release_tag}/${var.s3_object_key}"
 
   environment {
     variables = merge(
@@ -109,15 +108,7 @@ resource "aws_lambda_function" "metrics_api" {
   tags = {
     Name        = "${var.name_prefix}-metrics-api"
     Environment = var.environment
-    Version     = var.s3_object_version != "" ? var.s3_object_version : "latest"
-  }
-
-  lifecycle {
-    ignore_changes = [
-      # Ignore changes to s3_object_version if not explicitly set
-      # This allows for automatic updates when new versions are uploaded
-      s3_object_version
-    ]
+    Version     = var.release_tag
   }
 }
 
