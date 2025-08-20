@@ -12,7 +12,6 @@ pub struct WithdrawSol<'info> {
         bump,
     )]
     pub config_account: Account<'info, Config>,
-    #[account(mut)]
     pub withdraw_authority: Signer<'info>,
     #[account(
         mut,

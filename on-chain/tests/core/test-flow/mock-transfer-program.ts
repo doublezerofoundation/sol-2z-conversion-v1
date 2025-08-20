@@ -75,13 +75,13 @@ export async function initializeMockTransferSystemIfNeeded(
 }
 
 export async function mint2z(
-    program: Program<MockTransferProgram>,
+    program,
     recipientTokenAccount: PublicKey,
     amount: number
 ) {
     const balanceBeforeMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
     try {
-        await program.methods.mint2z(new anchor.BN(amount))
+        await program.methods.mint2Z(new anchor.BN(amount))
             .accounts({
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 userTokenAccount: recipientTokenAccount

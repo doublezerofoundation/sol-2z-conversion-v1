@@ -15,4 +15,4 @@ export namespace Seeds {
     export const MOCK_CONFIG_ACCOUNT = "config";
     export const MOCK_REVENUE_DISTRIBUTION_JOURNAL = "jour";
 }
-export const PRICE_ORACLE_END_POINT = "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate";
+export const PRICE_ORACLE_END_POINT = "https://gwimfax068.execute-api.us-east-1.amazonaws.com/qa3/api/v1/swap-rate\n";

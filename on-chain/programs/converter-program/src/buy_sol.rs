@@ -165,7 +165,7 @@ impl<'info> BuySol<'info> {
 
         let account_metas = vec![
             AccountMeta::new(self.config_account.key(), false),
-            AccountMeta::new(self.withdraw_authority.key(), true),
+            AccountMeta::new_readonly(self.withdraw_authority.key(), true),
             AccountMeta::new(self.revenue_distribution_journal.key(), false),
             AccountMeta::new(self.signer.key(), false),
             AccountMeta::new(self.vault_account.key(), false),
@@ -173,7 +173,7 @@ impl<'info> BuySol<'info> {
         ];
 
         // call cpi for settlement
-        let cpi_instruction =  b"global:withdraw_sol"; //TODO: needs to be change to "dz::ix::withdraw_sol"
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol"
         let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
         cpi_data = [
             cpi_data,
@@ -191,7 +191,7 @@ impl<'info> BuySol<'info> {
             &[
                 self.config_account.to_account_info(),
                 self.withdraw_authority.to_account_info(),
-                self.revenue_distribution_program.to_account_info(),
+                self.revenue_distribution_journal.to_account_info(),
                 self.signer.to_account_info(),
                 self.vault_account.to_account_info(),
             ],
