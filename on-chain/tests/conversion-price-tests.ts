@@ -13,8 +13,8 @@ import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 describe("Conversion Price Tests", async () => {
     const program = await setup();
     
-    // Set a TTL for the oracle price data to be considered valid.
-    const TTL = 300;
+    // Set a TTL for the oracle price data (in milliseconds) to be considered valid.
+    const TTL = 300 * 1000;
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)

@@ -28,7 +28,7 @@ export const getOraclePriceData = async (): Promise<OraclePriceData> => {
     const swapRate = (Math.random() * 3) + 19; // 19 - 22 range
     const timestamp = Date.now();
 
-    return getOraclePriceDataFor(swapRate, timestamp)
+    return getOraclePriceDataFor(swapRate, timestamp);
 }
 
 const generateRandomAttestation = async (swapRate: number, timestamp: number): Promise<string> => {
