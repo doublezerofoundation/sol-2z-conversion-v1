@@ -7,6 +7,9 @@ import DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
 import MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
 import MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
 import MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
+import WITHDRAW_AUTHORITY_SEED = Seeds.WITHDRAW_AUTHORITY_SEED;
+import MOCK_CONFIG_ACCOUNT = Seeds.MOCK_CONFIG_ACCOUNT;
+import MOCK_REVENUE_DISTRIBUTION_JOURNAL = Seeds.MOCK_REVENUE_DISTRIBUTION_JOURNAL;
 
 export function getConfigurationRegistryPDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
@@ -34,6 +37,13 @@ export function getDenyListRegistryPDA(programId: PublicKey) {
     )[0]
 }
 
+export function getWithdrawAuthorityPDA(programId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(WITHDRAW_AUTHORITY_SEED)],
+        programId
+    )[0]
+}
+
 export function getProgramDataAccountPDA(programId: PublicKey) {
     return  PublicKey.findProgramAddressSync(
         [programId.toBytes()],
@@ -56,6 +66,19 @@ export function getMockDoubleZeroTokenMintPDA(mockProgramId: PublicKey) {
 export function getMockProtocolTreasuryAccount(mockProgramId: PublicKey) {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_PROTOCOL_TREASURY_SEED)],
+        mockProgramId
+    )[0]
+}
+export function getMockConfig(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_CONFIG_ACCOUNT)],
+        mockProgramId
+    )[0]
+}
+
+export function getMockRevenueDistributionJournal(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_REVENUE_DISTRIBUTION_JOURNAL)],
         mockProgramId
     )[0]
 }

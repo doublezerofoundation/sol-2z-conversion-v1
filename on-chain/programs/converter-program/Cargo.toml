@@ -24,3 +24,4 @@ base64 = { workspace = true }
 brine-ed25519 = {workspace = true}
 anchor-spl = { workspace = true }
 bytemuck = { workspace = true }
+solana-system-interface = { workspace = true, features = ["bincode"] }

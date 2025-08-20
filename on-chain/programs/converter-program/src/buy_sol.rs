@@ -4,10 +4,11 @@ use anchor_lang::{
         native_token::LAMPORTS_PER_SOL,
         hash::hash,
         instruction::Instruction,
-        program::invoke
+        program::invoke_signed
     }
 };
-use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
+use anchor_spl::token_interface;
+use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked};
 use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
@@ -21,7 +22,7 @@ use crate::{
     },
     state::program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::deny_list_registry::DenyListRegistry,
+    deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::FillsRegistry,
     discount_rate::calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
 };
@@ -50,6 +51,11 @@ pub struct BuySol<'info> {
     )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
+        seeds = [SeedPrefixes::WithdrawAuthority.as_bytes()],
+        bump = program_state.bump_registry.withdraw_authority_bump,
+    )]
+    pub withdraw_authority: SystemAccount<'info>,
+    #[account(
         mut,
         token::mint = double_zero_mint,
         constraint = user_token_account.owner == signer.key()
@@ -65,6 +71,12 @@ pub struct BuySol<'info> {
     /// CHECK: program address - TODO: implement address validations
     #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
+    /// CHECK: program address - TODO: implement address validations
+    #[account(mut)]
+    pub config_account: AccountInfo<'info>,
+    /// CHECK: program address - TODO: implement address validations
+    #[account(mut)]
+    pub revenue_distribution_journal: AccountInfo<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
     /// CHECK: program address - TODO: implement address validations
@@ -136,24 +148,35 @@ impl<'info> BuySol<'info> {
 
         msg!("Tokens required {}", tokens_required);
 
+        // Transfer 2Z from signer
+        let cpi_accounts = TransferChecked {
+            mint: self.double_zero_mint.to_account_info(),
+            from: self.user_token_account.to_account_info(),
+            to: self.protocol_treasury_token_account.to_account_info(),
+            authority: self.signer.to_account_info(),
+        };
+
+        let cpi_program = self.token_program.to_account_info();
+        let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
+        token_interface::transfer_checked(cpi_context, tokens_required, 6)?;
+
+        // Does cpi calls to withdraw sol and transfer it to signer
         let cpi_program_id = self.revenue_distribution_program.key();
 
         let account_metas = vec![
+            AccountMeta::new(self.config_account.key(), false),
+            AccountMeta::new(self.withdraw_authority.key(), true),
+            AccountMeta::new(self.revenue_distribution_journal.key(), false),
+            AccountMeta::new(self.signer.key(), false),
             AccountMeta::new(self.vault_account.key(), false),
-            AccountMeta::new(self.user_token_account.key(), false),
-            AccountMeta::new(self.protocol_treasury_token_account.key(), false),
-            AccountMeta::new(self.double_zero_mint.key(), false),
-            AccountMeta::new_readonly(self.token_program.key(), false),
-            AccountMeta::new_readonly(self.system_program.key(), false),
-            AccountMeta::new(self.signer.key(), true),
+            AccountMeta::new_readonly(self.system_program.key(), false)
         ];
 
         // call cpi for settlement
-        let cpi_instruction =  b"global:buy_sol";
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: needs to be change to "dz::ix::withdraw_sol"
         let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
         cpi_data = [
             cpi_data,
-            tokens_required.to_le_bytes().to_vec(),
             sol_quantity.to_le_bytes().to_vec(),
         ].concat();
 
@@ -163,15 +186,19 @@ impl<'info> BuySol<'info> {
             accounts: account_metas,
         };
 
-        invoke(
+        invoke_signed(
             &cpi_ix,
             &[
-                self.vault_account.to_account_info(),
-                self.user_token_account.to_account_info(),
-                self.protocol_treasury_token_account.to_account_info(),
-                self.double_zero_mint.to_account_info(),
+                self.config_account.to_account_info(),
+                self.withdraw_authority.to_account_info(),
+                self.revenue_distribution_program.to_account_info(),
                 self.signer.to_account_info(),
+                self.vault_account.to_account_info(),
             ],
+            &[&[
+                SeedPrefixes::WithdrawAuthority.as_bytes(),
+                &[self.program_state.bump_registry.withdraw_authority_bump],
+            ]],
         )?;
 
         // Add it to fills registry

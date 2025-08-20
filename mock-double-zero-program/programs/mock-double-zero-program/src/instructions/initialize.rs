@@ -1,10 +1,28 @@
+use crate::instructions::revenue_distribution_journal::RevenueDistributionJournal;
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke;
-use anchor_lang::solana_program::system_instruction;
+use solana_system_interface::instruction::transfer;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
+use crate::instructions::config::Config;
 
 #[derive(Accounts)]
 pub struct InitializeAccounts<'info> {
+    #[account(
+        init,
+        payer = signer,
+        space = 8 + Config::INIT_SPACE,
+        seeds = [b"config"],
+        bump,
+    )]
+    pub config_account: Account<'info, Config>,
+    #[account(
+        init,
+        payer = signer,
+        space = 8 + RevenueDistributionJournal::INIT_SPACE,
+        seeds = [b"jour"],
+        bump,
+    )]
+    pub revenue_distribution_journal: Account<'info, RevenueDistributionJournal>,
     #[account(
         init,
         payer = signer,
@@ -44,7 +62,7 @@ impl<'info> InitializeAccounts<'info> {
         // Rent exempt the token buffer account
         let minimum_balance = self.rent.minimum_balance(0);
 
-        let sol_transfer_ix = system_instruction::transfer(
+        let sol_transfer_ix = transfer(
             &self.signer.key(),
             &self.vault_account.key(),
             minimum_balance,

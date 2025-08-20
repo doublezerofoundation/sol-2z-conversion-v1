@@ -1,4 +1,4 @@
-import {getMockProgramPDAs} from "../utils/pda-helper";
+import {getMockConfig, getMockProgramPDAs, getMockRevenueDistributionJournal} from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
 import {BN, Program} from "@coral-xyz/anchor";
@@ -30,6 +30,8 @@ export async function buySolAndVerify(
     const solBalanceBefore = await program.provider.connection.getBalance(signer.publicKey);
     const vaultBalanceBefore = await program.provider.connection.getBalance(pdas.vault);
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
+    const mockConfigAccount: PublicKey = getMockConfig(mockTransferProgram.programId);
+    const mockRevenueDistributionJournal: PublicKey = getMockRevenueDistributionJournal(mockTransferProgram.programId);
 
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
 
@@ -48,6 +50,8 @@ export async function buySolAndVerify(
                 vaultAccount: pdas.vault,
                 protocolTreasuryTokenAccount: pdas.protocolTreasury,
                 doubleZeroMint: pdas.tokenMint,
+                configAccount: mockConfigAccount,
+                revenueDistributionJournal: mockRevenueDistributionJournal,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 revenueDistributionProgram: mockTransferProgram.programId,
                 signer: signer.publicKey
@@ -108,6 +112,8 @@ export async function buySolFail(
 ) {
     const pdas = getMockProgramPDAs(mockTransferProgram.programId);
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
+    const mockConfigAccount: PublicKey = getMockConfig(mockTransferProgram.programId);
+    const mockRevenueDistributionJournal: PublicKey = getMockRevenueDistributionJournal(mockTransferProgram.programId);
 
     try {
         await program.methods.buySol(
@@ -124,6 +130,8 @@ export async function buySolFail(
                 vaultAccount: pdas.vault,
                 protocolTreasuryTokenAccount: pdas.protocolTreasury,
                 doubleZeroMint: pdas.tokenMint,
+                configAccount: mockConfigAccount,
+                revenueDistributionJournal: mockRevenueDistributionJournal,
                 tokenProgram: TOKEN_2022_PROGRAM_ID,
                 revenueDistributionProgram: mockTransferProgram.programId,
                 signer: signer.publicKey

@@ -57,8 +57,11 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let deny_list_registry_pda = pda_helper::get_deny_list_registry_pda(program_id).0;
+    let withdraw_authority = pda_helper::get_withdraw_authority_pda(program_id).0;
     let vault_account_pda = pda_helper::get_vault_pda(revenue_distribution_program).0;
-    let protocol_treasury_token_account_pda = 
+    let config_pda = pda_helper::get_config_pda(revenue_distribution_program).0;
+    let journal_pda = pda_helper::get_journal_pda(revenue_distribution_program).0;
+    let protocol_treasury_token_account_pda =
         pda_helper::get_protocol_treasury_token_account_pda(revenue_distribution_program).0;
     let fills_registry = pda_helper::get_fills_registry_address(program_id, user_config.rpc_url)?;
 
@@ -67,10 +70,13 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(deny_list_registry_pda, false),
         AccountMeta::new(fills_registry, false),
+        AccountMeta::new(withdraw_authority, false),
         AccountMeta::new(from_pub_key, false),
         AccountMeta::new(vault_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),
         AccountMeta::new(token_mint_account_pda, false),
+        AccountMeta::new(config_pda, false),
+        AccountMeta::new(journal_pda, false),
         AccountMeta::new(spl_token_2022::id(), false),
         AccountMeta::new(system_program::ID, false),
         AccountMeta::new(revenue_distribution_program, false),
