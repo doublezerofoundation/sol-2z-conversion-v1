@@ -36,7 +36,6 @@ export async function initializeMockTransferSystemAndVerify(
             })
             .signers([adminKeyPair])
             .rpc();
-        // console.log("System Initialization is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("System initialization failed:", e);
         assert.fail("System initialization failed");
