@@ -61,7 +61,7 @@ pub enum DoubleZeroError {
     AlreadyExistsInDenyList, // 6018
 
     #[msg("Invalid system state")]
-    InvalidSystemState, // 6029
+    InvalidSystemState, // 6019
 
     #[msg("Invalid conversion rate")]
     InvalidConversionRate, // 6020

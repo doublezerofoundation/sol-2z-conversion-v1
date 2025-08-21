@@ -4,7 +4,7 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     common::{
         seeds::seed_prefixes::SeedPrefixes,
-        events::dequeuer::*,
+        events::fill_consumer::*,
     }
 };
 

@@ -5,7 +5,7 @@ use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
-        events::dequeuer::FillsDequeued,
+        events::fill_consumer::FillsDequeued,
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
