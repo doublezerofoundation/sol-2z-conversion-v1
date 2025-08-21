@@ -1,5 +1,5 @@
 {
-  "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969",
+  "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
   "metadata": {
     "name": "converter_program",
     "version": "0.1.0",
@@ -243,6 +243,36 @@
           "writable": true
         },
         {
+          "name": "withdraw_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  116,
+                  104,
+                  100,
+                  114,
+                  97,
+                  119,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
           "name": "user_token_account",
           "writable": true
         },
@@ -256,6 +286,14 @@
         },
         {
           "name": "double_zero_mint",
+          "writable": true
+        },
+        {
+          "name": "config_account",
+          "writable": true
+        },
+        {
+          "name": "revenue_distribution_journal",
           "writable": true
         },
         {
@@ -570,14 +608,46 @@
           "writable": true
         },
         {
-          "name": "program",
-          "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969"
+          "name": "withdraw_authority",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  116,
+                  104,
+                  100,
+                  114,
+                  97,
+                  119,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
         },
         {
-          "name": "program_data",
-          "docs": [
-            "PDA holding upgrade authority info."
-          ]
+          "name": "program",
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "rent",
+          "address": "SysvarRent111111111111111111111111111111111"
         },
         {
           "name": "system_program",
@@ -618,6 +688,160 @@
           "type": "u64"
         }
       ]
+    },
+    {
+      "name": "migrate_v1_to_v2",
+      "discriminator": [
+        77,
+        42,
+        189,
+        71,
+        155,
+        40,
+        52,
+        120
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry_old",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "configuration_registry_new",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry_old",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry_new",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
     },
     {
       "name": "remove_dequeuer",
@@ -765,6 +989,160 @@
       ]
     },
     {
+      "name": "rollback_v2_to_v1",
+      "discriminator": [
+        174,
+        46,
+        132,
+        121,
+        34,
+        95,
+        9,
+        65
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry_old",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "configuration_registry_new",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry_old",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  50
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry_new",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "set_admin",
       "discriminator": [
         251,
@@ -805,7 +1183,7 @@
         },
         {
           "name": "program",
-          "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969"
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
         },
         {
           "name": "program_data"
@@ -838,11 +1216,28 @@
         },
         {
           "name": "program_state",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "program",
-          "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969"
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
         },
         {
           "name": "program_data"
@@ -965,30 +1360,6 @@
           }
         },
         {
-          "name": "deny_list_registry",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  100,
-                  101,
-                  110,
-                  121,
-                  95,
-                  108,
-                  105,
-                  115,
-                  116,
-                  95,
-                  118,
-                  49
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "admin",
           "writable": true,
           "signer": true
@@ -1021,6 +1392,19 @@
       ]
     },
     {
+      "name": "ConfigurationRegistryV2",
+      "discriminator": [
+        78,
+        115,
+        69,
+        78,
+        23,
+        44,
+        248,
+        232
+      ]
+    },
+    {
       "name": "DenyListRegistry",
       "discriminator": [
         94,
@@ -1031,6 +1415,19 @@
         100,
         43,
         215
+      ]
+    },
+    {
+      "name": "DenyListRegistryV2",
+      "discriminator": [
+        61,
+        127,
+        129,
+        93,
+        60,
+        47,
+        72,
+        4
       ]
     },
     {
@@ -1114,6 +1511,32 @@
       ]
     },
     {
+      "name": "DenyListAddressAdded",
+      "discriminator": [
+        146,
+        165,
+        139,
+        226,
+        44,
+        58,
+        169,
+        244
+      ]
+    },
+    {
+      "name": "DenyListAddressRemoved",
+      "discriminator": [
+        20,
+        148,
+        133,
+        130,
+        100,
+        103,
+        187,
+        38
+      ]
+    },
+    {
       "name": "DequeuerAdded",
       "discriminator": [
         154,
@@ -1140,16 +1563,16 @@
       ]
     },
     {
-      "name": "FillsDequeuedEvent",
+      "name": "FillsDequeued",
       "discriminator": [
-        125,
-        44,
-        170,
-        2,
-        193,
-        206,
-        164,
-        193
+        68,
+        192,
+        9,
+        132,
+        233,
+        184,
+        113,
+        152
       ]
     },
     {
@@ -1221,13 +1644,153 @@
   "errors": [
     {
       "code": 6000,
+      "name": "UserInsideDenyList",
+      "msg": "User is blocked in the DenyList"
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedAdmin",
+      "msg": "Unauthorized Admin"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAttestation",
+      "msg": "Provided Attestation is Invalid"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidOraclePublicKey",
+      "msg": "Oracle Public Key is Invalid"
+    },
+    {
+      "code": 6004,
+      "name": "AttestationVerificationError",
+      "msg": "Provided Attestation is not Authentic"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidDiscountRate",
+      "msg": "Invalid discount rate"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidSolQuantity",
+      "msg": "Invalid sol quantity"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAskPrice",
+      "msg": "Invalid ask price"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidMaxDiscountRate",
+      "msg": "Invalid max discount rate"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidMinDiscountRate",
+      "msg": "Invalid min discount rate"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidTradeSlot",
+      "msg": "Invalid trade slot"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidCoefficient",
+      "msg": "Invalid coefficient"
+    },
+    {
+      "code": 6012,
+      "name": "DiscountCalculationError",
+      "msg": "Discount calculation error"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidOracleSwapRate",
+      "msg": "Invalid oracle swap rate"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidTimestamp",
+      "msg": "Invalid Timestamp"
+    },
+    {
+      "code": 6015,
+      "name": "BidTooLow",
+      "msg": "Provided bid is too low"
+    },
+    {
+      "code": 6016,
+      "name": "StalePrice",
+      "msg": "Provided Attestation is not Authentic"
+    },
+    {
+      "code": 6017,
+      "name": "MaxAuthorizedDequeuersReached",
+      "msg": "Maximum number of authorized dequeuers reached"
+    },
+    {
+      "code": 6018,
+      "name": "DenyListFull",
+      "msg": "Deny list is full"
+    },
+    {
+      "code": 6019,
+      "name": "AlreadyExistsInDenyList",
+      "msg": "Address already added to Deny List"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidSystemState",
+      "msg": "Invalid system state"
+    },
+    {
+      "code": 6021,
+      "name": "InvalidConversionRate",
+      "msg": "Invalid conversion rate"
+    },
+    {
+      "code": 6022,
+      "name": "AddressNotInDenyList",
+      "msg": "Address not found in Deny List"
+    },
+    {
+      "code": 6023,
+      "name": "SystemIsHalted",
+      "msg": "System is halted"
+    },
+    {
+      "code": 6024,
+      "name": "ArithmeticError",
+      "msg": "Arithmetic Error has occurred"
+    },
+    {
+      "code": 6025,
+      "name": "UnauthorizedDequeuer",
+      "msg": "User is not authorized to do Dequeue Action"
+    },
+    {
+      "code": 6026,
+      "name": "UnauthorizedDenyListAuthority",
+      "msg": "Unauthorized Deny List Authority"
+    },
+    {
+      "code": 6027,
       "name": "RegistryFull",
       "msg": "FillsRegistry is full — cannot enqueue."
     },
     {
-      "code": 6001,
+      "code": 6028,
       "name": "RegistryEmpty",
       "msg": "FillsRegistry is empty — cannot dequeue."
+    },
+    {
+      "code": 6029,
+      "name": "SingleTradePerSlot",
+      "msg": "Only one trade is allowed per slot"
     }
   ],
   "types": [
@@ -1309,6 +1872,10 @@
           },
           {
             "name": "deny_list_registry_bump",
+            "type": "u8"
+          },
+          {
+            "name": "withdraw_authority_bump",
             "type": "u8"
           }
         ]
@@ -1397,6 +1964,92 @@
       }
     },
     {
+      "name": "ConfigurationRegistryV2",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "price_oracle_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "price_maximum_age",
+            "type": "i64"
+          },
+          {
+            "name": "authorized_dequeuers",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "coefficient",
+            "type": "u64"
+          },
+          {
+            "name": "max_discount_rate",
+            "type": "u64"
+          },
+          {
+            "name": "min_discount_rate",
+            "type": "u64"
+          },
+          {
+            "name": "sol_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListAddressAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "added_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "address",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListAddressRemoved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "removed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "address",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
       "name": "DenyListRegistry",
       "type": {
         "kind": "struct",
@@ -1413,6 +2066,32 @@
           },
           {
             "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListRegistryV2",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "denied_addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "last_updated",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          },
+          {
+            "name": "new_field",
             "type": "u64"
           }
         ]
@@ -1491,7 +2170,7 @@
       }
     },
     {
-      "name": "FillsDequeuedEvent",
+      "name": "FillsDequeued",
       "type": {
         "kind": "struct",
         "fields": [

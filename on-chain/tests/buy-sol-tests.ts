@@ -6,8 +6,8 @@ import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
 import {initializeMockTransferSystemIfNeeded, mint2z} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
 import {getMockProgramPDAs, getProgramStatePDA} from "./core/utils/pda-helper";
-import {Keypair, LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
-import {buySolAndVerify, buySolFail} from "./core/test-flow/buy-sol-flow";
+import {Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
+import {buySolAndVerify, buySolFail, buySolSuccess, prepareBuySolInstruction} from "./core/test-flow/buy-sol-flow";
 import {ConverterProgram} from "../target/types/converter_program";
 import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry";
@@ -18,7 +18,7 @@ import {BPS, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
-import { assert } from "chai";
+import {assert, expect} from "chai";
 
 describe("Buy Sol Tests", () => {
     // Configure the client to use the local cluster.
@@ -270,24 +270,11 @@ describe("Buy Sol Tests", () => {
 
         it("User should be able to do buy SOL after removed from to denylist", async () => {
             await removeFromDenyListAndVerify(program, userKeyPair.publicKey);
-            const oraclePriceData = await getOraclePriceData();
-            const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
-            await mint2z(
-                mockTransferProgram,
-                tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
-            );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
-
-            await buySolAndVerify(
+            await buySolSuccess(
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
                 userKeyPair,
-                oraclePriceData
             );
         });
     });
@@ -321,27 +308,122 @@ describe("Buy Sol Tests", () => {
 
         it("User should be able to do buy SOL after market gets Opened", async () => {
             await toggleSystemStateAndVerify(program, false);
+
+            await buySolSuccess(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                userKeyPair,
+            );
+        });
+    });
+
+    describe("Checking Single Trade Per Slot", async () => {
+        it("A user attempts to two buy sol instruction, should fail", async () => {
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = Number(oraclePriceData.swapRate);
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
             // Ensure that user has sufficient 2Z
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity);
 
-            await buySolAndVerify(
-                program,
+            try {
+                const buySol1: TransactionInstruction = await prepareBuySolInstruction(
+                    program,
+                    mockTransferProgram,
+                    tokenAccountForUser,
+                    askPrice,
+                    userKeyPair,
+                    oraclePriceData
+                );
+                const buySol2: TransactionInstruction = await prepareBuySolInstruction(
+                    program,
+                    mockTransferProgram,
+                    tokenAccountForUser,
+                    askPrice * 5,
+                    userKeyPair,
+                    oraclePriceData
+                );
+                const tx: Transaction = new anchor.web3.Transaction().add(buySol1, buySol2);
+                await program.provider.sendAndConfirm(tx, [userKeyPair]);
+            } catch (error) {
+                // First transaction success message should be verified
+                // Second Transaction failure message should be verified
+                const firstExecutionLogs = "Buy SOL is successful";
+                const expectedError = "Only one trade is allowed per slot";
+                const errorMessage = (new Error(error!.toString())).message;
+                expect(errorMessage).to.include(firstExecutionLogs);
+                expect(errorMessage).to.include(expectedError);
+                assert.ok(true, "Buy SOL is rejected as expected");
+                return; // Exit early — test passes
+            }
+            assert.fail("It was able to do two buy SOL in single slot");
+        });
+
+        it("Two different users attempt to two buy sol instruction, should fail", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
+            const tempUserKeyPair = anchor.web3.Keypair.generate();
+            const tokenAccountForTempUser = await createTokenAccount(
+                mockTransferProgram.provider.connection,
+                mockTransferProgramPDAs.tokenMint,
+                tempUserKeyPair.publicKey,
+            );
+
+            // Ensure that user has sufficient 2Z
+            await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
-                userKeyPair,
-                oraclePriceData
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
+
+            await mint2z(
+                mockTransferProgram,
+                tokenAccountForTempUser,
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure vault has funds.
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity);
+
+            try {
+                const buySol1: TransactionInstruction = await prepareBuySolInstruction(
+                    program,
+                    mockTransferProgram,
+                    tokenAccountForUser,
+                    askPrice,
+                    userKeyPair,
+                    oraclePriceData
+                );
+                const buySol2: TransactionInstruction = await prepareBuySolInstruction(
+                    program,
+                    mockTransferProgram,
+                    tokenAccountForTempUser,
+                    askPrice * 5,
+                    tempUserKeyPair,
+                    oraclePriceData
+                );
+                const tx: Transaction = new anchor.web3.Transaction().add(buySol1, buySol2);
+                await program.provider.sendAndConfirm(tx, [userKeyPair, tempUserKeyPair]);
+            } catch (error) {
+                // First transaction success message should be verified
+                // Second Transaction failure message should be verified
+                const firstExecutionLogs = "Buy SOL is successful";
+                const expectedError = "Only one trade is allowed per slot";
+                const errorMessage = (new Error(error!.toString())).message;
+                expect(errorMessage).to.include(firstExecutionLogs);
+                expect(errorMessage).to.include(expectedError);
+                assert.ok(true, "Buy SOL is rejected as expected");
+                return; // Exit early — test passes
+            }
+            assert.fail("It was able to do two buy SOL in single slot");
         });
+
     });
+
 
     describe("Config Change Check", async () => {
 
@@ -381,6 +463,7 @@ describe("Buy Sol Tests", () => {
 
     describe("Invalid Attestation Check", async () => {
         it("should fail to do buy sol with invalid signature", async () => {
+            // changing to default config
             await updateConfigsAndVerify(
                 program,
                 DEFAULT_CONFIGS

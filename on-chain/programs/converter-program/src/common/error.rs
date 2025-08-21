@@ -89,4 +89,7 @@ pub enum DoubleZeroError {
 
     #[msg("FillsRegistry is empty — cannot dequeue.")]
     RegistryEmpty, //6028
+
+    #[msg("Only one trade is allowed per slot")]
+    SingleTradePerSlot, //6029
 }
