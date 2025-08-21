@@ -248,7 +248,7 @@ fn calculate_conversion_rate_with_discount(
 mod tests {
 
     #[test]
-    fn validate_calculate_discount_rate_for_slot() {
+    fn test_calculate_discount_rate_for_slot() {
         for (slot, expected) in [
             (100, "0.10"), // current slot is the same as last slot
             (101, "0.100045"), // current slot is one more than last slot
@@ -271,7 +271,7 @@ mod tests {
     }
 
     #[test]
-    fn validate_calculate_discount_rate_for_coefficient() {
+    fn test_calculate_discount_rate_for_coefficient() {
         for (coefficient, expected) in [
             (0, "0.10"), // 0 coefficient
             (100000000, "0.50"), // max coefficient
@@ -287,5 +287,50 @@ mod tests {
 
             assert_eq!(discount_rate.to_string(), expected);
         }
+    }
+
+    #[test]
+    fn test_calculate_conversion_rate_with_discount() {
+        for (oracle_swap_rate, discount_rate, expected) in [
+            (10000000, "0.00", "10"), // 0%
+            (10000000, "0.10", "9.00"), // 10%
+            (10000000, "0.25", "7.50"), // 25%
+            (10000000, "0.50", "5.00"), // 50%
+            (10000000, "0.75", "2.50"), // 75%
+        ] {
+            let discount_rate_decimal = discount_rate.parse().unwrap();
+            let conversion_rate = super::calculate_conversion_rate_with_discount(
+                oracle_swap_rate,
+                discount_rate_decimal,
+            )
+            .unwrap();
+
+            assert_eq!(conversion_rate.to_string(), expected);
+        }
+    }
+
+    #[test]
+    fn test_calculate_conversion_rate_with_oracle_price_data() {
+        let oracle_price_data = super::OraclePriceData {
+            swap_rate: 10000000, // 10.0 SOL
+            timestamp: 0, // not used in this test
+            signature: "unused".to_string(), // not used in this test
+        };
+        let coefficient = 4500; // 0.000045
+        let max_discount_rate = 5000; // 50%
+        let min_discount_rate = 1000; // 10%
+        let s_last = 100; // last slot
+        let s_now = 200; // current slot
+        let conversion_rate = super::calculate_conversion_rate_with_oracle_price_data(
+            oracle_price_data,
+            coefficient,
+            max_discount_rate,
+            min_discount_rate,
+            s_last,
+            s_now,
+        )
+        .unwrap();
+
+        assert_eq!(conversion_rate, 8955000); // 8.955 SOL in basis points
     }
 }
