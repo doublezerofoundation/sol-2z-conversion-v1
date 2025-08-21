@@ -123,7 +123,7 @@ pub fn calculate_conversion_rate(
         .min(max_discount_rate_decimal)
         .max(min_discount_rate_decimal);
 
-    // conversion_date = oracle_swap_rate * (1 - discount_rate)
+    // conversion_rate = oracle_swap_rate * (1 - discount_rate)
     let oracle_swap_rate_decimal = Decimal::from_u64(oracle_price_data.swap_rate)
         .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?
         .checked_div(Decimal::from_u64(TOKEN_DECIMALS)
