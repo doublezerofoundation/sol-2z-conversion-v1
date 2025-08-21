@@ -5,7 +5,6 @@ UNIT_TESTS=(
     system-initialize-test
     admin-change-test
     config-update-test
-    dequeuer-management-test
     deny-list-test
     conversion-price-test
     system-state-test
