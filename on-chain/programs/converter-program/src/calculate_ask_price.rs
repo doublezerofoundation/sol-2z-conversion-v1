@@ -243,3 +243,57 @@ fn calculate_conversion_rate_with_discount(
     // Convert to basis points
     Ok(coversion_rate)
 }
+
+#[cfg(test)]
+mod tests {
+
+    fn validate_calculate_discount_rate(slot: u64, expected: &str) {
+        let discount_rate = super::calculate_discount_rate(
+            4500, // 0.000045
+            5000, // 50%
+            1000, // 10%
+            100, // last slot
+            slot, // current slot
+        )
+        .unwrap();
+
+        assert_eq!(discount_rate.to_string(), expected);
+    }
+
+    #[test]
+    fn test_calculate_discount_rate_min_slots() {
+        // clamp(0.10 + 0.000045 * (100 - 100), 0.10, 0.50) == 0.10
+        validate_calculate_discount_rate(100, "0.10");
+    }
+
+    #[test]
+    fn test_calculate_discount_rate_1_slot() {
+        // clamp(0.10 + 0.000045 * (101 - 100), 0.10, 0.50) == 0.100045
+        validate_calculate_discount_rate(101, "0.100045");
+    }
+
+    #[test]
+    fn test_calculate_discount_rate_50_slots() {
+        // clamp(0.10 + 0.000045 * (150 - 100), 0.10, 0.50) == 0.102250
+        validate_calculate_discount_rate(150, "0.102250");
+    }
+
+    #[test]
+    fn test_calculate_discount_rate_almost_max_slots() {
+        // clamp(0.10 + 0.000045 * (8988 - 100), 0.10, 0.50) == 0.499960
+        validate_calculate_discount_rate(8988, "0.499960");
+    }
+
+    #[test]
+    fn test_calculate_discount_rate_just_passed_max_slots() {
+        // clamp(0.10 + 0.000045 * (8989 - 100), 0.10, 0.50) == 0.50
+        validate_calculate_discount_rate(8989, "0.50");
+    }
+
+    #[test]
+    fn test_calculate_discount_rate_beyond_max_slots() {
+        // clamp(0.10 + 0.000045 * (10000 - 100), 0.10, 0.50) == 0.50
+        validate_calculate_discount_rate(10000, "0.50");
+    }
+
+}
