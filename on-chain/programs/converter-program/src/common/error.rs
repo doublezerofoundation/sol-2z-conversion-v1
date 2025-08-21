@@ -70,23 +70,23 @@ pub enum DoubleZeroError {
     InvalidConversionRate, // 6021
 
     #[msg("Address not found in Deny List")]
-    AddressNotInDenyList, // 6021
+    AddressNotInDenyList, // 6022
 
     #[msg("System is halted")]
-    SystemIsHalted, // 6022
+    SystemIsHalted, // 6023
 
     #[msg("Arithmetic Error has occurred")]
-    ArithmeticError, // 6023
+    ArithmeticError, // 6024
 
     #[msg("User is not authorized to do Dequeue Action")]
-    UnauthorizedDequeuer, // 6024
+    UnauthorizedDequeuer, // 6025
 
     #[msg("Unauthorized Deny List Authority")]
-    UnauthorizedDenyListAuthority, // 6025
+    UnauthorizedDenyListAuthority, // 6026
 
     #[msg("FillsRegistry is full — cannot enqueue.")]
-    RegistryFull, //6026
+    RegistryFull, //6027
 
     #[msg("FillsRegistry is empty — cannot dequeue.")]
-    RegistryEmpty, //6027
+    RegistryEmpty, //6028
 }
