@@ -1,62 +1,94 @@
-jest.mock('../../src/utils/config',        () => require('../mock/config-util'));
-jest.mock('../../src/utils/ddb',           () => require('../mock/ddb-util'));
-jest.mock('../../src/utils/notifications', () => require('../mock/notifications'));
-jest.mock('@solana/web3.js',               () => require('../mock/web3'));
+import { describe, it, beforeEach } from 'mocha';
+import { expect } from 'chai';
+import * as proxyquire from 'proxyquire';
+import * as sinon from 'sinon';
 
-// Silence Anchor event parsing. cause we only test error path here.
-jest.mock('@coral-xyz/anchor', () => ({
-     BorshCoder: jest.fn(),
-     EventParser: jest.fn().mockImplementation(() => ({ parseLogs: function* () {} })),
-}));
+describe('processTx (error path) - Mocha', () => {
+  let processTx: any;
+  let writeSolanaErrorStub: sinon.SinonStub;
+  let sendErrorNotificationStub: sinon.SinonStub;
+  let getTransactionStub: sinon.SinonStub;
 
+  beforeEach(() => {
+    // Create stubs
+    writeSolanaErrorStub = sinon.stub();
+    sendErrorNotificationStub = sinon.stub();
+    getTransactionStub = sinon.stub();
 
-import { processTx } from '../../src/core/processor';
-import { __w3 } from '../mock/web3';
-import { writeSolanaError } from '../mock/ddb-util';
-import { sendErrorNotification } from '../mock/notifications';
+    // Default behavior for error transaction
+    getTransactionStub.resolves({
+      slot: 1,
+      blockTime: 123,
+      meta: { err: { InstructionError: [0, { Custom: 6000 }] }, logMessages: ['log'] },
+    });
 
-describe('processTx (error path)', () => {
-     beforeEach(() => {
-          jest.clearAllMocks();
-          __w3.getTransaction.mockResolvedValue({
-               slot: 1,
-               blockTime: 123,
-               meta: { err: { InstructionError: [0, { Custom: 6000 }] }, logMessages: ['log'] },
-          });
-     });
+    // Create a mock connection class
+    class MockConnection {
+      getTransaction = getTransactionStub;
+    }
 
-     it('writes an error row for a failed tx', async () => {
-          await processTx('SIG_ERR');
+    // Import the processor with mocked dependencies
+    const processorModule = proxyquire.load('../../src/core/processor', {
+      '../utils/config': require('../mock/config-util'),
+      '../utils/ddb/events': {
+        writeSolanaError: writeSolanaErrorStub,
+        writeSolanaEvent: sinon.stub(),
+        writeFillDequeue: sinon.stub(),
+        writeDenyListAction: sinon.stub(),
+        '@noCallThru': true
+      },
+      '../utils/notifications': {
+        sendErrorNotification: sendErrorNotificationStub,
+        '@noCallThru': true
+      },
+      '@solana/web3.js': {
+        Connection: MockConnection,
+        PublicKey: sinon.stub(),
+        '@noCallThru': true
+      },
+      '@coral-xyz/anchor': {
+        BorshCoder: sinon.stub(),
+        EventParser: sinon.stub().returns({ parseLogs: function* () {} }),
+        '@noCallThru': true
+      },
+    });
 
-          expect(writeSolanaError).toHaveBeenCalledTimes(1);
-          const [txHash, errorCode, logs, slot, ts] = writeSolanaError.mock.calls[0];
+    processTx = processorModule.processTx;
+  });
 
-          expect(txHash).toBe('SIG_ERR');
-          expect(typeof errorCode).toBe('string');
-          expect(Array.isArray(logs)).toBe(true);
-          expect(typeof slot).toBe('number');
-          expect(typeof ts).toBe('number');
+  it('writes an error row for a failed tx', async () => {
+    await processTx('SIG_ERR');
 
-          // Verify email notification was sent
-          expect(sendErrorNotification).toHaveBeenCalledTimes(1);
-          const notificationData = sendErrorNotification.mock.calls[0][0];
-          expect(notificationData.signature).toBe('SIG_ERR');
-          expect(notificationData.errorName).toBe(errorCode);
-          expect(notificationData.slot).toBe(slot);
-          expect(notificationData.timestamp).toBe(ts);
-          expect(notificationData.logMessages).toEqual(logs);
-     });
+    expect(writeSolanaErrorStub.calledOnce).to.be.true;
+    const callArgs = writeSolanaErrorStub.getCall(0).args;
+    const [txHash, errorCode, logs, slot, ts] = callArgs;
 
-     it('does not write an error row for a successful tx', async () => {
-          __w3.getTransaction.mockResolvedValue({
-               slot: 1,
-               blockTime: 123,
-               meta: { err: null, logMessages: ['log'] },
-          });
+    expect(txHash).to.equal('SIG_ERR');
+    expect(typeof errorCode).to.equal('string');
+    expect(Array.isArray(logs)).to.be.true;
+    expect(typeof slot).to.equal('number');
+    expect(typeof ts).to.equal('number');
 
-          await processTx('SIG_OK');
+    // Verify email notification was sent
+    expect(sendErrorNotificationStub.calledOnce).to.be.true;
+    const notificationData = sendErrorNotificationStub.getCall(0).args[0];
+    expect(notificationData.signature).to.equal('SIG_ERR');
+    expect(notificationData.errorName).to.equal(errorCode);
+    expect(notificationData.slot).to.equal(slot);
+    expect(notificationData.timestamp).to.equal(ts);
+    expect(notificationData.logMessages).to.deep.equal(logs);
+  });
 
-          expect(writeSolanaError).not.toHaveBeenCalled();
-          expect(sendErrorNotification).not.toHaveBeenCalled();
-     });
+  it('does not write an error row for a successful tx', async () => {
+    getTransactionStub.resolves({
+      slot: 1,
+      blockTime: 123,
+      meta: { err: null, logMessages: ['log'] },
+    });
+
+    await processTx('SIG_OK');
+
+    expect(writeSolanaErrorStub.called).to.be.false;
+    expect(sendErrorNotificationStub.called).to.be.false;
+  });
 });
