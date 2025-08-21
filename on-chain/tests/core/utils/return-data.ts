@@ -55,6 +55,6 @@ export function findAnchorEventInLogs(logs: string[], idl: any, eventName: strin
     return null;
 }
 
-export function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+export async function delay(ms: number): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, ms));
 }

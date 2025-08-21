@@ -7,7 +7,7 @@ pub struct ConfigurationRegistryV2 {
     pub price_oracle_pubkey: Pubkey, // we rename this field
     // pub sol_quantity: u64, // we remove this field
     pub price_maximum_age: i64,
-    pub fill_consumer: Pubkey,
+    pub fills_consumer: Pubkey,
     pub coefficient: u64, 
     pub max_discount_rate: u64,
     pub min_discount_rate: u64,
