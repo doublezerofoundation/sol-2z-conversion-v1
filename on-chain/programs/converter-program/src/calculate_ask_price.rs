@@ -234,14 +234,14 @@ fn calculate_conversion_rate_with_discount(
 
     // Apply the discount rate
     // P * (1 - D)
-    let coversion_rate = oracle_swap_rate_decimal
+    let conversion_rate = oracle_swap_rate_decimal
         .checked_mul(discount_inverse_decimal)
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
 
-    msg!("Conversion rate: {}", coversion_rate);
+    msg!("Conversion rate: {}", conversion_rate);
 
     // Convert to basis points
-    Ok(coversion_rate)
+    Ok(conversion_rate)
 }
 
 #[cfg(test)]
