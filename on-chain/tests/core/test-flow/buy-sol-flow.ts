@@ -11,9 +11,9 @@ import {getOraclePriceData, OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
 import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
 import {getConversionPriceAndVerify} from "./conversion-price";
-import {TOKEN_DECIMAL} from "../constants";
 import {mint2z} from "./mock-transfer-program";
 import {airdropVault} from "../utils/mock-transfer-program-utils";
+import {fetchProgramState} from "../utils/accounts";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
@@ -31,6 +31,7 @@ export async function buySolAndVerify(
     const solBalanceBefore = await mockProgConn.getBalance(signer.publicKey);
     const vaultBalanceBefore = await mockProgConn.getBalance(pdaList.vault);
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
+    const lastTradedSlotBefore = (await fetchProgramState(program)).lastTradeSlot.toNumber();
 
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
@@ -48,6 +49,7 @@ export async function buySolAndVerify(
         assert.fail("Buy Sol  failed");
     }
 
+    const lastTradedSlotAfter = (await fetchProgramState(program)).lastTradeSlot.toNumber();
     const tokenBalanceChange = Number(currentConfigs.solQuantity) * bidPrice / LAMPORTS_PER_SOL;
     const solBalanceChange = Number(currentConfigs.solQuantity);
     const tokenBalanceAfter = await getTokenBalance(program.provider.connection, senderTokenAccount);
@@ -76,6 +78,9 @@ export async function buySolAndVerify(
         vaultBalanceBefore - solBalanceChange,
         "Vault SOL Balance should decrease by solBalanceChange"
     )
+
+    // check last traded slot
+    assert.isTrue(lastTradedSlotAfter > lastTradedSlotBefore, "last-traded-slot has to be updated")
 
     // Check Fills Registry Values
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
@@ -160,7 +165,7 @@ export async function buySolSuccess(
 ) {
     const oraclePriceData = await getOraclePriceData();
     const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
-    const bidPrice = askPrice + bidFactor * TOKEN_DECIMAL;
+    const bidPrice = Math.floor(askPrice * bidFactor);
 
     // Ensure that user has sufficient 2Z
     await mint2z(

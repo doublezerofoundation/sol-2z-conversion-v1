@@ -5,7 +5,7 @@ import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mo
 import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
 import {initializeMockTransferSystemIfNeeded, mint2z} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
-import {getMockProgramPDAs, getProgramStatePDA} from "./core/utils/pda-helper";
+import {getMockProgramPDAs} from "./core/utils/pda-helper";
 import {Keypair, LAMPORTS_PER_SOL, PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
 import {buySolAndVerify, buySolFail, buySolSuccess, prepareBuySolInstruction} from "./core/test-flow/buy-sol-flow";
 import {ConverterProgram} from "../target/types/converter_program";
@@ -75,8 +75,6 @@ describe("Buy Sol Tests", () => {
 
 
     describe("Happy Path", async() => {
-        let lastTradeSlot: number;
-
         it("User does buySOL at higher price than Ask Price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
@@ -99,12 +97,9 @@ describe("Buy Sol Tests", () => {
                 userKeyPair,
                 oraclePriceData
             );
-
-            lastTradeSlot = (await program.account.programStateAccount.fetch(getProgramStatePDA(program.programId))).lastTradeSlot.toNumber();
         });
 
         it("should fail to do buy sol for price less than ask price", async () => {
-
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice - 100000;
@@ -126,11 +121,6 @@ describe("Buy Sol Tests", () => {
                 oraclePriceData,
                 "Provided bid is too low"
             );
-        });
-
-        it("Last trade slot should be updated with buy sol transaction", async () => {
-            const currentSlot = await program.provider.connection.getSlot();
-            assert(currentSlot > lastTradeSlot, "Current slot should be greater than last trade slot");
         });
     });
 
@@ -416,6 +406,9 @@ describe("Buy Sol Tests", () => {
                 const errorMessage = (new Error(error!.toString())).message;
                 expect(errorMessage).to.include(firstExecutionLogs);
                 expect(errorMessage).to.include(expectedError);
+                expect(errorMessage.indexOf("Buy SOL is successful")).to.be
+                    .lessThan(errorMessage.indexOf("Only one trade is allowed per slot"),
+                        "Success must come before error");
                 assert.ok(true, "Buy SOL is rejected as expected");
                 return; // Exit early — test passes
             }
