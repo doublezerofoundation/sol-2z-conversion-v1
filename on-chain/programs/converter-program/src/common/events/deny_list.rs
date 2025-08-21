@@ -1,4 +1,4 @@
-
+use anchor_lang::prelude::*;
 #[event]
 pub struct DenyListAddressAdded {
     pub added_by: Pubkey,
