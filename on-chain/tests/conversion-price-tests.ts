@@ -1,23 +1,33 @@
 import { describe } from "mocha";
 import { getConversionPriceAndVerify, getConversionPriceToFail } from "./core/test-flow/conversion-price";
 import { getOraclePriceData, getOraclePriceDataFor } from "./core/utils/price-oracle";
-import { Keypair } from "@solana/web3.js";
+import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify } from "./core/test-flow/deny-list";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
-import { getDefaultKeyPair } from "./core/utils/accounts";
-import { BPS } from "./core/constants";
+import { getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
+import { BPS, TOKEN_DECIMAL } from "./core/constants";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
+import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
+import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
+import { BN, Idl, Program } from "@coral-xyz/anchor";
+import { getMockDoubleZeroTokenMintPDA, getMockVaultPDA } from "./core/utils/pda-helper";
+import { createTokenAccount } from "./core/utils/token-utils";
+import { airdropVault } from "./core/utils/mock-transfer-program-utils";
+import { initializeMockTransferSystemIfNeeded, mint2z } from "./core/test-flow/mock-transfer-program";
+import { buySolAndVerify } from "./core/test-flow/buy-sol-flow";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
-    
-    // Set a TTL for the oracle price data (in milliseconds) to be considered valid.
-    const TTL = 300 * 1000;
+    const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as Idl, program.provider);
+
+    // Set a TTL for the oracle price data (in seconds) to be considered valid.
+    const TTL = 300;
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
+        await initializeMockTransferSystemIfNeeded(mockTransferProgram);
 
         // Set deny list authority to admin.
         await setDenyListAuthorityAndVerify(program, getDefaultKeyPair().publicKey);
@@ -30,8 +40,8 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceData();
         assert(oraclePriceData.swapRate > 0, "Swap rate should be greater than 0");
         assert(oraclePriceData.timestamp > 0, "Timestamp should be greater than 0");
-        assert(oraclePriceData.timestamp <= Date.now(), "Timestamp should be less than or equal to current time");
-        assert(oraclePriceData.timestamp > Date.now() - 60 * 1000, "Timestamp should be within 60 seconds");
+        assert(oraclePriceData.timestamp <= Math.floor(Date.now() / 1000), "Timestamp should be less than or equal to current time");
+        assert(oraclePriceData.timestamp > Math.floor(Date.now() / 1000) - 60, "Timestamp should be within 60 seconds");
         assert(oraclePriceData.signature.length > 0, "Signature should not be empty");
     });
 
@@ -128,10 +138,44 @@ describe("Conversion Price Tests", async () => {
         }
     });
 
-    // TODO: Implement this test case.
-    it.skip("Should switch to conversion price with minimum discount on trade", async () => {
-        // This test case should verify that the conversion price switches to the minimum discount rate
-        // when a trade is executed.
+    it("Should switch to conversion price with minimum discount on trade", async () => {
+        // Initialize a user account.
+        const user = await getRandomKeyPair(program.provider.connection);
+
+        // Create mock mint token ATA for user.
+        const mockTokenMintPda = getMockDoubleZeroTokenMintPDA(mockTransferProgram.programId);
+        const userAta = await createTokenAccount(program.provider.connection, mockTokenMintPda, user.publicKey);
+
+        // Reimburse system and user for trades
+        const solQuantity = DEFAULT_CONFIGS.solQuantity.toNumber() / LAMPORTS_PER_SOL;
+        await airdropVault(mockTransferProgram, DEFAULT_CONFIGS.solQuantity);
+        await mint2z(mockTransferProgram, userAta, 25 * solQuantity * TOKEN_DECIMAL);
+
+        // Get conversion price.
+        const oraclePriceData = await getOraclePriceData();
+        const price1 = await getConversionPriceAndVerify(program, oraclePriceData);
+
+        // Compute price bounds.
+        const maxPrice = Math.trunc(oraclePriceData.swapRate * (1 - DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS)));
+        assert(price1 < maxPrice, "Conversion price should be less than maximum price");
+
+        // Execute a trade.
+        const bidPrice = price1 + 1 * TOKEN_DECIMAL;
+        await buySolAndVerify(program, mockTransferProgram, userAta, bidPrice, user, oraclePriceData);
+
+        // Get the new conversion price.
+        const price2 = await getConversionPriceAndVerify(program, oraclePriceData);
+
+        // Allow a small tolerance to account for the time might take to fetch the new conversion price
+        // after the trade is executed.
+        const slotDiscount = Math.trunc(oraclePriceData.swapRate * DEFAULT_CONFIGS.coefficient.toNumber() / 100000000);
+        const slotTolerance = 10;
+        const priceUpperBound = maxPrice;
+        const priceLowerBound = maxPrice - slotDiscount * slotTolerance;
+
+        // Conversion price should have switched to the minimum discount rate.
+        assert(price2 >= priceLowerBound, "Conversion price should be greater than or equal to expected lower bound");
+        assert(price2 <= priceUpperBound, "Conversion price should be less than or equal to expected upper bound");
     });
 
     // Failure cases -----------------------------------------------------------
@@ -148,40 +192,38 @@ describe("Conversion Price Tests", async () => {
         await removeFromDenyListAndVerify(program, keypair.publicKey);
     });
 
-    // TODO: Fix this test as it currently fails with an error indicating the attestation is not authentic.
-    it.skip("Should fail to get conversion price for negative swap rate", async () => {
+    it("Should fail to get conversion price for negative swap rate", async () => {
         // Get mock oracle price data with a negative swap rate.
-        const oraclePriceData = await getOraclePriceDataFor(-10, Date.now());
+        const oraclePriceData = await getOraclePriceDataFor(-10, Math.floor(Date.now() / 1000));
 
         // Conversion price fetch should fail for negative swap rate.
-        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+        // Since the swap rate is stored as a u64, it will be stored as a positive number even if it is negative.
+        // But the attestation is not authentic, so the transaction should fail.
+        await getConversionPriceToFail(program, oraclePriceData, "Provided Attestation is not Authentic");
     });
 
-    // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
-    it.skip("Should fail to get conversion price for zero swap rate", async () => {
+    it("Should fail to get conversion price for zero swap rate", async () => {
         // Get mock oracle price data with a zero swap rate.
-        const oraclePriceData = await getOraclePriceDataFor(0, Date.now());
+        const oraclePriceData = await getOraclePriceDataFor(0, Math.floor(Date.now() / 1000));
 
         // Conversion price fetch should fail for zero swap rate.
-        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+        await getConversionPriceToFail(program, oraclePriceData, "InvalidOracleSwapRate");
     });
 
-    // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
-    it.skip("Should fail to get conversion price for stale oracle data", async () => {
+    it("Should fail to get conversion price for stale oracle data", async () => {
         // Get mock oracle price data with a stale timestamp (older than 60 seconds).
-        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() - TTL);
+        const oraclePriceData = await getOraclePriceDataFor(20, Math.floor(Date.now() / 1000) - TTL);
 
         // Conversion price fetch should fail for stale oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+        await getConversionPriceToFail(program, oraclePriceData, "StaleTimestamp");
     });
 
-    // TODO: Fix this test as it currently fails as the transaction does not fail as expected.
-    it.skip("Should fail to get conversion price for future oracle data", async () => {
+    it("Should fail to get conversion price for future oracle data", async () => {
         // Get mock oracle price data with a future timestamp.
-        const oraclePriceData = await getOraclePriceDataFor(20, Date.now() + TTL);
+        const oraclePriceData = await getOraclePriceDataFor(20, Math.floor(Date.now() / 1000) + TTL);
 
         // Conversion price fetch should fail for future oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "<correct-error-message-here>");
+        await getConversionPriceToFail(program, oraclePriceData, "FutureTimestamp");
     });
 
     it("Should fail to get conversion price for empty attestation signature", async () => {

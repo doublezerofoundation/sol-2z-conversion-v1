@@ -105,6 +105,9 @@ impl<'info> BuySol<'info> {
             return err!(DoubleZeroError::UserInsideDenyList);
         }
 
+        // sanity check the oracle price data
+        oracle_price_data.sanity_check()?;
+
         // checking attestation
         verify_attestation(
             &oracle_price_data,

@@ -26,7 +26,7 @@ export const getOraclePriceDataFor = async (swapRate: number, timestamp: number)
 
 export const getOraclePriceData = async (): Promise<OraclePriceData> => {
     const swapRate = (Math.random() * 3) + 19; // 19 - 22 range
-    const timestamp = Date.now();
+    const timestamp = Math.floor(Date.now() / 1000); // convert to seconds as solana clock is in seconds
 
     return getOraclePriceDataFor(swapRate, timestamp);
 }
