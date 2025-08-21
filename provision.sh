@@ -119,7 +119,6 @@ handle_mock_double_zero_program() {
 }
 
 handle_run_tests() {
-  echo "mode"
   cmd=(./run_tests.sh)
   [[ -n "$TEST_TYPE" ]] && cmd+=("--test-type" "$TEST_TYPE")
   "${cmd[@]}"
