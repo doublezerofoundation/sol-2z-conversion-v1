@@ -4,7 +4,7 @@ import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
 import { createHistoryMocks } from '../utils/test-helper';
 
-describe('Recovery Path test', () => {
+describe('Recovery Path tests', () => {
     let getLastSignatureStub: sinon.SinonStub;
     let endRecoveryStub: sinon.SinonStub;
     let processTxStub: sinon.SinonStub;
