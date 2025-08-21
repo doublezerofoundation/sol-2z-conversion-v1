@@ -24,7 +24,7 @@ AWS_REGION="${AWS_REGION:-us-east-1}"
 ECR_REPOSITORY_NAME="${ECR_REPOSITORY_NAME:-${SERVICE_NAME}}"
 BUILD_TAG="${BUILD_TAG:-latest}"
 ENV="${ENV:-dev5}"
-S3_BUCKET_NAME="${S3_BUCKET_NAME:-doublezero-${ENV}-lambda-deployments}"
+
 S3_OBJECT_KEY="${S3_OBJECT_KEY:-metrics-api.zip}"
 BUILD_DIR="$SCRIPT_DIR/lambda-build"
 ZIP_FILE="$BUILD_DIR/$S3_OBJECT_KEY"
@@ -39,13 +39,14 @@ main() {
     ACCOUNT_ID=$(get_account_id)
     ECR_URI="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
     IMAGE_TAG="$ECR_URI/$ECR_REPOSITORY_NAME:$BUILD_TAG"
+    S3_BUCKET_NAME="${S3_BUCKET_NAME:-doublezero-${AWS_REGION}-${ACCOUNT_ID}-lambda-deployments}"
     S3_VERSIONED_KEY="metrics-api/${BUILD_TAG}/${S3_OBJECT_KEY}"
 
     log_info "AWS Account ID: $ACCOUNT_ID"
     log_info "ECR URI: $ECR_URI"
     log_info "Image Tag: $IMAGE_TAG"
 
-    ecr_login $ECR_URI
+    ecr_login "$ECR_URI"
 
     clean_project
     npm_install

@@ -82,7 +82,7 @@ create_regional_infrastructure() {
     fi
 
     echo "Planning Terraform changes..."
-    terraform plan -var="aws_region=${REGION}" -out=tfplan
+    terraform plan -var="aws_region=${REGION}"  -var="accountId=${account_id}" -out=tfplan
     if [[ $? -ne 0 ]]; then
         print_error_and_exit "Terraform planning failed"
     fi
@@ -92,7 +92,7 @@ create_regional_infrastructure() {
         terraform apply -auto-approve tfplan
     else
         echo "Applying changes with confirmation prompt"
-        terraform apply -var="aws_region=${REGION}"
+        terraform apply -var="aws_region=${REGION}" -var="accountId=${account_id}"
     fi
 
     if [[ $? -ne 0 ]]; then
@@ -112,9 +112,9 @@ destroy_regional_infrastructure() {
     fi
 
     if [[ $AUTO_APPROVE -eq 1 ]]; then
-        terraform destroy -var="aws_region=${REGION}" -auto-approve
+        terraform destroy -var="aws_region=${REGION}" -var="accountId=${account_id}" -auto-approve
     else
-        terraform destroy -var="aws_region=${REGION}"
+        terraform destroy -var="aws_region=${REGION}" -var="accountId=${account_id}"
     fi
 
     if [[ $? -ne 0 ]]; then
@@ -180,7 +180,3 @@ main() {
 trap 'print_error_and_exit "Script interrupted"' INT TERM
 
 main "$@"
-
-# Usage examples:
-# ./regional_creation.sh create --region us-east-1
-# ./regional_creation.sh destroy --region us-west-2 --auto-approve

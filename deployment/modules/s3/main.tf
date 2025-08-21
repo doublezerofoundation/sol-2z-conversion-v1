@@ -3,10 +3,11 @@
 
 resource "aws_s3_bucket" "lambda_deployments" {
   bucket = "${var.name_prefix}-lambda-deployments"
+  force_destroy = true
+
 
   tags = {
     Name        = "${var.name_prefix}-lambda-deployments"
-    Environment = var.environment
     Purpose     = "Lambda function deployments"
   }
 }
@@ -80,7 +81,6 @@ resource "aws_iam_policy" "lambda_s3_access" {
 
   tags = {
     Name        = "${var.name_prefix}-lambda-s3-access"
-    Environment = var.environment
   }
 }
 
@@ -111,6 +111,5 @@ resource "aws_iam_policy" "lambda_s3_upload" {
 
   tags = {
     Name        = "${var.name_prefix}-lambda-s3-upload"
-    Environment = var.environment
   }
 }

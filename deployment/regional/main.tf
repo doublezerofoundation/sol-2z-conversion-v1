@@ -185,3 +185,8 @@ module "redis" {
 
   tags = var.redis_tags
 }
+
+module "s3" {
+  source = "../modules/s3"
+  name_prefix = "doublezero-${var.aws_region}-${var.accountId}"
+}

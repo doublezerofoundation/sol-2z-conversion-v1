@@ -81,3 +81,8 @@ variable "redis_tags" {
     Name = "double-zero-redis"
   }
 }
+
+variable "accountId" {
+  description = "aws account id"
+  type        = string
+}

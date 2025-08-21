@@ -132,7 +132,7 @@ prepare_terraform_backend() {
     echo "Backend configuration generated successfully"
 }
 
-update_release_tag() {
+update_pricing_service_image_tag() {
     echo "=== Deploying Infrastructure with Image Tag: $RELEASE_TAG ==="
     local plan_timeout_duration=300
     local apply_timeout_duration=1800
@@ -533,7 +533,7 @@ update_lambda() {
   echo "Updating Lambda function with provided S3 package..."
 
   local lambda_function_name="doublezero-${ENV}-metrics-api"
-  local s3_bucket_name="doublezero-${ENV}-lambda-deployments"
+  local s3_bucket_name="doublezero-${AWS_REGION}-${account_id}-lambda-deployments"
   local s3_object_key="metrics-api.zip"
   # Use versioned S3 path: metrics-api/{release_tag}/metrics-api.zip
   local s3_versioned_key="metrics-api/${RELEASE_TAG}/${s3_object_key}"
@@ -584,15 +584,13 @@ update_lambda() {
 get_ecr_config
 verify_ecr_image
 setup_aws_environment
-update_release_tag
-trigger_pricing_service_instance_refresh
-#if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
-#  update_pricing_service_image_tag
-#  trigger_pricing_service_instance_refresh
-#
-#else
-#  find_ec2_instance
-#  deploy_application
-#  print_deployment_summary
-#
-#fi
+if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
+  update_pricing_service_image_tag
+  trigger_pricing_service_instance_refresh
+  sleep 40
+else
+  find_ec2_instance
+  deploy_application
+  update_lambda
+fi
+

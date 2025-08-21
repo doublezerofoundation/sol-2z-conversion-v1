@@ -46,7 +46,7 @@ while [[ $# -gt 0 ]]; do
         *)
             echo "Unknown option: $1"
             help
-            exit 0
+            exit 1
             ;;
     esac
 done
