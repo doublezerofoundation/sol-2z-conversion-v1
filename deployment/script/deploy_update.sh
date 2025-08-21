@@ -141,7 +141,7 @@ prepare_terraform_backend() {
     echo "Backend configuration generated successfully"
 }
 
-update_pricing_service_image_tag() {
+update_release_tag() {
     echo "=== Deploying Infrastructure with Image Tag: $RELEASE_TAG ==="
     local plan_timeout_duration=300
     local apply_timeout_duration=1800
@@ -539,13 +539,15 @@ print_deployment_summary() {
 get_ecr_config
 verify_ecr_image
 setup_aws_environment
-if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
-  update_pricing_service_image_tag
-  trigger_pricing_service_instance_refresh
-
-else
-  find_ec2_instance
-  deploy_application
-  print_deployment_summary
-
-fi
+update_release_tag
+trigger_pricing_service_instance_refresh
+#if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
+#  update_pricing_service_image_tag
+#  trigger_pricing_service_instance_refresh
+#
+#else
+#  find_ec2_instance
+#  deploy_application
+#  print_deployment_summary
+#
+#fi
