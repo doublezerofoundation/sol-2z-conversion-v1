@@ -84,7 +84,7 @@ describe("Config Update Tests", async () => {
 
   it("Should fail to update with invalid coefficient", async () => {
     
-    // Set min discount rate to 5001
+    // Set coefficient to 100000001
     await updateConfigsAndVerifyFail(program, {
       ...DEFAULT_CONFIGS,
       coefficient: new anchor.BN(100000001)
@@ -92,7 +92,7 @@ describe("Config Update Tests", async () => {
       "InvalidCoefficient"
     );
 
-    // Revert: Set min discount rate to 500
+    // Revert: Set coefficient to default
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 });
