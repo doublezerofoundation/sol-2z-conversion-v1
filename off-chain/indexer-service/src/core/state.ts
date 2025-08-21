@@ -1,4 +1,4 @@
-import { getLastProcessedSig, setLastProcessedSig } from "../utils/ddb";
+import { getLastProcessedSig, setLastProcessedSig } from "../utils/ddb/system-state";
 
 let recovering = true; 
 

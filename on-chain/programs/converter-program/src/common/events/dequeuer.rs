@@ -13,7 +13,7 @@ pub struct DequeuerRemoved {
 }
 
 #[event]
-pub struct FillsDequeuedEvent {
+pub struct FillsDequeued {
     pub requester: Pubkey,
     pub sol_dequeued: u64,
     pub token_2z_dequeued: u64,

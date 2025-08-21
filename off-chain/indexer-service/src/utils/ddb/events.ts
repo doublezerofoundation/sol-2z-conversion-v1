@@ -1,45 +1,10 @@
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import {
-  DynamoDBDocumentClient,
-  PutCommand,
-  PutCommandInput,
-  GetCommand,
-} from "@aws-sdk/lib-dynamodb";
-import { DDBTable, SystemStateKey } from "../common";
+import { PutCommand, PutCommandInput } from "@aws-sdk/lib-dynamodb";
+import { DDBTable } from "../../common";
+import { ddbDocClient, table_prefix } from "./client";
 
-import { ENV } from '../utils/config';
-
-
-const ddbDocClient = DynamoDBDocumentClient.from(new DynamoDBClient({}));
-const table_prefix = `doublezero-${ENV}`;
-
-// ---- System State ----
-
-export async function setLastProcessedSig(sig: string | null) {
-  await ddbDocClient.send(
-    new PutCommand({
-      TableName: `${table_prefix}-${DDBTable.SYSTEM_STATE}`,
-      Item: {
-        key: SystemStateKey.LAST_PROCESSED_SIGNATURE,
-        value: sig ?? "null",
-      },
-    })
-  );
-}
-
-export async function getLastProcessedSig(): Promise<string | null> {
-  const result = await ddbDocClient.send(
-    new GetCommand({
-      TableName: `${table_prefix}-${DDBTable.SYSTEM_STATE}`,
-      Key: { key: SystemStateKey.LAST_PROCESSED_SIGNATURE },
-    })
-  );
-  if (!result.Item || result.Item.value === "null") return null;
-  return result.Item.value;
-}
-
-// ---- Solana Event ----
-
+/**
+ * Write a Solana event to the database
+ */
 export async function writeSolanaEvent(
   txHash: string,
   eventId: string,
@@ -62,8 +27,9 @@ export async function writeSolanaEvent(
   await ddbDocClient.send(new PutCommand(params));
 }
 
-// ---- Solana Error ----
-
+/**
+ * Write a Solana error to the database
+ */
 export async function writeSolanaError(
   txHash: string,
   errorCode: string,
@@ -84,13 +50,16 @@ export async function writeSolanaError(
   await ddbDocClient.send(new PutCommand(params));
 }
 
-// ---- Fill Dequeue ----
-
+/**
+ * Write a fill dequeue event to the database
+ */
 export async function writeFillDequeue(
   txHash: string,
   actionId: string,
   requester: string,
-  solAmount: number,
+  solDequeued: number,
+  token2zDequeued: number,
+  fillsConsumed: number,
   slot: number,
   timestamp: number
 ) {
@@ -101,20 +70,25 @@ export async function writeFillDequeue(
       timestamp, // sort key
       action_id: actionId,
       requester,
-      sol_amount: solAmount,
+      sol_dequeued: solDequeued,
+      token_2z_dequeued: token2zDequeued,
+      fills_consumed: fillsConsumed,
       slot,
     },
   };
   await ddbDocClient.send(new PutCommand(params));
 }
 
-// ---- Deny List Action ----
-
+/**
+ * Write a deny list action to the database
+ */
 export async function writeDenyListAction(
   txHash: string,
   actionId: string,
   address: string,
   actionType: string,
+  actionBy: string,
+  updateCount: number,
   slot: number,
   timestamp: number
 ) {
@@ -126,6 +100,8 @@ export async function writeDenyListAction(
       action_id: actionId,
       address,
       action_type: actionType,
+      action_by: actionBy,
+      update_count: updateCount,
       slot,
     },
   };

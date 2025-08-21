@@ -107,11 +107,17 @@ variable "certificate_arn" {
 variable "enable_pricing_service" {
   description = "Enable pricing service API resources"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_metrics_api" {
-  description = "Enable metrics API resources"
+  description = "Enable metrics API resources (/metrics/buys, /metrics/errors, /metrics/dequeues)"
   type        = bool
   default     = false
+}
+
+variable "metrics_lambda_invoke_arn" {
+  description = "Invoke ARN of the Lambda function for metrics API"
+  type        = string
+  default     = ""
 }

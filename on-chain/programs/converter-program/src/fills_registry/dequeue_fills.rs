@@ -5,7 +5,7 @@ use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
-        events::dequeuer::FillsDequeuedEvent,
+        events::dequeuer::FillsDequeued,
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -82,7 +82,7 @@ impl<'info> DequeueFills<'info> {
             fills_consumed,
         };
 
-        emit!(FillsDequeuedEvent {
+        emit!(FillsDequeued {
             requester: self.signer.key(),
             sol_dequeued: dequeue_fills_result.sol_dequeued,
             token_2z_dequeued: dequeue_fills_result.token_2z_dequeued,

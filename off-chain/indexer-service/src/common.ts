@@ -10,4 +10,15 @@ export enum DDBTable {
 export enum SystemStateKey {
     LAST_PROCESSED_SIGNATURE = "lastProcessedSignature",
 }
+
+// ---- Event Type Names ----
+export enum EventType {
+    TRADE = "TradeEvent",
+    FILLS_DEQUEUED = "FillsDequeued",
+    BID_TOO_LOW = "BidTooLowEvent",
+    DENY_LIST_ADDRESS_ADDED = "DenyListAddressAdded",
+    DENY_LIST_ADDRESS_REMOVED = "DenyListAddressRemoved",
+    DEQUEUER_ADDED = "DequeuerAdded",
+    DEQUEUER_REMOVED = "DequeuerRemoved"
+}
    
