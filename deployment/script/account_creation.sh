@@ -8,24 +8,13 @@ set -e
 SCRIPT_NAME="$(basename "$0")"
 VALID_COMMANDS=("create" "destroy")
 
-# Function to display usage
-usage() {
+
+help() {
     cat << EOF
-Usage: $SCRIPT_NAME <command> [options]
-
-Commands:
-    create      Create the account-level infrastructure
-    destroy     Destroy the account-level infrastructure
-
 Options:
+    --action          create | destroy
     --auto-approve    Skip interactive approval prompts
     --region          AWS region (default: us-east-1)
-
-Examples:
-    $SCRIPT_NAME create
-    $SCRIPT_NAME destroy --auto-approve
-    $SCRIPT_NAME create --region us-west-2
-
 EOF
 }
 
@@ -142,11 +131,8 @@ main() {
         exit 1
     fi
 
-    COMMAND="$1"
     AUTO_APPROVE=0
     REGION=""
-
-    shift 1
     while [[ $# -gt 0 ]]; do
         case $1 in
             --auto-approve)
@@ -154,12 +140,16 @@ main() {
                 export AUTO_APPROVE
                 shift
                 ;;
+            --action)
+                COMMAND="$2"
+                shift 2
+                ;;
             --region)
                 REGION="$2"
                 shift 2
                 ;;
             -h|--help)
-                usage
+                help
                 exit 0
                 ;;
             *)

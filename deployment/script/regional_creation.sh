@@ -8,23 +8,13 @@ set -e
 SCRIPT_NAME="$(basename "$0")"
 VALID_COMMANDS=("create" "destroy")
 
-# Function to display usage
-usage() {
+
+help() {
     cat << EOF
-Usage: $SCRIPT_NAME <command> [options]
-
-Commands:
-    create      Create the regional-level infrastructure
-    destroy     Destroy the regional-level infrastructure
-
 Options:
+    --action          create | destroy
     --auto-approve    Skip interactive approval prompts
-    --region          AWS region (required)
-
-Examples:
-    $SCRIPT_NAME create --region us-east-1
-    $SCRIPT_NAME destroy --region us-west-2 --auto-approve
-
+    --region          AWS region (default: us-east-1)
 EOF
 }
 
@@ -92,7 +82,7 @@ create_regional_infrastructure() {
     fi
 
     echo "Planning Terraform changes..."
-    terraform plan -var="aws_region=${REGION}" -out=tfplan
+    terraform plan -var="aws_region=${REGION}"  -var="accountId=${account_id}" -out=tfplan
     if [[ $? -ne 0 ]]; then
         print_error_and_exit "Terraform planning failed"
     fi
@@ -102,7 +92,7 @@ create_regional_infrastructure() {
         terraform apply -auto-approve tfplan
     else
         echo "Applying changes with confirmation prompt"
-        terraform apply -var="aws_region=${REGION}"
+        terraform apply -var="aws_region=${REGION}" -var="accountId=${account_id}"
     fi
 
     if [[ $? -ne 0 ]]; then
@@ -122,9 +112,9 @@ destroy_regional_infrastructure() {
     fi
 
     if [[ $AUTO_APPROVE -eq 1 ]]; then
-        terraform destroy -var="aws_region=${REGION}" -auto-approve
+        terraform destroy -var="aws_region=${REGION}" -var="accountId=${account_id}" -auto-approve
     else
-        terraform destroy -var="aws_region=${REGION}"
+        terraform destroy -var="aws_region=${REGION}" -var="accountId=${account_id}"
     fi
 
     if [[ $? -ne 0 ]]; then
@@ -140,11 +130,9 @@ main() {
         exit 1
     fi
 
-    COMMAND="$1"
     AUTO_APPROVE=0
     REGION=""
 
-    shift 1
     while [[ $# -gt 0 ]]; do
         case $1 in
             --auto-approve)
@@ -152,12 +140,16 @@ main() {
                 export AUTO_APPROVE
                 shift
                 ;;
+            --action)
+                COMMAND="$2"
+                shift 2
+                ;;
             --region)
                 REGION="$2"
                 shift 2
                 ;;
             -h|--help)
-                usage
+                help
                 exit 0
                 ;;
             *)
@@ -188,7 +180,3 @@ main() {
 trap 'print_error_and_exit "Script interrupted"' INT TERM
 
 main "$@"
-
-# Usage examples:
-# ./regional_creation.sh create --region us-east-1
-# ./regional_creation.sh destroy --region us-west-2 --auto-approve

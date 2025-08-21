@@ -138,11 +138,6 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json << 'EOF'
             "file_path": "/var/log/user-data.log",
             "log_group_name": "/ec2/${environment}/${container_name}/user_data",
             "log_stream_name": "{instance_id}"
-          },
-          {
-            "file_path": "/opt/app/logs/*.log",
-            "log_group_name": "/ec2/${environment}/${container_name}/application",
-            "log_stream_name": "{instance_id}"
           }
         ]
       }
