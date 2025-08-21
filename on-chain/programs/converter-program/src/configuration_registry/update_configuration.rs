@@ -50,6 +50,9 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
             self.configuration_registry.price_maximum_age = price_maximum_age;
         }
         if let Some(coefficient) = input.coefficient {
+            if coefficient > 100000000 {
+                return err!(DoubleZeroError::InvalidCoefficient);
+            }
             self.configuration_registry.coefficient = coefficient;
         }
         if let Some(max_discount_rate) = input.max_discount_rate {
