@@ -1,7 +1,7 @@
 import { describe, it, beforeEach } from 'mocha';
 import { expect } from 'chai';
-import * as proxyquire from 'proxyquire';
-import * as sinon from 'sinon';
+import proxyquire from 'proxyquire';
+import { stub, restore } from 'sinon';
 
 describe('processTx (error path) - Mocha', () => {
   let processTx: any;
@@ -11,9 +11,9 @@ describe('processTx (error path) - Mocha', () => {
 
   beforeEach(() => {
     // Create stubs
-    writeSolanaErrorStub = sinon.stub();
-    sendErrorNotificationStub = sinon.stub();
-    getTransactionStub = sinon.stub();
+    writeSolanaErrorStub = stub();
+    sendErrorNotificationStub = stub();
+    getTransactionStub = stub();
 
     // Default behavior for error transaction
     getTransactionStub.resolves({
@@ -32,9 +32,9 @@ describe('processTx (error path) - Mocha', () => {
       '../utils/config': require('../mock/config-util'),
       '../utils/ddb/events': {
         writeSolanaError: writeSolanaErrorStub,
-        writeSolanaEvent: sinon.stub(),
-        writeFillDequeue: sinon.stub(),
-        writeDenyListAction: sinon.stub(),
+        writeSolanaEvent: stub(),
+        writeFillDequeue: stub(),
+        writeDenyListAction: stub(),
         '@noCallThru': true
       },
       '../utils/notifications': {
@@ -43,17 +43,21 @@ describe('processTx (error path) - Mocha', () => {
       },
       '@solana/web3.js': {
         Connection: MockConnection,
-        PublicKey: sinon.stub(),
+        PublicKey: stub(),
         '@noCallThru': true
       },
       '@coral-xyz/anchor': {
-        BorshCoder: sinon.stub(),
-        EventParser: sinon.stub().returns({ parseLogs: function* () {} }),
+        BorshCoder: stub(),
+        EventParser: stub().returns({ parseLogs: function* () {} }),
         '@noCallThru': true
       },
     });
 
     processTx = processorModule.processTx;
+  });
+
+  afterEach(() => {
+      restore();
   });
 
   it('writes an error row for a failed tx', async () => {

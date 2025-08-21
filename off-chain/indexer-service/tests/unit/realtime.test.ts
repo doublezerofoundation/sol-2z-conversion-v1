@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
-import * as sinon from 'sinon';
+import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
 
 describe('tailRealTime', () => {
@@ -16,15 +16,15 @@ describe('tailRealTime', () => {
 
      beforeEach(() => {
           // Create stubs for all dependencies
-          processTxStub = sinon.stub();
-          getLastSignatureStub = sinon.stub();
-          saveLastSignatureStub = sinon.stub();
-          isRecoveringStub = sinon.stub();
-          onLogsStub = sinon.stub();
-          consoleLogStub = sinon.stub(console, 'log');
+          processTxStub = stub();
+          getLastSignatureStub = stub();
+          saveLastSignatureStub = stub();
+          isRecoveringStub = stub();
+          onLogsStub = stub();
+          consoleLogStub = stub(console, 'log');
 
           // Mock Connection class
-          connectionStub = sinon.stub().callsFake(() => ({
+          connectionStub = stub().callsFake(() => ({
                onLogs: onLogsStub
           }));
 
@@ -62,7 +62,7 @@ describe('tailRealTime', () => {
      });
 
      afterEach(() => {
-          sinon.restore();
+          restore();
      });
 
      it('should process transactions but not persist signature during recovery', async () => {

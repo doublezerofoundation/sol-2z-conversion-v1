@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
-import * as sinon from 'sinon';
+import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
 
 describe('recoverHistory', () => {
@@ -14,14 +14,14 @@ describe('recoverHistory', () => {
 
      beforeEach(() => {
           // Create stubs for all dependencies
-          getLastSignatureStub = sinon.stub();
-          endRecoveryStub = sinon.stub();
-          processTxStub = sinon.stub();
-          getSignaturesForAddressStub = sinon.stub();
-          consoleLogStub = sinon.stub(console, 'log');
+          getLastSignatureStub = stub();
+          endRecoveryStub = stub();
+          processTxStub = stub();
+          getSignaturesForAddressStub = stub();
+          consoleLogStub = stub(console, 'log');
 
           // Mock Connection class
-          connectionStub = sinon.stub().callsFake(() => ({
+          connectionStub = stub().callsFake(() => ({
                getSignaturesForAddress: getSignaturesForAddressStub
           }));
 
@@ -55,7 +55,7 @@ describe('recoverHistory', () => {
      });
 
      afterEach(() => {
-          sinon.restore();
+          restore();
      });
 
      it('should page from newest to older, process all signatures, and end recovery', async () => {
