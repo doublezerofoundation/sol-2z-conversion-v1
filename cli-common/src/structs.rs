@@ -10,7 +10,7 @@ pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey,
     pub sol_quantity: u64,
     pub price_maximum_age: i64,
-    pub authorized_dequeuers: Vec<Pubkey>,
+    pub fills_consumer: Pubkey,
     pub coefficient: u64,
     pub max_discount_rate: u64,
     pub min_discount_rate: u64,
