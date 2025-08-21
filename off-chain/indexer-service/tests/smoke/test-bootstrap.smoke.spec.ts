@@ -4,7 +4,7 @@ import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
 import { createRealtimeMocks, createHistoryMocks } from '../utils/test-helper';
 
-describe('bootstrap smoke flow', () => {
+describe('Indexer Service smoke tests', () => {
     let tailRealTime: any;
     let recoverHistory: any;
     let processTxStub: sinon.SinonStub;

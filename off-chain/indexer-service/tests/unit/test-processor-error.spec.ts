@@ -4,7 +4,7 @@ import proxyquire from 'proxyquire';
 import { stub, restore } from 'sinon';
 import { createProcessorMocks } from '../utils/test-helper';
 
-describe('processTx (error path) - Mocha', () => {
+describe('Transaction process error path tests', () => {
   let processTx: any;
   let writeSolanaErrorStub: sinon.SinonStub;
   let sendErrorNotificationStub: sinon.SinonStub;

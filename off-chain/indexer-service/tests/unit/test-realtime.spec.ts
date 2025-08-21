@@ -4,7 +4,7 @@ import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
 import { createRealtimeMocks } from '../utils/test-helper';
 
-describe('tailRealTime', () => {
+describe('Live path tests', () => {
     let processTxStub: sinon.SinonStub;
     let getLastSignatureStub: sinon.SinonStub;
     let saveLastSignatureStub: sinon.SinonStub;
