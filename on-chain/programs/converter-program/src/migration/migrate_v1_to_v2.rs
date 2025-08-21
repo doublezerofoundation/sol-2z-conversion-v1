@@ -60,7 +60,7 @@ impl<'info> MigrateV1ToV2<'info> {
 
         // Copy existing data
         self.configuration_registry_new.price_maximum_age = self.configuration_registry_old.price_maximum_age;
-        self.configuration_registry_new.authorized_dequeuers = self.configuration_registry_old.authorized_dequeuers.clone();
+        self.configuration_registry_new.fill_consumer = self.configuration_registry_old.fills_consumer;
         self.configuration_registry_new.coefficient = self.configuration_registry_old.coefficient;
         self.configuration_registry_new.max_discount_rate = self.configuration_registry_old.max_discount_rate;
         self.configuration_registry_new.min_discount_rate = self.configuration_registry_old.min_discount_rate;

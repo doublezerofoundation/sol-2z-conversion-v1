@@ -12,7 +12,7 @@ use crate::{
             deny_list,
             init_handler,
             system_state,
-            update_dequeuer_handler,
+            set_fills_consumer,
             mock_token_handler
         },
     },
@@ -54,12 +54,8 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             system_state::toggle_system_state(activate, pause)
         }
 
-        Some(Commands::AddDequeuer { dequeuer }) => {
-            update_dequeuer_handler::add_dequeuer(&dequeuer)
-        }
-        
-        Some(Commands::RemoveDequeuer { dequeuer }) => {
-            update_dequeuer_handler::remove_dequeuer(&dequeuer)
+        Some(Commands::SetFillsConsumer { dequeuer }) => {
+            set_fills_consumer::change_fills_consumer(&dequeuer)
         }
                   
         // Adding an address to the deny list

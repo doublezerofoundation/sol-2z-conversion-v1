@@ -60,7 +60,7 @@ impl<'info> RollbackV2toV1<'info> {
 
         // Copy existing data
         self.configuration_registry_new.price_maximum_age = self.configuration_registry_old.price_maximum_age;
-        self.configuration_registry_new.authorized_dequeuers = self.configuration_registry_old.authorized_dequeuers.clone();
+        self.configuration_registry_new.fills_consumer = self.configuration_registry_old.fill_consumer;
         self.configuration_registry_new.coefficient = self.configuration_registry_old.coefficient;
         self.configuration_registry_new.max_discount_rate = self.configuration_registry_old.max_discount_rate;
         self.configuration_registry_new.min_discount_rate = self.configuration_registry_old.min_discount_rate;
