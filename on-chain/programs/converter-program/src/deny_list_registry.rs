@@ -1,9 +1,10 @@
 use crate::{
-    state::program_state::ProgramStateAccount,
+    program_state::ProgramStateAccount,
     common::{
         constant::MAX_DENY_LIST_SIZE,
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
+        events::deny_list::{DenyListAddressAdded, DenyListAddressRemoved},
     }
 };
 use anchor_lang::prelude::*;
@@ -52,6 +53,14 @@ impl<'info> UpdateDenyList<'info> {
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
         self.deny_list_registry.update_count += 1;
 
+        // Emit event
+        emit!(DenyListAddressAdded {
+            added_by: self.admin.key(),
+            address,
+            timestamp: self.deny_list_registry.last_updated,
+            update_count: self.deny_list_registry.update_count,
+        });
+
         Ok(())
     }
 
@@ -73,6 +82,14 @@ impl<'info> UpdateDenyList<'info> {
         self.deny_list_registry.denied_addresses.remove(position);
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
         self.deny_list_registry.update_count += 1;
+
+        // Emit event
+        emit!(DenyListAddressRemoved {
+            removed_by: self.admin.key(),
+            address,
+            timestamp: self.deny_list_registry.last_updated,
+            update_count: self.deny_list_registry.update_count,
+        });
 
         Ok(())
     }

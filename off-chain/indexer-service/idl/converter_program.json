@@ -1,5 +1,5 @@
 {
-  "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
+  "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969",
   "metadata": {
     "name": "converter_program",
     "version": "0.1.0",
@@ -22,14 +22,55 @@
       "accounts": [
         {
           "name": "configuration_registry",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "program_state",
-          "writable": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
         },
         {
-          "name": "authority",
+          "name": "admin",
           "signer": true
         }
       ],
@@ -79,7 +120,27 @@
           }
         },
         {
-          "name": "authority",
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
           "writable": true,
           "signer": true
         }
@@ -134,6 +195,7 @@
         },
         {
           "name": "program_state",
+          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -177,6 +239,36 @@
           }
         },
         {
+          "name": "fills_registry",
+          "writable": true
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "vault_account",
+          "writable": true
+        },
+        {
+          "name": "protocol_treasury_token_account",
+          "writable": true
+        },
+        {
+          "name": "double_zero_mint",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "revenue_distribution_program"
+        },
+        {
           "name": "signer",
           "writable": true,
           "signer": true
@@ -188,30 +280,109 @@
           "type": "u64"
         },
         {
-          "name": "swap_rate",
-          "type": "string"
-        },
-        {
-          "name": "timestamp",
-          "type": "i64"
-        },
-        {
-          "name": "attestation",
-          "type": "string"
+          "name": "oracle_price_data",
+          "type": {
+            "defined": {
+              "name": "OraclePriceData"
+            }
+          }
         }
       ]
     },
     {
-      "name": "calculate_ask_price",
+      "name": "dequeue_fills",
       "discriminator": [
-        65,
-        225,
-        133,
-        159,
-        72,
-        56,
-        170,
-        162
+        146,
+        69,
+        6,
+        12,
+        174,
+        95,
+        136,
+        61
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fills_registry",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "max_sol_amount",
+          "type": "u64"
+        }
+      ],
+      "returns": {
+        "defined": {
+          "name": "DequeueFillsResult"
+        }
+      }
+    },
+    {
+      "name": "get_conversion_rate",
+      "discriminator": [
+        60,
+        240,
+        48,
+        85,
+        208,
+        15,
+        70,
+        176
       ],
       "accounts": [
         {
@@ -370,36 +541,6 @@
           }
         },
         {
-          "name": "fills_registry",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  102,
-                  105,
-                  108,
-                  108,
-                  115,
-                  95,
-                  114,
-                  101,
-                  103,
-                  105,
-                  115,
-                  116,
-                  114,
-                  121,
-                  95,
-                  118,
-                  49
-                ]
-              }
-            ]
-          }
-        },
-        {
           "name": "deny_list_registry",
           "writable": true,
           "pda": {
@@ -425,8 +566,12 @@
           }
         },
         {
+          "name": "fills_registry",
+          "writable": true
+        },
+        {
           "name": "program",
-          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+          "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969"
         },
         {
           "name": "program_data",
@@ -457,23 +602,19 @@
           "type": "u64"
         },
         {
-          "name": "slot_threshold",
-          "type": "u64"
-        },
-        {
           "name": "price_maximum_age",
           "type": "i64"
         },
         {
-          "name": "max_fills_storage",
-          "type": "u64"
-        },
-        {
-          "name": "steepness",
+          "name": "coefficient",
           "type": "u64"
         },
         {
           "name": "max_discount_rate",
+          "type": "u64"
+        },
+        {
+          "name": "min_discount_rate",
           "type": "u64"
         }
       ]
@@ -493,14 +634,55 @@
       "accounts": [
         {
           "name": "configuration_registry",
-          "writable": true
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
         },
         {
           "name": "program_state",
-          "writable": true
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
         },
         {
-          "name": "authority",
+          "name": "admin",
           "signer": true
         }
       ],
@@ -550,7 +732,27 @@
           }
         },
         {
-          "name": "authority",
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
           "writable": true,
           "signer": true
         }
@@ -559,6 +761,144 @@
         {
           "name": "address",
           "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_admin",
+      "discriminator": [
+        251,
+        163,
+        0,
+        52,
+        91,
+        194,
+        187,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program",
+          "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969"
+        },
+        {
+          "name": "program_data"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_deny_list_authority",
+      "discriminator": [
+        187,
+        248,
+        13,
+        39,
+        72,
+        109,
+        79,
+        104
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        },
+        {
+          "name": "program",
+          "address": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969"
+        },
+        {
+          "name": "program_data"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "toggle_system_state",
+      "discriminator": [
+        153,
+        40,
+        83,
+        38,
+        168,
+        176,
+        178,
+        151
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "set_to",
+          "type": "bool"
         }
       ]
     },
@@ -649,7 +989,7 @@
           }
         },
         {
-          "name": "authority",
+          "name": "admin",
           "writable": true,
           "signer": true
         }
@@ -722,6 +1062,58 @@
   ],
   "events": [
     {
+      "name": "AccessByDeniedPerson",
+      "discriminator": [
+        181,
+        22,
+        9,
+        206,
+        162,
+        32,
+        55,
+        116
+      ]
+    },
+    {
+      "name": "AccessDuringSystemHalt",
+      "discriminator": [
+        80,
+        237,
+        28,
+        189,
+        254,
+        247,
+        154,
+        214
+      ]
+    },
+    {
+      "name": "AttestationInvalid",
+      "discriminator": [
+        189,
+        98,
+        32,
+        217,
+        237,
+        151,
+        236,
+        116
+      ]
+    },
+    {
+      "name": "BidTooLowEvent",
+      "discriminator": [
+        213,
+        252,
+        104,
+        68,
+        211,
+        132,
+        186,
+        87
+      ]
+    },
+    {
       "name": "DequeuerAdded",
       "discriminator": [
         154,
@@ -748,6 +1140,32 @@
       ]
     },
     {
+      "name": "FillsDequeuedEvent",
+      "discriminator": [
+        125,
+        44,
+        170,
+        2,
+        193,
+        206,
+        164,
+        193
+      ]
+    },
+    {
+      "name": "SystemHalted",
+      "discriminator": [
+        183,
+        36,
+        191,
+        209,
+        186,
+        147,
+        171,
+        171
+      ]
+    },
+    {
       "name": "SystemInitialized",
       "discriminator": [
         63,
@@ -758,6 +1176,32 @@
         160,
         126,
         15
+      ]
+    },
+    {
+      "name": "SystemUnhalted",
+      "discriminator": [
+        51,
+        176,
+        216,
+        146,
+        18,
+        193,
+        238,
+        212
+      ]
+    },
+    {
+      "name": "TradeEvent",
+      "discriminator": [
+        189,
+        219,
+        127,
+        211,
+        78,
+        230,
+        97,
+        238
       ]
     },
     {
@@ -777,11 +1221,79 @@
   "errors": [
     {
       "code": 6000,
-      "name": "DenyListFull",
-      "msg": "Deny list is full"
+      "name": "RegistryFull",
+      "msg": "FillsRegistry is full — cannot enqueue."
+    },
+    {
+      "code": 6001,
+      "name": "RegistryEmpty",
+      "msg": "FillsRegistry is empty — cannot dequeue."
     }
   ],
   "types": [
+    {
+      "name": "AccessByDeniedPerson",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accessed_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AccessDuringSystemHalt",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "accessed_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AttestationInvalid",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "BidTooLowEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bid_amount",
+            "type": "u64"
+          },
+          {
+            "name": "ask_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          }
+        ]
+      }
+    },
     {
       "name": "BumpRegistry",
       "type": {
@@ -793,10 +1305,6 @@
           },
           {
             "name": "program_state_bump",
-            "type": "u8"
-          },
-          {
-            "name": "fills_registry_bump",
             "type": "u8"
           },
           {
@@ -820,16 +1328,8 @@
             "type": "u64"
           },
           {
-            "name": "slot_threshold",
-            "type": "u64"
-          },
-          {
             "name": "price_maximum_age",
             "type": "i64"
-          },
-          {
-            "name": "max_fills_storage",
-            "type": "u64"
           },
           {
             "name": "authorized_dequeuers",
@@ -838,11 +1338,15 @@
             }
           },
           {
-            "name": "steepness",
+            "name": "coefficient",
             "type": "u64"
           },
           {
             "name": "max_discount_rate",
+            "type": "u64"
+          },
+          {
+            "name": "min_discount_rate",
             "type": "u64"
           }
         ]
@@ -866,31 +1370,25 @@
             }
           },
           {
-            "name": "slot_threshold",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
             "name": "price_maximum_age",
             "type": {
               "option": "i64"
             }
           },
           {
-            "name": "max_fills_storage",
-            "type": {
-              "option": "u64"
-            }
-          },
-          {
-            "name": "steepness",
+            "name": "coefficient",
             "type": {
               "option": "u64"
             }
           },
           {
             "name": "max_discount_rate",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "min_discount_rate",
             "type": {
               "option": "u64"
             }
@@ -915,6 +1413,26 @@
           },
           {
             "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DequeueFillsResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "token_2z_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "fills_consumed",
             "type": "u64"
           }
         ]
@@ -953,23 +1471,11 @@
       }
     },
     {
-      "name": "EpochChunk",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "epoch",
-            "type": "u64"
-          },
-          {
-            "name": "lamports",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "Fill",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
@@ -980,37 +1486,47 @@
           {
             "name": "token_2z_out",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FillsDequeuedEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "requester",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "token_2z_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "fills_consumed",
+            "type": "u64"
           },
           {
             "name": "timestamp",
             "type": "i64"
-          },
-          {
-            "name": "buyer",
-            "type": "pubkey"
-          },
-          {
-            "name": "epoch",
-            "type": "u64"
           }
         ]
       }
     },
     {
       "name": "FillsRegistry",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "fills",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "Fill"
-                }
-              }
-            }
-          },
           {
             "name": "total_sol_pending",
             "type": "u64"
@@ -1026,6 +1542,31 @@
           {
             "name": "lifetime_2z_processed",
             "type": "u64"
+          },
+          {
+            "name": "fills",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "Fill"
+                  }
+                },
+                650000
+              ]
+            }
+          },
+          {
+            "name": "head",
+            "type": "u64"
+          },
+          {
+            "name": "tail",
+            "type": "u64"
+          },
+          {
+            "name": "count",
+            "type": "u64"
           }
         ]
       }
@@ -1037,7 +1578,7 @@
         "fields": [
           {
             "name": "swap_rate",
-            "type": "string"
+            "type": "u64"
           },
           {
             "name": "timestamp",
@@ -1060,18 +1601,12 @@
             "type": "pubkey"
           },
           {
-            "name": "is_halted",
-            "type": "bool"
+            "name": "fills_registry_address",
+            "type": "pubkey"
           },
           {
-            "name": "fifo_queue",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "EpochChunk"
-                }
-              }
-            }
+            "name": "is_halted",
+            "type": "bool"
           },
           {
             "name": "bump_registry",
@@ -1082,14 +1617,24 @@
             }
           },
           {
-            "name": "trade_history_list",
-            "type": {
-              "vec": {
-                "defined": {
-                  "name": "TradeHistory"
-                }
-              }
-            }
+            "name": "last_trade_slot",
+            "type": "u64"
+          },
+          {
+            "name": "deny_list_authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SystemHalted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "halted_by",
+            "type": "pubkey"
           }
         ]
       }
@@ -1102,16 +1647,44 @@
       }
     },
     {
-      "name": "TradeHistory",
+      "name": "SystemUnhalted",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "epoch",
+            "name": "unhalted_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TradeEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_amount",
             "type": "u64"
           },
           {
-            "name": "num_of_trades",
+            "name": "token_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bid_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
             "type": "u64"
           }
         ]

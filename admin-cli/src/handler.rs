@@ -13,7 +13,6 @@ use crate::{
             init_handler,
             system_state,
             update_dequeuer_handler,
-            withdraw_2z,
             mock_token_handler
         },
     },
@@ -53,11 +52,6 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
         // Changing system state between active and pause
         Some(Commands::ToggleSystemState { activate, pause}) => {
             system_state::toggle_system_state(activate, pause)
-        }
-
-        // Withdrawing from protocol treasury to designated account
-        Some(Commands::WithdrawTokens { token_amount, to_account }) => {
-            withdraw_2z::withdraw_2z_tokens(token_amount, to_account)
         }
 
         Some(Commands::AddDequeuer { dequeuer }) => {

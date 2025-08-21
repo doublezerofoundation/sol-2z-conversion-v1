@@ -3,7 +3,8 @@ import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
 import idlJson from '../../idl/converter_program.json';
 
 import Config from '../utils/config';
-import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb';
+import { EventType } from '../common';
+import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb/events';
 import { sendErrorNotification } from '../utils/notifications';
 
 const connection = new Connection(Config.RPC_URL, 'confirmed');
@@ -42,17 +43,26 @@ export async function processTx(sig: string) {
           const eventId = `${slot}-${sig}-${e.name}`;
           const safeData = serializeForDynamo(e.data);
           switch (e.name) {
-               case 'FillDequeued':
-                    // TODO: test after on-chain event is implemented
+               case EventType.FILLS_DEQUEUED:
                     const requester = safeData.requester;
-                    const solAmount = safeData.sol_amount;
-                    await writeFillDequeue(sig, eventId, requester, solAmount, slot, timestamp);
+                    const solDequeued = safeData.sol_dequeued;
+                    const token2zDequeued = safeData.token_2z_dequeued;
+                    const fillsConsumed = safeData.fills_consumed;
+                    await writeFillDequeue(sig, eventId, requester, solDequeued, token2zDequeued, fillsConsumed, slot, timestamp);
                     break;
-               case 'DenyListModified':
-                    // TODO: test after on-chain event is implemented
-                    const address = safeData.address;
-                    const actionType = safeData.action_type;
-                    await writeDenyListAction(sig, eventId, address, actionType, slot, timestamp);
+               case EventType.DENY_LIST_ADDRESS_ADDED:
+                    const addedAddress = safeData.address;
+                    const addedBy = safeData.added_by;
+                    const addUpdateCount = safeData.update_count;
+                    const addActionType = 'ADDED';
+                    await writeDenyListAction(sig, eventId, addedAddress, addActionType, addedBy, addUpdateCount, slot, timestamp);
+                    break;
+               case EventType.DENY_LIST_ADDRESS_REMOVED:
+                    const removedAddress = safeData.address;
+                    const removedBy = safeData.removed_by;
+                    const removeUpdateCount = safeData.update_count;
+                    const removeActionType = 'REMOVED';
+                    await writeDenyListAction(sig, eventId, removedAddress, removeActionType, removedBy, removeUpdateCount, slot, timestamp);
                     break;
                default:
                     await writeSolanaEvent(sig, eventId, e.name, safeData, slot, timestamp);

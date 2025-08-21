@@ -1,7 +1,5 @@
 use anchor_lang::prelude::*;
-
 use crate::{
-    state::bump_registry::BumpRegistry,
     common::error::DoubleZeroError,
     common::events::system::UnauthorizedUser
 };
@@ -15,6 +13,14 @@ pub struct ProgramStateAccount {
     pub bump_registry: BumpRegistry,
     pub last_trade_slot: u64,
     pub deny_list_authority: Pubkey,
+}
+
+#[derive(Debug, AnchorSerialize, AnchorDeserialize, Clone, InitSpace)]
+pub struct BumpRegistry {
+    pub configuration_registry_bump: u8,
+    pub program_state_bump: u8,
+    pub deny_list_registry_bump: u8,
+    pub withdraw_authority_bump: u8,
 }
 
 impl ProgramStateAccount {

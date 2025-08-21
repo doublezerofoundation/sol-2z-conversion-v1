@@ -4,6 +4,7 @@ import * as anchor from "@coral-xyz/anchor";
 import {getConfigurationRegistryPDA} from "./pda-helper";
 import {BPS} from "../constants";
 import { ConverterProgram } from "../../../target/types/converter_program";
+import { ORACLE_KEYPAIR } from "./price-oracle";
 
 export interface SystemConfig {
     oraclePubkey: PublicKey,
@@ -16,7 +17,7 @@ export interface SystemConfig {
 
 // Default Configurations
 export const DEFAULT_CONFIGS: SystemConfig = {
-    oraclePubkey: new PublicKey("3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj"),
+    oraclePubkey: ORACLE_KEYPAIR.publicKey,
     solQuantity: new anchor.BN(25 * LAMPORTS_PER_SOL),
     priceMaximumAge: new anchor.BN(324),
     coefficient: new anchor.BN(4500),

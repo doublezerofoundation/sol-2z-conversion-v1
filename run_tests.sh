@@ -10,8 +10,8 @@ UNIT_TESTS=(
     conversion-price-test
     system-state-test
     buy-sol-test
-    mock-transfer-program-test
     dequeue-fills-test
+    migration-test
 )
 
 E2E_TESTS=(

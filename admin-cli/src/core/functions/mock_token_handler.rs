@@ -36,6 +36,8 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let vault_account_pda = pda_helper::get_vault_pda(mock_program_id).0;
     let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
     let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
+    let config_account = pda_helper::get_config_pda(mock_program_id).0;
+    let journal_account = pda_helper::get_journal_pda(mock_program_id).0;
 
     println!("Mock Vault Address {}", vault_account_pda);
     println!("Mock 2Z Token Mint {}", token_mint_account_pda);
@@ -46,6 +48,8 @@ pub fn init() -> Result<(), Box<dyn Error>> {
 
     // necessary accounts
     let accounts = vec![
+        AccountMeta::new(config_account, false),
+        AccountMeta::new(journal_account, false),
         AccountMeta::new(token_mint_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),
         AccountMeta::new(vault_account_pda, false),

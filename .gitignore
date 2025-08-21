@@ -103,6 +103,7 @@ target/
 .terraform/
 .idea/
 temp_*
+lambda-build/
 
 # solana 
 test-ledger/
@@ -110,7 +111,6 @@ test-ledger/
 .anchor
 target
 **/*.rs.bk
-test-ledger
 .yarn
 .keys
 logs

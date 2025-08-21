@@ -482,4 +482,26 @@ The tests are run using the solana local test validator. The `test_runner.sh` sc
 - To add a new e2e test suite, add the test script to the `package.json` file in the `e2e` directory.
 - To add a new unit test, add the test script to the `Anchor.toml` file in the `on-chain` directory.
 
-Afterwards, add the test script to the `test_runner.sh` script.
+Afterward, add the test script to the `test_runner.sh` script.
+
+## Handling Migrations
+
+1. **Define new state structs**  
+   Create new structs for your upgraded accounts (e.g., `NewConfigurationRegistry`, `NewProgramState`) and update the program code to use them.
+
+2. **Add new seed definitions**  
+   Create a new file under `on-chain/programs/converter-program/src/common/seeds/`, similar to `seed_prefix_v1.rs`, and define your new seeds there.
+  - If an account needs changes, introduce a new seed prefix.
+  - If the account is unchanged, reuse the existing seed.
+
+3. **Update default seed profile**  
+   Modify `on-chain/programs/converter-program/src/common/seeds/seed_prefixes.rs` to point the default profile to the new version.
+
+4. **Implement migration logic**  
+   Add a new migration handler (e.g., `on-chain/programs/converter-program/src/migration/migrate_v1_to_v2.rs`) to define the migration rules between versions.
+
+5. **Run the migration**  
+   Execute the migration instruction from your off-chain client to upgrade on-chain accounts.
+
+6. **(Optional) Define rollback**  
+   If rollback support is required, implement a reverse migration function as well.
