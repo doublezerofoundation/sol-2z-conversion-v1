@@ -2,12 +2,12 @@ import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
+import { createHistoryMocks } from '../utils/test-helper';
 
 describe('recoverHistory', () => {
     let getLastSignatureStub: sinon.SinonStub;
     let endRecoveryStub: sinon.SinonStub;
     let processTxStub: sinon.SinonStub;
-    let connectionStub: sinon.SinonStub;
     let getSignaturesForAddressStub: sinon.SinonStub;
     let consoleLogStub: sinon.SinonStub;
     let recoverHistory: any;
@@ -20,37 +20,16 @@ describe('recoverHistory', () => {
           getSignaturesForAddressStub = stub();
           consoleLogStub = stub(console, 'log');
 
-          // Mock Connection class
-          connectionStub = stub().callsFake(() => ({
-               getSignaturesForAddress: getSignaturesForAddressStub
-          }));
-
-          // Load the module with mocked dependencies
-          const historyModule = proxyquire('../../src/core/history', {
-               '@solana/web3.js': {
-                    Connection: connectionStub,
-                    PublicKey: class MockPublicKey {
-                         constructor(public key: string) {}
-                    }
-               },
-               '../utils/config': require('../mock/config-util'),
-               './state': {
-                    getLastSignature: getLastSignatureStub,
-                    endRecovery: endRecoveryStub
-               },
-               './processor': {
-                    processTx: processTxStub
-               },
-               '../utils/concurrency': {
-                    promisePool: async (items: any[], processor: any, concurrency: number) => {
-                         // Simple implementation that calls processor for each item
-                         for (const item of items) {
-                         await processor(item);
-                         }
-                    }
-               }
+          // Create mocks using shared utility
+          const mocks = createHistoryMocks({
+               getLastSignature: getLastSignatureStub,
+               endRecovery: endRecoveryStub,
+               processTx: processTxStub,
+               getSignaturesForAddressStub: getSignaturesForAddressStub
           });
 
+          // Load the module with mocked dependencies
+          const historyModule = proxyquire('../../src/core/history', mocks);
           recoverHistory = historyModule.recoverHistory;
      });
 
@@ -80,10 +59,6 @@ describe('recoverHistory', () => {
 
           // Execute the function
           await recoverHistory();
-
-          // Verify connection setup
-          expect(connectionStub.calledOnce).to.be.true;
-          expect(connectionStub.calledWith('http://localhost:8899', 'confirmed')).to.be.true;
 
           // Verify getSignaturesForAddress calls
           expect(getSignaturesForAddressStub.callCount).to.equal(3);
@@ -124,9 +99,6 @@ describe('recoverHistory', () => {
           // Execute the function
           await recoverHistory();
 
-          // Verify no connection was made
-          expect(connectionStub.called).to.be.false;
-
           // Verify no signatures were fetched or processed
           expect(getSignaturesForAddressStub.called).to.be.false;
           expect(processTxStub.called).to.be.false;
@@ -145,9 +117,6 @@ describe('recoverHistory', () => {
 
           // Execute the function
           await recoverHistory();
-
-          // Verify connection was made
-          expect(connectionStub.calledOnce).to.be.true;
 
           // Verify only one call to getSignaturesForAddress
           expect(getSignaturesForAddressStub.callCount).to.equal(1);

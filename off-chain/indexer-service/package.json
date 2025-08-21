@@ -9,9 +9,9 @@
     "package:metrics-api": "mkdir -p dist/metrics-api && cp -r dist/src/metrics-api/* dist/metrics-api/ && cp package.json dist/metrics-api/",
     "deploy:metrics-api": "./deploy-metrics-api.sh",
     "dev": "ts-node ./src/index.ts",
-    "test": "mocha 'tests/**/*.test.ts' --require ts-node/register",
-    "test:unit": "mocha 'tests/unit/**/*.test.ts' --require ts-node/register",
-    "test:smoke": "mocha 'tests/smoke/**/*.test.ts' --require ts-node/register"
+    "test": "mocha 'tests/**/*.spec.ts' --require ts-node/register",
+    "test:unit": "mocha 'tests/unit/**/*.spec.ts' --require ts-node/register",
+    "test:smoke": "mocha 'tests/smoke/**/*.spec.ts' --require ts-node/register"
   },
   "keywords": [],
   "author": "",

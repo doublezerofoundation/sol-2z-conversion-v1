@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
+import { createRealtimeMocks, createHistoryMocks } from '../utils/test-helper';
 
 describe('bootstrap smoke flow', () => {
     let tailRealTime: any;
@@ -32,72 +33,31 @@ describe('bootstrap smoke flow', () => {
           saveLastSignatureStub.resolves();
           endRecoveryStub.returns(undefined);
 
-          // Mock Connection class
-          class MockConnection {
-               public getSignaturesForAddress: sinon.SinonStub;
-               public onLogs: sinon.SinonStub;
-
-               constructor(rpcUrl: string, commitment: string) {
-                    this.getSignaturesForAddress = getSignaturesForAddressStub;
-                    this.onLogs = onLogsStub;
-               }
-          }
-
           // Capture the onLogs callback when it's registered
           onLogsStub.callsFake((programId: any, callback: any, commitment: string) => {
                capturedOnLogsCallback = callback;
                return 1; // Mock subscription ID
           });
 
-          // Load both realtime and history modules with shared mocked dependencies
-          const realtimeModule = proxyquire('../../src/core/realtime', {
-               '@solana/web3.js': {
-                    Connection: MockConnection,
-                    PublicKey: class MockPublicKey {
-                         constructor(public key: string) {}
-                    }
-               },
-               './processor': {
-                    processTx: processTxStub
-               },
-               './state': {
-                    getLastSignature: getLastSignatureStub,
-                    saveLastSignature: saveLastSignatureStub,
-                    isRecovering: isRecoveringStub
-               },
-               '../utils/config': {
-                    default: {
-                         PROGRAM_ID: 'mock-program-id',
-                         RPC_URL: 'mock-rpc-url',
-                         CONCURRENCY: 5
-                    }
-               }
+          // Create mocks using shared utilities
+          const realtimeMocks = createRealtimeMocks({
+               processTx: processTxStub,
+               getLastSignature: getLastSignatureStub,
+               saveLastSignature: saveLastSignatureStub,
+               isRecovering: isRecoveringStub,
+               onLogsStub: onLogsStub
           });
 
-          const historyModule = proxyquire('../../src/core/history', {
-               '@solana/web3.js': {
-                    Connection: MockConnection,
-                    PublicKey: class MockPublicKey {
-                         constructor(public key: string) {}
-                    }
-               },
-               '../utils/config': require('../mock/config-util'),
-               './state': {
-                    getLastSignature: getLastSignatureStub,
-                    endRecovery: endRecoveryStub
-               },
-               './processor': {
-                    processTx: processTxStub
-               },
-               '../utils/concurrency': {
-                    promisePool: async (items: any[], processor: any, concurrency: number) => {
-                         // Simple implementation that calls processor for each item
-                         for (const item of items) {
-                         await processor(item);
-                         }
-                    }
-               }
+          const historyMocks = createHistoryMocks({
+               getLastSignature: getLastSignatureStub,
+               endRecovery: endRecoveryStub,
+               processTx: processTxStub,
+               getSignaturesForAddressStub: getSignaturesForAddressStub
           });
+
+          // Load both realtime and history modules with shared mocked dependencies
+          const realtimeModule = proxyquire('../../src/core/realtime', realtimeMocks);
+          const historyModule = proxyquire('../../src/core/history', historyMocks);
 
           tailRealTime = realtimeModule.tailRealTime;
           recoverHistory = historyModule.recoverHistory;

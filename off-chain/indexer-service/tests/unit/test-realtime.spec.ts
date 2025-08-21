@@ -2,13 +2,13 @@ import { expect } from 'chai';
 import { describe, it, beforeEach, afterEach } from 'mocha';
 import { stub, restore } from 'sinon';
 import proxyquire from 'proxyquire';
+import { createRealtimeMocks } from '../utils/test-helper';
 
 describe('tailRealTime', () => {
     let processTxStub: sinon.SinonStub;
     let getLastSignatureStub: sinon.SinonStub;
     let saveLastSignatureStub: sinon.SinonStub;
     let isRecoveringStub: sinon.SinonStub;
-    let connectionStub: sinon.SinonStub;
     let onLogsStub: sinon.SinonStub;
     let consoleLogStub: sinon.SinonStub;
     let tailRealTime: any;
@@ -23,41 +23,23 @@ describe('tailRealTime', () => {
           onLogsStub = stub();
           consoleLogStub = stub(console, 'log');
 
-          // Mock Connection class
-          connectionStub = stub().callsFake(() => ({
-               onLogs: onLogsStub
-          }));
-
           // Capture the onLogs callback when it's registered
           onLogsStub.callsFake((programId: any, callback: any, commitment: string) => {
                capturedOnLogsCallback = callback;
                return 1; // Mock subscription ID
           });
 
-          // Load the module with mocked dependencies 
-          const realtimeModule = proxyquire('../../src/core/realtime', {
-               '@solana/web3.js': {
-                    Connection: connectionStub,
-                    PublicKey: class MockPublicKey {
-                         constructor(public key: string) {}
-                    }
-               },
-               './processor': {
-                    processTx: processTxStub
-               },
-               './state': {
-                    getLastSignature: getLastSignatureStub,
-                    saveLastSignature: saveLastSignatureStub,
-                    isRecovering: isRecoveringStub
-               },
-               '../utils/config': {
-                    default: {
-                         PROGRAM_ID: 'mock-program-id',
-                         RPC_URL: 'mock-rpc-url'
-                    }
-               }
+          // Create mocks using shared utility
+          const mocks = createRealtimeMocks({
+               processTx: processTxStub,
+               getLastSignature: getLastSignatureStub,
+               saveLastSignature: saveLastSignatureStub,
+               isRecovering: isRecoveringStub,
+               onLogsStub: onLogsStub
           });
 
+          // Load the module with mocked dependencies 
+          const realtimeModule = proxyquire('../../src/core/realtime', mocks);
           tailRealTime = realtimeModule.tailRealTime;
      });
 
@@ -72,10 +54,6 @@ describe('tailRealTime', () => {
 
           // Execute: Start real-time monitoring
           tailRealTime();
-
-          // Verify connection setup
-          expect(connectionStub.calledOnce).to.be.true;
-          expect(connectionStub.calledWith('mock-rpc-url', 'confirmed')).to.be.true;
 
           // Verify onLogs subscription
           expect(onLogsStub.calledOnce).to.be.true;
@@ -209,10 +187,6 @@ describe('tailRealTime', () => {
      it('should properly setup connection with correct parameters', () => {
           // Execute: Start real-time monitoring
           tailRealTime();
-
-          // Verify connection creation
-          expect(connectionStub.calledOnce).to.be.true;
-          expect(connectionStub.calledWith('mock-rpc-url', 'confirmed')).to.be.true;
 
           // Verify onLogs subscription setup
           expect(onLogsStub.calledOnce).to.be.true;

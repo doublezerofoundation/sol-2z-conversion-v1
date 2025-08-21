@@ -1,7 +1,8 @@
-import { describe, it, beforeEach } from 'mocha';
+import { describe, it, beforeEach, afterEach } from 'mocha';
 import { expect } from 'chai';
 import proxyquire from 'proxyquire';
 import { stub, restore } from 'sinon';
+import { createProcessorMocks } from '../utils/test-helper';
 
 describe('processTx (error path) - Mocha', () => {
   let processTx: any;
@@ -22,37 +23,15 @@ describe('processTx (error path) - Mocha', () => {
       meta: { err: { InstructionError: [0, { Custom: 6000 }] }, logMessages: ['log'] },
     });
 
-    // Create a mock connection class
-    class MockConnection {
-      getTransaction = getTransactionStub;
-    }
-
-    // Import the processor with mocked dependencies
-    const processorModule = proxyquire.load('../../src/core/processor', {
-      '../utils/config': require('../mock/config-util'),
-      '../utils/ddb/events': {
-        writeSolanaError: writeSolanaErrorStub,
-        writeSolanaEvent: stub(),
-        writeFillDequeue: stub(),
-        writeDenyListAction: stub(),
-        '@noCallThru': true
-      },
-      '../utils/notifications': {
-        sendErrorNotification: sendErrorNotificationStub,
-        '@noCallThru': true
-      },
-      '@solana/web3.js': {
-        Connection: MockConnection,
-        PublicKey: stub(),
-        '@noCallThru': true
-      },
-      '@coral-xyz/anchor': {
-        BorshCoder: stub(),
-        EventParser: stub().returns({ parseLogs: function* () {} }),
-        '@noCallThru': true
-      },
+    // Create mocks using shared utility
+    const mocks = createProcessorMocks({
+      writeSolanaError: writeSolanaErrorStub,
+      sendErrorNotification: sendErrorNotificationStub,
+      getTransactionStub: getTransactionStub
     });
 
+    // Import the processor with mocked dependencies
+    const processorModule = proxyquire('../../src/core/processor', mocks);
     processTx = processorModule.processTx;
   });
 
