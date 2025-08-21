@@ -2,7 +2,7 @@ import {BN, Program} from "@coral-xyz/anchor";
 import {ConverterProgram} from "../../../target/types/converter_program";
 import {assert, expect} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
-import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
+import {getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
 import {decodeAndValidateReturnData, getUint64FromBuffer, ReturnData} from "../utils/return-data";
 
 export async function dequeueFillsSuccess(
@@ -13,7 +13,6 @@ export async function dequeueFillsSuccess(
     expectedFillsConsumed: number
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
-    const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
     const signature = await program.methods.dequeueFills(new BN(maxSolAmount))
         .accounts({
             fillsRegistry: fillsRegistryAddress,
@@ -53,10 +52,8 @@ export async function dequeueFillsSuccess(
             assert.fail("Error decoding return data", error);
         }
     }
-
-    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-
-    // Check Output values
+    await getFillsRegistryAccount(program);
+// Check Output values
     assert.equal(resultSolDequeued, maxSolAmount);
     assert.equal(resultTokenDequeued, expectedTokenDequeued);
     assert.equal(resultFillsConsumed, expectedFillsConsumed);

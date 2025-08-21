@@ -143,7 +143,7 @@ describe("Dequeue Fills Tests", () => {
             );
 
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
-            expectedTokenDequeued = maxSolAmount *  Math.floor(askPrice * bidFactor) / LAMPORTS_PER_SOL;
+            expectedTokenDequeued =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
 
             await dequeueFillsSuccess(
@@ -190,7 +190,9 @@ describe("Dequeue Fills Tests", () => {
         });
 
         it("Partial Dequeue Fills", async () => {
-            const bidFactor = 2.12;
+            const BID_FACTOR = 2.12;
+            // planning to dequeue PARTIAL_DEQUEUE_MULTIPLIER fills
+            const PARTIAL_DEQUEUE_MULTIPLIER = 3.321;
             const askPrices: number[] = [];
             for (let i = 0; i < 5; i++) {
                 askPrices.push(
@@ -200,21 +202,20 @@ describe("Dequeue Fills Tests", () => {
                         tokenAccountForUser,
                         userKeyPair,
                         currentConfigs,
-                        bidFactor
+                        BID_FACTOR
                     )
                 );
             }
 
-            // planning to dequeue 3.321 fills
-            maxSolAmount = Math.floor(3.321 * Number(DEFAULT_CONFIGS.solQuantity));
+            maxSolAmount = Math.floor(PARTIAL_DEQUEUE_MULTIPLIER * Number(DEFAULT_CONFIGS.solQuantity));
             const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
 
             expectedTokenDequeued =
-                solQuantity * Math.floor(askPrices[0] * bidFactor) / LAMPORTS_PER_SOL +
-                solQuantity * Math.floor(askPrices[1] * bidFactor) / LAMPORTS_PER_SOL +
-                solQuantity * Math.floor(askPrices[2] * bidFactor) / LAMPORTS_PER_SOL +
-                (maxSolAmount - 3 * solQuantity) * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
-            expectedFillsConsumed = 4
+                Math.floor(askPrices[0] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
+                Math.floor(askPrices[1] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
+                Math.floor(askPrices[2] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
+                (maxSolAmount - Math.floor(PARTIAL_DEQUEUE_MULTIPLIER) * solQuantity) * Math.floor(askPrices[3] * BID_FACTOR) / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = Math.ceil(PARTIAL_DEQUEUE_MULTIPLIER);
 
             await dequeueFillsSuccess(
                 program,
