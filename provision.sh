@@ -54,9 +54,10 @@ show_help() {
   echo "  -e,--env                       Deployment Environment"
   echo "  -r,--region                    Deployment Region"
   echo "  -h, --help                     Show this help message"
+  echo "  --test-type                    Test type (e2e , unit)"
   echo "Example:"
   echo "  ./provision.sh -w on-chain --mode build_and_deploy --restart-validator"
-  echo "  ./provision.sh -w run-tests --mode unit"
+  echo "  ./provision.sh -w run-tests --test-type unit"
 }
 
 VALID_SUB_COMMANDS=("account" "environment" "regional" "release")
@@ -118,8 +119,9 @@ handle_mock_double_zero_program() {
 }
 
 handle_run_tests() {
-  cmd=(./on-chain/run_tests.sh)
-  [[ -n "$mode" ]] && cmd+=("-m" "$mode")
+  echo "mode"
+  cmd=(./run_tests.sh)
+  [[ -n "$TEST_TYPE" ]] && cmd+=("--test-type" "$TEST_TYPE")
   "${cmd[@]}"
 }
 
@@ -243,6 +245,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -m|--mode)
             mode="$2"
+            shift 2
+            ;;
+        --test-type)
+            TEST_TYPE="$2"
             shift 2
             ;;
         -rv|--restart-validator)
