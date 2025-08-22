@@ -28,31 +28,18 @@ export const fillsConsumerUserTests: Test[] = [
         }
     },
     {
-        name: "fills_dequeued_event_should_be_emitted_when_dequeuer_dequeues_fills",
-        description: "Fills dequeued event should be emitted when dequeuer dequeues fills",
+        name: "fills_consumed_event_should_be_emitted_when_consumer_consumes_fills",
+        description: "Fills consumed event should be emitted when consumer consumes fills",
         execute: async (scenario: FillsConsumerScenario) => {
-            // Dequeue all fills
+            // Consume all fills
             const result = await scenario.consumeFillsAndVerify(200);
 
             let txHash = extractTxHashFromResult(result);
-            if (await eventExists(scenario.getConnection(), txHash, "FillsDequeuedEvent")) {
+            if (await eventExists(scenario.getConnection(), txHash, "FillsDequeued")) {
                 assert.ok(true);
             } else {
                 assert.fail("FillsDequeuedEvent not found");
             }
-        }
-    },
-    {
-        name: "fills_registry_should_be_updated_when_dequeuer_dequeues_fills",
-        description: "Fills registry should be updated when dequeuer dequeues fills",
-        execute: async (scenario: FillsConsumerScenario) => {
-            const fillsRegistry = await scenario.getFillsRegistry();
-
-            expect(fillsRegistry.total2ZPending.toNumber()).to.be.equal(0);
-            expect(fillsRegistry.totalSolPending.toNumber()).to.be.equal(0);
-            expect(fillsRegistry.lifetime2ZProcessed.toNumber()).to.be.greaterThan(0);
-            expect(fillsRegistry.lifetimeSolProcessed.toNumber()).to.be.greaterThan(0);
-            expect(fillsRegistry.head.toNumber()).to.be.equal(fillsRegistry.tail.toNumber());
         }
     }
 ]

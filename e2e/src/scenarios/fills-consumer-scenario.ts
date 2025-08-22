@@ -97,7 +97,7 @@ export class FillsConsumerScenario extends CommonScenario {
 
             // Consume the entire fill
             expectedSolConsumed += fillSolAmount;
-            expected2ZConsumed += fill.token2zOut.toNumber();
+            expected2ZConsumed += fill.token2ZOut.toNumber();
             expectedFillsConsumed += 1;
         }
 
@@ -144,8 +144,8 @@ export class FillsConsumerScenario extends CommonScenario {
             // Consumed fills should retain their original values (they're just not accessible via head pointer)
             expect(consumedFill.solIn.toNumber()).to.equal(fillsArrayBefore[consumedFillIndex].solIn.toNumber(),
                 `Fill at index ${consumedFillIndex} should retain its original solIn value after consumption`);
-            expect(consumedFill.token2zOut.toNumber()).to.equal(fillsArrayBefore[consumedFillIndex].token2zOut.toNumber(),
-                `Fill at index ${consumedFillIndex} should retain its original token2zOut value after consumption`);
+            expect(consumedFill.token2ZOut.toNumber()).to.equal(fillsArrayBefore[consumedFillIndex].token2ZOut.toNumber(),
+                `Fill at index ${consumedFillIndex} should retain its original token2ZOut value after consumption`);
         }
 
         // Validate that remaining fills are unchanged
@@ -156,8 +156,8 @@ export class FillsConsumerScenario extends CommonScenario {
 
             expect(fillAfter.solIn.toNumber()).to.equal(fillBefore.solIn.toNumber(),
                 `Remaining fill at index ${remainingFillIndex} should have unchanged solIn`);
-            expect(fillAfter.token2zOut.toNumber()).to.equal(fillBefore.token2zOut.toNumber(),
-                `Remaining fill at index ${remainingFillIndex} should have unchanged token2zOut`);
+            expect(fillAfter.token2ZOut.toNumber()).to.equal(fillBefore.token2ZOut.toNumber(),
+                `Remaining fill at index ${remainingFillIndex} should have unchanged token2ZOut`);
         }
 
         // Validate queue integrity: when queue has items, head and tail should be different
