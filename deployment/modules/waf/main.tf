@@ -177,6 +177,8 @@ resource "aws_s3_bucket" "waf_logs" {
   count = var.enable_logging ? 1 : 0
 
   bucket = "aws-waf-logs-${var.name_prefix}-${var.environment}"
+  force_destroy = true
+
 
   tags = {
     Name        = "${var.name_prefix}-waf-logs"

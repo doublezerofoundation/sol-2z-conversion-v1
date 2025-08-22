@@ -2,7 +2,7 @@
   "applicationPort": 8080,
   "pricingServices": [
     {
-      "name": "pyth",
+      "name": "pyth-prod",
       "type": "pyth",
       "endpoint": "https://hermes.pyth.network/",
       "priceFeedIds": {

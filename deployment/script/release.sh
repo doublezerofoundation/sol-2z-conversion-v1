@@ -11,40 +11,25 @@ declare -A SERVICE_CONFIGS
 SERVICE_CONFIGS["swap-oracle-service"]="double-zero-oracle-pricing-service"
 SERVICE_CONFIGS["indexer-service"]="double-zero-indexer-service"
 
-# Function to display usage
 help() {
-    echo "Usage: $0 [COMMAND] [OPTIONS]"
-    echo "Commands:"
-    echo "  publish-artifacts                     publish-artifacts service(s) to ECR"
-    echo "  upgrade                               install service(s)"
-    echo "  publish-artifacts-and-upgrade         publish-artifacts and install service(s)"
-    echo ""
-    echo "Options:"
-    echo "  --env ENV                   Environment"
-    echo "  --region REGION             AWS Region"
-    echo "  --release-tag TAG           Release tag"
-    echo "  --ecr-repository REPO       ECR repository name (overrides default)"
-    echo "  -h, --help                  Display this help message"
-    echo ""
-    echo "Available services:"
-    echo "  - swap-oracle-service (ECR: double-zero-oracle-pricing-service)"
-    echo "  - indexer-service (ECR: double-zero-indexer-service)"
-    echo ""
-    echo "Examples:"
-    echo "  $0 publish-artifacts --release-tag v2.0.0"
-    echo "  $0 upgrade --env prod --release-tag v2.0.0 --service-name swap-oracle-service"
-    exit 1
+    cat << EOF
+Options:
+    --release-tag     Release tag to use for service image (required)
+    --env             Environment alias
+    --action          create | destroy
+    --auto-approve    Skip interactive approval prompts
+    --region          AWS region (default: us-east-1)
+EOF
 }
-
-COMMAND="$1"
-shift
-
-
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --env)
             ENV="$2"
+            shift 2
+            ;;
+        --action)
+            COMMAND="$2"
             shift 2
             ;;
         --region)
@@ -55,22 +40,19 @@ while [[ $# -gt 0 ]]; do
             RELEASE_TAG="$2"
             shift 2
             ;;
-        --ecr-repository)
-            ECR_REPOSITORY="$2"
-            shift 2
-            ;;
         -h|--help)
             help
             ;;
         *)
             echo "Unknown option: $1"
             help
+            exit 1
             ;;
     esac
 done
 
 case $COMMAND in
-    publish-artifacts|upgrade|publish-artifacts-and-upgrade)
+    publish-artifacts|upgrade|publish-and-upgrade)
         if [[ -z "$AWS_REGION" ]]; then
             print_error_and_exit "--region is required"
         fi
@@ -165,7 +147,7 @@ main() {
         upgrade)
             upgrade
             ;;
-        publish-artifacts-and-upgrade)
+        publish-and-upgrade)
             publish_artifacts
             upgrade
             ;;

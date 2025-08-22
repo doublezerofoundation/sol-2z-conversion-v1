@@ -34,10 +34,8 @@ health_check_healthy_threshold   = 3
 health_check_unhealthy_threshold = 3
 
 # Off-chain Service Configuration
-enable_swap_oracle_service = false
+enable_swap_oracle_service = true
 enable_indexer_service     = true
-enable_pricing_service = false
-enable_metrics_api = true
 
 # Release Tag
 release_tag = "v1.0.0"

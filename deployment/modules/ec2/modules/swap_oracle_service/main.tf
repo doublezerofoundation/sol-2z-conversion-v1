@@ -22,20 +22,18 @@ locals {
   ecr_registry = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com"
 }
 
-# CloudWatch Log Groups
 resource "aws_cloudwatch_log_group" "container_logs" {
   name              = "/ec2/${var.environment}/${var.container_name}"
   retention_in_days = 7
+  skip_destroy      = false
+
 }
 
 resource "aws_cloudwatch_log_group" "user_data_logs" {
   name              = "/ec2/${var.environment}/${var.container_name}/user_data"
   retention_in_days = 7
-}
+  skip_destroy      = false
 
-resource "aws_cloudwatch_log_group" "application_logs" {
-  name              = "/ec2/${var.environment}/application"
-  retention_in_days = 7
 }
 
 data "aws_ecr_image" "app_image" {

@@ -83,16 +83,30 @@ describe("Configuration Registry Update Tests", async () => {
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
-  describe("Set Fills Consumer Tests", async () => {
-    it("Non-admin cannot add a fills consumer", async () => {
-      const nonAdmin = anchor.web3.Keypair.generate();
-      const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
-      await setFillsConsumerExpectUnauthorized(program, nonAdmin, fillsConsumer);
-    });
+  it("Should fail to update with invalid coefficient", async () => {
 
-    it("Admin can add a fills consumer", async () => {
-      const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
-      await setFillsConsumerAndVerify(program, getDefaultKeyPair(), fillsConsumer);
-    });
+    // Set coefficient to 100000001
+    await updateConfigsAndVerifyFail(program, {
+      ...DEFAULT_CONFIGS,
+      coefficient: new anchor.BN(100000001)
+    },
+      "InvalidCoefficient"
+    );
+
+    // Revert: Set coefficient to default
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
+
+    describe("Set Fills Consumer Tests", async () => {
+        it("Non-admin cannot add a fills consumer", async () => {
+            const nonAdmin = anchor.web3.Keypair.generate();
+            const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
+            await setFillsConsumerExpectUnauthorized(program, nonAdmin, fillsConsumer);
+        });
+
+        it("Admin can add a fills consumer", async () => {
+            const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
+            await setFillsConsumerAndVerify(program, getDefaultKeyPair(), fillsConsumer);
+        });
+    });
 });
