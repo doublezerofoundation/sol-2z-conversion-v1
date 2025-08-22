@@ -56,12 +56,8 @@ export class AdminClient {
         return await this.session.executeCliCommand(`view-deny-list`);
     }
 
-    public async addDequeuerCommand(dequeuer: string): Promise<string> {
-        return await this.session.executeCliCommand(`add-dequeuer -a ${dequeuer}`);
-    }
-
-    public async removeDequeuerCommand(dequeuer: string): Promise<string> {
-        return await this.session.executeCliCommand(`remove-dequeuer -a ${dequeuer}`);
+    public async setFillsConsumerCommand(consumer: string): Promise<string> {
+        return await this.session.executeCliCommand(`set-fills-consumer -a ${consumer}`);
     }
 
     public async initMockProgramCommand(): Promise<string> {

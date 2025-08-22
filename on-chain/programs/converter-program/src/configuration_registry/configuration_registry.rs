@@ -1,4 +1,3 @@
-use crate::common::constant::MAX_AUTHORIZED_DEQUEUERS;
 use anchor_lang::prelude::*;
 
 #[account]
@@ -7,9 +6,7 @@ pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey, // Public key of the swap oracle service
     pub sol_quantity: u64,
     pub price_maximum_age: i64, // Maximum acceptable age for oracle price data
-    #[max_len(MAX_AUTHORIZED_DEQUEUERS)]
-    pub authorized_dequeuers: Vec<Pubkey>, // Contracts authorized to dequeue fills
-
+    pub fills_consumer: Pubkey,
     // Price calculation
     pub coefficient: u64, // Coefficient of the discount function in basis points (0 <= coefficient <= 10_000)
     pub max_discount_rate: u64, // Maximum discount rate in basis points (0 <= max_discount_rate <= 10_000)

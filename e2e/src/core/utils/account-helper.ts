@@ -18,10 +18,10 @@ export const getConfigurationRegistryAccount = async (program: Program<Converter
     return configurationRegistryAccount as SystemConfig;
 }
 
-export const getDequeuerList = async (program: Program<ConverterProgram>): Promise<PublicKey[]> => {
+export const getFillsConsumer = async (program: Program<ConverterProgram>): Promise<PublicKey> => {
     const configurationRegistryPDA = await getConfigurationRegistryPDA(program.programId);
     const configurationRegistryAccount = await program.account.configurationRegistry.fetch(configurationRegistryPDA);
-    return configurationRegistryAccount.authorizedDequeuers;
+    return configurationRegistryAccount.fillsConsumer;
 }
 
 export const findOrInitializeAssociatedTokenAccount = async (

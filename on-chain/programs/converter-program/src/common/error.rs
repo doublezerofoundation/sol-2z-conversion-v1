@@ -54,42 +54,39 @@ pub enum DoubleZeroError {
     #[msg("Provided attestation is Outdated")]
     StalePrice, // 6016
 
-    #[msg("Maximum number of authorized dequeuers reached")]
-    MaxAuthorizedDequeuersReached, // 6017
-
     #[msg("Deny list is full")]
-    DenyListFull, // 6018
+    DenyListFull, // 6017
 
     #[msg("Address already added to Deny List")]
-    AlreadyExistsInDenyList, // 6019
+    AlreadyExistsInDenyList, // 6018
 
     #[msg("Invalid system state")]
-    InvalidSystemState, // 6020
+    InvalidSystemState, // 6019
 
     #[msg("Invalid conversion rate")]
-    InvalidConversionRate, // 6021
+    InvalidConversionRate, // 6020
 
     #[msg("Address not found in Deny List")]
-    AddressNotInDenyList, // 6022
+    AddressNotInDenyList, // 6021
 
     #[msg("System is halted")]
-    SystemIsHalted, // 6023
+    SystemIsHalted, // 6022
 
     #[msg("Arithmetic Error has occurred")]
-    ArithmeticError, // 6024
+    ArithmeticError, // 6023
 
     #[msg("User is not authorized to do Dequeue Action")]
-    UnauthorizedDequeuer, // 6025
+    UnauthorizedFillConsumer, // 6024
 
     #[msg("Unauthorized Deny List Authority")]
-    UnauthorizedDenyListAuthority, // 6026
+    UnauthorizedDenyListAuthority, // 6025
 
     #[msg("FillsRegistry is full — cannot enqueue.")]
-    RegistryFull, //6027
+    RegistryFull, //6026
 
     #[msg("FillsRegistry is empty — cannot dequeue.")]
-    RegistryEmpty, //6028
+    RegistryEmpty, //6027,
 
     #[msg("Only one trade is allowed per slot")]
-    SingleTradePerSlot, //6029
+    SingleTradePerSlot, //6028
 }

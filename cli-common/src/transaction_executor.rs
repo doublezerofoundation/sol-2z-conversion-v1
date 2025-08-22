@@ -137,8 +137,8 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
     );
 
     match signature {
-        Ok(_) => {
-            println!("{OK} Transaction Completed!");
+        Ok(sig) => {
+            println!("{OK} Transaction Successfully Executed! Signature: {}", sig);
         }
         Err(e) => {
             let client_error = anchor_client::ClientError::SolanaClientError(e);
