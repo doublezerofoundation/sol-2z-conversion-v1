@@ -27,7 +27,7 @@ provider "aws" {
 data "terraform_remote_state" "account" {
   backend = "s3"
   config = {
-    bucket         = "doublezero-terraform-state-bucket"
+    bucket         = "doublezero-terraform-state-bucket" // TODO need to change after apply account changes
     key            = "account/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
@@ -39,8 +39,8 @@ data "terraform_remote_state" "account" {
 data "terraform_remote_state" "regional" {
   backend = "s3"
   config = {
-    bucket         = "doublezero-terraform-state-bucket"
-    key            = "regional/terraform.tfstate"
+    bucket         = "doublezero-terraform-state-${var.accountId}"
+    key            = "regional/${var.aws_region}/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
     encrypt        = true
@@ -96,12 +96,7 @@ module "metrics_waf" {
 }
 
 # S3 bucket for Lambda deployment artifacts
-module "s3" {
-  source = "../modules/s3"
 
-  name_prefix = "doublezero-${var.environment}"
-  environment = var.environment
-}
 
 # Lambda function for Metrics Service
 module "metrics_lambda" {
@@ -111,10 +106,10 @@ module "metrics_lambda" {
   environment = var.environment
 
   # S3 configuration for Lambda deployment
-  s3_bucket_name = module.s3.bucket_name
+  s3_bucket_name = data.terraform_remote_state.regional.outputs.bucket_name
   s3_object_key = "metrics-api.zip"
   release_tag = var.release_tag
-  s3_access_policy_arn = module.s3.lambda_s3_access_policy_arn
+  s3_access_policy_arn = data.terraform_remote_state.regional.outputs.lambda_s3_access_policy_arn
 
   # Lambda configuration
   lambda_runtime = "nodejs18.x"
@@ -212,8 +207,8 @@ module "metrics_api_gateway" {
   source = "../modules/api_gateway"
 
   name_prefix = "metrics-service-${var.environment}"
-  enable_pricing_service = var.enable_pricing_service
-  enable_metrics_api = var.enable_metrics_api
+  enable_pricing_service = false
+  enable_metrics_api = true
   environment = var.environment
   waf_acl_arn = module.metrics_waf.web_acl_arn
 

@@ -90,9 +90,14 @@ export const getConversionPriceToFail = async (
             .signers([signer])
             .rpc();
     } catch (e) {
-        expect((new Error(e!.toString())).message).to.include(expectedError);
-        assert.ok(true, "Transaction failed as expected");
-        return;
+        if (e!.toString().includes(expectedError)) {
+            expect((new Error(e!.toString())).message).to.include(expectedError);
+            assert.ok(true, "Transaction failed as expected");
+            return;
+        } else {
+            console.log(e);
+            assert.fail("Transaction failed with unexpected error", e);
+        }
     }
     assert.fail("Transaction should have failed");
 }
