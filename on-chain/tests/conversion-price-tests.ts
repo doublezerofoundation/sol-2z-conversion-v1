@@ -22,9 +22,6 @@ describe("Conversion Price Tests", async () => {
     const program = await setup();
     const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as Idl, program.provider);
 
-    // Set a TTL for the oracle price data (in seconds) to be considered valid.
-    const TTL = 300;
-
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
         await initializeMockTransferSystemIfNeeded(mockTransferProgram);
@@ -211,19 +208,25 @@ describe("Conversion Price Tests", async () => {
     });
 
     it("Should fail to get conversion price for stale oracle data", async () => {
+        const maxAge = DEFAULT_CONFIGS.priceMaximumAge.toNumber();
+        const tolerance = 2;
+        const staleTimestamp = Math.floor(Date.now() / 1000) - maxAge - tolerance;
         // Get mock oracle price data with a stale timestamp (older than 60 seconds).
-        const oraclePriceData = await getOraclePriceDataFor(20, Math.floor(Date.now() / 1000) - TTL);
+        const oraclePriceData = await getOraclePriceDataFor(20, staleTimestamp);
 
         // Conversion price fetch should fail for stale oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "StaleTimestamp");
+        await getConversionPriceToFail(program, oraclePriceData, "StalePrice");
     });
 
     it("Should fail to get conversion price for future oracle data", async () => {
+        const maxAge = DEFAULT_CONFIGS.priceMaximumAge.toNumber();
+        const tolerance = 2;
+        const futureTimestamp = Math.floor(Date.now() / 1000) + maxAge + tolerance;
         // Get mock oracle price data with a future timestamp.
-        const oraclePriceData = await getOraclePriceDataFor(20, Math.floor(Date.now() / 1000) + TTL);
+        const oraclePriceData = await getOraclePriceDataFor(20, futureTimestamp);
 
         // Conversion price fetch should fail for future oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "FutureTimestamp");
+        await getConversionPriceToFail(program, oraclePriceData, "StalePrice");
     });
 
     it("Should fail to get conversion price for empty attestation signature", async () => {

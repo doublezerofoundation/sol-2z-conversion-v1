@@ -107,7 +107,7 @@ impl<'info> BuySol<'info> {
         }
 
         // sanity check the oracle price data
-        oracle_price_data.sanity_check()?;
+        require!(oracle_price_data.swap_rate > 0, DoubleZeroError::InvalidOracleSwapRate);
 
         // checking attestation
         verify_attestation(

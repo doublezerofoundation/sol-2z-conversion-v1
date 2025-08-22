@@ -36,10 +36,12 @@ pub fn verify_attestation(
 
     // timestamp verification
     let current_timestamp = Clock::get()?.unix_timestamp;
-    let difference = current_timestamp - oracle_price_data.timestamp;
+    let difference = (current_timestamp - oracle_price_data.timestamp).abs();
 
+    // If the difference is greater than the maximum age, the price is either
+    // stale or the timestamp is in the future (beyond acceptable clock skew)
     require!(
-        difference <= price_maximum_age,
+        difference <= price_maximum_age, // TODO: make this a constant
         DoubleZeroError::StalePrice
     );
     msg!("Timestamp Verified Successfully");
