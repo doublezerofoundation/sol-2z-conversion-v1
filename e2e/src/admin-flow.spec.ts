@@ -7,7 +7,7 @@ import { DenyListScenario } from "./scenarios/deny-list-scenario";
 import { UserClient } from "./core/user-client";
 import { AdminChangeScenario } from "./scenarios/admin-change-scenario";
 import { ConfigScenario } from "./scenarios/config-scenario";
-import { DequeuerScenario } from "./scenarios/fills-consumer-scenario";
+import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
 import { SystemStateScenario } from "./scenarios/system-state-scenario";
 import { getConfig } from "./core/utils/config-util";
 
@@ -15,20 +15,20 @@ import { initializationTests } from "./tests/admin/initialization.test";
 import { setAdminTests } from "./tests/admin/set-admin.test";
 import { configUpdateTests } from "./tests/admin/config.test";
 import { denyListTests } from "./tests/admin/deny-list.test";
-import { dequeuerTests } from "./tests/admin/fills-consumer.test";
+import { fillsConsumerTests } from "./tests/admin/fills-consumer.test";
 import { systemStateTests } from "./tests/admin/system-state.test";
 
 describe("Admin E2E Tests", () => {
     let deployer: AdminClient;
     let nonDeployerAdmin: AdminClient;
     let invalidAdmin: AdminClient;
-    let dequeuer: UserClient;
+    let fillConsumer: UserClient;
 
     before(async () => {
         deployer = await AdminClient.create(DEFAULT_KEYPAIR_PATH);
         nonDeployerAdmin = await AdminClient.create()
         invalidAdmin = await AdminClient.create()
-        dequeuer = await UserClient.create();
+        fillConsumer = await UserClient.create();
     });
 
     describe("System Initialization", () => {
@@ -98,16 +98,16 @@ describe("Admin E2E Tests", () => {
         }
     });
 
-    describe("Dequeuer Tests", () => {
-        let adminScenario: DequeuerScenario;
-        let nonAdminScenario: DequeuerScenario;
+    describe("Fills Consumer Tests", () => {
+        let adminScenario: FillsConsumerScenario;
+        let nonAdminScenario: FillsConsumerScenario;
         before(async () => {
-            adminScenario = new DequeuerScenario(nonDeployerAdmin);
-            nonAdminScenario = new DequeuerScenario(invalidAdmin);
+            adminScenario = new FillsConsumerScenario(nonDeployerAdmin);
+            nonAdminScenario = new FillsConsumerScenario(invalidAdmin);
         });
-        for (const [i, test] of dequeuerTests.entries()) {
-            it(getTestName("DEQUEUER", i+1, test.description), async () => {
-                await test.execute(adminScenario, nonAdminScenario, dequeuer.session.getPublicKey().toString());
+        for (const [i, test] of fillsConsumerTests.entries()) {
+            it(getTestName("CONSUMER", i+1, test.description), async () => {
+                await test.execute(adminScenario, nonAdminScenario, fillConsumer.session.getPublicKey().toString());
             });
         }
     });

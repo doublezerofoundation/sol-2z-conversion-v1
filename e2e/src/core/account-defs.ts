@@ -5,6 +5,7 @@ export interface SystemConfig {
     oraclePubkey: PublicKey,
     solQuantity: BN,
     priceMaximumAge: BN,
+    fillsConsumer: PublicKey,
     coefficient: BN,
     maxDiscountRate: BN,
     minDiscountRate: BN,

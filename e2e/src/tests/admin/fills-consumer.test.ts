@@ -1,66 +1,43 @@
 import { assert } from "chai";
 import { eventExists } from "../../core/utils/assertions";
 import { extractTxHashFromResult } from "../../core/utils/test-helper";
-import { DequeuerScenario } from "../../scenarios/fills-consumer-scenario";
+import { FillsConsumerScenario } from "../../scenarios/fills-consumer-scenario";
 import { Test } from "../../core/account-defs";
 
-export const dequeuerTests: Test[] = [
+export const fillsConsumerTests: Test[] = [
     {
-        name: "dequeuer_add_fail",
-        description: "Non-admin should not be able to add a dequeuer",
-        execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            await invalidScenario.addDequeuerAndVerifyFail(dequeuer, "Unauthorized Admin");
+        name: "fills_consumer_set_fail",
+        description: "Non-admin should not be able to set a fills consumer",
+        execute: async (scenario: FillsConsumerScenario, invalidScenario: FillsConsumerScenario, consumer: string) => {
+            await invalidScenario.setFillsConsumerAndVerifyFail(consumer, "Unauthorized Admin");
         }
     },
     {
-        name: "dequeuer_add",
-        description: "Admin should be able to add a dequeuer",
-        execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            await scenario.addDequeuerAndVerify(dequeuer);
+        name: "fills_consumer_set",
+        description: "Admin should be able to set a fills consumer",
+        execute: async (scenario: FillsConsumerScenario, invalidScenario: FillsConsumerScenario, consumer: string) => {
+            await scenario.setFillsConsumerAndVerify(consumer);
         }
     },
     {
-        name: "dequeuer_add_fail_invalid_dequeuer",
-        description: "Adding an invalid dequeuer should fail",
-        execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            const result = await scenario.addDequeuerAndVerify(dequeuer);
+        name: "fills_consumer_set_emit_event",
+        description: "Fills consumer changed event should be emitted when admin sets a fills consumer",
+        execute: async (scenario: FillsConsumerScenario, invalidScenario: FillsConsumerScenario, consumer: string) => {
+            const result = await scenario.setFillsConsumerAndVerify(consumer);
             const txHash = extractTxHashFromResult(result);
 
-            // Check for DequeuerAdded event
-            if (await eventExists(scenario.getConnection(), txHash, "DequeuerAdded")) {
-                assert.fail("DequeuerAdded should not be emitted");
+            if (await eventExists(scenario.getConnection(), txHash, "FillsConsumerChanged")) {
+                assert.ok(true, "FillsConsumerChanged event should be emitted");
             } else {
-                assert.ok(true, "DequeuerAdded event should not be emitted");
+                assert.fail("FillsConsumerChanged event should be emitted");
             }
         }
     },
     {
-        name: "dequeuer_remove_fail",
-        description: "Non-admin should not be able to remove a dequeuer",
-        execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            await invalidScenario.removeDequeuerAndVerifyFail(dequeuer, "Unauthorized Admin");
-        }
-    },
-    {
-        name: "dequeuer_remove",
-        description: "Admin should be able to remove a dequeuer",
-        execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            await scenario.removeDequeuerAndVerify(dequeuer);
-        }
-    },
-    {
-        name: "dequeuer_remove_fail_invalid_dequeuer",
-        description: "Removing an invalid dequeuer should fail",
-        execute: async (scenario: DequeuerScenario, invalidScenario: DequeuerScenario, dequeuer: string) => {
-            const result = await scenario.removeDequeuerAndVerify(dequeuer);
-            const txHash = extractTxHashFromResult(result);
-
-            // Check for DequeuerRemoved event
-            if (await eventExists(scenario.getConnection(), txHash, "DequeuerRemoved")) {
-                assert.fail("DequeuerRemoved should not be emitted");
-            } else {
-                assert.ok(true, "DequeuerRemoved event should not be emitted");
-            }
+        name: "fills_consumer_set_fail_invalid_consumer",
+        description: "Setting an invalid consumer should fail",
+        execute: async (scenario: FillsConsumerScenario, invalidScenario: FillsConsumerScenario, consumer: string) => {
+            await scenario.setFillsConsumerAndVerifyFail("invalid-fills-consumer-address", "Invalid");
         }
     }
 ]
