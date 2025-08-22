@@ -9,6 +9,7 @@ export interface FillsRegistry {
     head: number,
     tail: number,
     count: number,
+    maxCapacity: number,
     fills: Fill[]
 }
 
@@ -34,10 +35,11 @@ export async function getFillsRegistryAccount(program): Promise<FillsRegistry> {
         count: Number(rawFillsRegistry.count),
         head: Number(rawFillsRegistry.head),
         tail: Number(rawFillsRegistry.tail),
+        maxCapacity: rawFillsRegistry.fills.length,
         fills: []
     }
     for (let i = 0; i < fillsRegistry.count; i++) {
-        const idx = (fillsRegistry.head + i) % rawFillsRegistry.fills.length;
+        const idx = (fillsRegistry.head + i) % fillsRegistry.maxCapacity;
         const fill = rawFillsRegistry.fills[idx];
         fillsRegistry.fills.push({
             solIn: Number(fill.solIn),

@@ -105,8 +105,12 @@ impl<'info> BuySol<'info> {
             return err!(DoubleZeroError::UserInsideDenyList);
         }
 
-        // sanity check the oracle price data
-        require!(oracle_price_data.swap_rate > 0, DoubleZeroError::InvalidOracleSwapRate);
+        // Restricting only trade once per slot.
+        let clock = Clock::get()?;
+        require!(
+            clock.slot > self.program_state.last_trade_slot,
+            DoubleZeroError::SingleTradePerSlot
+        );
 
         // checking attestation
         verify_attestation(
@@ -114,8 +118,6 @@ impl<'info> BuySol<'info> {
             self.configuration_registry.oracle_pubkey,
             self.configuration_registry.price_maximum_age
         )?;
-
-        let clock = Clock::get()?;
 
         let sol_quantity = self.configuration_registry.sol_quantity;
         // call util function to get current ask price
