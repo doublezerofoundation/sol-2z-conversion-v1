@@ -201,3 +201,33 @@ resource "aws_cloudwatch_metric_alarm" "low_cpu" {
   }
 }
 
+
+# Null resource to trigger instance refresh on image tag changes
+resource "null_resource" "trigger_instance_refresh" {
+  triggers = {
+    image_tag           = var.swap_oracle_service_image_tag
+    launch_template_id  = aws_launch_template.this.id
+    user_data_hash     = sha256(aws_launch_template.this.user_data)
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      echo "Triggering instance refresh for ASG: ${aws_autoscaling_group.this.name}"
+      aws autoscaling start-instance-refresh \
+        --auto-scaling-group-name "${aws_autoscaling_group.this.name}" \
+        --preferences '{
+          "MinHealthyPercentage": 0,
+          "InstanceWarmup": 300,
+          "CheckpointPercentages": [50, 100],
+          "CheckpointDelay": 300,
+          "SkipMatching": false,
+          "ScaleInProtectedInstances": "Ignore",
+          "StandbyInstances": "Ignore"
+        }' \
+        --region "${var.region}" || echo "Instance refresh already in progress or failed"
+    EOT
+
+  }
+
+  depends_on = [aws_autoscaling_group.this]
+}

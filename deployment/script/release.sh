@@ -16,7 +16,7 @@ help() {
 Options:
     --release-tag     Release tag to use for service image (required)
     --env             Environment alias
-    --action          create | destroy
+    --action          publish-artifacts | upgrade | publish-and-upgrade
     --auto-approve    Skip interactive approval prompts
     --region          AWS region (default: us-east-1)
 EOF
@@ -118,20 +118,8 @@ publish_artifacts() {
 }
 
 upgrade() {
-    local services=($(get_services_to_process))
-
-    for service in "${services[@]}"; do
-        local repository=$(get_ecr_repository "$service")
-
-        echo "=== Deploying $service ==="
-        echo "Service: $service"
-        echo "ECR Repository: $repository"
-
-        ./deploy_update.sh --env "$ENV" --region "$AWS_REGION" --release-tag "$RELEASE_TAG" --ecr-repository "$repository" --container-name "$service"
-
-        echo "✅ Successfully deployed $service"
-        echo ""
-    done
+  echo "=============== RELEASE UPGRADE TRIGGERED ${RELEASE_TAG} ================="
+  ./deploy_update.sh --env "$ENV" --region "$AWS_REGION" --release-tag "$RELEASE_TAG"
 }
 
 main() {
