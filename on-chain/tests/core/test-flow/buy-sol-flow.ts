@@ -49,14 +49,16 @@ export async function buySolAndVerify(
         assert.fail("Buy Sol  failed");
     }
 
-    const lastTradedSlotAfter = (await fetchProgramState(program)).lastTradeSlot.toNumber();
     const tokenBalanceChange = Number(currentConfigs.solQuantity) * bidPrice / LAMPORTS_PER_SOL;
     const solBalanceChange = Number(currentConfigs.solQuantity);
+
     const tokenBalanceAfter = await getTokenBalance(program.provider.connection, senderTokenAccount);
     const solBalanceAfter = await program.provider.connection.getBalance(signer.publicKey);
     const protocolTreasuryBalanceAfter =
         await getTokenBalance(program.provider.connection, pdaList.protocolTreasury);
     const vaultBalanceAfter = await program.provider.connection.getBalance(pdaList.vault);
+    const lastTradedSlotAfter = (await fetchProgramState(program)).lastTradeSlot.toNumber();
+
 
     assert.equal(
         tokenBalanceAfter,
@@ -71,7 +73,7 @@ export async function buySolAndVerify(
     assert.equal(
         solBalanceAfter,
         solBalanceBefore + solBalanceChange,
-        "SOL Balance should increase by solBalanceChange"
+        "User's SOL Balance should increase by solBalanceChange"
     )
     assert.equal(
         vaultBalanceAfter,
@@ -85,6 +87,8 @@ export async function buySolAndVerify(
     // Check Fills Registry Values
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
     assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count + 1);
+    assert.equal(fillsRegistryAfter.tail, (fillsRegistryBefore.tail + 1) % fillsRegistryBefore.maxCapacity);
+    // Ensure added fill entry values are correct
     const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
     assert.equal(fillEntry.solIn, solBalanceChange);
     assert.equal(fillEntry.token2ZOut, tokenBalanceChange);

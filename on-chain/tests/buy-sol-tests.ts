@@ -13,7 +13,7 @@ import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry";
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
-import {getOraclePriceData} from "./core/utils/price-oracle";
+import {getOraclePriceData, getOraclePriceDataFor} from "./core/utils/price-oracle";
 import {BPS, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
@@ -49,7 +49,6 @@ describe("Buy Sol Tests", () => {
         );
 
         currentConfigs = DEFAULT_CONFIGS;
-
         mockTransferProgramPDAs = getMockProgramPDAs(mockTransferProgram.programId);
 
         // create key pair & token account for user
@@ -72,7 +71,6 @@ describe("Buy Sol Tests", () => {
             DEFAULT_CONFIGS
         );
     });
-
 
     describe("Happy Path", async() => {
         it("User does buySOL at higher price than Ask Price", async () => {
@@ -99,7 +97,7 @@ describe("Buy Sol Tests", () => {
             );
         });
 
-        it("should fail to do buy sol for price less than ask price", async () => {
+        it("Should fail to execute Buy SOL if the bid price is lower than the Ask Price.", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice - 100000;
@@ -124,8 +122,115 @@ describe("Buy Sol Tests", () => {
         });
     });
 
+    describe("Price Data Verification", async () => {
+        it("Should fail to execute a Buy SOL operation with stale oracle data", async () => {
+            const delay = Number(DEFAULT_CONFIGS.priceMaximumAge) + 1;
+            const oraclePriceData = await getOraclePriceDataFor(20, Math.floor(Date.now() / 1000) - delay);
+
+            const bidPrice = Number(oraclePriceData.swapRate);
+            // Ensure that user has sufficient 2Z
+            await mint2z(
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure vault has funds.
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided attestation is Outdated"
+            );
+        });
+
+        it("Fails Buy SOL execution when attestation is invalid (swap rate is altered)", async () => {
+            let oraclePriceData = await getOraclePriceData();
+
+            // manually making changes
+            oraclePriceData = {
+                ...oraclePriceData,
+                swapRate: 122131,
+            };
+
+            const bidPrice = Number(oraclePriceData.swapRate);
+            // Ensure that user has sufficient 2Z
+            await mint2z(
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure vault has funds.
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided Attestation is not Authentic"
+            );
+        });
+
+        it("Fails Buy SOL execution when signature is invalid", async () => {
+            let oraclePriceData = await getOraclePriceData();
+            oraclePriceData.signature = "invalid_signature";
+
+            const bidPrice = Number(oraclePriceData.swapRate);
+            // Ensure that user has sufficient 2Z
+            await mint2z(
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure vault has funds.
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided Attestation is Invalid"
+            );
+        });
+
+        it("Fails Buy SOL execution when signature is empty", async () => {
+            let oraclePriceData = await getOraclePriceData();
+            oraclePriceData.signature = "";
+
+            const bidPrice = Number(oraclePriceData.swapRate);
+            // Ensure that user has sufficient 2Z
+            await mint2z(
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure vault has funds.
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided Attestation is not Authentic"
+            );
+        });
+    });
+
     describe("Edge cases", async() => {
-        it("User does buySOL at same price as Ask Price", async () => {
+        it("User successfully buys SOL at the current Ask Price.", async () => {
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             // Ensure that user has sufficient 2Z
@@ -147,19 +252,10 @@ describe("Buy Sol Tests", () => {
             );
         });
 
-        it("should fail to do buy sol for price slightly less than ask price", async () => {
-
+        it("Fails to buy SOL when the bid price is slightly less than ask price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice - 1000;
-            // Ensure that user has sufficient 2Z
-            await mint2z(
-                mockTransferProgram,
-                tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
-            );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -172,6 +268,78 @@ describe("Buy Sol Tests", () => {
             );
         });
 
+        it("Executes Buy SOL successfully at minimum discounted price.", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const minDiscountRate = DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS);
+            assert(minDiscountRate >= 0, "Minimum discount rate should be greater than or equal to 0");
+            assert(minDiscountRate <= 1, "Minimum discount rate should be less than or equal to 1");
+            const bidPrice = Math.ceil(oraclePriceData.swapRate * (1 - minDiscountRate));
+            // Ensure that user has sufficient 2Z
+            await mint2z(
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure vault has funds.
+            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+
+            await buySolAndVerify(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData
+            );
+        });
+
+        it("Fails Buy SOL when bid < Max Discounted Price", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const maxDiscountRate = DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS);
+            assert(maxDiscountRate >= 0, "Minimum discount rate should be greater than or equal to 0");
+            assert(maxDiscountRate <= 1, "Minimum discount rate should be less than or equal to 1");
+            const bidPrice = Math.floor(oraclePriceData.swapRate * (1 - maxDiscountRate)) - 1;
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided bid is too low"
+            );
+        });
+
+        it("Fails to buy SOL when the bid price is zero", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const bidPrice = 0;
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided bid is too low"
+            );
+        });
+
+        it("Fails to buy SOL when the bid price is negative", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const bidPrice = -4;
+
+            await buySolFail(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                bidPrice,
+                userKeyPair,
+                oraclePriceData,
+                "Provided bid is too low"
+            );
+        });
 
         it("User does buySOL at same price as Oracle Price", async () => {
             const oraclePriceData = await getOraclePriceData();
@@ -229,7 +397,6 @@ describe("Buy Sol Tests", () => {
             );
         });
     });
-
 
     describe("DenyList Tests", async () => {
         it("should fail to do buy sol for deny listed user", async () => {
@@ -417,7 +584,6 @@ describe("Buy Sol Tests", () => {
 
     });
 
-
     describe("Config Change Check", async () => {
 
         it("User should be able to do buy SOL with proper rates", async () => {
@@ -452,44 +618,14 @@ describe("Buy Sol Tests", () => {
                 currentConfigs
             );
         });
-    });
 
-    describe("Invalid Attestation Check", async () => {
-        it("should fail to do buy sol with invalid signature", async () => {
+        after("Changing to default configs", async () => {
             // changing to default config
             await updateConfigsAndVerify(
                 program,
                 DEFAULT_CONFIGS
             );
             currentConfigs = DEFAULT_CONFIGS;
-
-            let oraclePriceData = await getOraclePriceData();
-
-            // manually making changes
-            oraclePriceData = {
-                ...oraclePriceData,
-                swapRate: 122131,
-            };
-
-            const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
-            await mint2z(
-                mockTransferProgram,
-                tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
-            );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
-
-            await buySolFail(
-                program,
-                mockTransferProgram,
-                tokenAccountForUser,
-                bidPrice,
-                userKeyPair,
-                oraclePriceData,
-                "Provided Attestation is not Authentic"
-            );
         });
     });
 });

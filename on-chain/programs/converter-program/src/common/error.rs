@@ -51,7 +51,7 @@ pub enum DoubleZeroError {
     #[msg("Provided bid is too low")]
     BidTooLow, // 6015
 
-    #[msg("Provided Attestation is not Authentic")]
+    #[msg("Provided attestation is Outdated")]
     StalePrice, // 6016
 
     #[msg("Maximum number of authorized dequeuers reached")]

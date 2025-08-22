@@ -112,9 +112,6 @@ impl<'info> BuySol<'info> {
             DoubleZeroError::SingleTradePerSlot
         );
 
-        // sanity check the oracle price data
-        oracle_price_data.sanity_check()?;
-
         // checking attestation
         verify_attestation(
             &oracle_price_data,
@@ -132,9 +129,6 @@ impl<'info> BuySol<'info> {
             self.program_state.last_trade_slot,
             clock.slot
         )?;
-
-        msg!("Ask Price {}", ask_price);
-        msg!("Bid Price {}", bid_price);
 
         // Check if bid meets ask
         if bid_price < ask_price {
