@@ -9,7 +9,7 @@ It provides CPIs which is used by converter program to simulate actual transfer.
 3) Admin CLI - CLI interface for admins to control the system.
 4) User CLI - CLI interface for user to interact with the system.
 5) Common CLI - Includes common functionalities for Admin CLI & User CLI.
-6) E2E Test Suite - End to end tests for the system using the solana local test validator.
+6) E2E Test Suite - End-to-end tests for the system using the solana local test validator.
 
 
 ### Setup Dependencies
@@ -450,7 +450,7 @@ cargo run -p integration-cli -- dequeue-fills -a <max_sol_amount>
 
 ## E2E Test Suite
 
-### Setup the Test Environment
+### Set up the Test Environment
 Install the dependencies for the e2e test suite.
 ```sh
 cd e2e

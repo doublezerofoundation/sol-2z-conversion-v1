@@ -81,5 +81,7 @@ export function getMockProgramPDAs(mockProgramId: PublicKey) {
         tokenMint: getMockDoubleZeroTokenMintPDA(mockProgramId),
         vault: getMockVaultPDA(mockProgramId),
         protocolTreasury: getMockProtocolTreasuryAccount(mockProgramId),
+        journal: getMockRevenueDistributionJournal(mockProgramId),
+        config: getMockConfig(mockProgramId)
     }
 }

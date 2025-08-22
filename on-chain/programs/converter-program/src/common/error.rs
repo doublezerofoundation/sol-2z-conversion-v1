@@ -51,7 +51,7 @@ pub enum DoubleZeroError {
     #[msg("Provided bid is too low")]
     BidTooLow, // 6015
 
-    #[msg("Provided Attestation is not Authentic")]
+    #[msg("Provided attestation is Outdated")]
     StalePrice, // 6016
 
     #[msg("Deny list is full")]
@@ -84,9 +84,9 @@ pub enum DoubleZeroError {
     #[msg("FillsRegistry is full — cannot enqueue.")]
     RegistryFull, //6026
 
-    #[msg("FillsRegistry is empty — cannot dequeue.")]
-    RegistryEmpty, //6027
+    #[msg("Only one trade is allowed per slot")]
+    SingleTradePerSlot, //6028,
 
     #[msg("Trying To Dequeue From Empty Fills Registry")]
-    EmptyFillsRegistry, // 6028
+    EmptyFillsRegistry, // 6029
 }
