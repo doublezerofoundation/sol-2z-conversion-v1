@@ -7,7 +7,7 @@ import { DenyListScenario } from "./scenarios/deny-list-scenario";
 import { UserClient } from "./core/user-client";
 import { AdminChangeScenario } from "./scenarios/admin-change-scenario";
 import { ConfigScenario } from "./scenarios/config-scenario";
-import { DequeuerScenario } from "./scenarios/dequeuer-scenario";
+import { DequeuerScenario } from "./scenarios/fills-consumer-scenario";
 import { SystemStateScenario } from "./scenarios/system-state-scenario";
 import { getConfig } from "./core/utils/config-util";
 
@@ -15,7 +15,7 @@ import { initializationTests } from "./tests/admin/initialization.test";
 import { setAdminTests } from "./tests/admin/set-admin.test";
 import { configUpdateTests } from "./tests/admin/config.test";
 import { denyListTests } from "./tests/admin/deny-list.test";
-import { dequeuerTests } from "./tests/admin/dequeuer.test";
+import { dequeuerTests } from "./tests/admin/fills-consumer.test";
 import { systemStateTests } from "./tests/admin/system-state.test";
 
 describe("Admin E2E Tests", () => {

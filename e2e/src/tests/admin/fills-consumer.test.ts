@@ -1,7 +1,7 @@
 import { assert } from "chai";
 import { eventExists } from "../../core/utils/assertions";
 import { extractTxHashFromResult } from "../../core/utils/test-helper";
-import { DequeuerScenario } from "../../scenarios/dequeuer-scenario";
+import { DequeuerScenario } from "../../scenarios/fills-consumer-scenario";
 import { Test } from "../../core/account-defs";
 
 export const dequeuerTests: Test[] = [

@@ -7,9 +7,9 @@ import { UserQueryScenario } from "./scenarios/user-query-scenario";
 
 import { userQueryTests } from "./tests/user/user-query.test";
 import { userBuySolTests } from "./tests/user/buy-sol.test";
-import { dequeuerUserTests } from "./tests/user/dequeuer-user.test";
+import { dequeuerUserTests } from "./tests/user/fills-consumer-user.test";
 import { BuySolScenario } from "./scenarios/buy-sol-scenario";
-import { DequeuerScenario } from "./scenarios/dequeuer-scenario";
+import { DequeuerScenario } from "./scenarios/fills-consumer-scenario";
 
 describe("User Flow Tests", () => {
     let deployer: AdminClient;

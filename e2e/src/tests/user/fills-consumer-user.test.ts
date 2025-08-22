@@ -1,6 +1,6 @@
 import { assert, expect } from "chai";
 import { Test } from "../../core/account-defs";
-import { DequeuerScenario } from "../../scenarios/dequeuer-scenario";
+import { DequeuerScenario } from "../../scenarios/fills-consumer-scenario";
 import { extractTxHashFromResult } from "../../core/utils/test-helper";
 import { eventExists } from "../../core/utils/assertions";
 
