@@ -1,3 +1,3 @@
 pub mod configuration_registry;
-pub mod update_dequeuers;
+pub mod set_fills_consumer;
 pub mod update_configuration;

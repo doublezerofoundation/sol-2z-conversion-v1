@@ -5,7 +5,7 @@ use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError,
-        events::dequeuer::FillsDequeued,
+        events::fill_consumer::FillsDequeued,
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -41,11 +41,10 @@ impl<'info> DequeueFills<'info> {
         &mut self,
         max_sol_amount: u64,
     ) -> Result<DequeueFillsResult> {
-        // Checking whether address is inside the authorized dequeuers
-        let signer_key = self.signer.key;
+
         require!(
-            self.configuration_registry.authorized_dequeuers.contains(signer_key),
-            DoubleZeroError::UnauthorizedDequeuer
+            self.signer.key() == self.configuration_registry.fills_consumer,
+            DoubleZeroError::UnauthorizedFillConsumer
         );
         
         let fills_registry = &mut self.fills_registry.load_mut()?;

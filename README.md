@@ -342,21 +342,14 @@ cargo run -p admin-cli -- set-deny-authority -a <DENY_AUTHORITY_ACCOUNT>
 
 - `-a`: Deny authority account public key.
 
-### Add Dequeuer
-Add a dequeuer address to the authorized list
+### Set Fills Consumer
+Sets fill consumer public key in the configuration registry
 ```sh
-cargo run -p admin-cli -- add-dequeuer -a <DEQUEUER_ACCOUNT>
+cargo run -p admin-cli -- set-fills-consumer -a <FILL_CONSUMER_ACCOUNT>
 ```
 
-- `-a`: Dequeuer account public key.
+- `-a`: Fill consumer's public key.
 
-### Remove Dequeuer
-Remove a dequeuer address from the authorized list
-```sh
-cargo run -p admin-cli -- remove-dequeuer -a <DEQUEUER_ACCOUNT>
-```
-
-- `-a`: Dequeuer account public key.
 
 ### Add to DenyList
 Adds an address to the deny list registry
