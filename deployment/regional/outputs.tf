@@ -94,3 +94,23 @@ output "redis_port" {
   description = "port of the redis cluster"
   value       = module.redis.redis_port
 }
+
+output "bucket_name" {
+  description = "Name of the S3 bucket for Lambda deployments"
+  value       = module.s3.bucket_name
+}
+
+output "bucket_arn" {
+  description = "ARN of the S3 bucket for Lambda deployments"
+  value       = module.s3.bucket_arn
+}
+
+output "lambda_s3_access_policy_arn" {
+  description = "ARN of the IAM policy for Lambda functions to access the bucket"
+  value       = module.s3.lambda_s3_access_policy_arn
+}
+
+output "lambda_s3_upload_policy_arn" {
+  description = "ARN of the IAM policy for CI/CD to upload to the bucket"
+  value       = module.s3.lambda_s3_upload_policy_arn
+}

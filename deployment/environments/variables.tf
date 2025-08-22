@@ -186,7 +186,21 @@ variable "enable_indexer_service" {
   default     = false
 }
 
+
 variable "release_tag" {
   description = "Docker image tag to pull from ECR"
+  type        = string
+  default     = "latest"
+}
+
+# SNS Configuration
+variable "email_subscribers" {
+  description = "List of email addresses to subscribe to error notifications"
+  type        = list(string)
+  default     = []
+}
+
+variable "accountId" {
+  description = "aws account id"
   type        = string
 }

@@ -59,21 +59,15 @@ resource "aws_dynamodb_table" "solana_event" {
   }
 
   global_secondary_index {
+    name            = "event_type_timestamp_idx"
+    hash_key        = "event_type"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
     name            = "event_type_slot_idx"
     hash_key        = "event_type"
     range_key       = "slot"
-    projection_type = "ALL"
-  }
-  global_secondary_index {
-    name            = "slot_event_type_idx"
-    hash_key        = "slot"
-    range_key       = "event_type"
-    projection_type = "ALL"
-  }
-  global_secondary_index {
-    name            = "slot_timestamp_idx"
-    hash_key        = "slot"
-    range_key       = "timestamp"
     projection_type = "ALL"
   }
 
@@ -105,9 +99,14 @@ resource "aws_dynamodb_table" "solana_error" {
   }
 
   global_secondary_index {
-    name            = "error_code_slot_idx"
+    name            = "error_code_timestamp_idx"
     hash_key        = "error_code"
-    range_key       = "slot"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
+    name            = "timestamp_idx"
+    hash_key        = "timestamp"
     projection_type = "ALL"
   }
   global_secondary_index {
@@ -116,7 +115,6 @@ resource "aws_dynamodb_table" "solana_error" {
     range_key       = "timestamp"
     projection_type = "ALL"
   }
-
   tags = local.common_tags
 }
 
@@ -141,7 +139,7 @@ resource "aws_dynamodb_table" "fill_dequeue" {
     type = "S"
   }
   attribute {
-    name = "sol_amount"
+    name = "sol_dequeued"
     type = "N"
   }
 
@@ -152,8 +150,13 @@ resource "aws_dynamodb_table" "fill_dequeue" {
     projection_type = "ALL"
   }
   global_secondary_index {
-    name            = "sol_amount_timestamp_idx"
-    hash_key        = "sol_amount"
+    name            = "timestamp_idx"
+    hash_key        = "timestamp"
+    projection_type = "ALL"
+  }
+   global_secondary_index {
+    name            = "sol_dequeued_timestamp_idx"
+    hash_key        = "sol_dequeued"
     range_key       = "timestamp"
     projection_type = "ALL"
   }
@@ -185,6 +188,14 @@ resource "aws_dynamodb_table" "deny_list_action" {
     name = "action_type"
     type = "S"
   }
+  attribute {
+    name = "action_by"
+    type = "S"
+  }
+  attribute {
+    name = "update_count"
+    type = "N"
+  }
 
   global_secondary_index {
     name            = "address_timestamp_idx"
@@ -195,6 +206,23 @@ resource "aws_dynamodb_table" "deny_list_action" {
   global_secondary_index {
     name            = "action_type_timestamp_idx"
     hash_key        = "action_type"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
+    name            = "timestamp_idx"
+    hash_key        = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
+    name            = "update_count_by_timestamp_idx"
+    hash_key        = "update_count"
+    range_key       = "timestamp"
+    projection_type = "ALL"
+  }
+  global_secondary_index {
+    name            = "action_by_timestamp_idx"
+    hash_key        = "action_by"
     range_key       = "timestamp"
     projection_type = "ALL"
   }

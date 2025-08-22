@@ -2,5 +2,5 @@
   "RPC_URL": "https://api.devnet.solana.com",
   "PROGRAM_ID": "program_id",
   "CONCURRENCY": 8,
-  "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:us-east-1:123456789012:doublezero-prod-app-errors"
+  "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:{{AWS_REGION}}:{{ACCOUNT_ID}}:doublezero-{{ENV}}-app-errors"
 }

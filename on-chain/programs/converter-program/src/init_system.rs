@@ -109,7 +109,12 @@ impl<'info> InitializeSystem<'info> {
         if max_discount_rate > 10000 || max_discount_rate < min_discount_rate {
             return err!(DoubleZeroError::InvalidMaxDiscountRate);
         }
-        
+
+        // Validate coefficient is between 0 and 100000000
+        if coefficient > 100000000 {
+            return err!(DoubleZeroError::InvalidCoefficient);
+        }
+
         // Setting initial configurations
 
         // Validate D_min is between 0 and D_max

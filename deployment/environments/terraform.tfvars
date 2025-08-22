@@ -33,8 +33,16 @@ health_check_interval = 30
 health_check_healthy_threshold   = 3
 health_check_unhealthy_threshold = 3
 
-# Off-chain sSrvice Configuration
+# Off-chain Service Configuration
 enable_swap_oracle_service = true
 enable_indexer_service     = true
 
+# Release Tag
 release_tag = "v1.0.0"
+
+# SNS Configuration
+email_subscribers = [
+#   "admin@yourdomain.com",
+#   "alerts@yourdomain.com", 
+#   "devops@yourdomain.com"
+]

@@ -25,7 +25,7 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     deny_list_registry::DenyListRegistry,
     fills_registry::fills_registry::{FillsRegistry, Fill},
-    calculate_ask_price::calculate_conversion_rate_with_oracle_price_data
+    calculate_ask_price::calculate_conversion_rate
 };
 
 #[derive(Accounts)]
@@ -106,6 +106,9 @@ impl<'info> BuySol<'info> {
             return err!(DoubleZeroError::UserInsideDenyList);
         }
 
+        // sanity check the oracle price data
+        oracle_price_data.sanity_check()?;
+
         // checking attestation
         verify_attestation(
             &oracle_price_data,
@@ -117,7 +120,7 @@ impl<'info> BuySol<'info> {
 
         let sol_quantity = self.configuration_registry.sol_quantity;
         // call util function to get current ask price
-        let ask_price = calculate_conversion_rate_with_oracle_price_data(
+        let ask_price = calculate_conversion_rate(
             oracle_price_data,
             self.configuration_registry.coefficient,
             self.configuration_registry.max_discount_rate,

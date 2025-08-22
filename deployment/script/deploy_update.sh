@@ -6,15 +6,6 @@ ENV_TERRAFORM_DIR="../environments"
 successful_instances=()
 failed_instances=()
 
-# ENV="dev1"
-# AWS_REGION="us-east-1"
-# RELEASE_TAG="dev1-v1.0.6"
-# CONTAINER_NAME="indexer-service"
-# ECR_REGISTRY=""
-# ECR_REPOSITORY="double-zero-indexer-service"
-# successful_instances=()
-# failed_instances=()
-
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -161,6 +152,7 @@ update_pricing_service_image_tag() {
         -var="release_tag=$release_tag" \
         -var="environment=$env_alias" \
         -var="aws_region=$region" \
+        -var="accountId=${account_id}" \
         -out=tfplan
 
     local plan_exit_code=$?
@@ -535,16 +527,70 @@ print_deployment_summary() {
   echo "All deployments completed successfully!"
 }
 
+update_lambda() {
+  echo ""
+  echo "================== METRICS LAMBDA UPDATE =================="
+  echo "Updating Lambda function with provided S3 package..."
+
+  local lambda_function_name="doublezero-${ENV}-metrics-api"
+  local s3_bucket_name="doublezero-${AWS_REGION}-${account_id}-lambda-deployments"
+  local s3_object_key="metrics-api.zip"
+  # Use versioned S3 path: metrics-api/{release_tag}/metrics-api.zip
+  local s3_versioned_key="metrics-api/${RELEASE_TAG}/${s3_object_key}"
+
+  echo "Environment: $ENV"
+  echo "Release Tag: $RELEASE_TAG"
+  echo "Lambda Function: $lambda_function_name"
+  echo "S3 Location: s3://$s3_bucket_name/$s3_versioned_key"
+  echo
+
+  # Check if Lambda function exists
+  if ! aws lambda get-function --function-name "$lambda_function_name" --region "$AWS_REGION" --no-cli-pager >/dev/null 2>&1; then
+    echo "❌ Lambda function '$lambda_function_name' not found"
+    echo "Please ensure the function exists and you have proper permissions"
+    return 1
+  fi
+
+  echo "🔄 Updating Lambda function code..."
+  if aws lambda update-function-code \
+      --function-name "$lambda_function_name" \
+      --s3-bucket "$s3_bucket_name" \
+      --s3-key "$s3_versioned_key" \
+      --region "$AWS_REGION" \
+      --no-cli-pager >/dev/null 2>&1; then
+
+    echo "✅ Lambda function updated successfully!"
+
+    # Log deployment for tracking
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    echo "[$timestamp] $lambda_function_name updated with release tag: $RELEASE_TAG" >> "/tmp/lambda-deployments.log"
+
+    # Get function info
+    echo
+    echo "=== Updated Function Info ==="
+    aws lambda get-function --function-name "$lambda_function_name" --region "$AWS_REGION" \
+        --query '{FunctionName:Configuration.FunctionName,LastModified:Configuration.LastModified,Version:Configuration.Version,Runtime:Configuration.Runtime,Handler:Configuration.Handler,CodeSize:Configuration.CodeSize}' \
+        --output table \
+        --no-cli-pager
+
+    echo "📝 Deployment logged to: /tmp/lambda-deployments.log"
+    echo "✅ Lambda deployment completed successfully!"
+  else
+    echo "❌ Failed to update Lambda function"
+    return 1
+  fi
+}
+
 get_ecr_config
 verify_ecr_image
 setup_aws_environment
 if [[ "$CONTAINER_NAME" == "swap-oracle-service" ]]; then
   update_pricing_service_image_tag
   trigger_pricing_service_instance_refresh
-
+  sleep 40
 else
   find_ec2_instance
   deploy_application
-  print_deployment_summary
-
+  update_lambda
 fi
+
