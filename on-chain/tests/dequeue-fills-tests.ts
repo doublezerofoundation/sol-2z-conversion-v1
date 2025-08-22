@@ -247,7 +247,7 @@ describe("Consume Fills Tests", () => {
             assert.equal(fillsRegistryAfter.count, 0);
             assert.equal(
                 fillsRegistryAfter.head,
-                (fillsRegistryBefore.head + 1) % fillsRegistryBefore.maxCapacity,
+                (fillsRegistryBefore.head + expectedFillsConsumed) % fillsRegistryBefore.maxCapacity,
                 "Head pointer should move by one in circular buffer"
             );
         });
