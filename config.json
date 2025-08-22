@@ -6,7 +6,7 @@
   "sol_quantity": 25000000000,
   "price_maximum_age": 324,
   "skip_preflight": false,
-  "price_oracle_end_point": "https://gwimfax068.execute-api.us-east-1.amazonaws.com/qa3/api/v1/swap-rate",
+  "price_oracle_end_point": "https://ls28awygrk.execute-api.us-east-1.amazonaws.com/dev1/api/v1/swap-rate",
   "coefficient": 4500,
   "max_discount_rate": 5000,
   "min_discount_rate": 500

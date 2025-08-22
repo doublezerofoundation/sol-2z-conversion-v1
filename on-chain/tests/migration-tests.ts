@@ -98,8 +98,8 @@ describe("Migration Tests", async () => {
         // assert configuration values are correctly migrated
         assert.equal(Number(configurationRegistryV2.solAmount), Number(configurationRegistryV1.solQuantity));
         assert.equal(configurationRegistryV2.priceOraclePubkey.toBase58(), configurationRegistryV1.oraclePubkey.toBase58());
+        assert.equal(configurationRegistryV2.fillsConsumer.toBase58(), configurationRegistryV1.fillsConsumer.toBase58());
         assert.equal(Number(configurationRegistryV2.priceMaximumAge), Number(configurationRegistryV1.priceMaximumAge));
-        expect(configurationRegistryV2.authorizedDequeuers).to.deep.equal(configurationRegistryV1.authorizedDequeuers);
         assert.equal(Number(configurationRegistryV2.coefficient), Number(configurationRegistryV1.coefficient));
         assert.equal(Number(configurationRegistryV2.maxDiscountRate), Number(configurationRegistryV1.maxDiscountRate));
         assert.equal(Number(configurationRegistryV2.minDiscountRate), Number(configurationRegistryV1.minDiscountRate));
@@ -170,8 +170,8 @@ describe("Migration Tests", async () => {
         // assert configuration values are correctly migrated
         assert.equal(Number(configurationRegistryV1.solQuantity), Number(configurationRegistryV2.solAmount));
         assert.equal(configurationRegistryV1.oraclePubkey.toBase58(), configurationRegistryV2.priceOraclePubkey.toBase58());
+        assert.equal(configurationRegistryV1.fillsConsumer.toBase58(), configurationRegistryV2.fillsConsumer.toBase58());
         assert.equal(Number(configurationRegistryV1.priceMaximumAge), Number(configurationRegistryV2.priceMaximumAge));
-        expect(configurationRegistryV1.authorizedDequeuers).to.deep.equal(configurationRegistryV2.authorizedDequeuers);
         assert.equal(Number(configurationRegistryV1.coefficient), Number(configurationRegistryV2.coefficient));
         assert.equal(Number(configurationRegistryV1.maxDiscountRate), Number(configurationRegistryV2.maxDiscountRate));
         assert.equal(Number(configurationRegistryV1.minDiscountRate), Number(configurationRegistryV2.minDiscountRate));

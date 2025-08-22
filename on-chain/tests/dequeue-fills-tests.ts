@@ -14,7 +14,7 @@ import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import { setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {dequeueFillsFail, dequeueFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
-import {addDequeuerAndVerify, removeDequeuerAndVerify} from "./core/test-flow/dequeuer-management";
+import {setFillsConsumerAndVerify} from "./core/test-flow/set-fills-consumer";
 import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
 import {assert} from "chai";
 
@@ -97,7 +97,7 @@ describe("Dequeue Fills Tests", () => {
 
     describe("Authorized user doing the dequeue fills", async() => {
         before("User is added to authorized Dequeuers List", async () => {
-            await addDequeuerAndVerify(
+            await setFillsConsumerAndVerify(
                 program,
                 getDefaultKeyPair(),
                 userKeyPair.publicKey,
@@ -224,14 +224,6 @@ describe("Dequeue Fills Tests", () => {
                 Math.floor(expectedTokenDequeued),
                 expectedFillsConsumed
             );
-        });
-
-        after("User is removed from authorized Dequeuers List", async () => {
-            await removeDequeuerAndVerify(
-                program,
-                getDefaultKeyPair(),
-                userKeyPair.publicKey,
-            )
         });
     });
 });

@@ -31,6 +31,10 @@ export abstract class CommonScenario {
         return this.admin.session.getConnection();
     }
 
+    public getAdmin(): AdminClient {
+        return this.admin;
+    }
+
     public async toggleSystemState(isHalted: boolean): Promise<void> {
         await this.admin.toggleSystemStateCommand(isHalted);
     }
@@ -43,12 +47,8 @@ export abstract class CommonScenario {
         await this.admin.removeUserFromDenyListCommand(user.toString());
     }
 
-    public async addDequeuer(dequeuer: PublicKey): Promise<void> {
-        await this.admin.addDequeuerCommand(dequeuer.toString());
-    }
-
-    public async removeDequeuer(dequeuer: PublicKey): Promise<void> {
-        await this.admin.removeDequeuerCommand(dequeuer.toString());
+    public async setFillsConsumer(consumer: PublicKey): Promise<void> {
+        await this.admin.setFillsConsumerCommand(consumer.toString());
     }
 
     public async airdropToMockVault(amount: number): Promise<void> {
