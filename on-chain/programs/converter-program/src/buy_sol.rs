@@ -130,6 +130,9 @@ impl<'info> BuySol<'info> {
             clock.slot
         )?;
 
+        msg!("Ask Price {}", ask_price);
+        msg!("Bid Price {}", bid_price);
+
         // Check if bid meets ask
         if bid_price < ask_price {
             emit!(BidTooLowEvent {

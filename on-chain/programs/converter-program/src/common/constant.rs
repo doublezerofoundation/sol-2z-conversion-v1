@@ -10,6 +10,3 @@ pub const TOKEN_DECIMALS: u64 = 1_000_000;
 
 // Account Size
 pub const DISCRIMINATOR_SIZE: usize = 8;
-
-// TTL value for oracle price data (in seconds)
-pub const TTL: i64 = 300;
