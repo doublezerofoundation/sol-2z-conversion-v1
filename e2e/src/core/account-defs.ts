@@ -5,6 +5,7 @@ export interface SystemConfig {
     oraclePubkey: PublicKey,
     solQuantity: BN,
     priceMaximumAge: BN,
+    fillsConsumer: PublicKey,
     coefficient: BN,
     maxDiscountRate: BN,
     minDiscountRate: BN,
@@ -44,7 +45,7 @@ export interface FillsRegistry {
 
 export interface Fills {
     solIn: BN,
-    token2zOut: BN,
+    token2ZOut: BN,
 }
 
 export interface Test {

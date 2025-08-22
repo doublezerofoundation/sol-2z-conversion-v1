@@ -29,7 +29,8 @@ export class UserClient {
         return await this.session.executeCliCommand(`get-fills-info`);
     }
 
-    public async dequeueFillsCommand(maxSolValue: number): Promise<string> {
+    public async consumeFillsCommand(maxSolValue: number): Promise<string> {
+        // TODO: change to consume-fills after update
         return await this.session.executeCliCommand(`dequeue-fills -a ${maxSolValue}`, "./cli/integration-cli");
     }
 }

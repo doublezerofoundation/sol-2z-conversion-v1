@@ -9,7 +9,7 @@ It provides CPIs which is used by converter program to simulate actual transfer.
 3) Admin CLI - CLI interface for admins to control the system.
 4) User CLI - CLI interface for user to interact with the system.
 5) Common CLI - Includes common functionalities for Admin CLI & User CLI.
-6) E2E Test Suite - End to end tests for the system using the solana local test validator.
+6) E2E Test Suite - End-to-end tests for the system using the solana local test validator.
 
 
 ### Setup Dependencies
@@ -342,21 +342,14 @@ cargo run -p admin-cli -- set-deny-authority -a <DENY_AUTHORITY_ACCOUNT>
 
 - `-a`: Deny authority account public key.
 
-### Add Dequeuer
-Add a dequeuer address to the authorized list
+### Set Fills Consumer
+Sets fill consumer public key in the configuration registry
 ```sh
-cargo run -p admin-cli -- add-dequeuer -a <DEQUEUER_ACCOUNT>
+cargo run -p admin-cli -- set-fills-consumer -a <FILL_CONSUMER_ACCOUNT>
 ```
 
-- `-a`: Dequeuer account public key.
+- `-a`: Fill consumer's public key.
 
-### Remove Dequeuer
-Remove a dequeuer address from the authorized list
-```sh
-cargo run -p admin-cli -- remove-dequeuer -a <DEQUEUER_ACCOUNT>
-```
-
-- `-a`: Dequeuer account public key.
 
 ### Add to DenyList
 Adds an address to the deny list registry
@@ -457,7 +450,7 @@ cargo run -p integration-cli -- dequeue-fills -a <max_sol_amount>
 
 ## E2E Test Suite
 
-### Setup the Test Environment
+### Set up the Test Environment
 Install the dependencies for the e2e test suite.
 ```sh
 cd e2e

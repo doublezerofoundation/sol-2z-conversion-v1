@@ -51,23 +51,20 @@ pub enum DoubleZeroError {
     #[msg("Provided bid is too low")]
     BidTooLow, // 6015
 
-    #[msg("Provided Attestation is not Authentic")]
+    #[msg("Provided attestation is Outdated")]
     StalePrice, // 6016
 
-    #[msg("Maximum number of authorized dequeuers reached")]
-    MaxAuthorizedDequeuersReached, // 6017
-
     #[msg("Deny list is full")]
-    DenyListFull, // 6018
+    DenyListFull, // 6017
 
     #[msg("Address already added to Deny List")]
-    AlreadyExistsInDenyList, // 6019
+    AlreadyExistsInDenyList, // 6018
 
     #[msg("Invalid system state")]
-    InvalidSystemState, // 6020
+    InvalidSystemState, // 6019
 
     #[msg("Invalid conversion rate")]
-    InvalidConversionRate, // 6021
+    InvalidConversionRate, // 6020
 
     #[msg("Address not found in Deny List")]
     AddressNotInDenyList, // 6021
@@ -79,7 +76,7 @@ pub enum DoubleZeroError {
     ArithmeticError, // 6023
 
     #[msg("User is not authorized to do Dequeue Action")]
-    UnauthorizedDequeuer, // 6024
+    UnauthorizedFillConsumer, // 6024
 
     #[msg("Unauthorized Deny List Authority")]
     UnauthorizedDenyListAuthority, // 6025
@@ -88,5 +85,8 @@ pub enum DoubleZeroError {
     RegistryFull, //6026
 
     #[msg("FillsRegistry is empty — cannot dequeue.")]
-    RegistryEmpty, //6027
+    RegistryEmpty, //6027,
+
+    #[msg("Only one trade is allowed per slot")]
+    SingleTradePerSlot, //6028
 }

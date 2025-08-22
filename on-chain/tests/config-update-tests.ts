@@ -1,11 +1,12 @@
 import * as anchor from "@coral-xyz/anchor";
 import { setup } from "./core/setup";
-import { airdrop, getRandomKeyPair } from "./core/utils/accounts";
+import {airdrop, getDefaultKeyPair, getRandomKeyPair} from "./core/utils/accounts";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
+import {setFillsConsumerAndVerify, setFillsConsumerExpectUnauthorized} from "./core/test-flow/set-fills-consumer";
 
-describe("Config Update Tests", async () => {
+describe("Configuration Registry Update Tests", async () => {
   const program = await setup();
 
   before("Initialize the system if needed", async () => {
@@ -83,7 +84,7 @@ describe("Config Update Tests", async () => {
   });
 
   it("Should fail to update with invalid coefficient", async () => {
-    
+
     // Set coefficient to 100000001
     await updateConfigsAndVerifyFail(program, {
       ...DEFAULT_CONFIGS,
@@ -95,4 +96,17 @@ describe("Config Update Tests", async () => {
     // Revert: Set coefficient to default
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
+
+    describe("Set Fills Consumer Tests", async () => {
+        it("Non-admin cannot add a fills consumer", async () => {
+            const nonAdmin = anchor.web3.Keypair.generate();
+            const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
+            await setFillsConsumerExpectUnauthorized(program, nonAdmin, fillsConsumer);
+        });
+
+        it("Admin can add a fills consumer", async () => {
+            const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
+            await setFillsConsumerAndVerify(program, getDefaultKeyPair(), fillsConsumer);
+        });
+    });
 });

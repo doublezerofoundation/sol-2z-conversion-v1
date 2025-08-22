@@ -7,9 +7,9 @@ import { UserQueryScenario } from "./scenarios/user-query-scenario";
 
 import { userQueryTests } from "./tests/user/user-query.test";
 import { userBuySolTests } from "./tests/user/buy-sol.test";
-import { dequeuerUserTests } from "./tests/user/dequeuer-user.test";
+import { fillsConsumerUserTests } from "./tests/user/fills-consumer-user.test";
 import { BuySolScenario } from "./scenarios/buy-sol-scenario";
-import { DequeuerScenario } from "./scenarios/dequeuer-scenario";
+import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
 
 describe("User Flow Tests", () => {
     let deployer: AdminClient;
@@ -60,13 +60,13 @@ describe("User Flow Tests", () => {
     });
 
     describe("User Dequeue Fill Tests", () => {
-        let scenario: DequeuerScenario;
+        let scenario: FillsConsumerScenario;
 
         before(async () => {
-            scenario = new DequeuerScenario(nonDeployerAdmin, user);
+            scenario = new FillsConsumerScenario(nonDeployerAdmin, user);
         });
 
-        for (const [i, test] of dequeuerUserTests.entries()) {
+        for (const [i, test] of fillsConsumerUserTests.entries()) {
             it(getTestName("DEQUEUE", i + 1, test.description), async () => {
                 await test.execute(scenario);
             });

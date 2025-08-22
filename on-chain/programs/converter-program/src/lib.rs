@@ -17,7 +17,7 @@ use system_management::system_state::*;
 use anchor_lang::prelude::*;
 use common::structs::*;
 use configuration_registry::update_configuration::*;
-use configuration_registry::update_dequeuers::*;
+use configuration_registry::set_fills_consumer::*;
 use calculate_ask_price::*;
 use init_system::*;
 use buy_sol::*;
@@ -70,18 +70,11 @@ pub mod converter_program {
         ctx.accounts.process_update(input)
     }
 
-    pub fn add_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        new_pubkey: Pubkey,
+    pub fn set_fills_consumer(
+        ctx: Context<SetFillsConsumer>,
+        new_consumer: Pubkey,
     ) -> Result<()> {
-        ctx.accounts.add_dequeuer(new_pubkey)
-    }
-
-    pub fn remove_dequeuer(
-        ctx: Context<UpdateDequeuers>,
-        remove_pubkey: Pubkey,
-    ) -> Result<()> {
-        ctx.accounts.remove_dequeuer(remove_pubkey)
+        ctx.accounts.set_fills_consumer(new_consumer)
     }
 
     pub fn add_to_deny_list(ctx: Context<UpdateDenyList>, address: Pubkey) -> Result<()> {
