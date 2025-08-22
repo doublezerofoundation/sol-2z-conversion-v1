@@ -29,9 +29,8 @@ pub enum Commands {
 
     /// Sets Fills Consumer in the configuration Registry
     SetFillsConsumer {
-        /// Address to add
         #[arg(short = 'a', long, required = true)]
-        dequeuer: String,
+        fills_consumer: String,
     },
 
     /// Adds an address to the deny list registry

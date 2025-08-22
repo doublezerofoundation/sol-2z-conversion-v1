@@ -54,8 +54,8 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             system_state::toggle_system_state(activate, pause)
         }
 
-        Some(Commands::SetFillsConsumer { dequeuer }) => {
-            set_fills_consumer::change_fills_consumer(&dequeuer)
+        Some(Commands::SetFillsConsumer { fills_consumer}) => {
+            set_fills_consumer::change_fills_consumer(&fills_consumer)
         }
                   
         // Adding an address to the deny list
