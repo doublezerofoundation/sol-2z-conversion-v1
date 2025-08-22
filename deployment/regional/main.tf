@@ -39,7 +39,7 @@ locals {
 data "terraform_remote_state" "account" {
   backend = "s3"
   config = {
-    bucket         = "doublezero-terraform-state-bucket" // TODO need to change after apply account changes
+    bucket         = "doublezero-terraform-state-${var.accountId}"
     key            = "account/terraform.tfstate"
     region         = "us-east-1"
     dynamodb_table = "doublezero-terraform-locks"
