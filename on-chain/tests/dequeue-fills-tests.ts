@@ -108,7 +108,8 @@ describe("Consume Fills Tests", () => {
                 currentConfigs,
                 bidFactor
             );
-
+            const fillsRegistryBefore = await getFillsRegistryAccount(program);
+            assert.equal(fillsRegistryBefore.count, 1, "After buy sol, count should be one");
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
             expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
@@ -120,8 +121,13 @@ describe("Consume Fills Tests", () => {
                 expectedTokenConsumed,
                 expectedFillsConsumed
             );
-            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-            assert.equal(fillsRegistryAfter.count, 0);
+            const fillsRegistryAfter = await getFillsRegistryAccount(program);
+            assert.equal(fillsRegistryAfter.count, 0, "Count should be 0");
+            assert.equal(
+                fillsRegistryAfter.head,
+                (fillsRegistryBefore.head + 1) % fillsRegistryBefore.maxCapacity,
+                "Head pointer should move by one in circular buffer"
+            );
         });
     });
 
@@ -172,6 +178,8 @@ describe("Consume Fills Tests", () => {
                 bidFactor
             );
 
+            const fillsRegistryBefore = await getFillsRegistryAccount(program);
+
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity) - 3 * LAMPORTS_PER_SOL;
             expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
@@ -187,6 +195,11 @@ describe("Consume Fills Tests", () => {
             const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
             // Reminder fill should be in the fills registry
             assert.equal(fillsRegistryAfter.count, 1);
+            assert.equal(
+                fillsRegistryAfter.head,
+                fillsRegistryBefore.head,
+                "Head pointer should not move"
+            );
         });
 
         after("Clear up fills registry", async () => {
@@ -212,6 +225,7 @@ describe("Consume Fills Tests", () => {
                     )
                 );
             }
+            const fillsRegistryBefore = await getFillsRegistryAccount(program);
 
             maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity);
             expectedTokenConsumed = askPrices.reduce((sum: number, askPrice: number): number => {
@@ -231,6 +245,11 @@ describe("Consume Fills Tests", () => {
 
             const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
             assert.equal(fillsRegistryAfter.count, 0);
+            assert.equal(
+                fillsRegistryAfter.head,
+                (fillsRegistryBefore.head + 1) % fillsRegistryBefore.maxCapacity,
+                "Head pointer should move by one in circular buffer"
+            );
         });
 
         after("Clear up fills registry", async () => {
@@ -257,6 +276,8 @@ describe("Consume Fills Tests", () => {
                 );
             }
 
+            const fillsRegistryBefore = await getFillsRegistryAccount(program);
+
             maxSolAmount = Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER * Number(DEFAULT_CONFIGS.solQuantity));
             const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
 
@@ -273,6 +294,18 @@ describe("Consume Fills Tests", () => {
                 userKeyPair,
                 Math.floor(expectedTokenConsumed),
                 expectedFillsConsumed
+            );
+
+            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+            assert.equal(
+                fillsRegistryAfter.head,
+                (fillsRegistryBefore.head + Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER)) % fillsRegistryBefore.maxCapacity,
+                "Head pointer should move by correct count in circular buffer"
+            );
+            assert.equal(
+                fillsRegistryAfter.count,
+                fillsRegistryBefore.count - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER),
+                "Count should increase by correct amount"
             );
         });
 

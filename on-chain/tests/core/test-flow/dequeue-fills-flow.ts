@@ -52,7 +52,6 @@ export async function consumeFillsSuccess(
             assert.fail("Error decoding return data", error);
         }
     }
-    await getFillsRegistryAccount(program);
 // Check Output values
     assert.equal(resultSolConsumed, maxSolAmount);
     assert.equal(resultTokenConsumed, expectedTokenConsumed);
