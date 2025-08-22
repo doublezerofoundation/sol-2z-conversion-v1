@@ -58,9 +58,6 @@ impl<'info> CalculateAskPrice<'info> {
             return Err(error!(DoubleZeroError::UserInsideDenyList));
         }
 
-        // sanity check the oracle price data
-        require!(oracle_price_data.swap_rate > 0, DoubleZeroError::InvalidOracleSwapRate);
-
         // checking attestation
         verify_attestation(
             &oracle_price_data,

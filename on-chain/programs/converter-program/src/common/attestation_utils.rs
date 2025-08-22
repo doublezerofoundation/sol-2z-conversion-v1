@@ -34,6 +34,9 @@ pub fn verify_attestation(
             })?;
     msg!("Signature Verified Successfully");
 
+    // Price data verification
+    require!(oracle_price_data.swap_rate > 0, DoubleZeroError::InvalidOracleSwapRate);
+
     // timestamp verification
     let current_timestamp = Clock::get()?.unix_timestamp;
     let difference = (current_timestamp - oracle_price_data.timestamp).abs();
