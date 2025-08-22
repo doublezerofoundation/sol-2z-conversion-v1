@@ -13,12 +13,12 @@ import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry";
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import { setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
-import {dequeueFillsFail, dequeueFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
+import {clearUpFillsRegistry, consumeFillsFail, consumeFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
 import {setFillsConsumerAndVerify} from "./core/test-flow/set-fills-consumer";
 import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
 import {assert} from "chai";
 
-describe("Dequeue Fills Tests", () => {
+describe("Consume Fills Tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -30,7 +30,7 @@ describe("Dequeue Fills Tests", () => {
     let userKeyPair: Keypair;
     let currentConfigs: SystemConfig;
     let maxSolAmount: number;
-    let expectedTokenDequeued: number;
+    let expectedTokenConsumed: number;
     let expectedFillsConsumed: number;
 
     before("Set up the system", async() => {
@@ -67,15 +67,8 @@ describe("Dequeue Fills Tests", () => {
         );
     });
 
-    after("Change configs to Default", async () => {
-        await updateConfigsAndVerify(
-            program,
-            DEFAULT_CONFIGS
-        );
-    });
-
-    describe("Unauthorized Dequeue Attempt", async() => {
-        it("User not in authorized Dequeuers should not dequeue fills", async () => {
+    describe("Authorization Check", async() => {
+        it("Rejects fill consumption by unauthorized user", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,
@@ -85,18 +78,15 @@ describe("Dequeue Fills Tests", () => {
                 1
             );
 
-            await dequeueFillsFail(
+            await consumeFillsFail(
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "User is not authorized to do Dequeue Action"
-            )
+                "User is not authorized to do Fills Consumption"
+            );
         });
-    });
 
-
-    describe("Authorized user doing the dequeue fills", async() => {
-        before("User is added to authorized Dequeuers List", async () => {
+        it("User is set as Fills Consumer", async () => {
             await setFillsConsumerAndVerify(
                 program,
                 getDefaultKeyPair(),
@@ -104,34 +94,11 @@ describe("Dequeue Fills Tests", () => {
             )
         });
 
-        it("Clear up fills registry", async () => {
-            const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
-
-            maxSolAmount = fillsRegistryBefore.totalSolPending;
-            expectedTokenDequeued = fillsRegistryBefore.total2ZPending;
-            expectedFillsConsumed = fillsRegistryBefore.count
-
-            await dequeueFillsSuccess(
-                program,
-                maxSolAmount,
-                userKeyPair,
-                expectedTokenDequeued,
-                expectedFillsConsumed
-            )
-            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-            assert.equal(fillsRegistryAfter.totalSolPending, 0)
+        it("Clear up the fills registry", async ()=> {
+            await clearUpFillsRegistry(program, userKeyPair);
         });
 
-        it("User gets error when doing dequeue from empty fills registry", async () => {
-            await dequeueFillsFail(
-                program,
-                DEFAULT_CONFIGS.solQuantity,
-                userKeyPair,
-                "Trying To Dequeue From Empty Fills Registry"
-            )
-        });
-
-        it("User dequeues 1  fill", async () => {
+        it("Authorized User should consume the fills", async () => {
             const bidFactor = 1.1;
             const askPrice = await buySolSuccess(
                 program,
@@ -143,19 +110,93 @@ describe("Dequeue Fills Tests", () => {
             );
 
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
-            expectedTokenDequeued =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
+            expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
 
-            await dequeueFillsSuccess(
+            await consumeFillsSuccess(
                 program,
                 maxSolAmount,
                 userKeyPair,
-                expectedTokenDequeued,
+                expectedTokenConsumed,
                 expectedFillsConsumed
-            )
+            );
+            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+            assert.equal(fillsRegistryAfter.count, 0);
+        });
+    });
+
+    describe("Emptying Fills Registry and Attempts to consume from it", async () => {
+        it("Clear up fills registry", async () => {
+            const bidFactor = 1.1;
+            await buySolSuccess(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                userKeyPair,
+                currentConfigs,
+                bidFactor
+            );
+
+            await clearUpFillsRegistry(program, userKeyPair);
         });
 
-        it("User dequeues 6 fills", async () => {
+        it("Fails consume operation if fills registry is empty.", async () => {
+            await consumeFillsFail(
+                program,
+                DEFAULT_CONFIGS.solQuantity,
+                userKeyPair,
+                "Trying To Consume From Empty Fills Registry"
+            )
+        });
+    });
+
+    describe("Edge Cases", async () => {
+        it("Fails when max_sol_amount is zero", async () => {
+            await consumeFillsFail(
+                program,
+                new anchor.BN(0),
+                userKeyPair,
+                "Given amount of SOL for consumption is invalid"
+            );
+        });
+
+        it("Consumes less than solQuantity", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+            const bidFactor = 1.1;
+            const askPrice = await buySolSuccess(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                userKeyPair,
+                currentConfigs,
+                bidFactor
+            );
+
+            maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity) - 3 * LAMPORTS_PER_SOL;
+            expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = 1
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumed,
+                expectedFillsConsumed
+            );
+
+            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+            // Reminder fill should be in the fills registry
+            assert.equal(fillsRegistryAfter.count, 1);
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+
+    describe("Batch Fills Consumption", async() => {
+        it("Should successfully consume 6 fills in single attempt", async () => {
             const bidFactor = 1.12;
             const numOfBuySols = 6;
             const askPrices: number[] = [];
@@ -173,26 +214,35 @@ describe("Dequeue Fills Tests", () => {
             }
 
             maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity);
-            expectedTokenDequeued = askPrices.reduce((sum: number, askPrice: number): number => {
+            expectedTokenConsumed = askPrices.reduce((sum: number, askPrice: number): number => {
                 const adjustedPrice = Math.floor(askPrice * bidFactor);
                 const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
                 return sum + solAmount;
             }, 0);
             expectedFillsConsumed = numOfBuySols
 
-            await dequeueFillsSuccess(
+            await consumeFillsSuccess(
                 program,
                 maxSolAmount,
                 userKeyPair,
-                expectedTokenDequeued,
+                expectedTokenConsumed,
                 expectedFillsConsumed
             );
+
+            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+            assert.equal(fillsRegistryAfter.count, 0);
         });
 
-        it("Partial Dequeue Fills", async () => {
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+    describe("Partial Fills Consumption", async() => {
+        it("Partial Consume Fills", async () => {
             const BID_FACTOR = 2.12;
-            // planning to dequeue PARTIAL_DEQUEUE_MULTIPLIER fills
-            const PARTIAL_DEQUEUE_MULTIPLIER = 3.321;
+            // planning to consume PARTIAL_CONSUMPTION_MULTIPLIER fills
+            const PARTIAL_CONSUMPTION_MULTIPLIER = 3.321;
             const askPrices: number[] = [];
             for (let i = 0; i < 5; i++) {
                 askPrices.push(
@@ -207,23 +257,27 @@ describe("Dequeue Fills Tests", () => {
                 );
             }
 
-            maxSolAmount = Math.floor(PARTIAL_DEQUEUE_MULTIPLIER * Number(DEFAULT_CONFIGS.solQuantity));
+            maxSolAmount = Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER * Number(DEFAULT_CONFIGS.solQuantity));
             const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
 
-            expectedTokenDequeued =
+            expectedTokenConsumed =
                 Math.floor(askPrices[0] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
                 Math.floor(askPrices[1] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
                 Math.floor(askPrices[2] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
-                (maxSolAmount - Math.floor(PARTIAL_DEQUEUE_MULTIPLIER) * solQuantity) * Math.floor(askPrices[3] * BID_FACTOR) / LAMPORTS_PER_SOL;
-            expectedFillsConsumed = Math.ceil(PARTIAL_DEQUEUE_MULTIPLIER);
+                (maxSolAmount - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER) * solQuantity) * Math.floor(askPrices[3] * BID_FACTOR) / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = Math.ceil(PARTIAL_CONSUMPTION_MULTIPLIER);
 
-            await dequeueFillsSuccess(
+            await consumeFillsSuccess(
                 program,
                 maxSolAmount,
                 userKeyPair,
-                Math.floor(expectedTokenDequeued),
+                Math.floor(expectedTokenConsumed),
                 expectedFillsConsumed
             );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
         });
     });
 });

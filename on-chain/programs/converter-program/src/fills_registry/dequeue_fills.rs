@@ -43,11 +43,14 @@ impl<'info> DequeueFills<'info> {
         &mut self,
         max_sol_amount: u64,
     ) -> Result<DequeueFillsResult> {
+        msg!("max_sol_amount: {}", max_sol_amount);
 
         require!(
             self.signer.key() == self.configuration_registry.fills_consumer,
             DoubleZeroError::UnauthorizedFillConsumer
         );
+
+        require!(max_sol_amount > 0, DoubleZeroError::InvalidMaxSolAmount);
         
         let fills_registry = &mut self.fills_registry.load_mut()?;
         

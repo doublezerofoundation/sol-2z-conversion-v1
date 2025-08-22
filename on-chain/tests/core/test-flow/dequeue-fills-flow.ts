@@ -2,14 +2,14 @@ import {BN, Program} from "@coral-xyz/anchor";
 import {ConverterProgram} from "../../../target/types/converter_program";
 import {assert, expect} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
-import {getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
+import {FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
 import {decodeAndValidateReturnData, getUint64FromBuffer, ReturnData} from "../utils/return-data";
 
-export async function dequeueFillsSuccess(
+export async function consumeFillsSuccess(
     program: Program<ConverterProgram>,
     maxSolAmount: number,
     signer: Keypair,
-    expectedTokenDequeued: number,
+    expectedTokenConsumed: number,
     expectedFillsConsumed: number
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
@@ -21,8 +21,8 @@ export async function dequeueFillsSuccess(
         .signers([signer])
         .rpc();
 
-    let resultSolDequeued: number;
-    let resultTokenDequeued: number;
+    let resultSolConsumed: number;
+    let resultTokenConsumed: number;
     let resultFillsConsumed: number;
     // Retry 5 times
     for (let i = 0; i < 5; i++) {
@@ -44,8 +44,8 @@ export async function dequeueFillsSuccess(
                 assert.fail("Decoded return data is too short to contain a u64 value");
             }
 
-            resultSolDequeued = Number(getUint64FromBuffer(decodedReturnData));
-            resultTokenDequeued = Number(getUint64FromBuffer(decodedReturnData, 8));
+            resultSolConsumed = Number(getUint64FromBuffer(decodedReturnData));
+            resultTokenConsumed = Number(getUint64FromBuffer(decodedReturnData, 8));
             resultFillsConsumed = Number(getUint64FromBuffer(decodedReturnData, 16));
             break;
         } catch (error) {
@@ -54,12 +54,12 @@ export async function dequeueFillsSuccess(
     }
     await getFillsRegistryAccount(program);
 // Check Output values
-    assert.equal(resultSolDequeued, maxSolAmount);
-    assert.equal(resultTokenDequeued, expectedTokenDequeued);
+    assert.equal(resultSolConsumed, maxSolAmount);
+    assert.equal(resultTokenConsumed, expectedTokenConsumed);
     assert.equal(resultFillsConsumed, expectedFillsConsumed);
 }
 
-export async function dequeueFillsFail(
+export async function consumeFillsFail(
     program: Program<ConverterProgram>,
     max_sol_amount: BN,
     signer: Keypair,
@@ -67,17 +67,41 @@ export async function dequeueFillsFail(
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
     try {
-        await program.methods.dequeueFills(max_sol_amount)
+        const signature = await program.methods.dequeueFills(max_sol_amount)
             .accounts({
                 fillsRegistry: fillsRegistryAddress,
                 signer: signer.publicKey
             })
             .signers([signer])
             .rpc();
+        console.log("Transaction signature: ", signature)
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
-        assert.ok(true, "Buy SOL is rejected as expected");
+        assert.ok(true, "Consume fills is rejected as expected");
         return; // Exit early — test passes
     }
-    assert.fail("It was able to do dequeue Fills");
+    assert.fail("It was able to do consume Fills");
+}
+
+export async function clearUpFillsRegistry(
+    program: Program<ConverterProgram>,
+    userKeyPair: Keypair
+) {
+    const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
+
+    const solPending = fillsRegistryBefore.totalSolPending;
+    const tokenPending = fillsRegistryBefore.total2ZPending;
+    const count = fillsRegistryBefore.count
+    if (count > 0) {
+        await consumeFillsSuccess(
+            program,
+            solPending,
+            userKeyPair,
+            tokenPending,
+            count
+        )
+    }
+
+    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+    assert.equal(fillsRegistryAfter.totalSolPending, 0);
 }
