@@ -19,7 +19,7 @@ describe("Configuration Registry Update Tests", async () => {
     await updateConfigsAndVerifyFail(
       program,
       DEFAULT_CONFIGS,
-      "Unauthorized Admin",
+      "Unauthorized admin",
       nonAdminUserKeyPair
     )
   });

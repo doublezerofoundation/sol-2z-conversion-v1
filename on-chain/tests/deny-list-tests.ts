@@ -89,7 +89,7 @@ describe("Deny List Tests", async () => {
             await addToDenyListShouldFail(
                 program,
                 testAddress1,
-                "Address already added to Deny List",
+                "Address already added to deny list",
                 adminKeyPair
             );
         });
@@ -152,7 +152,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "Address not found in Deny List",
+                "Address not found in deny list",
                 adminKeyPair
             );
         });
@@ -315,7 +315,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "Address not found in Deny List",
+                "Address not found in deny list",
                 adminKeyPair
             );
             

@@ -183,7 +183,7 @@ describe("Conversion Price Tests", async () => {
         await addToDenyListAndVerify(program, keypair.publicKey);
 
         // Conversion price fetch should fail for deny listed user.
-        await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the DenyList", keypair);
+        await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the deny list", keypair);
 
         // Revert: Remove user from deny list.
         await removeFromDenyListAndVerify(program, keypair.publicKey);
@@ -196,7 +196,7 @@ describe("Conversion Price Tests", async () => {
         // Conversion price fetch should fail for negative swap rate.
         // Since the swap rate is stored as a u64, it will be stored as a positive number even if it is negative.
         // But the attestation is not authentic, so the transaction should fail.
-        await getConversionPriceToFail(program, oraclePriceData, "Provided Attestation is not Authentic");
+        await getConversionPriceToFail(program, oraclePriceData, "Provided attestation is not authentic");
     });
 
     it("Should fail to get conversion price for zero swap rate", async () => {
@@ -235,7 +235,7 @@ describe("Conversion Price Tests", async () => {
         oraclePriceData.signature = "";
 
         // Conversion price fetch should fail for empty attestation signature.
-        await getConversionPriceToFail(program, oraclePriceData, "Attestation is not Authentic");
+        await getConversionPriceToFail(program, oraclePriceData, "Provided attestation is not authentic");
     });
 
     it("Should fail to get conversion price for invalid attestation signature", async () => {
@@ -244,6 +244,6 @@ describe("Conversion Price Tests", async () => {
         oraclePriceData.signature = "invalid_signature";
 
         // Conversion price fetch should fail for invalid attestation signature.
-        await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
+        await getConversionPriceToFail(program, oraclePriceData, "Provided attestation is invalid");
     });
 });
