@@ -144,7 +144,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is Outdated"
+                "Provided attestation is outdated"
             );
         });
 
@@ -174,7 +174,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided Attestation is not Authentic"
+                "Provided attestation is not authentic"
             );
         });
 
@@ -199,7 +199,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided Attestation is Invalid"
+                "Provided attestation is invalid"
             );
         });
 
@@ -224,7 +224,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided Attestation is not Authentic"
+                "Provided attestation is not authentic"
             );
         });
     });
@@ -421,7 +421,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "User is blocked in the DenyList"
+                "User is blocked in the deny list"
             );
         });
 

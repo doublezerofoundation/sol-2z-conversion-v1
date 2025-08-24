@@ -86,7 +86,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "User is not authorized to do Dequeue Action"
+                "User is not authorized to do dequeue action"
             )
         });
     });
@@ -121,7 +121,7 @@ describe("Buy Sol Tests", () => {
             )
         });
 
-        it("User dequeues 1  fill", async () => {
+        it("User dequeues 1 fill", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,

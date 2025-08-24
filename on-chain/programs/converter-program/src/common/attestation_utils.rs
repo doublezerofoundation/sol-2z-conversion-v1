@@ -32,7 +32,7 @@ pub fn verify_attestation(
                 emit!(AttestationInvalid {});
                 error!(DoubleZeroError::AttestationVerificationError)
             })?;
-    msg!("Signature Verified Successfully");
+    msg!("Signature verified successfully");
 
     // Price data verification
     require!(oracle_price_data.swap_rate > 0, DoubleZeroError::InvalidOracleSwapRate);
@@ -47,7 +47,7 @@ pub fn verify_attestation(
         difference <= price_maximum_age, // TODO: make this a constant
         DoubleZeroError::StalePrice
     );
-    msg!("Timestamp Verified Successfully");
+    msg!("Timestamp verified successfully");
 
     Ok(())
 }

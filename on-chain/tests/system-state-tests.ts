@@ -22,7 +22,7 @@ describe("System State Tests", async () => {
 
     it("Should fail to toggle system state if not admin", async () => {
         const newAdmin = anchor.web3.Keypair.generate();
-        await toggleSystemStateAndVerifyFail(program, true, "Unauthorized Admin", newAdmin);
+        await toggleSystemStateAndVerifyFail(program, true, "Unauthorized admin", newAdmin);
     });
 
     it("Should fail to toggle system state if system is already in the desired state", async () => {
