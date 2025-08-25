@@ -82,7 +82,7 @@ docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   --log-opt awslogs-region="$REGION" \
   --log-opt awslogs-stream="$INSTANCE_ID" \
   -v /opt/app/logs:/app/logs \
-  -e ENVIRONMENT="${environment}" -e AWS_REGION="$REGION" -e REDIS_ENDPOINT="$REDIS_ENDPOINT" -e REDIS_PORT="$REDIS_PORT" -e INSTANCE_ID="$INSTANCE_ID" \
+  -e ENVIRONMENT="${environment}" -e AWS_REGION="$REGION" -e REDIS_ENDPOINT="$REDIS_ENDPOINT" -e REDIS_PORT="$REDIS_PORT" -e INSTANCE_ID="$INSTANCE_ID" -e NODE_ENV="${environment}" \
   $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
 if [ $? -eq 0 ]; then
