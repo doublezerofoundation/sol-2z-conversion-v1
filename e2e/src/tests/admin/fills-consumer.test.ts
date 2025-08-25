@@ -9,7 +9,7 @@ export const fillsConsumerTests: Test[] = [
         name: "fills_consumer_set_fail",
         description: "Non-admin should not be able to set a fills consumer",
         execute: async (scenario: FillsConsumerScenario, invalidScenario: FillsConsumerScenario, consumer: string) => {
-            await invalidScenario.setFillsConsumerAndVerifyFail(consumer, "Unauthorized Admin");
+            await invalidScenario.setFillsConsumerAndVerifyFail(consumer, "Unauthorized admin");
         }
     },
     {

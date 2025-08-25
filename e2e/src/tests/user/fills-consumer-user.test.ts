@@ -13,7 +13,7 @@ export const fillsConsumerUserTests: Test[] = [
             // Set admin as consumer
             await scenario.setFillsConsumer(scenario.getAdmin().session.getPublicKey());
 
-            await scenario.consumeFillsAndVerifyFail(100, "User is not authorized to do Dequeue Action");
+            await scenario.consumeFillsAndVerifyFail(100, "User is not authorized to do dequeue action");
         }
     },
     {

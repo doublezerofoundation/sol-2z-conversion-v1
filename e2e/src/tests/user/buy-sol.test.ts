@@ -32,7 +32,7 @@ export const userBuySolTests: Test[] = [
         description: "User should not be able to buy SOL if they are in the deny list",
         execute: async (scenario: BuySolScenario) => {
             await scenario.addUserToDenyList(scenario.getUserPublicKey());
-            await scenario.buySolAndVerifyFail(20, "User is blocked in the DenyList");
+            await scenario.buySolAndVerifyFail(20, "User is blocked in the deny list");
 
             // Reset deny list
             await scenario.removeUserFromDenyList(scenario.getUserPublicKey());

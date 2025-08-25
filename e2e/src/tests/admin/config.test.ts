@@ -7,7 +7,7 @@ export const configUpdateTests: Test[] = [
         name: "config_update_fail",
         description: "Non-admin should not be able to update the config",
         execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
-            await invalidScenario.updateConfigAndVerifyFail("Unauthorized Admin");
+            await invalidScenario.updateConfigAndVerifyFail("Unauthorized admin");
         }
     },
     {
