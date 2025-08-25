@@ -29,12 +29,33 @@ export const getUint64FromBuffer = (buffer: Uint8Array, byteOffset = 0) => {
 /**
  * Helper: parse event logs from transaction metadata
  */
-export async function getTransactionLogs(provider, txSig: string) {
-    const tx = await provider.connection.getTransaction(txSig, {
-        commitment: "confirmed",
-        maxSupportedTransactionVersion: 0,
-    });
-    return tx?.meta?.logMessages || [];
+
+export async function getTransactionLogs(
+    provider,
+    txSig: string,
+    retries = 5,
+    delayMs = 500,
+    commitment: "processed" | "confirmed" | "finalized" = "confirmed"
+): Promise<string[]> {
+    // Ensure the transaction is confirmed before fetching
+    await provider.connection.confirmTransaction(txSig, commitment);
+
+    for (let i = 0; i < retries; i++) {
+        const tx = await provider.connection.getTransaction(txSig, {
+            commitment,
+            maxSupportedTransactionVersion: 0,
+        });
+
+        if (tx?.meta?.logMessages) {
+            return tx.meta.logMessages;
+        }
+
+        if (i < retries - 1) {
+            await delay(delayMs);
+        }
+    }
+
+    throw new Error(`Transaction logs not found for ${txSig}`);
 }
 
 export function findAnchorEventInLogs(logs: string[], idl: any, eventName: string): any | null {
