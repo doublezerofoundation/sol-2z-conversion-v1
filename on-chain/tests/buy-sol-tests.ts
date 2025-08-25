@@ -476,7 +476,7 @@ describe("Buy Sol Tests", () => {
     });
 
     describe("Checking Single Trade Per Slot", async () => {
-        it("A user attempts to two buy sol instruction, should fail", async () => {
+        it("A user attempting to buy sol twice in the same slot, should fail", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
             // Ensure that user has sufficient 2Z
@@ -521,7 +521,7 @@ describe("Buy Sol Tests", () => {
             assert.fail("It was able to do two buy SOL in single slot");
         });
 
-        it("Two different users attempt to two buy sol instruction, should fail", async () => {
+        it("Two different users attempting to buy sol in the same slot, should fail", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
             const tempUserKeyPair = anchor.web3.Keypair.generate();

@@ -18,7 +18,7 @@ import {setFillsConsumerAndVerify} from "./core/test-flow/set-fills-consumer";
 import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
 import {assert} from "chai";
 
-describe("Buy Sol Tests", () => {
+describe("Consume Fills Tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -71,8 +71,8 @@ describe("Buy Sol Tests", () => {
         );
     });
 
-    describe("Unauthorized Dequeue Attempt", async() => {
-        it("User not in authorized Dequeuers should not dequeue fills", async () => {
+    describe("Unauthorized Fill Consumption Attempt", async() => {
+        it("User who is not set as fills consumer should not consume fills", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,
@@ -92,8 +92,8 @@ describe("Buy Sol Tests", () => {
     });
 
 
-    describe("Authorized user doing the dequeue fills", async() => {
-        before("User is added to authorized Dequeuers List", async () => {
+    describe("Authorized user consuming fills", async() => {
+        before("User is set as fills consumer", async () => {
             await setFillsConsumerAndVerify(
                 program,
                 getDefaultKeyPair(),
@@ -113,7 +113,7 @@ describe("Buy Sol Tests", () => {
             assert.equal(fillsRegistryAfter.totalSolPending, 0)
         });
 
-        it("User should be able to do dequeue fills to empty fills registry", async () => {
+        it("User should be able to do consume fills to empty fills registry", async () => {
             await dequeueFillsSuccess(
                 program,
                 DEFAULT_CONFIGS.solQuantity,
@@ -121,7 +121,7 @@ describe("Buy Sol Tests", () => {
             )
         });
 
-        it("User dequeues 1 fill", async () => {
+        it("User consumes 1 fill", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,
@@ -138,7 +138,7 @@ describe("Buy Sol Tests", () => {
             )
         });
 
-        it("User dequeues 5 fills", async () => {
+        it("User consumes 5 fills", async () => {
             for (let i = 0; i < 5; i++) {
                 await buySolSuccess(
                     program,
