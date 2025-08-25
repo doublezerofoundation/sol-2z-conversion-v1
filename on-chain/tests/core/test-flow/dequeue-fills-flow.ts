@@ -2,17 +2,35 @@ import {BN, Program} from "@coral-xyz/anchor";
 import {ConverterProgram} from "../../../target/types/converter_program";
 import {assert, expect} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
-import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
-import {decodeAndValidateReturnData, getUint64FromBuffer, ReturnData} from "../utils/return-data";
+import {FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
+import {
+    decodeAndValidateReturnData,
+    findAnchorEventInLogs,
+    getTransactionLogs,
+    getUint64FromBuffer,
+    ReturnData
+} from "../utils/return-data";
+import {Events} from "../constants";
 
-export async function dequeueFillsSuccess(
+export async function consumeFillsSuccess(
     program: Program<ConverterProgram>,
-    maxSolAmount: BN,
+    maxSolAmount: number,
     signer: Keypair,
+    expectedTokenConsumed: number,
+    expectedFillsConsumed: number,
+    beforeCount: number,
+    expectedFinalCount: number,
+    expectedHeadChange: number
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
-    const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
-    const signature = await program.methods.dequeueFills(maxSolAmount)
+    const fillsRegistryBefore = await getFillsRegistryAccount(program);
+    assert.equal(
+        fillsRegistryBefore.count,
+        beforeCount,
+        "After buy SOL, count should change as expected"
+    );
+
+    const signature = await program.methods.dequeueFills(new BN(maxSolAmount))
         .accounts({
             fillsRegistry: fillsRegistryAddress,
             signer: signer.publicKey
@@ -20,8 +38,8 @@ export async function dequeueFillsSuccess(
         .signers([signer])
         .rpc();
 
-    let resultSolDequeued: number;
-    let resultTokenDequeued: number;
+    let resultSolConsumed: number;
+    let resultTokenConsumed: number;
     let resultFillsConsumed: number;
     // Retry 5 times
     for (let i = 0; i < 5; i++) {
@@ -43,8 +61,8 @@ export async function dequeueFillsSuccess(
                 assert.fail("Decoded return data is too short to contain a u64 value");
             }
 
-            resultSolDequeued = Number(getUint64FromBuffer(decodedReturnData));
-            resultTokenDequeued = Number(getUint64FromBuffer(decodedReturnData, 8));
+            resultSolConsumed = Number(getUint64FromBuffer(decodedReturnData));
+            resultTokenConsumed = Number(getUint64FromBuffer(decodedReturnData, 8));
             resultFillsConsumed = Number(getUint64FromBuffer(decodedReturnData, 16));
             break;
         } catch (error) {
@@ -52,28 +70,30 @@ export async function dequeueFillsSuccess(
         }
     }
 
-    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-    const fills: Fill[] = fillsRegistryBefore.fills;
-    let solDequeued: number = 0;
-    let tokenDequeued: number = 0;
-    let fillsConsumed: number = 0;
-    while (fills.length > 0 &&
-        solDequeued + fills[0].solIn <= Number(maxSolAmount)) {
-        solDequeued += fills[0].solIn;
-        tokenDequeued += fills[0].token2ZOut;
-        fillsConsumed += 1
-        fills.splice(0, 1);
-    }
-
     // Check Output values
-    assert.equal(resultSolDequeued, solDequeued);
-    assert.equal(resultTokenDequeued, tokenDequeued);
-    assert.equal(resultFillsConsumed, fillsConsumed);
-    expect(fillsRegistryAfter.fills).to.deep.equal(fills);
-    assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count - fillsConsumed);
+    assert.equal(resultSolConsumed, maxSolAmount);
+    assert.approximately(resultTokenConsumed, expectedTokenConsumed, 1);
+    assert.equal(resultFillsConsumed, expectedFillsConsumed);
+
+    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+    assert.equal(
+        fillsRegistryAfter.count,
+        expectedFinalCount,
+        "Count should change by correct amount"
+    );
+    assert.equal(
+        fillsRegistryAfter.head,
+        (fillsRegistryBefore.head + expectedHeadChange) % fillsRegistryBefore.maxCapacity,
+        "Head pointer should move by expected amount in circular buffer manner"
+    );
+
+    // assert whether event has been emitted or not
+    const logs = await getTransactionLogs(program.provider, signature);
+    const event = await findAnchorEventInLogs(logs, program.idl, Events.FILLS_CONSUMED);
+    expect(event, "Trade event should be emitted").to.exist;
 }
 
-export async function dequeueFillsFail(
+export async function consumeFillsFail(
     program: Program<ConverterProgram>,
     max_sol_amount: BN,
     signer: Keypair,
@@ -81,17 +101,41 @@ export async function dequeueFillsFail(
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
     try {
-        await program.methods.dequeueFills(max_sol_amount)
+        const signature = await program.methods.dequeueFills(max_sol_amount)
             .accounts({
                 fillsRegistry: fillsRegistryAddress,
                 signer: signer.publicKey
             })
             .signers([signer])
             .rpc();
+        console.log("Transaction signature: ", signature)
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
-        assert.ok(true, "Buy SOL is rejected as expected");
+        assert.ok(true, "Consume fills is rejected as expected");
         return; // Exit early — test passes
     }
-    assert.fail("It was able to do dequeue Fills");
+    assert.fail("It was able to do consume Fills");
+}
+
+export async function clearUpFillsRegistry(
+    program: Program<ConverterProgram>,
+    userKeyPair: Keypair
+) {
+    const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
+
+    const solPending = fillsRegistryBefore.totalSolPending;
+    const tokenPending = fillsRegistryBefore.total2ZPending;
+    const count = fillsRegistryBefore.count;
+    if (count > 0) {
+        await consumeFillsSuccess(
+            program,
+            solPending,
+            userKeyPair,
+            tokenPending,
+            count,
+            count,
+            0,
+            count
+        )
+    }
 }

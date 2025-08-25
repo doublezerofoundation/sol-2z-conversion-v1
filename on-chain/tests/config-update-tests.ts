@@ -5,6 +5,7 @@ import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import {setFillsConsumerAndVerify, setFillsConsumerExpectUnauthorized} from "./core/test-flow/set-fills-consumer";
+import {ErrorMsg} from "./core/constants";
 
 describe("Configuration Registry Update Tests", async () => {
   const program = await setup();
@@ -19,7 +20,7 @@ describe("Configuration Registry Update Tests", async () => {
     await updateConfigsAndVerifyFail(
       program,
       DEFAULT_CONFIGS,
-      "Unauthorized admin",
+      ErrorMsg.UNAUTHORIZED_ADMIN,
       nonAdminUserKeyPair
     )
   });
@@ -57,15 +58,15 @@ describe("Configuration Registry Update Tests", async () => {
   });
 
   it("should fail to update with invalid max discount rate", async () => {
-    // Set max discount rate to 10000
+    // Set max discount rate to 10000.
     await updateConfigsAndVerifyFail(program, {
       ...DEFAULT_CONFIGS,
       maxDiscountRate: new anchor.BN(10001),
     },
-      "Invalid max discount rate"
+        ErrorMsg.INVALID_MAX_DISCOUNT_RATE
     );
 
-    // Revert: Set max discount rate to 5000
+    // Revert: Set max discount rate to 5000.
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
@@ -76,10 +77,20 @@ describe("Configuration Registry Update Tests", async () => {
       maxDiscountRate: new anchor.BN(5000),
       minDiscountRate: new anchor.BN(5001)
     },
-      "Invalid min discount rate"
+      ErrorMsg.INVALID_MAX_DISCOUNT_RATE
     );
 
     // Revert: Set min discount rate to 500
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
+  });
+
+  it("It should be possible to add lower values for max discount rate and min discount rate", async () => {
+    await updateConfigsAndVerify(program, {
+      ...DEFAULT_CONFIGS,
+      maxDiscountRate: new anchor.BN(400),
+      minDiscountRate: new anchor.BN(300)
+    });
+
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
@@ -90,14 +101,14 @@ describe("Configuration Registry Update Tests", async () => {
       ...DEFAULT_CONFIGS,
       coefficient: new anchor.BN(100000001)
     },
-      "InvalidCoefficient"
+      ErrorMsg.INVALID_COEFFICIENT
     );
 
     // Revert: Set coefficient to default
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
-    describe("Set Fills Consumer Tests", async () => {
+    describe("Set fills consumer Tests", async () => {
         it("Non-admin cannot add a fills consumer", async () => {
             const nonAdmin = anchor.web3.Keypair.generate();
             const fillsConsumer = anchor.web3.Keypair.generate().publicKey;

@@ -13,12 +13,11 @@ import {initializeSystemIfNeeded} from "./core/test-flow/system-initialize";
 import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry";
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import { setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
-import {dequeueFillsFail, dequeueFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
+import {clearUpFillsRegistry, consumeFillsFail, consumeFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
 import {setFillsConsumerAndVerify} from "./core/test-flow/set-fills-consumer";
-import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
-import {assert} from "chai";
+import {ErrorMsg} from "./core/constants";
 
-describe("Consume Fills Tests", () => {
+describe("Consume fills tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -29,6 +28,9 @@ describe("Consume Fills Tests", () => {
     let tokenAccountForUser: PublicKey;
     let userKeyPair: Keypair;
     let currentConfigs: SystemConfig;
+    let maxSolAmount: number;
+    let expectedTokenConsumed: number;
+    let expectedFillsConsumed: number;
 
     before("Set up the system", async() => {
         await initializeSystemIfNeeded(program);
@@ -64,15 +66,8 @@ describe("Consume Fills Tests", () => {
         );
     });
 
-    after("Change configs to Default", async () => {
-        await updateConfigsAndVerify(
-            program,
-            DEFAULT_CONFIGS
-        );
-    });
-
-    describe("Unauthorized Fill Consumption Attempt", async() => {
-        it("User who is not set as fills consumer should not consume fills", async () => {
+    describe("Authorization check", async() => {
+        it("Rejects fill consumption by unauthorized user", async () => {
             await buySolSuccess(
                 program,
                 mockTransferProgram,
@@ -82,18 +77,15 @@ describe("Consume Fills Tests", () => {
                 1
             );
 
-            await dequeueFillsFail(
+            await consumeFillsFail(
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "User is not authorized to do dequeue action"
-            )
+                ErrorMsg.UNAUTHORIZED_FILLS_CONSUMER
+            );
         });
-    });
 
-
-    describe("Authorized user consuming fills", async() => {
-        before("User is set as fills consumer", async () => {
+        it("User is set as fills consumer", async () => {
             await setFillsConsumerAndVerify(
                 program,
                 getDefaultKeyPair(),
@@ -101,60 +93,304 @@ describe("Consume Fills Tests", () => {
             )
         });
 
+        it("Clear up the fills registry", async ()=> {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+
+        it("Authorized user should consume the fills", async () => {
+            const bidFactor = 1.1;
+            const askPrice = await buySolSuccess(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                userKeyPair,
+                currentConfigs,
+                bidFactor
+            );
+            maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
+            expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = 1
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumed,
+                expectedFillsConsumed,
+                1,
+                0,
+                1
+            );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+    describe("Emptying fills registry and attempts to consume from it", async () => {
         it("Clear up fills registry", async () => {
-            const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
-
-            await dequeueFillsSuccess(
-                program,
-                new anchor.BN(fillsRegistryBefore.totalSolPending),
-                userKeyPair
-            )
-            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-            assert.equal(fillsRegistryAfter.totalSolPending, 0)
-        });
-
-        it("User should be able to do consume fills to empty fills registry", async () => {
-            await dequeueFillsSuccess(
-                program,
-                DEFAULT_CONFIGS.solQuantity,
-                userKeyPair
-            )
-        });
-
-        it("User consumes 1 fill", async () => {
+            const bidFactor = 1.1;
             await buySolSuccess(
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
                 currentConfigs,
-                1
+                bidFactor
             );
 
-            await dequeueFillsSuccess(
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+
+        it("Fails consume operation if fills registry is empty.", async () => {
+            await consumeFillsFail(
                 program,
                 DEFAULT_CONFIGS.solQuantity,
-                userKeyPair
+                userKeyPair,
+                ErrorMsg.EMPTY_FILLS_REGISTRY
             )
         });
 
-        it("User consumes 5 fills", async () => {
-            for (let i = 0; i < 5; i++) {
-                await buySolSuccess(
-                    program,
-                    mockTransferProgram,
-                    tokenAccountForUser,
-                    userKeyPair,
-                    currentConfigs,
-                    1.1
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+    describe("Edge cases", async () => {
+        it("Fails when max_sol_amount is zero", async () => {
+            await consumeFillsFail(
+                program,
+                new anchor.BN(0),
+                userKeyPair,
+                ErrorMsg.INVALID_MAX_SOL_AMOUNT
+            );
+        });
+
+        it("Consumes less than SOL quantity", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+            const bidFactor = 1.1;
+            const askPrice = await buySolSuccess(
+                program,
+                mockTransferProgram,
+                tokenAccountForUser,
+                userKeyPair,
+                currentConfigs,
+                bidFactor
+            );
+            maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity) - 3 * LAMPORTS_PER_SOL;
+            expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = 1
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumed,
+                expectedFillsConsumed,
+                1,
+                1,
+                0
+            );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+    describe("Batch fills consumption", async() => {
+        it("Should successfully consume 6 fills in single attempt", async () => {
+            const bidFactor = 1.12;
+            const numOfBuySols = 6;
+            const askPrices: number[] = [];
+            for (let i = 0; i < numOfBuySols; i++) {
+                askPrices.push(
+                    await buySolSuccess(
+                        program,
+                        mockTransferProgram,
+                        tokenAccountForUser,
+                        userKeyPair,
+                        currentConfigs,
+                        bidFactor
+                    )
                 );
             }
 
-            await dequeueFillsSuccess(
+            maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity);
+            expectedTokenConsumed = askPrices.reduce((sum: number, askPrice: number): number => {
+                const adjustedPrice = Math.floor(askPrice * bidFactor);
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                return sum + solAmount;
+            }, 0);
+            expectedFillsConsumed = numOfBuySols
+
+            await consumeFillsSuccess(
                 program,
-                new anchor.BN(5 * Number(DEFAULT_CONFIGS.solQuantity)),
-                userKeyPair
-            )
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumed,
+                expectedFillsConsumed,
+                numOfBuySols,
+                0,
+                expectedFillsConsumed
+            );
+        });
+
+        it("Should successfully consume 6 fills in two attempts", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+            const bidFactor = 1.32;
+            const numOfBuySols = 6;
+            const askPrices: number[] = [];
+            for (let i = 0; i < numOfBuySols; i++) {
+                askPrices.push(
+                    await buySolSuccess(
+                        program,
+                        mockTransferProgram,
+                        tokenAccountForUser,
+                        userKeyPair,
+                        currentConfigs,
+                        bidFactor
+                    )
+                );
+            }
+
+            maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity)/2;
+            const attempt1AskPrices = askPrices.slice(0,3);
+            const attempt2AskPrices = askPrices.slice(3,6);
+            const expectedTokenConsumedAttempt1 = attempt1AskPrices.reduce((sum: number, askPrice: number): number => {
+                const adjustedPrice = Math.floor(askPrice * bidFactor);
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                return sum + solAmount;
+            }, 0);
+            expectedFillsConsumed = numOfBuySols/2;
+
+            // attempt 1
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumedAttempt1,
+                expectedFillsConsumed,
+                numOfBuySols,
+                expectedFillsConsumed,
+                expectedFillsConsumed
+            );
+
+            const expectedTokenConsumedAttempt2 = attempt2AskPrices.reduce((sum: number, askPrice: number): number => {
+                const adjustedPrice = Math.floor(askPrice * bidFactor);
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                return sum + solAmount;
+            }, 0);
+
+            // attempt 2
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumedAttempt2,
+                expectedFillsConsumed,
+                numOfBuySols/2,
+                0,
+                expectedFillsConsumed
+            );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+    describe("Partial fills consumption", async() => {
+        const askPrices: number[] = [];
+        let reminderPartialFillSolAmount: number;
+        const bidFactor = 2.12;
+        let finalCount: number;
+
+        it("Partial consume fills", async () => {
+            const numOfBuySols = 5;
+            // planning to consume partial consumption multiplier fills.
+            const partialConsumptionMultiplier = 3.321;
+            for (let i = 0; i < numOfBuySols; i++) {
+                askPrices.push(
+                    await buySolSuccess(
+                        program,
+                        mockTransferProgram,
+                        tokenAccountForUser,
+                        userKeyPair,
+                        currentConfigs,
+                        bidFactor
+                    )
+                );
+            }
+            const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
+            maxSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
+            const partiallyFilledSolAmount = maxSolAmount - Math.floor(partialConsumptionMultiplier) * solQuantity;
+            reminderPartialFillSolAmount = solQuantity - partiallyFilledSolAmount;
+            expectedTokenConsumed =
+                Math.floor(askPrices[0] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
+                Math.floor(askPrices[1] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
+                Math.floor(askPrices[2] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
+                partiallyFilledSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = Math.ceil(partialConsumptionMultiplier);
+            finalCount = numOfBuySols - Math.floor(partialConsumptionMultiplier);
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                Math.floor(expectedTokenConsumed),
+                expectedFillsConsumed,
+                numOfBuySols,
+                finalCount,
+                Math.floor(partialConsumptionMultiplier)
+            );
+        });
+
+        it("Continues to do partial consumption with sol amount < sol quantity", async () => {
+            // Now initial fill entry is in partially dequeued state with reminderPartialFillSolAmount as the sol_amount.
+            // we are going to dequeue 2/3 rd of the reminder sol amount.
+            maxSolAmount = Math.floor(reminderPartialFillSolAmount * 2/3)
+            reminderPartialFillSolAmount -= maxSolAmount;
+            expectedFillsConsumed = 1;
+            expectedTokenConsumed = maxSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                Math.floor(expectedTokenConsumed),
+                expectedFillsConsumed,
+                finalCount,
+                finalCount,
+                0
+            );
+        });
+
+        it("Continues to do partial consumption with sol amount > sol quantity", async () => {
+            // Now initial fill entry is in partially dequeued state with reminderPartialFillSolAmount as the sol_amount.
+            const partialConsumptionMultiplier = 0.65;
+            const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
+            maxSolAmount = reminderPartialFillSolAmount + Math.floor(partialConsumptionMultiplier * solQuantity);
+            expectedFillsConsumed = 2;
+            const partiallyFilledSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
+            expectedTokenConsumed = reminderPartialFillSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL
+                + partiallyFilledSolAmount * Math.floor(askPrices[4] * bidFactor) / LAMPORTS_PER_SOL;
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                Math.floor(expectedTokenConsumed),
+                expectedFillsConsumed,
+                finalCount,
+                1,
+                1
+            );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
         });
     });
 });

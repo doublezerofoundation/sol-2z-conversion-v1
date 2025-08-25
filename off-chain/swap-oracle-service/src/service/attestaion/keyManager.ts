@@ -31,7 +31,7 @@ export class KeyManager implements IKeyManager {
 
     private async loadKeysFromParameterStore(): Promise<Uint8Array> {
         const params:GetParameterCommandInput = {
-            Name: `/ml/oracle-pricing-key`,
+            Name: `/double-zero/oracle-pricing-key`,
             WithDecryption: true
         }
 
@@ -51,7 +51,7 @@ export class KeyManager implements IKeyManager {
 
     private async loadKeyPairSignerFromParameterStore(): Promise<KeyPairSigner> {
         const params:GetParameterCommandInput = {
-            Name: `/ml/oracle-pricing-key`,
+            Name: `/double-zero/oracle-pricing-key`,
             WithDecryption: true
         }
 

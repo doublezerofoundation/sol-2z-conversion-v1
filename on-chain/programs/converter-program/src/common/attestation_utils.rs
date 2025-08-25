@@ -44,7 +44,7 @@ pub fn verify_attestation(
     // If the difference is greater than the maximum age, the price is either
     // stale or the timestamp is in the future (beyond acceptable clock skew)
     require!(
-        difference <= price_maximum_age, // TODO: make this a constant
+        difference <= price_maximum_age,
         DoubleZeroError::StalePrice
     );
     msg!("Timestamp verified successfully");

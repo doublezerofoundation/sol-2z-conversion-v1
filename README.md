@@ -1,54 +1,102 @@
-# DoubleZero Fee Conversion System #
+# DoubleZero Fee Conversion System - Deployment Guide
 
-This repository contains on-chain and off-chain implementation for DoubleZero Fee Conversion System on solana. \
-This system consists of following components. 
+## Overview
+The DoubleZero Fee Conversion System consists of both on-chain (Solana blockchain) and off-chain (AWS cloud) components. This guide provides step-by-step instructions to build and deploy the complete system.
 
-1) Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
-2) Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality. 
-It provides CPIs which is used by converter program to simulate actual transfer.
-3) Admin CLI - CLI interface for admins to control the system.
-4) User CLI - CLI interface for user to interact with the system.
-5) Common CLI - Includes common functionalities for Admin CLI & User CLI.
-6) E2E Test Suite - End-to-end tests for the system using the solana local test validator.
+This system consists of following components.
 
+1. On-chain programs
+   * Converter Program - Core On-chain program written in anchor, to handle the functionalities of the system.
+   * Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality.
+     It provides CPIs which is used by converter program to simulate actual transfer.
+2. Off-chain components
+   * Swap-oracle-pricing-service
+   * Indexer-service
+   * Matrix Api
+3. CLI Tools
+   * Admin CLI - CLI interface for admins to control the system.
+   * User CLI - CLI interface for user to interact with the system.
+4. Testing
+   * E2E Test Suite - End-to-end tests for the system using the solana local test validator.
 
-### Setup Dependencies
+## System Dependencies
 
-#### Solana CLI - 2.2.20
-```sh
+Ensure you have the following software versions installed:
+
+### Core Dependencies
+- **Node.js**: v22.17.0
+- **Rust**: 1.88.0
+- **Solana CLI**: 2.2.20
+- **Anchor Framework**: 0.31.1
+- **TypeScript**: ^5.9.2
+- **Python**: 3.12.3
+
+### Infrastructure Tools
+- **Terraform**: v1.12.2
+- **AWS CLI**: v2.18.12
+- **Docker**: v28.3.3
+- **jq**: 1.7
+
+### Installation Commands
+```bash
+# Solana CLI
 sh -c "$(curl -sSfL https://release.anza.xyz/v2.2.20/install)"
-```
-#### Anchor - 0.31.1
-Make sure you have avm (Anchor Version Manager) installed. Choose this version using this command.
-```sh
+
+# Anchor (requires avm - Anchor Version Manager)
 avm use 0.31.1
-```
 
-#### Rust - 1.88.0
-Make sure you have rustc installed. Choose this version using this command.
-```sh
+# Rust
 rustup default 1.88.0
-```
 
-## Set Up Local Validator
-Make sure to update the Solana CLI config to localhost.
-```sh
+# Configure Solana for local development
 solana config set -ul
 ```
-If you wish to deploy the program in the local net, If the validator is not already running, run the command below 
-```sh
-solana-test-validator
+
+## Main Provision Script Usage
+```bash
+./provision.sh [OPTIONS]
 ```
 
-## Subscribe to Solana Logs
-If you need to check solana logs, run the following command in a separate terminal.
-```sh
+##### Available Workspaces (`-w, --workspace`):
+- `deployment` - Deploy infrastructure components
+- `on-chain` - Deploy on-chain programs
+- `admin-cli` - Build admin CLI
+- `user-cli` - Build user CLI
+- `integration-cli` - Build integration CLI
+- `mock-double-zero-program` - Deploy mock program
+- `run-tests` - Execute test suites
+
+## Phase 1: On-Chain Component Deployment
+
+### 1.1 Environment Setup
+
+#### Configure Local Validator
+```bash
+# Start local validator (if not running)
+solana-test-validator
+
+# Subscribe to logs (separate terminal)
 solana logs -ul
 ```
-### Setting Up the Config Files
-Create a `config.json` file at the root directory. Both Admin CLI and User CLI refer to this config file.\
 
-The file should contain the following items.
+#### Generate Keypairs
+```bash
+# Create keys directory
+mkdir -p on-chain/.keys
+mkdir -p mock-double-zero-program/.keys
+
+# Generate keypair for converter program
+solana-keygen new -o on-chain/.keys/converter-program-keypair.json
+
+# Generate keypair for mock double zero program
+solana-keygen new -o mock-double-zero-program/.keys/mock-double-zero-program-keypair.json
+
+```
+
+### 1.2 Configuration Setup
+
+Create `config.json` at the project root with the following structure:
+
 ```json
 {
   "rpc_url": "http://127.0.0.1:8899",
@@ -65,27 +113,23 @@ The file should contain the following items.
   "min_discount_rate": 500
 }
 ```
-- `rpc_url`: The `Deploying cluster` from last step.
-- `program_id`: Public key of the anchor program.
-- `double_zero_program_id`: Public key of the Double Zero Program.
-- `skip_preflight`: Setting this to `true` will disable transaction preflight checks (which normally simulate the transaction and catch errors before sending) and enable error logging in the database.
-- `oracle_pubkey`: Public key of the oracle program.
-- `sol_quantity`: Quantity of SOL to be converted in a single transaction (in Lamports).
-- `slot_threshold`: Slot threshold for storing the trade history.
-- `price_maximum_age`: Maximum age of the oracle price.
-- `coefficient`: Coefficient of the discount calculation curve in basis points. (0-100000000) *see note below*
-- `max_discount_rate`: Maximum discount rate in basis points. (0-10000)
-- `min_discount_rate`: Minimum discount rate in basis points. (0-10000)
 
-### Note
-*The formula for calculating the `coefficient` is:*
+#### Key Configuration Parameters:
+- **program_id**: Public key of the main converter program
+- **double_zero_program_id**: Public key of the mock transfer program
+- **sol_quantity**: Amount of SOL per transaction (in Lamports)
+- **coefficient**: Discount calculation curve coefficient (see formula below)
+
+#### Coefficient Calculation Formula:
 
 $$
 \gamma = \frac{D_{max} - D_{min}}{N} * 10000
 $$
 
-- `N`: Desired number of slots between two trades where the discount rate will go from `D_{min}` to `D_{max}`.
-- Multiply the result by 10000 to preserve the precision.
+Where:
+- N: Desired slots between trades for discount rate change
+- D_max: Maximum discount rate (basis points)
+- D_min: Minimum discount rate (basis points)
 
 Example:
 ```
@@ -101,292 +145,314 @@ $$
 \gamma * 10000 = 4500
 $$
 
-# DEPLOYMENT
 
-## Deploy the Anchor Program
-### Keypair for the programs
-Create "./keys" directory\
-Generate keypair for both the programs and copy keypair into the `.keys` directory.
 
-### Two ways of Deploying
-There are two ways to deploy your application.
-- Manual deployment using anchor CLI
-- Using `build_and_deploy.sh` script
 
-### Manual Deployment
-Use the anchor CLI commands to build and deploy the program.
-There are multiple workspaces defined in the `Anchor.toml` file. You can choose to deploy any of them.
-You can mention required program name and keypair file in the command.
 
-```sh
-anchor build && anchor deploy --program-name PROGRAM_NAME --program-keypair ..keys/KEYPAIR.json
+### 1.3 Deploy On-Chain Programs
 
-eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
+#### Option A: Manual Deployment
+```bash
+# Deploy converter program
+anchor build && anchor deploy --program-name converter-program --program-keypair <keypair file path>
+
+# Deploy mock double zero program
+anchor build && anchor deploy --program-name mock-double-zero-program --program-keypair <keypair file path>
 ```
 
-### Using `build_and_deploy.sh` script
-You can also use the `build_and_deploy.sh` script to build and deploy the program. This script will build the program and
-deploy it to the environment.
-
-#### Options
-- `-h, --help` Display this help message and exit.
-- `--w <value>` Specify the workspace to process. Available workspaces
-  - on-chain 
-  - admin-cli
-  - mock-double-zero-program
-  - user-cli
-  - run-tests
-- `--restart-validator` If it is on-chain local deployment, then start/ restart the validator.
-- `--m <value>` Set the mode of operation.
-  - For on-chain workspace and run-tests
-    - For On-chain workspace & Mock Double Zero Program
-        - `deploy_only`: Only deploy the specified workspace(s).
-        - `build_only`: Only build the specified workspace(s).
-        - `build_and_deploy`: Build and then deploy the specified workspace(s).
-    - For run-tests workspace
-      - `unit`: Running unit tests.
-      - `e2e`: Running e2e tests.
-  - For CLI workspaces, there are no mode
-
-#### Example Usage
-Build and Deploy a Single Workspace
-```sh
+#### Option B: Automated Deployment
+```bash
+# Deploy on-chain workspace
 ./provision.sh -w on-chain --restart-validator
+
+# Deploy mock program
 ./provision.sh -w mock-double-zero-program --restart-validator
-./provision.sh -w run-tests --mode unit
+```
+Note: Only use `--restart-validator` flag for local test environments. For devnet or mainnet deployments, omit this flag as you cannot restart public network validators.
+
+### 1.4 Export Private Key
+```bash
+# Export your wallet private key as environment variable
+export PRIVATE_KEY=226,222,1,3...
+```
+**Note**: Ensure this account has sufficient SOL for transactions.
+
+## Phase 2: Off-Chain Component Deployment
+
+## 2.1 Configuration Management
+
+Off-chain components use the `config` npm module where the environment name and config file name must match exactly.
+
+#### Environment-Config Mapping:
+- Environment: `dev1-test` → Config file: `dev1-test.json`
+- Environment: `production` → Config file: `production.json`
+
+## 2.2 Component Configurations
+
+#### Indexer Service Configuration
+Create config file: `config/indexer/{env-name}.json`
+```json
+{
+  "RPC_URL": "https://api.devnet.solana.com",
+  "PROGRAM_ID": "program_id",
+  "CONCURRENCY": 8,
+  "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:{{AWS_REGION}}:{{ACCOUNT_ID}}:doublezero-{{ENV}}-app-errors"
+}
 ```
 
-
-# Off Chain Deployment Guide
-## Prerequisites
-Before starting the deployment process, ensure you have the following dependencies installed:
-- **Node.js v22.17.0** and npm package manager
-- **Terraform v1.12.2** (for infrastructure as code)
-- **jq-1.7** (for JSON processing)
-- **TypeScript ^5.9.2** compiler
-- **Python 3.12.3** (for scripting support)
-- **AWS CLI v2.18.12** configured with appropriate credentials
-- **Docker version 28.3.3** (for containerization)
-
-
-## Deployment Architecture
-The deployment consists of four main components:
-1. **Account Resources** - AWS account-level infrastructure
-2. **Regional Resources** - Region-specific infrastructure
-3. **Application Deployment** - Publishing artifacts and upgrading applications
-4. **Environment Creation** - Environment-specific resources
-
-
-## Step-by-Step Deployment Process
-### 1. Account Resource Creation
-Create foundational AWS account-level resources:
-``` bash
-./provision.sh -w deployment -sc account -a create --region us-west-1
+#### Swap Oracle Service Configuration
+Create config file: `config/swap-oracle/{env-name}.json`
+```json
+{
+  "applicationPort": 8080,
+  "pricingServices": [
+    {
+      "name": "pyth",
+      "type": "pyth", 
+      "endpoint": "https://hermes.pyth.network/",
+      "priceFeedIds": {
+        "SOL/USD": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        "2Z/USD": "0x879551021853eec7a7dc827578e8e69da7e4fa8148339aa0d3d5296405be4b1a"
+      }
+    }
+  ]
+}
 ```
-**Purpose:** Sets up IAM roles, and shared resources needed across all regions and environments.
-### 2. Regional Resource Creation
-Create region-specific infrastructure components:
-``` bash
-./provision.sh -w deployment -sc regional -a create --region us-west-1
+
+## 2.3 Infrastructure Deployment Sequence
+
+###  Initial Setup (One-Time)
+
+Before create any resources, configure the AWS foundation:
+
+```bash
+# Navigate to the script directory
+cd deployment/script
+
+# Run one-time setup for your target region
+./one_time_setup.sh us-east-1
 ```
-**What this creates:**
-- VPC and networking components
+**What this does:**
+- Creates Terraform state S3 bucket: `doublezero-terraform-state-{account-id}`
+- Configures bucket security settings (versioning, KMS encryption, access blocking)
+- Sets up IAM policies and resource tagging for governance
+
+### Deployment Sub-Commands (`-sc, --sub-command`):
+When using `--workspace deployment`, specify one of:
+- `account` - Manage account-level resources
+- `regional` - Manage regional resources
+- `environment` - Manage environment-specific resources
+- `release` - Manage releases and artifacts
+
+##### Available Actions (`-a, --action`):
+- `create` - Create new resources
+- `destroy` - Destroy existing resources
+- `publish-artifacts` - Build and publish artifacts
+- `upgrade` - Upgrade existing environment with new release tag
+- `publish-and-upgrade` - Publish artifacts then upgrade environment
+- `help` - Show command-specific help
+
+##### Additional Options:
+- `--region` - AWS region (e.g., `us-east-1`, `us-west-1`, `us-west-2`)
+- `--env` - Environment name (e.g., `dev1-test`, `staging`, `production`)
+- `--release-tag` - Release tag for artifacts (e.g., `dev1-test-v5.2.1`, `v1.0.0`)
+- `-h, --help` - Show help information
+
+### Step 1: Create Account-Level Resources
+```bash
+./provision.sh -w deployment -sc account -a create --region <region>
+```
+**Creates**: IAM roles, shared resources across all regions/environments
+
+### Step 2: Create Regional Resources
+```bash
+./provision.sh -w deployment -sc regional -a create --region <region>
+```
+**Creates**:
+- VPC and networking
 - Security groups
 - Load balancers
 - ECR repositories
 - CloudWatch log groups
 
-### Solana Keypair Management
-The deployment includes a Python utility for managing Solana keypairs:
-#### Installation
-``` bash
+#### Solana Keypair Management
+```bash
+# Install Python dependencies
 pip install solders base58
-```
-### Usage
-#### Generate New Keypair
-``` bash
+
+# Generate new keypair
 cd deployment/script
 python3 script.py
-```
-#### Load Existing Keypair
-``` bash
+
+# Or load existing keypair
 python3 script.py <keypair.json>
 ```
-**Features:**
-- Generates secure Solana keypairs
-- Base58 encoding for AWS Parameter Store integration
-- JSON file support for existing keypairs
-### Parameter Store Integration
-Update AWS Parameter Store with the Base58 encoded secret key for secure storage and retrieval.
 
-### 3. Publish Artifacts
-Build and publish application artifacts to ECR:
-``` bash
-./provision.sh -w deployment -sc release -a publish-artifacts --region us-west-1 --release-tag dev1-test-v5.2.1
+Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key.
+
+This keypair is used for signing price data in the swap-oracle service.
+
+### Step 3: Artifact Publishing
+
+#### Publish Application Artifacts
+```bash
+./provision.sh -w deployment -sc release -a publish-artifacts --region <region> --release-tag <release-tag>
 ```
-**What this does:**
+**Actions**:
 - Builds Docker images for all services
-- Tags images with the specified release tag
-- Pushes images to ECR repositories
+- Tags images with release tag
+- Pushes to ECR repositories
 - Creates deployment artifacts
 
-### 4. Environment Creation
-Create environment-specific infrastructure and deploy applications:
-``` bash
-./provision.sh -w deployment -sc environment -a create --env dev1-test --region us-west-1 --release-tag dev1-test-v5.2.1
+### Step 4: Environment Creation
+
+#### Deploy Environment with Artifacts
+```bash
+./provision.sh -w deployment -sc environment -a create --env <env> --region <region> --release-tag <release-tag>
 ```
-**What this creates:**
-- ECS/EC2 instances for the environment
-- Environment-specific databases
+**Creates**:
+- ECS/EC2 instances
+- Environment databases
 - Application load balancers
 - Auto Scaling Groups
-- Environment configuration
 - Deploys applications with specified release tag
 
-### 5. Application Upgrade
-Upgrade existing environment with new release:
-``` bash
-./provision.sh -w deployment -sc release -a publish-and-upgrade --env dev1-test --region us-west-1 --release-tag dev1-test-v4.2.1
+## Phase 3: System Operations
+
+### 3.1 Application Upgrades
+
+#### Upgrade Existing Environment
+```bash
+./provision.sh -w deployment -sc release -a publish-and-upgrade --env <env> --region <region> --release-tag <release-tag>
 ```
-**What this does:**
-- Publishes new artifacts
-- Updates launch templates
-- Triggers rolling deployment
-- Validates deployment success
+**Process**:
+1. Publishes new artifacts
+2. Updates launch templates
+3. Triggers rolling deployment
+4. Validates deployment success
 
-## Additional Operations
-### Environment Destruction
-To tear down an environment:
-``` bash
-./provision.sh -w deployment -sc environment -a destroy --env dev1-test --region us-west-1 --release-tag dev1-test-v4.2.1
+### 3.2 Environment Management
+
+#### Environment Cleanup
+```bash
+# Destroy environment
+./provision.sh -w deployment -sc environment -a destroy --env <env> --region <region> --release-tag <release-tag>
+
+# Destroy regional resources  
+./provision.sh -w deployment -sc regional -a destroy --region <region>
 ```
-### Regional Resource Cleanup
-To destroy regional resources:
-``` bash
-./provision.sh -w deployment -sc regional -a destroy --region us-west-1
-```
-## Deployment Flow Summary
-``` mermaid
-graph TD
-    A[Account Resources] --> B[Regional Resources]
-    B --> C[Publish Artifacts]
-    C --> D[Environment Creation]
-    D --> E[Application Running]
-    E --> F[Upgrade Application]
-    F --> E
-```
+# Phase 4: CLI Usage
 
+## 4.1 Admin CLI Operations
 
+The Admin CLI provides comprehensive system management capabilities. All commands should be run from the project root directory.
 
+### Initial System Setup
 
-
-### Export the Private Key
-To use CLI, It is essential to export the private key\
-To set up the private key as an environment variable, run:
-
-```sh
-export PRIVATE_KEY=MAIN_PRIVATE_KEY
-
-eg: export PRIVATE_KEY=226,222,1,3 ...
-```
-NOTE: Ensure this account is prefunded with adequate SOL
-
-## Admin CLI
-
-### Initialize the system 
-This command Initializes the system by creating the configuration registry, fills_registry, deny_list_registry and program state account.
-```sh
+#### 1. Initialize the System
+Initializes the system by creating the configuration registry, fills_registry, deny_list_registry and program state account.
+```bash
 cargo run -p admin-cli -- init
 ```
- 
-### View Configuration
+
+### Configuration Management
+
+#### 1. View Configuration
 Displays current configuration registry contents.
-```sh
+```bash
 cargo run -p admin-cli -- view-config
 ```
 
-### Update Configuration
-Updates the configuration of the system.
-```sh
+#### 2. Update Configuration
+Updates the configuration of the system. The command reads the `config.json` file and updates the configuration according to the values in the file.
+```bash
 cargo run -p admin-cli -- update-config
 ```
 
-The command reads the `config.json` file and updates the configuration of the system according to the values in the file.
+### System State Management
 
-### View System State
+#### 1. View System State
 Displays current system state.
-```sh
+```bash
 cargo run -p admin-cli -- view-system-state
 ```
 
-### Activate or Pause the System
-This command activates or pauses the system. If the system is paused, no new trades can be executed.
-```sh
+#### 2. Activate or Pause System
+Controls system operation state. When paused, no new trades can be executed.
+```bash
+# Activate the system
 cargo run -p admin-cli -- toggle-system-state --activate
+
+# Pause the system
 cargo run -p admin-cli -- toggle-system-state --pause
 ```
 
-### Set Admin
+### Authority Management
+
+#### 1. Set Admin
 Sets the admin of the system. Only the program deployer can set/change the admin.
-```sh
+```bash
 cargo run -p admin-cli -- set-admin -a <ADMIN_ACCOUNT>
 ```
+- `-a`: Admin account public key
 
-- `-a`: Admin account public key.
-
-### Set Deny Authority
+#### 2. Set Deny Authority
 Sets the deny authority of the system.
-```sh
+```bash
 cargo run -p admin-cli -- set-deny-authority -a <DENY_AUTHORITY_ACCOUNT>
 ```
+- `-a`: Deny authority account public key
 
-- `-a`: Deny authority account public key.
-
-### Set Fills Consumer
-Sets fill consumer public key in the configuration registry
-```sh
+#### 3. Set Fills Consumer
+Sets fill consumer public key in the configuration registry.
+```bash
 cargo run -p admin-cli -- set-fills-consumer -a <FILL_CONSUMER_ACCOUNT>
 ```
+- `-a`: Fill consumer's public key
 
-- `-a`: Fill consumer's public key.
+### Deny List Management
 
-
-### Add to DenyList
-Adds an address to the deny list registry
-```sh
+#### 1. Add to Deny List
+Adds an address to the deny list registry.
+```bash
 cargo run -p admin-cli -- add-to-deny-list -a <USER_ACCOUNT>
 ```
+- `-a`: User account public key
 
-- `-a`: User account public key.
- 
-### Remove From DenyList
-Removes an address from the deny list registry
-```sh
+#### 2. Remove from Deny List
+Removes an address from the deny list registry.
+```bash
 cargo run -p admin-cli -- remove-from-deny-list -a <USER_ACCOUNT>
 ```
+- `-a`: User account public key
 
-- `-a`: User account public key.
- 
-### View DenyList
-Displays all addresses in the deny list registry
-```sh
-cargo run -p admin-cli -- view-deny-list 
+#### 3. View Deny List
+Displays all addresses in the deny list registry.
+```bash
+cargo run -p admin-cli -- view-deny-list
 ```
 
-### View Fill Registry
-View Fills Registry, which tracks individual fill records and overall aggregate statistics
-```sh
-cargo run -p admin-cli -- view-deny-list 
+### Registry Monitoring
+
+#### 1. View Fill Registry
+Views the Fills Registry, which tracks individual fill records and overall aggregate statistics.
+```bash
+cargo run -p admin-cli -- view-fill-registry
 ```
 
-### Init Mock Transfer Program
-Initializes Mock Transfer Program Accounts
+
+
+
+---
+## Mock Token Program
+### Init Mock Token Program
+Initializes Mock token Program Accounts
 ```sh
 cargo run -p admin-cli -- init-mock-program
 ```
 
 ### Airdrop to Mock Vault
-Sends specified amount of SOL to Mock Vault
+Sends a specified amount of SOL to Mock Vault
 ```sh
 cargo run -p admin-cli -- airdrop-to-mock-vault -a <AMOUNT>
 ```
@@ -394,7 +460,7 @@ cargo run -p admin-cli -- airdrop-to-mock-vault -a <AMOUNT>
 
 
 ### Mock Token Mint
-Mints Mock 2Z token to specified address.
+Mints Mock 2Z token to a specified address.
 ```sh
 cargo run -p admin-cli -- mock-token-mint -a <AMOUNT> -t <DESTINATION_TOKEN_ACCOUNT>
 ```
@@ -409,24 +475,28 @@ cargo run -p admin-cli -- mint-to-mock-protocol-treasury -a <AMOUNT>
 ```
 - `-a`: 2Z Token amount to be minted.
 
+---
 
-## User CLI
+
+### 4.2 User CLI Operations
 
 ### Get Current Price
 Calculates the current discount rate and estimates the ask price (in 2Z tokens) for the given SOL quantity.
-```sh
+
+```bash
 cargo run -p user-cli -- get-price
 ```
 
 ### Get Current Quantity
 Displays the current SOL quantity that can be purchased by spending 2Z tokens.
-```sh
+```bash
 cargo run -p user-cli -- get-quantity
 ```
 
 ### Buy SOL
 Initiates SOL purchase. Trade executes at bid price if ask price ≤ bid price; otherwise cancels.
-```sh
+
+```bash
 cargo run -p user-cli -- buy-sol -p <bid_price> -f <SOURCE_ACCOUNT>
 ```
 
@@ -435,57 +505,77 @@ cargo run -p user-cli -- buy-sol -p <bid_price> -f <SOURCE_ACCOUNT>
 
 ### Get Fills Info
 View Fills Registry, which tracks individual fill records and overall aggregate statistics
-```sh
+```bash
 cargo run -p user-cli -- get-fills-info 
 ```
 
 ## Integration CLI
 ### Dequeue Fills
 Dequeues fills up to specified SOL amount. Returns total SOL and 2Z amounts processed. Only callable by authorized integrating contracts.
-```sh
+
+```bash
 cargo run -p integration-cli -- dequeue-fills -a <max_sol_amount>
 ```
 
 - `-a`: Maximum SOL amount to dequeue in this operation
+## OnChain Testing
 
-## E2E Test Suite
-
-### Set up the Test Environment
-Install the dependencies for the e2e test suite.
-```sh
-cd e2e
-npm install
+### Unit Tests
+```bash
+./provision.sh -w run-tests --test-type unit
 ```
 
-### Run the Tests
-Run the tests using the `test_runner.sh` script with the following command.
-```sh
-./test_runner.sh --test-type <test-type>
+### End-to-End Tests
+```bash
+./provision.sh -w run-tests --test-type e2e
 
-# eg: 
-./test_runner.sh --test-type unit
+# Or manual setup
+cd e2e
+npm install
 ./test_runner.sh --test-type e2e
 ```
 
-- `test-type`: Type of tests to run.
-  - `unit`: Running unit tests.
-  - `e2e`: Running e2e tests.
+## Deployment Flow Diagram
 
-The tests are run using the solana local test validator. The `test_runner.sh` script starts a local validator for each test script provided in the config file.\
-- To add a new e2e test suite, add the test script to the `package.json` file in the `e2e` directory.
-- To add a new unit test, add the test script to the `Anchor.toml` file in the `on-chain` directory.
+```mermaid
+graph TD
+    A[Install Dependencies] --> B[Setup On-Chain Environment]
+    B --> C[Configure config.json]
+    C --> D[Deploy On-Chain Programs]
+    D --> E[Create AWS Account Resources]
+    E --> F[Create Regional Resources]
+    F --> G[Configure Off-Chain Components]
+    G --> H[Publish Artifacts]
+    H --> I[Create Environment]
+    I --> J[Initialize System via Admin CLI]
+    J --> K[System Ready for Users]
+    K --> L[Upgrade Process]
+    L --> K
+```
 
-Afterward, add the test script to the `test_runner.sh` script.
+## Troubleshooting
 
-## Handling Migrations
+### Common Issues:
+1. **Keypair Issues**: Ensure keypairs are properly generated and funded
+2. **Configuration Mismatches**: Verify environment names match config file names exactly
+3. **AWS Permissions**: Ensure AWS CLI has proper permissions for Terraform operations
+4. **Version Conflicts**: Use exact versions specified in dependencies
+
+### Support:
+- Check Solana logs: `solana logs -ul`
+- Review AWS CloudWatch logs for off-chain components
+- Validate configurations before deployment
+- Test in local environment before deploying to AWS
+
+## Migration Support
 
 1. **Define new state structs**  
    Create new structs for your upgraded accounts (e.g., `NewConfigurationRegistry`, `NewProgramState`) and update the program code to use them.
 
 2. **Add new seed definitions**  
    Create a new file under `on-chain/programs/converter-program/src/common/seeds/`, similar to `seed_prefix_v1.rs`, and define your new seeds there.
-  - If an account needs changes, introduce a new seed prefix.
-  - If the account is unchanged, reuse the existing seed.
+- If an account needs changes, introduce a new seed prefix.
+- If the account is unchanged, reuse the existing seed.
 
 3. **Update default seed profile**  
    Modify `on-chain/programs/converter-program/src/common/seeds/seed_prefixes.rs` to point the default profile to the new version.

@@ -49,7 +49,7 @@ export function findAnchorEventInLogs(logs: string[], idl: any, eventName: strin
                 return event;
             }
         } catch (err) {
-            // Not an event or decode failed
+            // Not an event or decode failed.
         }
     }
     return null;

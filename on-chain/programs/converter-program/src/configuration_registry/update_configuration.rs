@@ -56,15 +56,20 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
             self.configuration_registry.coefficient = coefficient;
         }
         if let Some(max_discount_rate) = input.max_discount_rate {
-            if max_discount_rate > 10000 || max_discount_rate < self.configuration_registry.min_discount_rate {
-                return err!(DoubleZeroError::InvalidMaxDiscountRate);
-            }
+            require!(max_discount_rate <= 10_000, DoubleZeroError::InvalidMaxDiscountRate);
+
+            let min_rate = input.min_discount_rate
+                .unwrap_or(self.configuration_registry.min_discount_rate);
+
+            require!(max_discount_rate > min_rate, DoubleZeroError::InvalidMaxDiscountRate);
             self.configuration_registry.max_discount_rate = max_discount_rate;
         }
         if let Some(min_discount_rate) = input.min_discount_rate {
-            if min_discount_rate > self.configuration_registry.max_discount_rate {
-                return err!(DoubleZeroError::InvalidMinDiscountRate);
-            }
+
+            let max_rate = input.max_discount_rate
+                .unwrap_or(self.configuration_registry.max_discount_rate);
+
+            require!(min_discount_rate < max_rate, DoubleZeroError::InvalidMinDiscountRate);
             self.configuration_registry.min_discount_rate = min_discount_rate;
         }
         Ok(())
