@@ -8,80 +8,6 @@
   },
   "instructions": [
     {
-      "name": "add_dequeuer",
-      "discriminator": [
-        53,
-        130,
-        22,
-        119,
-        21,
-        220,
-        11,
-        234
-      ],
-      "accounts": [
-        {
-          "name": "configuration_registry",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  121,
-                  115,
-                  116,
-                  101,
-                  109,
-                  95,
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103,
-                  95,
-                  118,
-                  49
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "program_state",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  116,
-                  97,
-                  116,
-                  101,
-                  95,
-                  118,
-                  49
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "admin",
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "new_pubkey",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
       "name": "add_to_deny_list",
       "discriminator": [
         186,
@@ -844,80 +770,6 @@
       "args": []
     },
     {
-      "name": "remove_dequeuer",
-      "discriminator": [
-        104,
-        114,
-        245,
-        44,
-        116,
-        211,
-        172,
-        87
-      ],
-      "accounts": [
-        {
-          "name": "configuration_registry",
-          "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  121,
-                  115,
-                  116,
-                  101,
-                  109,
-                  95,
-                  99,
-                  111,
-                  110,
-                  102,
-                  105,
-                  103,
-                  95,
-                  118,
-                  49
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "program_state",
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  115,
-                  116,
-                  97,
-                  116,
-                  101,
-                  95,
-                  118,
-                  49
-                ]
-              }
-            ]
-          }
-        },
-        {
-          "name": "admin",
-          "signer": true
-        }
-      ],
-      "args": [
-        {
-          "name": "remove_pubkey",
-          "type": "pubkey"
-        }
-      ]
-    },
-    {
       "name": "remove_from_deny_list",
       "discriminator": [
         101,
@@ -1251,6 +1103,80 @@
       ]
     },
     {
+      "name": "set_fills_consumer",
+      "discriminator": [
+        145,
+        84,
+        106,
+        54,
+        206,
+        120,
+        35,
+        222
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_consumer",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
       "name": "toggle_system_state",
       "discriminator": [
         153,
@@ -1537,29 +1463,16 @@
       ]
     },
     {
-      "name": "DequeuerAdded",
+      "name": "FillsConsumerChanged",
       "discriminator": [
-        154,
-        40,
-        109,
-        32,
-        102,
-        242,
-        93,
-        178
-      ]
-    },
-    {
-      "name": "DequeuerRemoved",
-      "discriminator": [
-        66,
-        54,
-        251,
-        22,
-        102,
-        22,
-        229,
-        234
+        9,
+        132,
+        35,
+        8,
+        29,
+        152,
+        169,
+        152
       ]
     },
     {
@@ -1645,27 +1558,27 @@
     {
       "code": 6000,
       "name": "UserInsideDenyList",
-      "msg": "User is blocked in the DenyList"
+      "msg": "User is blocked in the deny list"
     },
     {
       "code": 6001,
       "name": "UnauthorizedAdmin",
-      "msg": "Unauthorized Admin"
+      "msg": "Unauthorized admin"
     },
     {
       "code": 6002,
       "name": "InvalidAttestation",
-      "msg": "Provided Attestation is Invalid"
+      "msg": "Provided attestation is invalid"
     },
     {
       "code": 6003,
       "name": "InvalidOraclePublicKey",
-      "msg": "Oracle Public Key is Invalid"
+      "msg": "Oracle public key is invalid"
     },
     {
       "code": 6004,
       "name": "AttestationVerificationError",
-      "msg": "Provided Attestation is not Authentic"
+      "msg": "Provided attestation is not authentic"
     },
     {
       "code": 6005,
@@ -1675,7 +1588,7 @@
     {
       "code": 6006,
       "name": "InvalidSolQuantity",
-      "msg": "Invalid sol quantity"
+      "msg": "Invalid SOL quantity"
     },
     {
       "code": 6007,
@@ -1715,7 +1628,7 @@
     {
       "code": 6014,
       "name": "InvalidTimestamp",
-      "msg": "Invalid Timestamp"
+      "msg": "Invalid timestamp"
     },
     {
       "code": 6015,
@@ -1725,67 +1638,67 @@
     {
       "code": 6016,
       "name": "StalePrice",
-      "msg": "Provided Attestation is not Authentic"
+      "msg": "Provided attestation is outdated"
     },
     {
       "code": 6017,
-      "name": "MaxAuthorizedDequeuersReached",
-      "msg": "Maximum number of authorized dequeuers reached"
-    },
-    {
-      "code": 6018,
       "name": "DenyListFull",
       "msg": "Deny list is full"
     },
     {
-      "code": 6019,
+      "code": 6018,
       "name": "AlreadyExistsInDenyList",
-      "msg": "Address already added to Deny List"
+      "msg": "Address already added to deny list"
     },
     {
-      "code": 6020,
+      "code": 6019,
       "name": "InvalidSystemState",
       "msg": "Invalid system state"
     },
     {
-      "code": 6021,
+      "code": 6020,
       "name": "InvalidConversionRate",
       "msg": "Invalid conversion rate"
     },
     {
-      "code": 6022,
+      "code": 6021,
       "name": "AddressNotInDenyList",
-      "msg": "Address not found in Deny List"
+      "msg": "Address not found in deny list"
     },
     {
-      "code": 6023,
+      "code": 6022,
       "name": "SystemIsHalted",
       "msg": "System is halted"
     },
     {
-      "code": 6024,
+      "code": 6023,
       "name": "ArithmeticError",
-      "msg": "Arithmetic Error has occurred"
+      "msg": "Arithmetic error has occurred"
+    },
+    {
+      "code": 6024,
+      "name": "UnauthorizedFillConsumer",
+      "msg": "User is not authorized to do fills consumption"
     },
     {
       "code": 6025,
-      "name": "UnauthorizedDequeuer",
-      "msg": "User is not authorized to do Dequeue Action"
+      "name": "UnauthorizedDenyListAuthority",
+      "msg": "Unauthorized deny list authority"
     },
     {
       "code": 6026,
-      "name": "UnauthorizedDenyListAuthority",
-      "msg": "Unauthorized Deny List Authority"
+      "name": "RegistryFull",
+      "msg": "Fills registry is full — cannot enqueue"
     },
     {
       "code": 6027,
-      "name": "RegistryFull",
-      "msg": "FillsRegistry is full — cannot enqueue."
+      "name": "EmptyFillsRegistry",
+      "msg": "Fills registry is empty — cannot consume"
     },
     {
       "code": 6028,
-      "name": "RegistryEmpty",
-      "msg": "FillsRegistry is empty — cannot dequeue."
+      "name": "InvalidMaxSolAmount",
+      "msg": "Provided SOL amount for consumption is invalid"
     },
     {
       "code": 6029,
@@ -1899,10 +1812,8 @@
             "type": "i64"
           },
           {
-            "name": "authorized_dequeuers",
-            "type": {
-              "vec": "pubkey"
-            }
+            "name": "fills_consumer",
+            "type": "pubkey"
           },
           {
             "name": "coefficient",
@@ -1977,10 +1888,8 @@
             "type": "i64"
           },
           {
-            "name": "authorized_dequeuers",
-            "type": {
-              "vec": "pubkey"
-            }
+            "name": "fills_consumer",
+            "type": "pubkey"
           },
           {
             "name": "coefficient",
@@ -2118,38 +2027,6 @@
       }
     },
     {
-      "name": "DequeuerAdded",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "added_by",
-            "type": "pubkey"
-          },
-          {
-            "name": "dequeuer",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "DequeuerRemoved",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "removed_by",
-            "type": "pubkey"
-          },
-          {
-            "name": "dequeuer",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
       "name": "Fill",
       "serialization": "bytemuck",
       "repr": {
@@ -2165,6 +2042,22 @@
           {
             "name": "token_2z_out",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FillsConsumerChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_consumer",
+            "type": "pubkey"
           }
         ]
       }
