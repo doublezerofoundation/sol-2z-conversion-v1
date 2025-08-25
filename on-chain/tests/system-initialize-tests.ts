@@ -4,6 +4,7 @@ import { ConverterProgram } from "../target/types/converter_program";
 import {airdropToActivateAccount, getDefaultKeyPair} from "./core/utils/accounts";
 import {DEFAULT_CONFIGS} from "./core/utils/configuration-registry";
 import {systemInitializeAndVerify, systemInitializeFail} from "./core/test-flow/system-initialize";
+import {ErrorMsg} from "./core/constants";
 
 describe("System Initialization Tests", () => {
   // Configure the client to use the local cluster.
@@ -19,7 +20,7 @@ describe("System Initialization Tests", () => {
         program,
         nonAdminUserKeyPair,
         DEFAULT_CONFIGS,
-        "A raw constraint was violated"
+        ErrorMsg.RAW_CONSTRAINT_VIOLATION
     )
   });
 
@@ -36,7 +37,7 @@ describe("System Initialization Tests", () => {
         program,
         adminKeyPair,
         DEFAULT_CONFIGS,
-        "already in use"
+        ErrorMsg.ADDRESS_ALREADY_IN_USE
     )
   });
 });

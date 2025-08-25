@@ -15,6 +15,7 @@ import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import { setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {clearUpFillsRegistry, consumeFillsFail, consumeFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
 import {setFillsConsumerAndVerify} from "./core/test-flow/set-fills-consumer";
+import {ErrorMsg} from "./core/constants";
 
 describe("Consume fills tests", () => {
     // Configure the client to use the local cluster.
@@ -80,7 +81,7 @@ describe("Consume fills tests", () => {
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "User is not authorized to do fills consumption"
+                ErrorMsg.UNAUTHORIZED_FILLS_CONSUMER
             );
         });
 
@@ -147,7 +148,7 @@ describe("Consume fills tests", () => {
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "Fills registry is empty — cannot consume"
+                ErrorMsg.EMPTY_FILLS_REGISTRY
             )
         });
 
@@ -162,7 +163,7 @@ describe("Consume fills tests", () => {
                 program,
                 new anchor.BN(0),
                 userKeyPair,
-                "Provided SOL amount for consumption is invalid"
+                ErrorMsg.INVALID_MAX_SOL_AMOUNT
             );
         });
 

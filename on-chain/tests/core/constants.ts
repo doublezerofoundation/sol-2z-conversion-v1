@@ -27,6 +27,7 @@ export namespace Events {
     export const SYSTEM_HALTED = "systemHalted";
     export const SYSTEM_UNHALTED = "systemUnhalted";
     export const TRADE = "tradeEvent";
+    export const FILLS_CONSUMED = "fillsDequeued";
 }
 
 export namespace ErrorMsg {
@@ -38,10 +39,18 @@ export namespace ErrorMsg {
     export const SYSTEM_HALTED = "System is halted";
     export const RAW_CONSTRAINT_VIOLATION = "A raw constraint was violated";
     export const INVALID_COEFFICIENT = "InvalidCoefficient";
-    export const INVALID_MIN_DISCOUNT_RATE = "Invalid min discount rate";
     export const INVALID_MAX_DISCOUNT_RATE = "Invalid max discount rate";
     export const UNAUTHORIZED_ADMIN = "Unauthorized admin";
     export const STALE_PRICE = "Provided attestation is outdated";
+    export const INVALID_ORACLE_SWAP_RATE = "Invalid oracle swap rate";
+    export const ALREADY_IN_DENIED_LIST = "Address already added to deny list";
+    export const NOT_FOUND_IN_DENIED_LIST = "Address not found in deny list";
+    export const DENY_LIST_FULL = "Deny list is full";
+    export const INVALID_MAX_SOL_AMOUNT = "Provided SOL amount for consumption is invalid";
+    export const EMPTY_FILLS_REGISTRY = "EmptyFillsRegistry";
+    export const UNAUTHORIZED_FILLS_CONSUMER = "User is not authorized to do fills consumption";
+    export const ADDRESS_ALREADY_IN_USE = "already in use";
+    export const INVALID_SYSTEM_STATE = "Invalid system state";
 
 
 

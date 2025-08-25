@@ -13,7 +13,7 @@ import {
     setDenyListAuthorityAndVerify
 } from "./core/test-flow/deny-list";
 import { setup } from "./core/setup";
-import { MAX_DENY_LIST_SIZE } from "./core/constants";
+import {ErrorMsg, MAX_DENY_LIST_SIZE} from "./core/constants";
 
 describe("Deny List Tests", async () => {
     const program = await setup();
@@ -90,7 +90,7 @@ describe("Deny List Tests", async () => {
             await addToDenyListShouldFail(
                 program,
                 testAddress1,
-                "Address already added to deny list",
+                ErrorMsg.ALREADY_IN_DENIED_LIST,
                 adminKeyPair
             );
         });
@@ -102,7 +102,7 @@ describe("Deny List Tests", async () => {
             try {
                 await addToDenyListAndVerify(program, new PublicKey("11111111111111111111111111111115"), nonAuthorityKeyPair);
             } catch (error) {
-                assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
+                assert.include(error.message, "Unauthorized", ErrorMsg.UNAUTHORIZED_ADMIN);
             }
         });
 
@@ -148,7 +148,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "Address not found in deny list",
+                ErrorMsg.NOT_FOUND_IN_DENIED_LIST,
                 adminKeyPair
             );
         });
@@ -160,7 +160,7 @@ describe("Deny List Tests", async () => {
             try {
                 await removeFromDenyListAndVerify(program, testAddress1, nonAuthorityKeyPair);
             } catch (error) {
-                assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
+                assert.include(error.message, "Unauthorized", ErrorMsg.UNAUTHORIZED_ADMIN);
             }
         });
 
@@ -269,7 +269,7 @@ describe("Deny List Tests", async () => {
             await addToDenyListShouldFail(
                 program,
                 extraAddress,
-                "Deny list is full",
+                ErrorMsg.DENY_LIST_FULL,
                 adminKeyPair
             );
             
@@ -306,7 +306,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "Address not found in deny list",
+                ErrorMsg.NOT_FOUND_IN_DENIED_LIST,
                 adminKeyPair
             );
             

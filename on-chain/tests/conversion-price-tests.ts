@@ -7,7 +7,7 @@ import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
 import { getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
-import { BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
+import {BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
 import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
@@ -210,7 +210,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(0, Math.floor(Date.now() / 1000));
 
         // Conversion price fetch should fail for zero swap rate.
-        await getConversionPriceToFail(program, oraclePriceData, "InvalidOracleSwapRate");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.INVALID_ORACLE_SWAP_RATE);
     });
 
     it("Should fail to get conversion price for stale oracle data", async () => {
@@ -221,7 +221,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(20, staleTimestamp);
 
         // Conversion price fetch should fail for stale oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "StalePrice");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.STALE_PRICE);
     });
 
     it("Should fail to get conversion price for future oracle data", async () => {
@@ -232,7 +232,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(20, futureTimestamp);
 
         // Conversion price fetch should fail for future oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "StalePrice");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.STALE_PRICE);
     });
 
     it("Should fail to get conversion price for empty attestation signature", async () => {

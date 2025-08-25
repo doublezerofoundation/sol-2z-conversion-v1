@@ -3,7 +3,14 @@ import {ConverterProgram} from "../../../target/types/converter_program";
 import {assert, expect} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import {FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
-import {decodeAndValidateReturnData, getUint64FromBuffer, ReturnData} from "../utils/return-data";
+import {
+    decodeAndValidateReturnData,
+    findAnchorEventInLogs,
+    getTransactionLogs,
+    getUint64FromBuffer,
+    ReturnData
+} from "../utils/return-data";
+import {Events} from "../constants";
 
 export async function consumeFillsSuccess(
     program: Program<ConverterProgram>,
@@ -79,6 +86,11 @@ export async function consumeFillsSuccess(
         (fillsRegistryBefore.head + expectedHeadChange) % fillsRegistryBefore.maxCapacity,
         "Head pointer should move by expected amount in circular buffer manner"
     );
+
+    // assert whether event has been emitted or not
+    const logs = await getTransactionLogs(program.provider, signature);
+    const event = await findAnchorEventInLogs(logs, program.idl, Events.FILLS_CONSUMED);
+    expect(event, "Trade event should be emitted").to.exist;
 }
 
 export async function consumeFillsFail(
