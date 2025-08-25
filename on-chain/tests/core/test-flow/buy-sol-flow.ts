@@ -178,7 +178,7 @@ export async function buySolSuccess(
     signer: Keypair,
     currentConfigs = DEFAULT_CONFIGS,
     bidFactor: number = 1,
-) {
+): Promise<number> {
     const oraclePriceData = await getOraclePriceData();
     const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
     const bidPrice = Math.floor(askPrice * bidFactor);
@@ -189,16 +189,17 @@ export async function buySolSuccess(
         senderTokenAccount,
         bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
     );
-    
+
     // Ensure vault has funds.
     await airdropVault(mockTransferProgram, currentConfigs.solQuantity);
     await buySolAndVerify(
-        program, 
-        mockTransferProgram, 
-        senderTokenAccount, 
-        bidPrice, 
-        signer, 
-        oraclePriceData, 
+        program,
+        mockTransferProgram,
+        senderTokenAccount,
+        bidPrice,
+        signer,
+        oraclePriceData,
         currentConfigs
     );
+    return askPrice;
 }

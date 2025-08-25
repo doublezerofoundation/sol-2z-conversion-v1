@@ -13,6 +13,7 @@ import {
     setDenyListAuthorityAndVerify
 } from "./core/test-flow/deny-list";
 import { setup } from "./core/setup";
+import { MAX_DENY_LIST_SIZE } from "./core/constants";
 
 describe("Deny List Tests", async () => {
     const program = await setup();
@@ -98,14 +99,9 @@ describe("Deny List Tests", async () => {
             const nonAuthorityKeyPair = Keypair.generate();
             await airdropToActivateAccount(program.provider.connection, nonAuthorityKeyPair.publicKey);
 
-            // Note: Current implementation doesn't actually check authority,
-            // so this test will currently pass. This should be updated when
-            // proper authority checking is implemented in the contract.
             try {
                 await addToDenyListAndVerify(program, new PublicKey("11111111111111111111111111111115"), nonAuthorityKeyPair);
-                console.log("Note: Non-authority was able to add to deny list. Authority checking should be implemented.");
             } catch (error) {
-                // This is the expected behavior once authority checking is implemented
                 assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
             }
         });
@@ -161,14 +157,9 @@ describe("Deny List Tests", async () => {
             const nonAuthorityKeyPair = Keypair.generate();
             await airdropToActivateAccount(program.provider.connection, nonAuthorityKeyPair.publicKey);
 
-            // Note: Current implementation doesn't actually check authority,
-            // so this test will currently pass. This should be updated when
-            // proper authority checking is implemented in the contract.
             try {
                 await removeFromDenyListAndVerify(program, testAddress1, nonAuthorityKeyPair);
-                console.log("Note: Non-authority was able to remove from deny list. Authority checking should be implemented.");
             } catch (error) {
-                // This is the expected behavior once authority checking is implemented
                 assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
             }
         });
@@ -245,8 +236,8 @@ describe("Deny List Tests", async () => {
                 }
             }
             
-            // Fill deny list to maximum capacity (MAX_DENY_LIST_SIZE = 50).
-            const maxCapacity = 50;
+            // Fill deny list to maximum capacity.
+            const maxCapacity = MAX_DENY_LIST_SIZE;
             
             console.log(`Filling deny list to maximum capacity (${maxCapacity} addresses)...`);
             

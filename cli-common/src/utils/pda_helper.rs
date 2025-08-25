@@ -43,7 +43,7 @@ pub fn get_withdraw_authority_pda(program_id: Pubkey) -> (Pubkey, u8) {
         &program_id,
     )
 }
-/// Get the program data account PDA for a program using the v3 loader
+/// Get the program data account PDA for a program using the v3 loader.
 pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
     solana_loader_v3_interface::get_program_data_address(&program_id)
 }

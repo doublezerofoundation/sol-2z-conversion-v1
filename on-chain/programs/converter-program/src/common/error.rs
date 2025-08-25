@@ -75,7 +75,7 @@ pub enum DoubleZeroError {
     #[msg("Arithmetic error has occurred")]
     ArithmeticError, // 6023
 
-    #[msg("User is not authorized to do dequeue action")]
+    #[msg("User is not authorized to do fills consumption")]
     UnauthorizedFillConsumer, // 6024
 
     #[msg("Unauthorized deny list authority")]
@@ -84,9 +84,12 @@ pub enum DoubleZeroError {
     #[msg("Fills registry is full — cannot enqueue")]
     RegistryFull, //6026
 
-    #[msg("Fills registry is empty — cannot dequeue")]
-    RegistryEmpty, //6027,
+    #[msg("Fills registry is empty — cannot consume")]
+    EmptyFillsRegistry, // 6027
+
+    #[msg("Provided SOL amount for consumption is invalid")]
+    InvalidMaxSolAmount, // 6028
 
     #[msg("Only one trade is allowed per slot")]
-    SingleTradePerSlot, //6028
+    SingleTradePerSlot, //6029
 }

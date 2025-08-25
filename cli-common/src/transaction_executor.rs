@@ -89,7 +89,7 @@ pub fn send_batch_instructions_with_signers(
 
     match signature {
         Ok(tx) => {
-            println!("{OK} Transaction Successfully Executed! Signature: {}", tx);
+            println!("{OK} Transaction successfully executed! Signature: {}", tx);
             Ok(tx)
         }
         Err(e) => {
@@ -138,7 +138,7 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
 
     match signature {
         Ok(sig) => {
-            println!("{OK} Transaction Successfully Executed! Signature: {}", sig);
+            println!("{OK} Transaction successfully executed!. Signature: {}", sig);
         }
         Err(e) => {
             let client_error = anchor_client::ClientError::SolanaClientError(e);

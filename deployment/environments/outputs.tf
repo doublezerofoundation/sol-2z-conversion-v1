@@ -85,33 +85,6 @@ output "metrics_lambda_role_arn" {
   value       = module.metrics_lambda.lambda_role_arn
 }
 
-# EC2 Outputs
-
-output "indexer_instance_id" {
-  description = "The ID of the Indexer EC2 instance"
-  value       = module.ec2.indexer_instance_id
-}
-
-output "indexer_instance_arn" {
-  description = "The ARN of the Indexer EC2 instance"
-  value       = module.ec2.indexer_instance_arn
-}
-
-output "indexer_private_ip" {
-  description = "The private IP address of the Indexer EC2 instance"
-  value       = module.ec2.indexer_private_ip
-}
-
-output "indexer_public_ip" {
-  description = "The public IP address of the Indexer EC2 instance"
-  value       = module.ec2.indexer_public_ip
-}
-
-output "indexer_instance_profile_name" {
-  description = "The name of the IAM instance profile for the Indexer EC2 instance"
-  value       = module.ec2.indexer_instance_profile_name
-}
-
 output "swap_oracle_launch_template_arn" {
   description = "The ARN of the Swap Oracle Launch Template"
   value       = module.ec2.swap_oracle_launch_template_arn
