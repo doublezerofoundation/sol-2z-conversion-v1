@@ -15,10 +15,10 @@ pub fn handle_error(error: ClientError) -> Box<dyn Error> {
     let logs = extract_tx_logs(&error);
 
     if let Some(tx_logs) = logs {
-        println!("{} Error Logs:\n\t{}", LABEL, tx_logs.join("\n\t"));
+        println!("{} Error logs:\n\t{}", LABEL, tx_logs.join("\n\t"));
         Box::new(io::Error::other(tx_logs.join("\n\t")))
     } else {
-        println!("{} Error Logs:\n\t{}", LABEL, error.to_string());
+        println!("{} Error logs:\n\t{}", LABEL, error.to_string());
         Box::new(io::Error::other(error.to_string()))
     }
 }

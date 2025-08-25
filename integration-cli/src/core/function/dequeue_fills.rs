@@ -35,7 +35,7 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
     let mut data = hash(DEQUEUE_FILLS_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [data, bid_price_parsed.to_le_bytes().to_vec()].concat();
 
-    // Getting necessary accounts
+    // Getting necessary accounts.
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let fills_registry = get_fills_registry_address(program_id, config.rpc_url)?;
@@ -54,9 +54,9 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
     };
 
     let result_bps: DequeueFillsResult = send_instruction_with_return_data(dequeue_fills_ix)?;
-    println!("Dequeue Fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
-    println!("SOL Amount Dequeued: {}", result_bps.sol_dequeued);
-    println!("2Z Token Amount Dequeued: {}", result_bps.token_2z_dequeued);
-    println!("No of Fills Consumed: {}", result_bps.fills_consumed);
+    println!("Dequeue fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
+    println!("SOL amount dequeued: {}", result_bps.sol_dequeued);
+    println!("2Z token amount dequeued: {}", result_bps.token_2z_dequeued);
+    println!("No of fills Consumed: {}", result_bps.fills_consumed);
     Ok(())
 }

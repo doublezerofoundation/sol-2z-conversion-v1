@@ -18,15 +18,13 @@ struct Cli {
 pub async fn handle() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     match cli.command {
-        // Dequeue from fills Registry
+        // Consume from fills Registry
         Some(Commands::DequeueFills { amount }) => {
             dequeue_fills(amount)?;
             Ok(())
         }
 
-        // Toggles system between active and paused states.
         None => {
-            // println!("No command specified. Use --help for available commands.");
             Err(Box::from(COMMAND_NOT_SPECIFIED))
         }
     }

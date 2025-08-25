@@ -17,7 +17,7 @@ use crate::core::{
 };
 
 pub fn view_system_state() -> Result<(), Box<dyn Error>> {
-    println!("{} View System State", ui::LABEL);
+    println!("{} View system state", ui::LABEL);
 
     let admin_config = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
@@ -27,7 +27,7 @@ pub fn view_system_state() -> Result<(), Box<dyn Error>> {
         get_account_data(admin_config.rpc_url, program_state_pda)?;
 
     println!(
-        "{} Current System State: {}",
+        "{} Current system state: {}",
         ui::OK,
         if program_state.is_halted {
             "⏸ Paused"
@@ -40,7 +40,7 @@ pub fn view_system_state() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn toggle_system_state(activate: bool, pause: bool) -> Result<(), Box<dyn Error>> {
-    println!("{} Toggle System State", ui::LABEL);
+    println!("{} Toggle system state", ui::LABEL);
 
     let set_to = validate_and_extract_user_input(activate, pause)?;
 
@@ -51,8 +51,8 @@ pub fn toggle_system_state(activate: bool, pause: bool) -> Result<(), Box<dyn Er
 
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
 
-    println!("Program State PDA: {}", program_state_pda);
-    println!("Setting System State (is_halted) to {:?}", set_to);
+    println!("Program state PDA: {}", program_state_pda);
+    println!("Setting system state (is_halted) to {:?}", set_to);
 
     let mut data = hash(TOGGLE_SYSTEM_STATE_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [data, vec![set_to as u8]].concat();
@@ -71,7 +71,7 @@ pub fn toggle_system_state(activate: bool, pause: bool) -> Result<(), Box<dyn Er
     send_batch_instructions(vec![ix])?;
 
     println!(
-        "{} System State set to {:?}",
+        "{} System state set to {:?}",
         ui::OK,
         if set_to { "⏸ Paused" } else { "🟢 Active" }
     );
@@ -79,7 +79,7 @@ pub fn toggle_system_state(activate: bool, pause: bool) -> Result<(), Box<dyn Er
 }
 
 fn validate_and_extract_user_input(activate: bool, pause: bool) -> Result<bool, Box<dyn Error>> {
-    // checking whether user has provided both active and pause as input
+    // checking whether user has provided both active and pause as input.
     if activate && pause {
         return Err(Box::from(INVALID_ARGUMENTS));
     }
