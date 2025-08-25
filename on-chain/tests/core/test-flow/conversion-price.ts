@@ -3,7 +3,7 @@ import { ConverterProgram } from "../../../target/types/converter_program";
 import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
 import {
-    decodeAndValidateReturnData,
+    decodeAndValidateReturnData, delay,
     findAnchorEventInLogs,
     getUint64FromBuffer,
     ReturnData
@@ -36,9 +36,6 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
 
     // Retry 5 times
     for (let i = 0; i < 5; i++) {
-        // Wait for 1 second
-        setTimeout(() => { }, 2000);
-
         const transaction: any = await program.provider.connection.getTransaction(signature, {
             commitment: "confirmed",
             maxSupportedTransactionVersion: 1,
@@ -48,6 +45,7 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
             if (i === 4) {
                 assert.fail("Transaction not found");
             }
+            await delay(500);
             continue;
         }
 
