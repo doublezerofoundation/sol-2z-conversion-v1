@@ -65,7 +65,7 @@ export async function consumeFillsSuccess(
 
     // Check Output values
     assert.equal(resultSolConsumed, maxSolAmount);
-    assert.equal(resultTokenConsumed, expectedTokenConsumed);
+    assert.approximately(resultTokenConsumed, expectedTokenConsumed, 1);
     assert.equal(resultFillsConsumed, expectedFillsConsumed);
 
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);

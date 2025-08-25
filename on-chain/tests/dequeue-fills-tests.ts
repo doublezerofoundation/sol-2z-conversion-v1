@@ -198,7 +198,6 @@ describe("Consume fills tests", () => {
         });
     });
 
-
     describe("Batch fills consumption", async() => {
         it("Should successfully consume 6 fills in single attempt", async () => {
             const bidFactor = 1.12;
@@ -237,17 +236,10 @@ describe("Consume fills tests", () => {
             );
         });
 
-        after("Clear up fills registry", async () => {
+        it("Should successfully consume 6 fills in two attempts", async () => {
             await clearUpFillsRegistry(program, userKeyPair);
-        });
-    });
-
-    describe("Partial fills consumption", async() => {
-        it("Partial consume fills", async () => {
-            const bidFactor = 2.12;
-            const numOfBuySols = 5;
-            // planning to consume PARTIAL_CONSUMPTION_MULTIPLIER fills
-            const PARTIAL_CONSUMPTION_MULTIPLIER = 3.321;
+            const bidFactor = 1.32;
+            const numOfBuySols = 6;
             const askPrices: number[] = [];
             for (let i = 0; i < numOfBuySols; i++) {
                 askPrices.push(
@@ -261,16 +253,86 @@ describe("Consume fills tests", () => {
                     )
                 );
             }
-            maxSolAmount = Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER * Number(DEFAULT_CONFIGS.solQuantity));
-            const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
 
+            maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity)/2;
+            const attempt1AskPrices = askPrices.slice(0,3);
+            const attempt2AskPrices = askPrices.slice(3,6);
+            const expectedTokenConsumedAttempt1 = attempt1AskPrices.reduce((sum: number, askPrice: number): number => {
+                const adjustedPrice = Math.floor(askPrice * bidFactor);
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                return sum + solAmount;
+            }, 0);
+            expectedFillsConsumed = numOfBuySols/2;
+
+            // attempt 1
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumedAttempt1,
+                expectedFillsConsumed,
+                numOfBuySols,
+                expectedFillsConsumed,
+                expectedFillsConsumed
+            );
+
+            const expectedTokenConsumedAttempt2 = attempt2AskPrices.reduce((sum: number, askPrice: number): number => {
+                const adjustedPrice = Math.floor(askPrice * bidFactor);
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                return sum + solAmount;
+            }, 0);
+
+            // attempt 2
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                expectedTokenConsumedAttempt2,
+                expectedFillsConsumed,
+                numOfBuySols/2,
+                0,
+                expectedFillsConsumed
+            );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
+        });
+    });
+
+    describe("Partial fills consumption", async() => {
+        const askPrices: number[] = [];
+        let reminderPartialFillSolAmount: number;
+        const bidFactor = 2.12;
+        let finalCount: number;
+
+        it("Partial consume fills", async () => {
+            const numOfBuySols = 5;
+            // planning to consume partial consumption multiplier fills.
+            const partialConsumptionMultiplier = 3.321;
+            for (let i = 0; i < numOfBuySols; i++) {
+                askPrices.push(
+                    await buySolSuccess(
+                        program,
+                        mockTransferProgram,
+                        tokenAccountForUser,
+                        userKeyPair,
+                        currentConfigs,
+                        bidFactor
+                    )
+                );
+            }
+            const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
+            maxSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
+            const partiallyFilledSolAmount = maxSolAmount - Math.floor(partialConsumptionMultiplier) * solQuantity;
+            reminderPartialFillSolAmount = solQuantity - partiallyFilledSolAmount;
             expectedTokenConsumed =
                 Math.floor(askPrices[0] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
                 Math.floor(askPrices[1] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
                 Math.floor(askPrices[2] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
-                (maxSolAmount - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER) * solQuantity) * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
-            expectedFillsConsumed = Math.ceil(PARTIAL_CONSUMPTION_MULTIPLIER);
-            const finalCount = numOfBuySols - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER);
+                partiallyFilledSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+            expectedFillsConsumed = Math.ceil(partialConsumptionMultiplier);
+            finalCount = numOfBuySols - Math.floor(partialConsumptionMultiplier);
 
             await consumeFillsSuccess(
                 program,
@@ -280,7 +342,49 @@ describe("Consume fills tests", () => {
                 expectedFillsConsumed,
                 numOfBuySols,
                 finalCount,
-                Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER)
+                Math.floor(partialConsumptionMultiplier)
+            );
+        });
+
+        it("Continues to do partial consumption with sol amount < sol quantity", async () => {
+            // Now initial fill entry is in partially dequeued state with reminderPartialFillSolAmount as the sol_amount.
+            // we are going to dequeue 2/3 rd of the reminder sol amount.
+            maxSolAmount = Math.floor(reminderPartialFillSolAmount * 2/3)
+            reminderPartialFillSolAmount -= maxSolAmount;
+            expectedFillsConsumed = 1;
+            expectedTokenConsumed = maxSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                Math.floor(expectedTokenConsumed),
+                expectedFillsConsumed,
+                finalCount,
+                finalCount,
+                0
+            );
+        });
+
+        it("Continues to do partial consumption with sol amount > sol quantity", async () => {
+            // Now initial fill entry is in partially dequeued state with reminderPartialFillSolAmount as the sol_amount.
+            const partialConsumptionMultiplier = 0.65;
+            const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
+            maxSolAmount = reminderPartialFillSolAmount + Math.floor(partialConsumptionMultiplier * solQuantity);
+            expectedFillsConsumed = 2;
+            const partiallyFilledSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
+            expectedTokenConsumed = reminderPartialFillSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL
+            + partiallyFilledSolAmount * Math.floor(askPrices[4] * bidFactor) / LAMPORTS_PER_SOL;
+
+            await consumeFillsSuccess(
+                program,
+                maxSolAmount,
+                userKeyPair,
+                Math.floor(expectedTokenConsumed),
+                expectedFillsConsumed,
+                finalCount,
+                1,
+                1
             );
         });
 
