@@ -20,6 +20,6 @@ pub enum Commands {
     /// Retrieves SOL quantity available per transaction (admin-configured parameter).
     GetQuantity,
 
-    /// View Fills Registry, which tracks individual fill records and overall aggregate statistics
+    /// View Fills Registry, which tracks individual fill records and overall aggregate statistics.
     GetFillsInfo
 }

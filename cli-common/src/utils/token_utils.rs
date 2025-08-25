@@ -19,7 +19,7 @@ pub fn find_or_initialize_associated_token_account(payer: Keypair, mint: Pubkey,
     // Check if the account exists
     let client = RpcClient::new_with_commitment(rpc_url, CommitmentConfig::confirmed());
     if client.get_account_data(&associated_token_account).is_ok() {
-        println!("Associated Token exists with address {}", associated_token_account);
+        println!("Associated token exists with address {}", associated_token_account);
         return Ok(associated_token_account);
     }
 
@@ -32,6 +32,6 @@ pub fn find_or_initialize_associated_token_account(payer: Keypair, mint: Pubkey,
     );
 
     send_batch_instructions(vec![create_ata_instruction])?;
-    println!("Associated Token has been created in address {}", associated_token_account);
+    println!("Associated token has been created in address {}", associated_token_account);
     Ok(associated_token_account)
 }

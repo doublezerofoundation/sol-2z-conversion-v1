@@ -104,17 +104,17 @@ pub fn view_deny_list() -> Result<(), Box<dyn Error>> {
     match rpc_client.get_account(&deny_list_registry_pda) {
         Ok(account) => {
             println!("Current deny list:");
-            println!("Registry Address: {}", deny_list_registry_pda);
+            println!("Registry address: {}", deny_list_registry_pda);
 
             if account.data.len() < 16 {
                 println!("Account data too small, registry may not be initialized properly");
                 return Ok(());
             }
 
-            // Skip the discriminator (first 8 bytes) and deserialize the basic structure
+            // Skip the discriminator (first 8 bytes) and deserialize the basic structure.
             let data = &account.data[8..];
 
-            // Parse the vector length (4 bytes after discriminator)
+            // Parse the vector length (4 bytes after discriminator).
             if data.len() < 4 {
                 println!("Invalid account data format");
                 return Ok(());
@@ -128,7 +128,7 @@ pub fn view_deny_list() -> Result<(), Box<dyn Error>> {
             } else {
                 println!("Denied addresses:");
 
-                // Each Pubkey is 32 bytes, starting after the vector length
+                // Each Pubkey is 32 bytes, starting after the vector length.
                 let mut offset = 4;
                 for i in 0..vec_len {
                     if offset + 32 <= data.len() {

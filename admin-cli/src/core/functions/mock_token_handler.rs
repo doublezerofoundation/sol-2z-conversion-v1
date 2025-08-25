@@ -39,9 +39,9 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let config_account = pda_helper::get_config_pda(mock_program_id).0;
     let journal_account = pda_helper::get_journal_pda(mock_program_id).0;
 
-    println!("Mock Vault Address {}", vault_account_pda);
-    println!("Mock 2Z Token Mint {}", token_mint_account_pda);
-    println!("Mock Protocol Treasury Token Account {}", protocol_treasury_token_account_pda);
+    println!("Mock vault address {}", vault_account_pda);
+    println!("Mock 2Z token mint {}", token_mint_account_pda);
+    println!("Mock protocol treasury token account {}", protocol_treasury_token_account_pda);
 
     // Building instruction data
     let data = hash(MOCK_SYSTEM_INITIALIZE).to_bytes()[..8].to_vec();
@@ -66,7 +66,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     };
 
     transaction_executor::send_batch_instructions(vec![mint_ix])?;
-    println!("{} Mock Program Init is successful", ui::OK);
+    println!("{} Mock program init is successful", ui::OK);
     Ok(())
 }
 
@@ -124,7 +124,7 @@ pub fn mint_to_protocol_treasury_token_account(amount: String) -> Result<(), Box
     let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let protocol_treasury_token_account =
         pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
-    println!("Mock Protocol Treasury Token Account {}", protocol_treasury_token_account);
+    println!("Mock protocol treasury token account {}", protocol_treasury_token_account);
     mint_to_account(protocol_treasury_token_account, amount)
 }
 
@@ -134,7 +134,7 @@ pub fn airdrop_vault(amount: String) -> Result<(), Box<dyn Error>> {
     load_payer_from_env()?;
     let amount_parsed = parse_sol_value(&amount)?;
     let vault_account = pda_helper::get_vault_pda(mock_program_id).0;
-    println!("Mock Vault Address: {}", vault_account);
+    println!("Mock vault address: {}", vault_account);
     println!("Requesting airdrop for amount: {}", amount_parsed);
 
     let client = RpcClient::new_with_commitment(admin_config.rpc_url, CommitmentConfig::confirmed());

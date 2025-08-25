@@ -23,22 +23,22 @@ pub async fn handle() -> Result<(), Box<dyn Error>> {
     let cli = Cli::parse();
     match cli.command {
 
-        // Triggering SOL transaction
+        // Triggering SOL transaction.
         Some(Commands::BuySol { bid_price, from_address}) => {
             buy_sol(bid_price, from_address).await
         }
 
-        // Displays SOL quantity available per transaction
+        // Displays SOL quantity available per transaction.
         Some(Commands::GetQuantity) => {
             query_handler::get_quantity()
         }
 
-        // Displays current 2Z-to-SOL conversion price
+        // Displays current 2Z-to-SOL conversion price.
         Some(Commands::GetPrice) => {
             query_handler::get_price().await
         }
 
-        // View Fills Registry
+        // View Fills Registry.
         Some(Commands::GetFillsInfo) => {
             view_fills_registry()
         }

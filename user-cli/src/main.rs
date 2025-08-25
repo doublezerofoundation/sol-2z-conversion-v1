@@ -22,6 +22,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     println!("🛠  USER CLI\n");
 
-    // Calling handler to handle the cli calls
+    // Calling handler to handle the cli calls.
     handler::handle().await
 }

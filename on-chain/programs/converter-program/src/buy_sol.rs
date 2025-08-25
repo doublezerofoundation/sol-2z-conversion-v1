@@ -69,18 +69,18 @@ pub struct BuySol<'info> {
         token::mint = double_zero_mint,
     )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after knowing DoubleZero Token Mint
     #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after client informs actual programId
     #[account(mut)]
     pub config_account: AccountInfo<'info>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after client informs actual address
     #[account(mut)]
     pub revenue_distribution_journal: AccountInfo<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after client informs actual address
     pub revenue_distribution_program: AccountInfo<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -180,7 +180,7 @@ impl<'info> BuySol<'info> {
         ];
 
         // Call CPI for SOL withdrawal.
-        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol"
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol" after clients confirms
         let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
         cpi_data = [
             cpi_data,

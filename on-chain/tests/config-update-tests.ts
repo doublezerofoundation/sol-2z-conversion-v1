@@ -76,10 +76,20 @@ describe("Configuration Registry Update Tests", async () => {
       maxDiscountRate: new anchor.BN(5000),
       minDiscountRate: new anchor.BN(5001)
     },
-      "Invalid min discount rate"
+      "Invalid max discount rate"
     );
 
     // Revert: Set min discount rate to 500
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
+  });
+
+  it("It should be possible to add lower values for max discount rate and min discount rate", async () => {
+    await updateConfigsAndVerify(program, {
+      ...DEFAULT_CONFIGS,
+      maxDiscountRate: new anchor.BN(400),
+      minDiscountRate: new anchor.BN(300)
+    });
+
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
