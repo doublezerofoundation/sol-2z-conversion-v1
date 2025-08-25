@@ -99,7 +99,9 @@ print_status_bar() {
 # -------------------- Validator Management --------------------
 start_validator() {
     local RPC_PORT=$1
+    shift
     local RPC_URL="http://127.0.0.1:$RPC_PORT"
+    local EXTRA_ARGS="$@"
 
     # Stop any running validator
     VALIDATOR_PID=$(pgrep -f "solana-test-validator")
@@ -108,7 +110,7 @@ start_validator() {
     fi
     wait_for_port_release $RPC_PORT
 
-    solana-test-validator --reset --quiet --rpc-port $RPC_PORT &> /dev/null &
+    solana-test-validator --reset --quiet --rpc-port $RPC_PORT $EXTRA_ARGS &> /dev/null &
     wait_for_validator $RPC_URL
 }
 
@@ -200,7 +202,11 @@ run_test() {
     print_status_bar
     log_section "Running Test: $TEST_SCRIPT (RPC: $RPC_PORT)"
 
-    start_validator $RPC_PORT
+    EXTRA_ARGS=""
+    if [ "$TEST_SCRIPT" == "user-flow" ]; then
+        EXTRA_ARGS="--ticks-per-slot 300"
+    fi
+    start_validator $RPC_PORT $EXTRA_ARGS
 
     # Deploy the programs to the validator
     cd ./mock-double-zero-program || exit 1
