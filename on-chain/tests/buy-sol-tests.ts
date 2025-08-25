@@ -14,7 +14,7 @@ import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData, getOraclePriceDataFor} from "./core/utils/price-oracle";
-import {BPS, TOKEN_DECIMAL} from "./core/constants";
+import {BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
@@ -34,12 +34,12 @@ describe("Buy Sol Tests", () => {
 
     before("Set up the system", async() => {
         await initializeSystemIfNeeded(program);
-        // Initializing the Mock Transfer system If not already initialized!
+        // Initializing the Mock Transfer system If not already initialized.
         await initializeMockTransferSystemIfNeeded(
             mockTransferProgram,
             adminKeyPair,
         )
-        // Set deny list authority to admin
+        // Set deny list authority to admin.
         await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
 
         // Update configurations to Default Configuration
@@ -51,7 +51,7 @@ describe("Buy Sol Tests", () => {
         currentConfigs = DEFAULT_CONFIGS;
         mockTransferProgramPDAs = getMockProgramPDAs(mockTransferProgram.programId);
 
-        // create key pair & token account for user
+        // create key pair & token account for user.
         userKeyPair = anchor.web3.Keypair.generate();
         await airdrop(
             mockTransferProgram.provider.connection,
@@ -65,20 +65,20 @@ describe("Buy Sol Tests", () => {
         );
     });
 
-    after("Change configs to Default", async () => {
+    after("Change configs to default", async () => {
         await updateConfigsAndVerify(
             program,
             DEFAULT_CONFIGS
         );
     });
 
-    describe("Happy Path", async() => {
-        it("User does buySOL at higher price than Ask Price", async () => {
+    describe("Happy path", async() => {
+        it("User does buy SOL at higher price than ask price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice + 2 * TOKEN_DECIMAL;
 
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -97,11 +97,11 @@ describe("Buy Sol Tests", () => {
             );
         });
 
-        it("Should fail to execute Buy SOL if the bid price is lower than the Ask Price.", async () => {
+        it("Should fail to execute buy SOL if the bid price is lower than the ask Price.", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             const bidPrice = askPrice - 100000;
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -117,18 +117,19 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
     });
 
-    describe("Price Data Verification", async () => {
-        it("Should fail to execute a Buy SOL operation with stale oracle data", async () => {
+    describe("Price data verification", async () => {
+        it("Should fail to execute a buy SOL operation with stale oracle data", async () => {
             const delay = Number(DEFAULT_CONFIGS.priceMaximumAge) + 1;
             const oraclePriceData = await getOraclePriceDataFor(20, Math.floor(Date.now() / 1000) - delay);
 
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -144,11 +145,11 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is outdated"
+                ErrorMsg.STALE_PRICE
             );
         });
 
-        it("Fails Buy SOL execution when attestation is invalid (swap rate is altered)", async () => {
+        it("Fails buy SOL execution when attestation is invalid (swap rate is altered)", async () => {
             let oraclePriceData = await getOraclePriceData();
 
             // manually making changes
@@ -158,7 +159,7 @@ describe("Buy Sol Tests", () => {
             };
 
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -174,16 +175,17 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is not authentic"
+                ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
+                Events.ATTESTATION_INVALID
             );
         });
 
-        it("Fails Buy SOL execution when signature is invalid", async () => {
+        it("Fails buy SOL execution when signature is invalid", async () => {
             let oraclePriceData = await getOraclePriceData();
             oraclePriceData.signature = "invalid_signature";
 
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -199,16 +201,16 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is invalid"
+                ErrorMsg.ATTESTATION_INVALID
             );
         });
 
-        it("Fails Buy SOL execution when signature is empty", async () => {
+        it("Fails buy SOL execution when signature is empty", async () => {
             let oraclePriceData = await getOraclePriceData();
             oraclePriceData.signature = "";
 
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -224,16 +226,17 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is not authentic"
+                ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
+                Events.ATTESTATION_INVALID
             );
         });
     });
 
     describe("Edge cases", async() => {
-        it("User successfully buys SOL at the current Ask Price.", async () => {
+        it("User successfully buys SOL at the current ask price.", async () => {
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -264,17 +267,18 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
-        it("Executes Buy SOL successfully at minimum discounted price.", async () => {
+        it("Executes buy SOL successfully at minimum discounted price.", async () => {
             const oraclePriceData = await getOraclePriceData();
             const minDiscountRate = DEFAULT_CONFIGS.minDiscountRate.toNumber() / (100 * BPS);
             assert(minDiscountRate >= 0, "Minimum discount rate should be greater than or equal to 0");
             assert(minDiscountRate <= 1, "Minimum discount rate should be less than or equal to 1");
             const bidPrice = Math.ceil(oraclePriceData.swapRate * (1 - minDiscountRate));
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -293,7 +297,7 @@ describe("Buy Sol Tests", () => {
             );
         });
 
-        it("Fails Buy SOL when bid < Max Discounted Price", async () => {
+        it("Fails buy SOL when bid < Max Discounted Price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const maxDiscountRate = DEFAULT_CONFIGS.maxDiscountRate.toNumber() / (100 * BPS);
             assert(maxDiscountRate >= 0, "Minimum discount rate should be greater than or equal to 0");
@@ -307,7 +311,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
@@ -322,7 +327,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
@@ -337,14 +343,15 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
-        it("User does buySOL at same price as Oracle Price", async () => {
+        it("User does buy SOL at same price as oracle Price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -365,8 +372,8 @@ describe("Buy Sol Tests", () => {
 
     });
 
-    describe("Insufficient Balance", async() => {
-        it("User does buySOL without having enough 2Z balance should fail", async () => {
+    describe("Insufficient balance", async() => {
+        it("User does buy SOL without having enough 2Z balance should fail", async () => {
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
 
@@ -393,19 +400,19 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 tempUserKeyPair,
                 oraclePriceData,
-                "insufficient funds"
+                ErrorMsg.INSUFFICIENT_FUNDS,
             );
         });
     });
 
-    describe("DenyList Tests", async () => {
-        it("should fail to do buy sol for deny listed user", async () => {
-            // Add user to deny list
+    describe("Deny list tests", async () => {
+        it("Should fail to do buy sol for deny listed user", async () => {
+            // Ad user to deny list
             await addToDenyListAndVerify(program, userKeyPair.publicKey);
 
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -421,7 +428,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "User is blocked in the deny list"
+                ErrorMsg.ACCESS_BY_DENIED_PERSON,
+                Events.ACCESS_BY_DENIED_PERSON
             );
         });
 
@@ -436,14 +444,14 @@ describe("Buy Sol Tests", () => {
         });
     });
 
-    describe("Market Halting Check", async () => {
+    describe("Market halting check", async () => {
         it("should fail to do buy sol during market halt", async () => {
             // Make system to halt stage
             await toggleSystemStateAndVerify(program, true);
 
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = Number(oraclePriceData.swapRate);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -459,11 +467,12 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "System is halted"
+                ErrorMsg.SYSTEM_HALTED,
+                Events.ACCESS_DURING_SYSTEM_HALT
             );
         });
 
-        it("User should be able to do buy SOL after market gets Opened", async () => {
+        it("User should be able to do buy SOL after market gets opened", async () => {
             await toggleSystemStateAndVerify(program, false);
 
             await buySolSuccess(
@@ -475,11 +484,11 @@ describe("Buy Sol Tests", () => {
         });
     });
 
-    describe("Checking Single Trade Per Slot", async () => {
+    describe("Checking single trade per slot", async () => {
         it("A user attempting to buy sol twice in the same slot, should fail", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -508,15 +517,15 @@ describe("Buy Sol Tests", () => {
                 const tx: Transaction = new anchor.web3.Transaction().add(buySol1, buySol2);
                 await program.provider.sendAndConfirm(tx, [userKeyPair]);
             } catch (error) {
-                // First transaction success message should be verified
-                // Second Transaction failure message should be verified
+                // First transaction success message should be verified.
+                // Second Transaction failure message should be verified.
                 const firstExecutionLogs = "Buy SOL is successful";
                 const expectedError = "Only one trade is allowed per slot";
                 const errorMessage = (new Error(error!.toString())).message;
                 expect(errorMessage).to.include(firstExecutionLogs);
                 expect(errorMessage).to.include(expectedError);
                 assert.ok(true, "Buy SOL is rejected as expected");
-                return; // Exit early — test passes
+                return; // Exit early — test passes.
             }
             assert.fail("It was able to do two buy SOL in single slot");
         });
@@ -531,7 +540,7 @@ describe("Buy Sol Tests", () => {
                 tempUserKeyPair.publicKey,
             );
 
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -566,8 +575,8 @@ describe("Buy Sol Tests", () => {
                 const tx: Transaction = new anchor.web3.Transaction().add(buySol1, buySol2);
                 await program.provider.sendAndConfirm(tx, [userKeyPair, tempUserKeyPair]);
             } catch (error) {
-                // First transaction success message should be verified
-                // Second Transaction failure message should be verified
+                // First transaction success message should be verified.
+                // Second Transaction failure message should be verified.
                 const firstExecutionLogs = "Buy SOL is successful";
                 const expectedError = "Only one trade is allowed per slot";
                 const errorMessage = (new Error(error!.toString())).message;
@@ -577,14 +586,14 @@ describe("Buy Sol Tests", () => {
                     .lessThan(errorMessage.indexOf("Only one trade is allowed per slot"),
                         "Success must come before error");
                 assert.ok(true, "Buy SOL is rejected as expected");
-                return; // Exit early — test passes
+                return; // Exit early — test passes.
             }
             assert.fail("It was able to do two buy SOL in single slot");
         });
 
     });
 
-    describe("Config Change Check", async () => {
+    describe("Config change check", async () => {
 
         it("User should be able to do buy SOL with proper rates", async () => {
             currentConfigs = {
@@ -599,7 +608,7 @@ describe("Buy Sol Tests", () => {
 
             const oraclePriceData = await getOraclePriceData();
             const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair) + 10000;
-            // Ensure that user has sufficient 2Z
+            // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
@@ -620,7 +629,7 @@ describe("Buy Sol Tests", () => {
         });
 
         after("Changing to default configs", async () => {
-            // changing to default config
+            // changing to default config.
             await updateConfigsAndVerify(
                 program,
                 DEFAULT_CONFIGS

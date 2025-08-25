@@ -12,16 +12,16 @@ export async function addToDenyListAndVerify(
 ) {
     const denyListRegistryPda = getDenyListRegistryPDA(program.programId);
 
-    // Get deny list before adding
+    // Get deny list before adding.
     const denyListBefore = await program.account.denyListRegistry.fetch(denyListRegistryPda);
     const beforeCount = denyListBefore.deniedAddresses.length;
     const beforeUpdateCount = denyListBefore.updateCount;
 
-    // Verify address is not already in the list
+    // Verify address is not already in the list.
     const isAlreadyDenied = denyListBefore.deniedAddresses.some(addr => addr.equals(addressToAdd));
     assert.isFalse(isAlreadyDenied, "Address should not already be in deny list");
 
-    // Add to deny list
+    // Add to deny list.
     const tx = await program.methods.addToDenyList(addressToAdd)
         .accounts({
             admin: authorityKeyPair.publicKey,
@@ -29,7 +29,7 @@ export async function addToDenyListAndVerify(
         .signers([authorityKeyPair])
         .rpc();
 
-    // Verify the addition
+    // Verify the addition.
     const denyListAfter = await program.account.denyListRegistry.fetch(denyListRegistryPda);
 
     assert.equal(denyListAfter.deniedAddresses.length, beforeCount + 1, "Deny list size should increase by 1");
@@ -38,7 +38,7 @@ export async function addToDenyListAndVerify(
     const isNowDenied = denyListAfter.deniedAddresses.some(addr => addr.equals(addressToAdd));
     assert.isTrue(isNowDenied, "Address should now be in deny list");
 
-    // Verify timestamp was updated
+    // Verify timestamp was updated.
     assert.isAbove(denyListAfter.lastUpdated.toNumber(), 0, "Last updated timestamp should be set");
 
     return tx;
@@ -77,11 +77,11 @@ export async function removeFromDenyListAndVerify(
     const beforeCount = denyListBefore.deniedAddresses.length;
     const beforeUpdateCount = denyListBefore.updateCount;
 
-    // Verify address is in the list
+    // Verify address is in the list.
     const isDenied = denyListBefore.deniedAddresses.some((addr: { equals: (arg0: PublicKey) => any; }) => addr.equals(addressToRemove));
     assert.isTrue(isDenied, "Address should be in deny list before removal");
 
-    // Remove from deny list
+    // Remove from deny list.
     const tx = await program.methods.removeFromDenyList(addressToRemove)
         .accounts({
             admin: authorityKeyPair.publicKey,
@@ -89,7 +89,7 @@ export async function removeFromDenyListAndVerify(
         .signers([authorityKeyPair])
         .rpc();
 
-    // Verify the removal
+    // Verify the removal.
     const denyListAfter = await program.account.denyListRegistry.fetch(denyListRegistryPda);
 
     assert.equal(denyListAfter.deniedAddresses.length, beforeCount - 1, "Deny list size should decrease by 1");

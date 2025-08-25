@@ -15,7 +15,7 @@ export interface SystemConfig {
     minDiscountRate: BN,
 }
 
-// Default Configurations
+// Default Configurations.
 export const DEFAULT_CONFIGS: SystemConfig = {
     oraclePubkey: ORACLE_KEYPAIR.publicKey,
     solQuantity: new anchor.BN(25 * LAMPORTS_PER_SOL),

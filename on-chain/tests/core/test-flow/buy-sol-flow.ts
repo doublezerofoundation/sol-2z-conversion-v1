@@ -14,6 +14,8 @@ import {getConversionPriceAndVerify} from "./conversion-price";
 import {mint2z} from "./mock-transfer-program";
 import {airdropVault} from "../utils/mock-transfer-program-utils";
 import {fetchProgramState} from "../utils/accounts";
+import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
+import {Events} from "../constants";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
@@ -32,6 +34,7 @@ export async function buySolAndVerify(
     const vaultBalanceBefore = await mockProgConn.getBalance(pdaList.vault);
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
     const lastTradedSlotBefore = (await fetchProgramState(program)).lastTradeSlot.toNumber();
+    let txSig: string;
 
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
@@ -43,7 +46,7 @@ export async function buySolAndVerify(
             oraclePriceData
         )
         const tx: Transaction = new anchor.web3.Transaction().add(ix);
-        await program.provider.sendAndConfirm(tx, [signer]);
+        txSig = await program.provider.sendAndConfirm(tx, [signer]);
     } catch (e) {
         console.error("Buy Sol  failed:", e);
         assert.fail("Buy Sol  failed");
@@ -59,6 +62,10 @@ export async function buySolAndVerify(
     const vaultBalanceAfter = await program.provider.connection.getBalance(pdaList.vault);
     const lastTradedSlotAfter = (await fetchProgramState(program)).lastTradeSlot.toNumber();
 
+    // assert whether event has been emitted or not
+    const logs = await getTransactionLogs(program.provider, txSig);
+    const event = await findAnchorEventInLogs(logs, program.idl, Events.TRADE);
+    expect(event, "Trade event should be emitted").to.exist;
 
     assert.equal(
         tokenBalanceAfter,
@@ -81,14 +88,14 @@ export async function buySolAndVerify(
         "Vault SOL Balance should decrease by solBalanceChange"
     )
 
-    // check last traded slot
+    // check last traded slot.
     assert.isTrue(lastTradedSlotAfter > lastTradedSlotBefore, "last-traded-slot has to be updated")
 
-    // Check Fills Registry Values
+    // Check Fills Registry Values.
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
     assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count + 1);
     assert.equal(fillsRegistryAfter.tail, (fillsRegistryBefore.tail + 1) % fillsRegistryBefore.maxCapacity);
-    // Ensure added fill entry values are correct
+    // Ensure added fill entry values are correct.
     const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
     assert.equal(fillEntry.solIn, solBalanceChange);
     assert.equal(fillEntry.token2ZOut, tokenBalanceChange);
@@ -102,6 +109,7 @@ export async function buySolFail(
     signer: Keypair,
     oraclePriceData: OraclePriceData,
     expectedError: string,
+    expectedEvent: string = ""
 ) {
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
@@ -116,8 +124,12 @@ export async function buySolFail(
         await program.provider.sendAndConfirm(tx, [signer]);
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
+        if(expectedEvent !== "") {
+            const event = findAnchorEventInLogs(error.logs, program.idl, expectedEvent);
+            expect(event, "Appropriate event should be emitted").to.exist;
+        }
         assert.ok(true, "Buy SOL is rejected as expected");
-        return; // Exit early — test passes
+        return; // Exit early — test passes.
     }
     assert.fail("It was able to do buy SOL");
 }
@@ -156,9 +168,9 @@ export async function prepareBuySolInstruction(
         .instruction()
 }
 
-/// Prepares success scenario and Calls buySolAndVerify
-/// gets Oracle Price and set the bid price based on bidFactor
-/// Mints sufficient 2Z to user and airdrops necessary SOL to Vault
+/// Prepares success scenario and Calls buySolAndVerify.
+/// gets Oracle Price and set the bid price based on bidFactor.
+/// Mints sufficient 2Z to user and airdrops necessary SOL to Vault.
 export async function buySolSuccess(
     program: Program<ConverterProgram>,
     mockTransferProgram: Program<MockTransferProgram>,
@@ -171,7 +183,7 @@ export async function buySolSuccess(
     const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
     const bidPrice = Math.floor(askPrice * bidFactor);
 
-    // Ensure that user has sufficient 2Z
+    // Ensure that user has sufficient 2Z.
     await mint2z(
         mockTransferProgram,
         senderTokenAccount,
