@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import {PublicKey} from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
 export const TOKEN_DECIMAL = 10 ** 6;

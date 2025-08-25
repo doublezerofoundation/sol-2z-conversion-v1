@@ -172,44 +172,6 @@ resource "aws_api_gateway_deployment" "this" {
   ]
 }
 
-# Create IAM role for API Gateway CloudWatch Logs
-resource "aws_iam_role" "api_gateway_cloudwatch_logs" {
-  name = "${var.name_prefix}-api-gateway-logs-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Action = "sts:AssumeRole"
-        Effect = "Allow"
-        Principal = {
-          Service = "apigateway.amazonaws.com"
-        }
-      }
-    ]
-  })
-
-  tags = {
-    Name        = "${var.name_prefix}-api-gateway-logs-role"
-    Environment = var.environment
-  }
-}
-
-# Attach CloudWatch Logs policy to the IAM role
-resource "aws_iam_role_policy_attachment" "api_gateway_cloudwatch_logs" {
-  role       = aws_iam_role.api_gateway_cloudwatch_logs.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs"
-}
-
-# Set up API Gateway account settings with CloudWatch Logs role
-resource "aws_api_gateway_account" "this" {
-  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_logs.arn
-
-  depends_on = [
-    aws_iam_role_policy_attachment.api_gateway_cloudwatch_logs
-  ]
-}
-
 # Create API Gateway Stage
 resource "aws_api_gateway_stage" "this" {
   deployment_id = aws_api_gateway_deployment.this.id

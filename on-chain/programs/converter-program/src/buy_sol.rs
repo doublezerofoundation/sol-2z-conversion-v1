@@ -19,6 +19,7 @@ use crate::{
             system::{AccessByDeniedPerson, AccessDuringSystemHalt}
         },
         structs::OraclePriceData,
+        constant::MAX_FILLS_QUEUE_SIZE
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -209,11 +210,23 @@ impl<'info> BuySol<'info> {
 
         // Add it to fills registry.
         let fills_registry = &mut self.fills_registry.load_mut()?;
-        let fill = Fill {
+
+        require!(
+            (fills_registry.count as usize) < MAX_FILLS_QUEUE_SIZE,
+            DoubleZeroError::RegistryFull
+        );
+
+        // Insert the new fill.
+        let tail_index = fills_registry.tail as usize;
+        fills_registry.fills[tail_index] = Fill {
             sol_in: sol_quantity,
             token_2z_out: tokens_required,
         };
-        fills_registry.enqueue(fill)?;
+
+        // Update tail and count.
+        fills_registry.tail = (fills_registry.tail + 1) % MAX_FILLS_QUEUE_SIZE as u64;
+        fills_registry.count += 1;
+
         fills_registry.total_sol_pending += sol_quantity;
         fills_registry.total_2z_pending += tokens_required;
 

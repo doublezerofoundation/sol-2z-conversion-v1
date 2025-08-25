@@ -81,7 +81,7 @@ docker run -d --name $CONTAINER_NAME --restart unless-stopped \
   --log-opt awslogs-stream=$INSTANCE_ID \
   --log-opt awslogs-create-group=true \
   -v /opt/app/logs:/app/logs \
-  -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e INSTANCE_ID=$INSTANCE_ID \
+  -e ENVIRONMENT=${environment} -e AWS_REGION=$REGION -e INSTANCE_ID=$INSTANCE_ID -e NODE_ENV="${environment}"  \
   %{ for key, value in container_environment_vars ~}-e ${key}=${value} %{ endfor ~}\
   $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 

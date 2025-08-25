@@ -111,7 +111,7 @@ Generate keypair for both the programs and copy keypair into the `.keys` directo
 ### Two ways of Deploying
 There are two ways to deploy your application.
 - Manual deployment using anchor CLI
-- Using `build_and_deploy.sh` script
+- Using `provision.sh` script
 
 ### Manual Deployment
 Use the anchor CLI commands to build and deploy the program.
@@ -124,8 +124,8 @@ anchor build && anchor deploy --program-name PROGRAM_NAME --program-keypair ..ke
 eg: anchor build && anchor deploy --program-name converter-program --program-keypair ./.keys/converter-program-keypair.json
 ```
 
-### Using `build_and_deploy.sh` script
-You can also use the `build_and_deploy.sh` script to build and deploy the program. This script will build the program and
+### Using `provision.sh` script
+You can also use the `provision.sh` script to build and deploy the program. This script will build the program and
 deploy it to the environment.
 
 #### Options
