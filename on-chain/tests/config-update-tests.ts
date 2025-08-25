@@ -69,7 +69,7 @@ describe("Configuration Registry Update Tests", async () => {
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
-  it("should fail to get conversion price for invalid min discount rate", async () => {
+  it("should fail to update with invalid min discount rate", async () => {
     // Set min discount rate to 5001
     await updateConfigsAndVerifyFail(program, {
       ...DEFAULT_CONFIGS,

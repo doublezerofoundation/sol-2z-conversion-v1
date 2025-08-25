@@ -374,7 +374,7 @@ describe("Consume fills tests", () => {
             expectedFillsConsumed = 2;
             const partiallyFilledSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
             expectedTokenConsumed = reminderPartialFillSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL
-            + partiallyFilledSolAmount * Math.floor(askPrices[4] * bidFactor) / LAMPORTS_PER_SOL;
+                + partiallyFilledSolAmount * Math.floor(askPrices[4] * bidFactor) / LAMPORTS_PER_SOL;
 
             await consumeFillsSuccess(
                 program,
