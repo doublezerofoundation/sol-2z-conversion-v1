@@ -6,6 +6,7 @@ import { getOraclePriceData } from "../../core/utils/price-oracle";
 import { BuySolScenario } from "../../scenarios/buy-sol-scenario";
 import { extractTxHashFromResult } from "../../core/utils/test-helper";
 import { getConfig, updateConfig } from "../../core/utils/config-util";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const userBuySolTests: Test[] = [
     {
@@ -146,6 +147,24 @@ export const userBuySolTests: Test[] = [
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
             await scenario.buySolAndVerify(amount);
             // verification is covered in the buySolAndVerify function
+        }
+    },
+    {
+        name: "user_buy_sol_fail_same_slot",
+        description: "User should not be able to buy SOL twice in the same slot",
+        execute: async (scenario: BuySolScenario) => {
+            const oraclePrice = await getOraclePriceData();
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+
+            // Ensure user has enough balance for both attempts
+            await scenario.checkAndReimburseUser2ZBalance(amount * 2);
+            await scenario.airdropToMockVault(getConfig().sol_quantity / LAMPORTS_PER_SOL * 2);
+
+            // First buy should succeed
+            await scenario.buySol(amount);
+
+            // Second buy in the same slot should fail
+            await scenario.buySolAndVerifyFail(amount, "Only one trade is allowed per slot");
         }
     }
 ]

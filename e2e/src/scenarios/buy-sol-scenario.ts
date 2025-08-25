@@ -8,7 +8,7 @@ import { CommonScenario } from "./common-scenario";
 import { expect, assert } from "chai";
 import { getConfig } from "../core/utils/config-util";
 import { getFillsRegistry, getFillsRegistryAccountAddress } from "../core/utils/fills-registry";
-import { OraclePriceData } from "../core/utils/price-oracle";
+import { getOraclePriceData, OraclePriceData } from "../core/utils/price-oracle";
 import { AnchorError, BN } from "@coral-xyz/anchor";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 
@@ -90,6 +90,10 @@ export class BuySolScenario extends CommonScenario {
             this.handleExpectedError(error, errorMessage);
             return error!.toString();
         }
+    }
+
+    public async buySol(amount: number): Promise<string> {
+        return await this.user.buySolCommand(amount);
     }
 
     public async buySolAndVerifyFailWithAttestation(amount: number, oraclePriceData: OraclePriceData, errorMessage: string): Promise<AnchorError> {
@@ -202,5 +206,10 @@ export class BuySolScenario extends CommonScenario {
 
     public getUserPublicKey(): PublicKey {
         return this.user.session.getPublicKey();
+    }
+
+    public async getCurrentSlot(): Promise<number> {
+        const slot = await this.admin.session.getProgram().provider.connection.getSlot();
+        return slot;
     }
 }
