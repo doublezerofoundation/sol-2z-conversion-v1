@@ -1,13 +1,13 @@
 use anchor_client::{
     anchor_lang::prelude::AccountMeta,
     solana_sdk::{
-        hash::hash, instruction::Instruction, pubkey::Pubkey, signature::Keypair, signer::Signer,
+        hash::hash, instruction::Instruction, pubkey::Pubkey, signer::Signer,
     },
 };
 use cli_common::{
     structs::ProgramStateAccount,
     transaction_executor::{get_account_data, send_batch_instructions},
-    utils::{env_var::load_private_key, pda_helper, ui},
+    utils::{env_var::load_payer_from_env, pda_helper, ui},
 };
 use std::{error::Error, str::FromStr};
 
@@ -44,14 +44,7 @@ pub fn toggle_system_state(activate: bool, pause: bool) -> Result<(), Box<dyn Er
 
     let set_to = validate_and_extract_user_input(activate, pause)?;
 
-    let private_key = load_private_key()?;
-
-    // Added due to backwards compatibility with anchor 0.30.1
-    #[allow(deprecated)]
-    let admin = Keypair::from_bytes(&private_key)?;
-
-    // TODO: Uncomment when upgrading to anchor 0.31.1
-    // let admin = Keypair::try_from(&private_key[..])?;
+    let admin = load_payer_from_env()?;
 
     let admin_config = AdminConfig::load_admin_config()?;
     let program_id = Pubkey::from_str(&admin_config.program_id)?;
