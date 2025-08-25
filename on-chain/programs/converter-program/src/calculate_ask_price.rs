@@ -151,6 +151,8 @@ pub fn calculate_conversion_rate(
 #[cfg(test)]
 mod tests {
 
+    use super::*;
+
     #[test]
     fn test_calculate_conversion_rate() {
         for (swap_rate, coefficient, max_discount_rate, min_discount_rate, s_last, s_now, expected_rate) in [
@@ -185,17 +187,19 @@ mod tests {
             (10000000, 4500, 5000, 1000, 100, 8989, 5000000), // current slot is just passed max slots and capped at max
             (10000000, 4500, 5000, 1000, 100, 10000, 5000000), // current slot is well beyond max slots and capped at max
 
-            // default settings for different slot diffs, bounds [10%, 50%]
+            // edge cases
             (10000000, 0, 5000, 1000, 100, 200, 9000000), // min coefficient bounded at min discount
             (10000000, 100000000, 5000, 1000, 100, 200, 5000000), // max coefficient bounded at max discount
+            (0, 4500, 5000, 1000, 100, 200, 0), // zero swap rate
+            (10000000, 4500, 1000, 5000, 100, 200, 5000000), // min discount larger than max
 
         ] {
-            let oracle_price_data = super::OraclePriceData {
+            let oracle_price_data = OraclePriceData {
                 swap_rate: swap_rate,
                 timestamp: 0,
                 signature: "unused".to_string(),
             };
-            let conversion_rate = super::calculate_conversion_rate(
+            let conversion_rate = calculate_conversion_rate(
                 oracle_price_data,
                 coefficient,
                 max_discount_rate,
@@ -209,4 +213,56 @@ mod tests {
         }
     }
 
+
+    #[test]
+    fn test_calculate_conversion_rate_error() {
+        for (swap_rate, coefficient, max_discount_rate, min_discount_rate, s_last, s_now) in [
+            (10000000, 4500, 5000, 1000, 200, 100), // invalid slot diff, s_last > s_now
+        ] {
+            let oracle_price_data = OraclePriceData {
+                swap_rate: swap_rate,
+                timestamp: 0,
+                signature: "unused".to_string(),
+            };
+            let conversion_rate = calculate_conversion_rate(
+                oracle_price_data,
+                coefficient,
+                max_discount_rate,
+                min_discount_rate,
+                s_last,
+                s_now,
+            );
+            assert!(conversion_rate.is_err());
+        }
+    }
+    
+    #[test]
+    #[should_panic]
+    fn test_calculate_conversion_rate_panic() {
+        for (swap_rate, coefficient, max_discount_rate, min_discount_rate, s_last, s_now) in [
+            (u64::MAX, 4500, 5000, 1000, 100, 200), // invalid oracle swap rate
+            (10000000, u64::MAX, 5000, 1000, 100, 200), // invalid coefficient
+            (10000000, 4500, u64::MAX, 1000, 100, 200), // invalid max discount rate
+            (10000000, 4500, 5000, u64::MAX, 100, 200), // invalid min discount rate
+            (10000000, 4500, u64::MAX, u64::MAX, 100, 200), // invalid discount rates
+            (10000000, 4500, 5000, 1000, u64::MAX, 200), // invalid start slot
+            (10000000, 4500, 5000, 1000, 100, u64::MAX), // invalid start slot
+            (10000000, 4500, 5000, 1000, u64::MAX, u64::MAX), // invalid slots
+        ] {
+            let oracle_price_data = OraclePriceData {
+                swap_rate: swap_rate,
+                timestamp: 0,
+                signature: "unused".to_string(),
+            };
+            let conversion_rate = calculate_conversion_rate(
+                oracle_price_data,
+                coefficient,
+                max_discount_rate,
+                min_discount_rate,
+                s_last,
+                s_now,
+            );
+            assert!(conversion_rate.is_err());
+        }
+    }
 }

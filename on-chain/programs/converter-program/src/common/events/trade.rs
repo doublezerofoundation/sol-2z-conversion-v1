@@ -19,4 +19,3 @@ pub struct BidTooLowEvent {
     pub buyer: Pubkey,
     pub epoch: u64
 }
-
