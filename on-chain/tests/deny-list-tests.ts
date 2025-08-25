@@ -13,6 +13,7 @@ import {
     setDenyListAuthorityAndVerify
 } from "./core/test-flow/deny-list";
 import { setup } from "./core/setup";
+import {ErrorMsg, MAX_DENY_LIST_SIZE} from "./core/constants";
 
 describe("Deny List Tests", async () => {
     const program = await setup();
@@ -29,12 +30,12 @@ describe("Deny List Tests", async () => {
     const testAddress3 = new PublicKey("11111111111111111111111111111114");
 
     before(async () => {
-        // Ensure system is initialized before running deny list tests
+        // Ensure system is initialized before running deny list tests.
         try {
             await fetchDenyListRegistry(program);
             console.log("Deny list registry already exists, continuing with tests...");
             
-            // Clear any existing addresses to start with a clean state
+            // Clear any existing addresses to start with a clean state.
             const currentDenyList = await fetchDenyListRegistry(program);
             console.log(`Clearing ${currentDenyList.deniedAddresses.length} existing addresses from deny list...`);
             
@@ -42,13 +43,13 @@ describe("Deny List Tests", async () => {
                 try {
                     await removeFromDenyListAndVerify(program, address, adminKeyPair);
                 } catch {
-                    // Continue even if removal fails - this is expected in cleanup
+                    // Continue even if removal fails - this is expected in cleanup.
                 }
             }
             
             console.log("Deny list cleaned. Starting tests with empty deny list.");
         } catch (error: any) {
-            // If deny list registry doesn't exist, initialize the system
+            // If deny list registry doesn't exist, initialize the system.
             if (error.message.includes("Account does not exist")) {
                 console.log("Initializing system for deny list tests...");
                 await systemInitializeAndVerify(program, adminKeyPair, DEFAULT_CONFIGS);
@@ -60,11 +61,11 @@ describe("Deny List Tests", async () => {
         }
     });
 
-    describe("Add to Deny List", () => {
+    describe("Add to deny list", () => {
         it("Should successfully add an address to the deny list", async () => {
             await addToDenyListAndVerify(program, testAddress1, adminKeyPair);
             
-            // Verify the state
+            // Verify the state.
             const denyList = await fetchDenyListRegistry(program);
             assert.equal(denyList.deniedAddresses.length, 1, "Should have 1 address in deny list");
             assert.isTrue(denyList.deniedAddresses.some(addr => addr.equals(testAddress1)), "testAddress1 should be in deny list");
@@ -74,7 +75,7 @@ describe("Deny List Tests", async () => {
             await addToDenyListAndVerify(program, testAddress2, adminKeyPair);
             await addToDenyListAndVerify(program, testAddress3, adminKeyPair);
             
-            // Verify all addresses are in the list (should now have testAddress1, testAddress2, testAddress3)
+            // Verify all addresses are in the list (should now have testAddress1, testAddress2, testAddress3).
             const denyList = await fetchDenyListRegistry(program);
             assert.equal(denyList.deniedAddresses.length, 3, "Should have 3 addresses in deny list");
             
@@ -89,7 +90,7 @@ describe("Deny List Tests", async () => {
             await addToDenyListShouldFail(
                 program,
                 testAddress1,
-                "Address already added to Deny List",
+                ErrorMsg.ALREADY_IN_DENIED_LIST,
                 adminKeyPair
             );
         });
@@ -98,15 +99,10 @@ describe("Deny List Tests", async () => {
             const nonAuthorityKeyPair = Keypair.generate();
             await airdropToActivateAccount(program.provider.connection, nonAuthorityKeyPair.publicKey);
 
-            // Note: Current implementation doesn't actually check authority,
-            // so this test will currently pass. This should be updated when
-            // proper authority checking is implemented in the contract.
             try {
                 await addToDenyListAndVerify(program, new PublicKey("11111111111111111111111111111115"), nonAuthorityKeyPair);
-                console.log("Note: Non-authority was able to add to deny list. Authority checking should be implemented.");
             } catch (error) {
-                // This is the expected behavior once authority checking is implemented
-                assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
+                assert.include(error.message, "Unauthorized", ErrorMsg.UNAUTHORIZED_ADMIN);
             }
         });
 
@@ -119,10 +115,10 @@ describe("Deny List Tests", async () => {
             
             const denyListAfter = await fetchDenyListRegistry(program);
             
-            // Verify update count increased
+            // Verify update count increased.
             assert.isAbove(denyListAfter.updateCount.toNumber(), denyListBefore.updateCount.toNumber(), "Update count should increase");
             
-            // Verify timestamp was updated (should be greater than or equal to before)
+            // Verify timestamp was updated (should be greater than or equal to before).
             assert.isAtLeast(denyListAfter.lastUpdated.toNumber(), denyListBefore.lastUpdated.toNumber(), "Timestamp should not decrease");
         });
     });
@@ -139,7 +135,7 @@ describe("Deny List Tests", async () => {
             
             await removeFromDenyListAndVerify(program, testAddress2, adminKeyPair);
             
-            // Verify testAddress2 is no longer in the list
+            // Verify testAddress2 is no longer in the list.
             const denyListAfter = await fetchDenyListRegistry(program);
             const isStillPresent = denyListAfter.deniedAddresses.some(addr => addr.equals(testAddress2));
             
@@ -152,7 +148,7 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "Address not found in Deny List",
+                ErrorMsg.NOT_FOUND_IN_DENIED_LIST,
                 adminKeyPair
             );
         });
@@ -161,15 +157,10 @@ describe("Deny List Tests", async () => {
             const nonAuthorityKeyPair = Keypair.generate();
             await airdropToActivateAccount(program.provider.connection, nonAuthorityKeyPair.publicKey);
 
-            // Note: Current implementation doesn't actually check authority,
-            // so this test will currently pass. This should be updated when
-            // proper authority checking is implemented in the contract.
             try {
                 await removeFromDenyListAndVerify(program, testAddress1, nonAuthorityKeyPair);
-                console.log("Note: Non-authority was able to remove from deny list. Authority checking should be implemented.");
             } catch (error) {
-                // This is the expected behavior once authority checking is implemented
-                assert.include(error.message, "Unauthorized", `Unauthorized Admin`);
+                assert.include(error.message, "Unauthorized", ErrorMsg.UNAUTHORIZED_ADMIN);
             }
         });
 
@@ -191,7 +182,7 @@ describe("Deny List Tests", async () => {
         });
     });
 
-    describe("Edge Cases and Constraints", () => {
+    describe("Edge cases and constraints", () => {
         it("Should maintain list integrity after multiple operations", async () => {
             // Clear the deny list first to ensure clean state
             const currentDenyList = await fetchDenyListRegistry(program);
@@ -200,7 +191,7 @@ describe("Deny List Tests", async () => {
                 try {
                     await removeFromDenyListAndVerify(program, address, adminKeyPair);
                 } catch {
-                    // Continue even if removal fails - this is expected in cleanup
+                    // Continue even if removal fails - this is expected in cleanup.
                 }
             }
             
@@ -226,10 +217,10 @@ describe("Deny List Tests", async () => {
             assert.isFalse(denyList.deniedAddresses.some(addr => addr.equals(addr2)), "Address 2 should be removed from deny list");
             assert.isTrue(denyList.deniedAddresses.some(addr => addr.equals(addr3)), "Address 3 should still be in deny list");
             
-            // Add addr2 back
+            // Add addr2 back.
             await addToDenyListAndVerify(program, addr2, adminKeyPair);
             
-            // Verify all are back
+            // Verify all are back.
             await verifyDenyListState(program, [addr1, addr2, addr3]);
         });
 
@@ -241,12 +232,12 @@ describe("Deny List Tests", async () => {
                 try {
                     await removeFromDenyListAndVerify(program, address, adminKeyPair);
                 } catch {
-                    // Continue even if removal fails - this is expected in cleanup
+                    // Continue even if removal fails - this is expected in cleanup.
                 }
             }
             
-            // Fill deny list to maximum capacity (MAX_DENY_LIST_SIZE = 50)
-            const maxCapacity = 50;
+            // Fill deny list to maximum capacity.
+            const maxCapacity = MAX_DENY_LIST_SIZE;
             
             console.log(`Filling deny list to maximum capacity (${maxCapacity} addresses)...`);
             
@@ -255,7 +246,7 @@ describe("Deny List Tests", async () => {
                 const keyBytes = new Uint8Array(32);
                 keyBytes[0] = Math.floor(i / 256);
                 keyBytes[1] = i % 256;
-                // Fill remaining bytes with a pattern to ensure uniqueness
+                // Fill remaining bytes with a pattern to ensure uniqueness.
                 for (let j = 2; j < 32; j++) {
                     keyBytes[j] = (i + j) % 256;
                 }
@@ -270,7 +261,7 @@ describe("Deny List Tests", async () => {
             
             // Try to add one more address - this should fail
             const extraKeyBytes = new Uint8Array(32);
-            extraKeyBytes.fill(255); // Use a different pattern to ensure uniqueness
+            extraKeyBytes.fill(255); // Use a different pattern to ensure uniqueness.
             const extraAddress = new PublicKey(extraKeyBytes);
             
             console.log("Attempting to add address beyond maximum capacity...");
@@ -278,7 +269,7 @@ describe("Deny List Tests", async () => {
             await addToDenyListShouldFail(
                 program,
                 extraAddress,
-                "Deny list is full",
+                ErrorMsg.DENY_LIST_FULL,
                 adminKeyPair
             );
             
@@ -301,7 +292,7 @@ describe("Deny List Tests", async () => {
                 try {
                     await removeFromDenyListAndVerify(program, address, adminKeyPair);
                 } catch {
-                    // Continue even if removal fails - this is expected in cleanup
+                    // Continue even if removal fails - this is expected in cleanup.
                 }
             }
             
@@ -315,11 +306,11 @@ describe("Deny List Tests", async () => {
             await removeFromDenyListShouldFail(
                 program,
                 nonExistentAddress,
-                "Address not found in Deny List",
+                ErrorMsg.NOT_FOUND_IN_DENIED_LIST,
                 adminKeyPair
             );
             
-            // Add one address to ensure list works after being empty
+            // Add one address to ensure list works after being empty.
             const testAddrBytes = new Uint8Array(32); testAddrBytes.fill(61);
             const testAddr = new PublicKey(testAddrBytes);
             await addToDenyListAndVerify(program, testAddr, adminKeyPair);

@@ -4,6 +4,8 @@ import { getProgramStatePDA } from "../utils/pda-helper";
 import { accountExists, getDefaultKeyPair } from "../utils/accounts";
 import { Keypair } from "@solana/web3.js";
 import { assert, expect } from "chai";
+import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
+import {Events} from "../constants";
 
 export const toggleSystemStateAndVerify = async (
     program: Program<ConverterProgram>,
@@ -22,8 +24,9 @@ export const toggleSystemStateAndVerify = async (
     const programState = await program.account.programStateAccount.fetch(programStatePDA);
     assert.isTrue(programState.isHalted !== set_to, "System state should not be the same as the set_to");
 
+    let txSig: string;
     try {
-        await program.methods.toggleSystemState(set_to)
+        txSig = await program.methods.toggleSystemState(set_to)
         .accounts({
             admin: adminKeypair.publicKey,
         })
@@ -36,6 +39,12 @@ export const toggleSystemStateAndVerify = async (
 
     const programStateAfter = await program.account.programStateAccount.fetch(programStatePDA);
     assert.isTrue(programStateAfter.isHalted === set_to, "System state should be the same as the set_to");
+
+    // assert whether event has been emitted or not
+    const eventName = set_to ? Events.SYSTEM_HALTED : Events.SYSTEM_UNHALTED;
+    const logs = await getTransactionLogs(program.provider, txSig);
+    const event = await findAnchorEventInLogs(logs, program.idl, eventName);
+    expect(event, "Appropriate Event should be emitted").to.exist;
 }
 
 export const toggleSystemStateAndVerifyFail = async (
@@ -63,7 +72,7 @@ export const toggleSystemStateAndVerifyFail = async (
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "Toggle system state should be rejected as expected");
-        return; // Exit early — test passes
+        return; // Exit early — test passes.
     }
 
     assert.fail("Toggle system state should be rejected as expected");

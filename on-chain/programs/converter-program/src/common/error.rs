@@ -3,25 +3,25 @@ use anchor_lang::prelude::*;
 // NOTE: Anchor 0.30.1 adds 6000 for user error codes)
 #[error_code]
 pub enum DoubleZeroError {
-    #[msg("User is blocked in the DenyList")]
+    #[msg("User is blocked in the deny list")]
     UserInsideDenyList, // 6000 0x1796
 
-    #[msg("Unauthorized Admin")]
+    #[msg("Unauthorized admin")]
     UnauthorizedAdmin, // 6001
 
-    #[msg("Provided Attestation is Invalid")]
+    #[msg("Provided attestation is invalid")]
     InvalidAttestation, // 6002
 
-    #[msg("Oracle Public Key is Invalid")]
+    #[msg("Oracle public key is invalid")]
     InvalidOraclePublicKey, // 6003
 
-    #[msg("Provided Attestation is not Authentic")]
+    #[msg("Provided attestation is not authentic")]
     AttestationVerificationError, // 6004
 
     #[msg("Invalid discount rate")]
     InvalidDiscountRate, // 6005
 
-    #[msg("Invalid sol quantity")]
+    #[msg("Invalid SOL quantity")]
     InvalidSolQuantity, // 6006
 
     #[msg("Invalid ask price")]
@@ -45,19 +45,19 @@ pub enum DoubleZeroError {
     #[msg("Invalid oracle swap rate")]
     InvalidOracleSwapRate, // 6013
 
-    #[msg("Invalid Timestamp")]
+    #[msg("Invalid timestamp")]
     InvalidTimestamp, // 6014
 
     #[msg("Provided bid is too low")]
     BidTooLow, // 6015
 
-    #[msg("Provided attestation is Outdated")]
+    #[msg("Provided attestation is outdated")]
     StalePrice, // 6016
 
     #[msg("Deny list is full")]
     DenyListFull, // 6017
 
-    #[msg("Address already added to Deny List")]
+    #[msg("Address already added to deny list")]
     AlreadyExistsInDenyList, // 6018
 
     #[msg("Invalid system state")]
@@ -66,27 +66,30 @@ pub enum DoubleZeroError {
     #[msg("Invalid conversion rate")]
     InvalidConversionRate, // 6020
 
-    #[msg("Address not found in Deny List")]
+    #[msg("Address not found in deny list")]
     AddressNotInDenyList, // 6021
 
     #[msg("System is halted")]
     SystemIsHalted, // 6022
 
-    #[msg("Arithmetic Error has occurred")]
+    #[msg("Arithmetic error has occurred")]
     ArithmeticError, // 6023
 
-    #[msg("User is not authorized to do Dequeue Action")]
+    #[msg("User is not authorized to do fills consumption")]
     UnauthorizedFillConsumer, // 6024
 
-    #[msg("Unauthorized Deny List Authority")]
+    #[msg("Unauthorized deny list authority")]
     UnauthorizedDenyListAuthority, // 6025
 
-    #[msg("FillsRegistry is full — cannot enqueue.")]
+    #[msg("Fills registry is full — cannot enqueue")]
     RegistryFull, //6026
 
-    #[msg("FillsRegistry is empty — cannot dequeue.")]
-    RegistryEmpty, //6027,
+    #[msg("Fills registry is empty — cannot consume")]
+    EmptyFillsRegistry, // 6027
+
+    #[msg("Provided SOL amount for consumption is invalid")]
+    InvalidMaxSolAmount, // 6028
 
     #[msg("Only one trade is allowed per slot")]
-    SingleTradePerSlot, //6028
+    SingleTradePerSlot, //6029
 }

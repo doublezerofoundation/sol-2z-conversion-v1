@@ -19,6 +19,7 @@ use crate::{
             system::{AccessByDeniedPerson, AccessDuringSystemHalt}
         },
         structs::OraclePriceData,
+        constant::MAX_FILLS_QUEUE_SIZE
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -68,18 +69,18 @@ pub struct BuySol<'info> {
         token::mint = double_zero_mint,
     )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after knowing DoubleZero Token Mint
     #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after client informs actual programId
     #[account(mut)]
     pub config_account: AccountInfo<'info>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after client informs actual address
     #[account(mut)]
     pub revenue_distribution_journal: AccountInfo<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    /// CHECK: program address - TODO: implement address validations
+    /// CHECK: program address - TODO: implement address validations after client informs actual address
     pub revenue_distribution_program: AccountInfo<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,
@@ -92,20 +93,20 @@ impl<'info> BuySol<'info> {
         oracle_price_data: OraclePriceData
     ) -> Result<()> {
 
-        // System Halt validation
+        // System halt validation.
         if self.program_state.is_halted {
             emit!(AccessDuringSystemHalt { accessed_by: self.signer.key() });
             return err!(DoubleZeroError::SystemIsHalted);
         }
 
-        // Checking whether address is inside the deny list
+        // Checking whether address is inside the deny list.
         let signer_key = self.signer.key;
         if self.deny_list_registry.denied_addresses.contains(signer_key) {
             emit!(AccessByDeniedPerson { accessed_by: self.signer.key() });
             return err!(DoubleZeroError::UserInsideDenyList);
         }
 
-        // Restricting only trade once per slot.
+        // Restricting a single trade per slot.
         let clock = Clock::get()?;
         require!(
             clock.slot > self.program_state.last_trade_slot,
@@ -120,7 +121,8 @@ impl<'info> BuySol<'info> {
         )?;
 
         let sol_quantity = self.configuration_registry.sol_quantity;
-        // call util function to get current ask price
+
+        // Get current ask price including discounts.
         let ask_price = calculate_conversion_rate(
             oracle_price_data,
             self.configuration_registry.coefficient,
@@ -130,10 +132,10 @@ impl<'info> BuySol<'info> {
             clock.slot
         )?;
 
-        msg!("Ask Price {}", ask_price);
-        msg!("Bid Price {}", bid_price);
+        msg!("Bid price {}", bid_price);
+        msg!("Ask price {}", ask_price);
 
-        // Check if bid meets ask
+        // Check if bid price meets the ask price.
         if bid_price < ask_price {
             emit!(BidTooLowEvent {
                 sol_amount: sol_quantity,
@@ -153,7 +155,7 @@ impl<'info> BuySol<'info> {
 
         msg!("Tokens required {}", tokens_required);
 
-        // Transfer 2Z from signer
+        // Transfer 2Z from signer.
         let cpi_accounts = TransferChecked {
             mint: self.double_zero_mint.to_account_info(),
             from: self.user_token_account.to_account_info(),
@@ -165,7 +167,7 @@ impl<'info> BuySol<'info> {
         let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
         token_interface::transfer_checked(cpi_context, tokens_required, 6)?;
 
-        // Does cpi calls to withdraw sol and transfer it to signer
+        // Does CPI calls to withdraw SOL and transfer it to signer.
         let cpi_program_id = self.revenue_distribution_program.key();
 
         let account_metas = vec![
@@ -177,8 +179,8 @@ impl<'info> BuySol<'info> {
             AccountMeta::new_readonly(self.system_program.key(), false)
         ];
 
-        // call cpi for sol withdrawal
-        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol"
+        // Call CPI for SOL withdrawal.
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol" after clients confirms
         let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
         cpi_data = [
             cpi_data,
@@ -206,17 +208,29 @@ impl<'info> BuySol<'info> {
             ]],
         )?;
 
-        // Add it to fills registry
+        // Add it to fills registry.
         let fills_registry = &mut self.fills_registry.load_mut()?;
-        let fill = Fill {
+
+        require!(
+            (fills_registry.count as usize) < MAX_FILLS_QUEUE_SIZE,
+            DoubleZeroError::RegistryFull
+        );
+
+        // Insert the new fill.
+        let tail_index = fills_registry.tail as usize;
+        fills_registry.fills[tail_index] = Fill {
             sol_in: sol_quantity,
             token_2z_out: tokens_required,
         };
-        fills_registry.enqueue(fill)?;
+
+        // Update tail and count.
+        fills_registry.tail = (fills_registry.tail + 1) % MAX_FILLS_QUEUE_SIZE as u64;
+        fills_registry.count += 1;
+
         fills_registry.total_sol_pending += sol_quantity;
         fills_registry.total_2z_pending += tokens_required;
 
-        // Update the last trade slot
+        // Update the last trade slot.
         self.program_state.last_trade_slot = clock.slot;
 
         msg!("Buy SOL is successful");

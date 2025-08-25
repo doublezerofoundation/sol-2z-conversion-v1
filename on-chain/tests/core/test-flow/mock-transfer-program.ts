@@ -16,7 +16,7 @@ export async function initializeMockTransferSystemAndVerify(
     program: Program<MockTransferProgram>,
     adminKeyPair: Keypair = getDefaultKeyPair(),
 ) {
-    // List of Accounts to be verified
+    // List of accounts to be verified.
     const pdas = [
         getMockVaultPDA(program.programId),
         getMockDoubleZeroTokenMintPDA(program.programId),
@@ -25,7 +25,7 @@ export async function initializeMockTransferSystemAndVerify(
         getMockRevenueDistributionJournal(program.programId),
     ];
 
-    // Accounts to be initialized should not exist before initialization
+    // Accounts to be initialized should not exist before initialization.
     let [mockVaultExists, mockTokenMintExists, mockProtocolTreasuryAccountExists, mockConfigExists, mockRevenueDistributionJournalExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))
     );
@@ -36,7 +36,7 @@ export async function initializeMockTransferSystemAndVerify(
     assert.isFalse(mockConfigExists, "Mock Config Account should not exist before initialization");
     assert.isFalse(mockRevenueDistributionJournalExists, "Mock Revenue Distribution Journal Account should not exist before initialization");
 
-    // Initialization
+    // Initialization.
     try {
         await program.methods.initialize()
             .accounts({
@@ -87,7 +87,6 @@ export async function mint2z(
                 userTokenAccount: recipientTokenAccount
             })
             .rpc();
-        // console.log("Token Mint is successful. Transaction Hash", tx);
     } catch (e) {
         console.error("Token Mint  failed:", e);
         assert.fail("Token Mint  failed");

@@ -2,7 +2,12 @@ import { BN, Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
 import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
-import { decodeAndValidateReturnData, getUint64FromBuffer, ReturnData } from "../utils/return-data";
+import {
+    decodeAndValidateReturnData,
+    findAnchorEventInLogs,
+    getUint64FromBuffer,
+    ReturnData
+} from "../utils/return-data";
 import { Keypair } from "@solana/web3.js";
 import { getDefaultKeyPair } from "../utils/accounts";
 import { getProgramStatePDA } from "../utils/pda-helper";
@@ -57,7 +62,7 @@ export const getConversionPriceAndVerify = async (program: Program<ConverterProg
             const actualAskPrice = getUint64FromBuffer(decodedReturnData);
 
             // Assert that actualAskPrice is within errorMargin of expectedAskPrice
-            const errorMargin = 1;
+            const errorMargin = 0.1;
             const lowerBound = expectedAskPrice * (1 - errorMargin);
             const upperBound = expectedAskPrice * (1 + errorMargin);
 
@@ -77,6 +82,7 @@ export const getConversionPriceToFail = async (
     oraclePriceData: OraclePriceData,
     expectedError: string,
     signer: Keypair = getDefaultKeyPair(),
+    expectedEvent = ""
 ) => {
     try {
         await program.methods.getConversionRate({
@@ -92,6 +98,10 @@ export const getConversionPriceToFail = async (
     } catch (e) {
         if (e!.toString().includes(expectedError)) {
             expect((new Error(e!.toString())).message).to.include(expectedError);
+            if(expectedEvent !== "") {
+                const event = findAnchorEventInLogs(e.logs, program.idl, expectedEvent);
+                expect(event, "Appropriate event should be emitted").to.exist;
+            }
             assert.ok(true, "Transaction failed as expected");
             return;
         } else {

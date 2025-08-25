@@ -7,12 +7,12 @@ import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
 import { getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
-import { BPS, TOKEN_DECIMAL } from "./core/constants";
+import {BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
 import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
-import { BN, Idl, Program } from "@coral-xyz/anchor";
-import { getMockDoubleZeroTokenMintPDA, getMockVaultPDA } from "./core/utils/pda-helper";
+import { Idl, Program } from "@coral-xyz/anchor";
+import { getMockDoubleZeroTokenMintPDA } from "./core/utils/pda-helper";
 import { createTokenAccount } from "./core/utils/token-utils";
 import { airdropVault } from "./core/utils/mock-transfer-program-utils";
 import { initializeMockTransferSystemIfNeeded, mint2z } from "./core/test-flow/mock-transfer-program";
@@ -157,7 +157,7 @@ describe("Conversion Price Tests", async () => {
         assert(price1 < maxPrice, "Conversion price should be less than maximum price");
 
         // Execute a trade.
-        const bidPrice = price1 + 1 * TOKEN_DECIMAL;
+        const bidPrice = price1 + TOKEN_DECIMAL;
         await buySolAndVerify(program, mockTransferProgram, userAta, bidPrice, user, oraclePriceData);
 
         // Get the new conversion price.
@@ -183,7 +183,7 @@ describe("Conversion Price Tests", async () => {
         await addToDenyListAndVerify(program, keypair.publicKey);
 
         // Conversion price fetch should fail for deny listed user.
-        await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the DenyList", keypair);
+        await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the deny list", keypair);
 
         // Revert: Remove user from deny list.
         await removeFromDenyListAndVerify(program, keypair.publicKey);
@@ -194,9 +194,15 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(-10, Math.floor(Date.now() / 1000));
 
         // Conversion price fetch should fail for negative swap rate.
-        // Since the swap rate is stored as a u64, it will be stored as a positive number even if it is negative.
+        // Since the swap rate is stored as an u64, it will be stored as a positive number even if it is negative.
         // But the attestation is not authentic, so the transaction should fail.
-        await getConversionPriceToFail(program, oraclePriceData, "Provided Attestation is not Authentic");
+        await getConversionPriceToFail(
+            program,
+            oraclePriceData,
+            ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
+            getDefaultKeyPair(),
+            Events.ATTESTATION_INVALID
+        );
     });
 
     it("Should fail to get conversion price for zero swap rate", async () => {
@@ -204,7 +210,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(0, Math.floor(Date.now() / 1000));
 
         // Conversion price fetch should fail for zero swap rate.
-        await getConversionPriceToFail(program, oraclePriceData, "InvalidOracleSwapRate");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.INVALID_ORACLE_SWAP_RATE);
     });
 
     it("Should fail to get conversion price for stale oracle data", async () => {
@@ -215,7 +221,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(20, staleTimestamp);
 
         // Conversion price fetch should fail for stale oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "StalePrice");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.STALE_PRICE);
     });
 
     it("Should fail to get conversion price for future oracle data", async () => {
@@ -226,7 +232,7 @@ describe("Conversion Price Tests", async () => {
         const oraclePriceData = await getOraclePriceDataFor(20, futureTimestamp);
 
         // Conversion price fetch should fail for future oracle data.
-        await getConversionPriceToFail(program, oraclePriceData, "StalePrice");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.STALE_PRICE);
     });
 
     it("Should fail to get conversion price for empty attestation signature", async () => {
@@ -235,7 +241,13 @@ describe("Conversion Price Tests", async () => {
         oraclePriceData.signature = "";
 
         // Conversion price fetch should fail for empty attestation signature.
-        await getConversionPriceToFail(program, oraclePriceData, "Attestation is not Authentic");
+        await getConversionPriceToFail(
+            program,
+            oraclePriceData,
+            ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
+            getDefaultKeyPair(),
+            Events.ATTESTATION_INVALID
+        );
     });
 
     it("Should fail to get conversion price for invalid attestation signature", async () => {
@@ -244,6 +256,6 @@ describe("Conversion Price Tests", async () => {
         oraclePriceData.signature = "invalid_signature";
 
         // Conversion price fetch should fail for invalid attestation signature.
-        await getConversionPriceToFail(program, oraclePriceData, "Attestation is Invalid");
+        await getConversionPriceToFail(program, oraclePriceData, ErrorMsg.ATTESTATION_INVALID);
     });
 });
