@@ -10,9 +10,19 @@ export async function consumeFillsSuccess(
     maxSolAmount: number,
     signer: Keypair,
     expectedTokenConsumed: number,
-    expectedFillsConsumed: number
+    expectedFillsConsumed: number,
+    beforeCount: number,
+    expectedFinalCount: number,
+    expectedHeadChange: number
 ): Promise<void> {
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
+    const fillsRegistryBefore = await getFillsRegistryAccount(program);
+    assert.equal(
+        fillsRegistryBefore.count,
+        beforeCount,
+        "After buy SOL, count should change as expected"
+    );
+
     const signature = await program.methods.dequeueFills(new BN(maxSolAmount))
         .accounts({
             fillsRegistry: fillsRegistryAddress,
@@ -52,10 +62,23 @@ export async function consumeFillsSuccess(
             assert.fail("Error decoding return data", error);
         }
     }
-// Check Output values
+
+    // Check Output values
     assert.equal(resultSolConsumed, maxSolAmount);
     assert.equal(resultTokenConsumed, expectedTokenConsumed);
     assert.equal(resultFillsConsumed, expectedFillsConsumed);
+
+    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
+    assert.equal(
+        fillsRegistryAfter.count,
+        expectedFinalCount,
+        "Count should change by correct amount"
+    );
+    assert.equal(
+        fillsRegistryAfter.head,
+        (fillsRegistryBefore.head + expectedHeadChange) % fillsRegistryBefore.maxCapacity,
+        "Head pointer should move by expected amount in circular buffer manner"
+    );
 }
 
 export async function consumeFillsFail(
@@ -90,17 +113,17 @@ export async function clearUpFillsRegistry(
 
     const solPending = fillsRegistryBefore.totalSolPending;
     const tokenPending = fillsRegistryBefore.total2ZPending;
-    const count = fillsRegistryBefore.count
+    const count = fillsRegistryBefore.count;
     if (count > 0) {
         await consumeFillsSuccess(
             program,
             solPending,
             userKeyPair,
             tokenPending,
+            count,
+            count,
+            0,
             count
         )
     }
-
-    const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-    assert.equal(fillsRegistryAfter.totalSolPending, 0);
 }

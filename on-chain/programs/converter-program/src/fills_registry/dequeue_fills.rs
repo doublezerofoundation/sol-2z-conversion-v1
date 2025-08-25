@@ -54,35 +54,34 @@ impl<'info> DequeueFills<'info> {
         
         let fills_registry = &mut self.fills_registry.load_mut()?;
         
-        // Dequeue Fills
+        // Dequeue fills.
         let mut sol_dequeued = 0u64;
         let mut token_2z_dequeued = 0u64;
         let mut fills_consumed = 0u64;
 
         require!(fills_registry.count > 0, DoubleZeroError::EmptyFillsRegistry);
 
-        // Consume fills until max_sol_amount reached
+        // Consume fills until max_sol_amount reached.
         while fills_registry.count > 0 && sol_dequeued < max_sol_amount {
             let head_index = fills_registry.head as usize;
             let next_entry = &fills_registry.fills[head_index];
             let remaining_sol = max_sol_amount - sol_dequeued; // safe, can't underflow
 
             let dequeued_fill = if next_entry.sol_in <= remaining_sol {
-                // Full dequeue
+                // Full dequeue.
                 let fill = *next_entry; // copy the entire fill
                 fills_registry.head = (fills_registry.head + 1) % MAX_FILLS_QUEUE_SIZE as u64;
                 fills_registry.count -= 1;
                 fill
             } else {
-                // Partial dequeue
+                // Partial dequeue.
                 let token_2z_dequeued = next_entry.token_2z_out
                     .checked_mul(remaining_sol)
                     .ok_or(DoubleZeroError::ArithmeticError)?
                     .checked_div(next_entry.sol_in)
                     .ok_or(DoubleZeroError::ArithmeticError)?;
 
-                // Updated Remainder Fill
-                // subtraction is safe.
+                // Updated remainder fill.
                 fills_registry.fills[head_index] = Fill {
                     sol_in: next_entry.sol_in - remaining_sol,
                     token_2z_out: next_entry.token_2z_out - token_2z_dequeued
@@ -99,7 +98,7 @@ impl<'info> DequeueFills<'info> {
             fills_consumed += 1;
         }
 
-        // Update registry statistics
+        // Update registry statistics.
         fills_registry.total_sol_pending = fills_registry.total_sol_pending
             .checked_sub(sol_dequeued)
             .ok_or(DoubleZeroError::ArithmeticError)?;

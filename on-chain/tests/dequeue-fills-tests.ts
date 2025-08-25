@@ -15,10 +15,8 @@ import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import { setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {clearUpFillsRegistry, consumeFillsFail, consumeFillsSuccess} from "./core/test-flow/dequeue-fills-flow";
 import {setFillsConsumerAndVerify} from "./core/test-flow/set-fills-consumer";
-import {FillsRegistry, getFillsRegistryAccount} from "./core/utils/fills-registry";
-import {assert} from "chai";
 
-describe("Consume Fills Tests", () => {
+describe("Consume fills tests", () => {
     // Configure the client to use the local cluster.
     anchor.setProvider(anchor.AnchorProvider.env());
 
@@ -67,7 +65,7 @@ describe("Consume Fills Tests", () => {
         );
     });
 
-    describe("Authorization Check", async() => {
+    describe("Authorization check", async() => {
         it("Rejects fill consumption by unauthorized user", async () => {
             await buySolSuccess(
                 program,
@@ -82,11 +80,11 @@ describe("Consume Fills Tests", () => {
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "User is not authorized to do Fills Consumption"
+                "User is not authorized to do fills consumption"
             );
         });
 
-        it("User is set as Fills Consumer", async () => {
+        it("User is set as fills consumer", async () => {
             await setFillsConsumerAndVerify(
                 program,
                 getDefaultKeyPair(),
@@ -98,7 +96,7 @@ describe("Consume Fills Tests", () => {
             await clearUpFillsRegistry(program, userKeyPair);
         });
 
-        it("Authorized User should consume the fills", async () => {
+        it("Authorized user should consume the fills", async () => {
             const bidFactor = 1.1;
             const askPrice = await buySolSuccess(
                 program,
@@ -108,8 +106,6 @@ describe("Consume Fills Tests", () => {
                 currentConfigs,
                 bidFactor
             );
-            const fillsRegistryBefore = await getFillsRegistryAccount(program);
-            assert.equal(fillsRegistryBefore.count, 1, "After buy sol, count should be one");
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
             expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
@@ -119,19 +115,19 @@ describe("Consume Fills Tests", () => {
                 maxSolAmount,
                 userKeyPair,
                 expectedTokenConsumed,
-                expectedFillsConsumed
+                expectedFillsConsumed,
+                1,
+                0,
+                1
             );
-            const fillsRegistryAfter = await getFillsRegistryAccount(program);
-            assert.equal(fillsRegistryAfter.count, 0, "Count should be 0");
-            assert.equal(
-                fillsRegistryAfter.head,
-                (fillsRegistryBefore.head + 1) % fillsRegistryBefore.maxCapacity,
-                "Head pointer should move by one in circular buffer"
-            );
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
         });
     });
 
-    describe("Emptying Fills Registry and Attempts to consume from it", async () => {
+    describe("Emptying fills registry and attempts to consume from it", async () => {
         it("Clear up fills registry", async () => {
             const bidFactor = 1.1;
             await buySolSuccess(
@@ -151,22 +147,26 @@ describe("Consume Fills Tests", () => {
                 program,
                 DEFAULT_CONFIGS.solQuantity,
                 userKeyPair,
-                "Trying To Consume From Empty Fills Registry"
+                "Fills registry is empty — cannot consume"
             )
+        });
+
+        after("Clear up fills registry", async () => {
+            await clearUpFillsRegistry(program, userKeyPair);
         });
     });
 
-    describe("Edge Cases", async () => {
+    describe("Edge cases", async () => {
         it("Fails when max_sol_amount is zero", async () => {
             await consumeFillsFail(
                 program,
                 new anchor.BN(0),
                 userKeyPair,
-                "Given amount of SOL for consumption is invalid"
+                "Provided SOL amount for consumption is invalid"
             );
         });
 
-        it("Consumes less than solQuantity", async () => {
+        it("Consumes less than SOL quantity", async () => {
             await clearUpFillsRegistry(program, userKeyPair);
             const bidFactor = 1.1;
             const askPrice = await buySolSuccess(
@@ -177,9 +177,6 @@ describe("Consume Fills Tests", () => {
                 currentConfigs,
                 bidFactor
             );
-
-            const fillsRegistryBefore = await getFillsRegistryAccount(program);
-
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity) - 3 * LAMPORTS_PER_SOL;
             expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
@@ -189,16 +186,10 @@ describe("Consume Fills Tests", () => {
                 maxSolAmount,
                 userKeyPair,
                 expectedTokenConsumed,
-                expectedFillsConsumed
-            );
-
-            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-            // Reminder fill should be in the fills registry
-            assert.equal(fillsRegistryAfter.count, 1);
-            assert.equal(
-                fillsRegistryAfter.head,
-                fillsRegistryBefore.head,
-                "Head pointer should not move"
+                expectedFillsConsumed,
+                1,
+                1,
+                0
             );
         });
 
@@ -208,7 +199,7 @@ describe("Consume Fills Tests", () => {
     });
 
 
-    describe("Batch Fills Consumption", async() => {
+    describe("Batch fills consumption", async() => {
         it("Should successfully consume 6 fills in single attempt", async () => {
             const bidFactor = 1.12;
             const numOfBuySols = 6;
@@ -225,7 +216,6 @@ describe("Consume Fills Tests", () => {
                     )
                 );
             }
-            const fillsRegistryBefore = await getFillsRegistryAccount(program);
 
             maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity);
             expectedTokenConsumed = askPrices.reduce((sum: number, askPrice: number): number => {
@@ -240,15 +230,10 @@ describe("Consume Fills Tests", () => {
                 maxSolAmount,
                 userKeyPair,
                 expectedTokenConsumed,
+                expectedFillsConsumed,
+                numOfBuySols,
+                0,
                 expectedFillsConsumed
-            );
-
-            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-            assert.equal(fillsRegistryAfter.count, 0);
-            assert.equal(
-                fillsRegistryAfter.head,
-                (fillsRegistryBefore.head + expectedFillsConsumed) % fillsRegistryBefore.maxCapacity,
-                "Head pointer should move by one in circular buffer"
             );
         });
 
@@ -257,13 +242,14 @@ describe("Consume Fills Tests", () => {
         });
     });
 
-    describe("Partial Fills Consumption", async() => {
-        it("Partial Consume Fills", async () => {
-            const BID_FACTOR = 2.12;
+    describe("Partial fills consumption", async() => {
+        it("Partial consume fills", async () => {
+            const bidFactor = 2.12;
+            const numOfBuySols = 5;
             // planning to consume PARTIAL_CONSUMPTION_MULTIPLIER fills
             const PARTIAL_CONSUMPTION_MULTIPLIER = 3.321;
             const askPrices: number[] = [];
-            for (let i = 0; i < 5; i++) {
+            for (let i = 0; i < numOfBuySols; i++) {
                 askPrices.push(
                     await buySolSuccess(
                         program,
@@ -271,41 +257,30 @@ describe("Consume Fills Tests", () => {
                         tokenAccountForUser,
                         userKeyPair,
                         currentConfigs,
-                        BID_FACTOR
+                        bidFactor
                     )
                 );
             }
-
-            const fillsRegistryBefore = await getFillsRegistryAccount(program);
-
             maxSolAmount = Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER * Number(DEFAULT_CONFIGS.solQuantity));
             const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
 
             expectedTokenConsumed =
-                Math.floor(askPrices[0] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
-                Math.floor(askPrices[1] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
-                Math.floor(askPrices[2] * BID_FACTOR) * solQuantity / LAMPORTS_PER_SOL +
-                (maxSolAmount - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER) * solQuantity) * Math.floor(askPrices[3] * BID_FACTOR) / LAMPORTS_PER_SOL;
+                Math.floor(askPrices[0] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
+                Math.floor(askPrices[1] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
+                Math.floor(askPrices[2] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
+                (maxSolAmount - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER) * solQuantity) * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
             expectedFillsConsumed = Math.ceil(PARTIAL_CONSUMPTION_MULTIPLIER);
+            const finalCount = numOfBuySols - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER);
 
             await consumeFillsSuccess(
                 program,
                 maxSolAmount,
                 userKeyPair,
                 Math.floor(expectedTokenConsumed),
-                expectedFillsConsumed
-            );
-
-            const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
-            assert.equal(
-                fillsRegistryAfter.head,
-                (fillsRegistryBefore.head + Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER)) % fillsRegistryBefore.maxCapacity,
-                "Head pointer should move by correct count in circular buffer"
-            );
-            assert.equal(
-                fillsRegistryAfter.count,
-                fillsRegistryBefore.count - Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER),
-                "Count should increase by correct amount"
+                expectedFillsConsumed,
+                numOfBuySols,
+                finalCount,
+                Math.floor(PARTIAL_CONSUMPTION_MULTIPLIER)
             );
         });
 

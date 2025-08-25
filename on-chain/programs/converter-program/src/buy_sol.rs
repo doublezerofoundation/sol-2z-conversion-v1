@@ -216,14 +216,14 @@ impl<'info> BuySol<'info> {
             DoubleZeroError::RegistryFull
         );
 
-        // Insert the new fill
+        // Insert the new fill.
         let tail_index = fills_registry.tail as usize;
         fills_registry.fills[tail_index] = Fill {
             sol_in: sol_quantity,
             token_2z_out: tokens_required,
         };
 
-        // Update tail and count
+        // Update tail and count.
         fills_registry.tail = (fills_registry.tail + 1) % MAX_FILLS_QUEUE_SIZE as u64;
         fills_registry.count += 1;
 
