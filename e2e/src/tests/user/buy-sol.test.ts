@@ -5,6 +5,7 @@ import { eventExists, eventExistsInErrorLogs } from "../../core/utils/assertions
 import { getOraclePriceData } from "../../core/utils/price-oracle";
 import { BuySolScenario } from "../../scenarios/buy-sol-scenario";
 import { extractTxHashFromResult } from "../../core/utils/test-helper";
+import { getConfig, updateConfig } from "../../core/utils/config-util";
 
 export const userBuySolTests: Test[] = [
     {
@@ -42,12 +43,68 @@ export const userBuySolTests: Test[] = [
         name: "user_buy_sol_fail_invalid_attestation",
         description: "User should not be able to buy SOL if they have an invalid attestation",
         execute: async (scenario: BuySolScenario) => {
-            // Covered in unit tests
+            let oraclePrice = await getOraclePriceData();
+
+            // tamper with the attestation
+            oraclePrice.swapRate = 3233;
+            await scenario.buySolAndVerifyFailWithAttestation(20, oraclePrice, "Provided attestation is not authentic");
+        }
+    },
+    {
+        name: "attestation_invalid_event_is_emitted",
+        description: "AttestationInvalid Event should be emitted if the attestation is invalid",
+        execute: async (scenario: BuySolScenario) => {
+            let oraclePrice = await getOraclePriceData();
+            oraclePrice.swapRate = 3233;
+            const error = await scenario.buySolAndVerifyFailWithAttestation(20, oraclePrice, "Provided attestation is not authentic");
+            const errorLogs = error.logs.join("\\n");
+            const eventExists = await eventExistsInErrorLogs(errorLogs, "AttestationInvalid");
+            expect(eventExists).to.be.true;
+        }
+    },
+    {
+        name: "buy_sol_fail_for_stale_attestation",
+        description: "User should not be able to buy SOL if the oracle price is stale",
+        execute: async (scenario: BuySolScenario) => {
+            let oraclePrice = await getOraclePriceData();
+
+            // update price max age to be low
+            const config = getConfig();
+            config.price_maximum_age = 1;
+            updateConfig(config);
+
+            // update configureation registry
+            await scenario.updateConfig();
+
+            // wait for 2 seconds
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // buy sol and verify fail
+            await scenario.buySolAndVerifyFailWithAttestation(20, oraclePrice, "Provided attestation is outdated");
+
+            // reset config
+            config.price_maximum_age = 300;
+            updateConfig(config);
+
+            // update configureation registry
+            await scenario.updateConfig();
         }
     },
     {
         name: "user_buy_sol_fail_bid_too_low",
         description: "User should not be able to buy SOL if the bid is too low",
+        execute: async (scenario: BuySolScenario) => {
+            const oraclePrice = await getOraclePriceData();
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) - 10
+            await scenario.checkAndReimburseUser2ZBalance(amount);
+            await scenario.checkAndReimburseVaultSolBalance();
+
+            const result = await scenario.buySolAndVerifyFail(amount, "Provided bid is too low");
+        }
+    },
+    {
+        name: "bid_too_low_event_is_emitted",
+        description: "BidTooLowEvent should be emitted if the bid is too low",
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) - 10
@@ -85,16 +142,10 @@ export const userBuySolTests: Test[] = [
         name: "fill_registry_is_updated_when_user_buys_sol",
         description: "Fill registry should be updated when a user buys SOL",
         execute: async (scenario: BuySolScenario) => {
-            const fillsRegistry = await scenario.getFillsRegistry();
-            const initialFills = fillsRegistry.count.toNumber();
-
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
             await scenario.buySolAndVerify(amount);
-
-            const finalFillsRegistry = await scenario.getFillsRegistry();
-            const finalFills = finalFillsRegistry.count.toNumber();
-            expect(finalFills).to.be.equal(initialFills + 1);
+            // verification is covered in the buySolAndVerify function
         }
     }
 ]

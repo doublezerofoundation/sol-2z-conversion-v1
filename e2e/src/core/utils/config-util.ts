@@ -8,6 +8,7 @@ export interface Config {
     max_discount_rate: number;
     min_discount_rate: number;
     coefficient: number;
+    price_maximum_age: number;
 }
 
 export const getConfig = (): Config => {
