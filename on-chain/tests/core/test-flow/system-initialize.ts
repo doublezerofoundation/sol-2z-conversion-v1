@@ -18,7 +18,7 @@ export async function systemInitializeAndVerify(
     adminKeyPair: Keypair = getDefaultKeyPair(),
     inputConfigs: SystemConfig = DEFAULT_CONFIGS
 ) {
-    // List of Accounts to be verified
+    // List of accounts to be verified
     const accounts: PublicKey[] = [
         getProgramStatePDA(program.programId),
         getConfigurationRegistryPDA(program.programId),
@@ -26,7 +26,7 @@ export async function systemInitializeAndVerify(
         getWithdrawAuthorityPDA(program.programId),
     ];
 
-    // Accounts to be initialized should not exist before initialization
+    // Accounts to be initialized should not exist before initialization.
     let [programStateExists, configRegistryExists, denyRegistryExists, withdrawAuthorityExists] =
         await Promise.all(
             accounts.map((pda) => accountExists(program.provider.connection, pda))
@@ -66,7 +66,7 @@ export async function systemInitializeAndVerify(
 
     let fillsRegistryExists: boolean;
     accounts.push(fillsRegistryAddress);
-    // Verify Existence of Initialized Accounts
+    // Verify existence of initialized accounts.
     [programStateExists, configRegistryExists, denyRegistryExists, withdrawAuthorityExists, fillsRegistryExists] =
         await Promise.all(
             accounts.map((pda) => accountExists(program.provider.connection, pda))
@@ -95,7 +95,7 @@ export async function systemInitializeFail(
     expectedError: string
 ) {
     const programDataAccount = getProgramDataAccountPDA(program.programId);
-    // Initialize fills registry
+    // Initialize fills registry.
     const fillsRegistryAddress: PublicKey = await initializeFillRegistry(program);
 
     try {
@@ -129,11 +129,11 @@ export async function initializeSystemIfNeeded(program: Program<ConverterProgram
         await systemInitializeAndVerify(program, adminKeypair);
 
     }
-    // make system to unhalted state
+    // make system to unhalted state.
     try {
         await toggleSystemStateAndVerify(program, false, adminKeypair);
     } catch (error) {
-        // system already in active state
+        // system already in active state.
     }
 }
 
@@ -141,7 +141,7 @@ export async function initializeFillRegistry(
     program: Program<ConverterProgram>,
     adminKeyPair: Keypair = getDefaultKeyPair()
 ): Promise<PublicKey> {
-    // initializing fills registry
+    // initializing fills registry.
     const fillsRegistryKeyPair = Keypair.generate();
     const space = 10_485_760; // 10MB max account size
     const lamports = await program.provider.connection.getMinimumBalanceForRentExemption(space);
@@ -156,7 +156,7 @@ export async function initializeFillRegistry(
         })
     );
 
-    // Send and confirm
+    // Send and confirm.
     await anchor.web3.sendAndConfirmTransaction(
         program.provider.connection,
         tx,

@@ -81,14 +81,14 @@ export async function buySolAndVerify(
         "Vault SOL Balance should decrease by solBalanceChange"
     )
 
-    // check last traded slot
+    // check last traded slot.
     assert.isTrue(lastTradedSlotAfter > lastTradedSlotBefore, "last-traded-slot has to be updated")
 
-    // Check Fills Registry Values
+    // Check Fills Registry Values.
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);
     assert.equal(fillsRegistryAfter.count, fillsRegistryBefore.count + 1);
     assert.equal(fillsRegistryAfter.tail, (fillsRegistryBefore.tail + 1) % fillsRegistryBefore.maxCapacity);
-    // Ensure added fill entry values are correct
+    // Ensure added fill entry values are correct.
     const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
     assert.equal(fillEntry.solIn, solBalanceChange);
     assert.equal(fillEntry.token2ZOut, tokenBalanceChange);
@@ -117,7 +117,7 @@ export async function buySolFail(
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "Buy SOL is rejected as expected");
-        return; // Exit early — test passes
+        return; // Exit early — test passes.
     }
     assert.fail("It was able to do buy SOL");
 }
@@ -156,9 +156,9 @@ export async function prepareBuySolInstruction(
         .instruction()
 }
 
-/// Prepares success scenario and Calls buySolAndVerify
-/// gets Oracle Price and set the bid price based on bidFactor
-/// Mints sufficient 2Z to user and airdrops necessary SOL to Vault
+/// Prepares success scenario and Calls buySolAndVerify.
+/// gets Oracle Price and set the bid price based on bidFactor.
+/// Mints sufficient 2Z to user and airdrops necessary SOL to Vault.
 export async function buySolSuccess(
     program: Program<ConverterProgram>,
     mockTransferProgram: Program<MockTransferProgram>,
@@ -171,7 +171,7 @@ export async function buySolSuccess(
     const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
     const bidPrice = Math.floor(askPrice * bidFactor);
 
-    // Ensure that user has sufficient 2Z
+    // Ensure that user has sufficient 2Z.
     await mint2z(
         mockTransferProgram,
         senderTokenAccount,

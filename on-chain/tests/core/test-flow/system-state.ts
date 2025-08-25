@@ -63,7 +63,7 @@ export const toggleSystemStateAndVerifyFail = async (
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
         assert.ok(true, "Toggle system state should be rejected as expected");
-        return; // Exit early — test passes
+        return; // Exit early — test passes.
     }
 
     assert.fail("Toggle system state should be rejected as expected");

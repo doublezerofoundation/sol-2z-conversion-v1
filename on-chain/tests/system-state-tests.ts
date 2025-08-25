@@ -15,7 +15,7 @@ describe("System State Tests", async () => {
         try {
             await toggleSystemStateAndVerify(program, false);
         } catch (error) {
-            // Ignore: initializing system for unit tests
+            // Ignore: initializing system for unit tests.
         }
         await toggleSystemStateAndVerify(program, true);
     });
@@ -26,10 +26,10 @@ describe("System State Tests", async () => {
     });
 
     it("Should fail to toggle system state if system is already in the desired state", async () => {
-        // System is currently halted
+        // System is currently halted.
         await toggleSystemStateAndVerifyFail(program, true, "Invalid system state");
 
-        // unhalt system
+        // un-halt system.
         await toggleSystemStateAndVerify(program, false);
         await toggleSystemStateAndVerifyFail(program, false, "Invalid system state");
     });

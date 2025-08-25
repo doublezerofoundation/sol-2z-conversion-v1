@@ -48,11 +48,11 @@ describe("Migration Tests", async () => {
                 accounts.map((pda) => accountExists(program.provider.connection, pda))
             );
 
-        assert.isTrue(programStateExists, "Program State Account should exist before migration");
-        assert.isTrue(configRegistryV1Exists, "Configuration Registry V1 should exist before migration");
-        assert.isTrue(denyRegistryV1Exists, "Deny List Registry V1 should exist before migration");
-        assert.isFalse(configRegistryV2Exists, "Configuration Registry V2 should not exist before migration");
-        assert.isFalse(denyRegistryV2Exists, "Deny List Registry V2 should not exist before migration");
+        assert.isTrue(programStateExists, "Program state account should exist before migration");
+        assert.isTrue(configRegistryV1Exists, "Configuration registry V1 should exist before migration");
+        assert.isTrue(denyRegistryV1Exists, "Deny list registry V1 should exist before migration");
+        assert.isFalse(configRegistryV2Exists, "Configuration registry V2 should not exist before migration");
+        assert.isFalse(denyRegistryV2Exists, "Deny list registry V2 should not exist before migration");
 
         const configurationRegistryV1 = await program.account.configurationRegistry.fetch(
             getConfigurationRegistryPDA(program.programId)
@@ -79,15 +79,15 @@ describe("Migration Tests", async () => {
                 accounts.map((pda) => accountExists(program.provider.connection, pda))
             );
 
-        assert.isTrue(programStateExists, "Program State Account should exist after migration");
-        assert.isFalse(configRegistryV1Exists, "Configuration Registry V1 should not exist after migration");
-        assert.isFalse(denyRegistryV1Exists, "Deny List Registry V1 should not exist after migration");
-        assert.isTrue(configRegistryV2Exists, "Configuration Registry V2 should exist after migration");
-        assert.isTrue(denyRegistryV2Exists, "Deny List Registry V2 should exist after migration");
+        assert.isTrue(programStateExists, "Program state account should exist after migration");
+        assert.isFalse(configRegistryV1Exists, "Configuration registry V1 should not exist after migration");
+        assert.isFalse(denyRegistryV1Exists, "Deny list registry V1 should not exist after migration");
+        assert.isTrue(configRegistryV2Exists, "Configuration registry V2 should exist after migration");
+        assert.isTrue(denyRegistryV2Exists, "Deny list registry V2 should exist after migration");
         programState = await program.account.programStateAccount.fetch(
             getProgramStatePDA(program.programId)
         );
-        // check bump values has been updated
+        // check bump values has been updated.
         assert.equal(programState.bumpRegistry.configurationRegistryBump, getConfigurationV2RegistryPDA(program.programId)[1]);
         assert.equal(programState.bumpRegistry.denyListRegistryBump, getDenyListRegistryV2PDA(program.programId)[1]);
 
@@ -95,7 +95,7 @@ describe("Migration Tests", async () => {
             getConfigurationV2RegistryPDA(program.programId)[0]
         );
 
-        // assert configuration values are correctly migrated
+        // assert configuration values are correctly migrated.
         assert.equal(Number(configurationRegistryV2.solAmount), Number(configurationRegistryV1.solQuantity));
         assert.equal(configurationRegistryV2.priceOraclePubkey.toBase58(), configurationRegistryV1.oraclePubkey.toBase58());
         assert.equal(configurationRegistryV2.fillsConsumer.toBase58(), configurationRegistryV1.fillsConsumer.toBase58());
@@ -127,11 +127,11 @@ describe("Migration Tests", async () => {
             getDenyListRegistryV2PDA(program.programId)[0]
         );
 
-        assert.isTrue(programStateExists, "Program State Account should exist before migration");
-        assert.isFalse(configRegistryV1Exists, "Configuration Registry V1 should not exist before migration");
-        assert.isFalse(denyRegistryV1Exists, "Deny List Registry V1 should not exist before migration");
-        assert.isTrue(configRegistryV2Exists, "Configuration Registry V2 should exist before migration");
-        assert.isTrue(denyRegistryV2Exists, "Deny List Registry V2 should exist before migration");
+        assert.isTrue(programStateExists, "Program state account should exist before migration");
+        assert.isFalse(configRegistryV1Exists, "Configuration registry V1 should not exist before migration");
+        assert.isFalse(denyRegistryV1Exists, "Deny list registry V1 should not exist before migration");
+        assert.isTrue(configRegistryV2Exists, "Configuration registry V2 should exist before migration");
+        assert.isTrue(denyRegistryV2Exists, "Deny list registry V2 should exist before migration");
 
         try {
             await program.methods.rollbackV2ToV1()
@@ -150,16 +150,16 @@ describe("Migration Tests", async () => {
                 accounts.map((pda) => accountExists(program.provider.connection, pda))
             );
 
-        assert.isTrue(programStateExists, "Program State Account should exist after migration");
-        assert.isTrue(configRegistryV1Exists, "Configuration Registry should exist after migration");
-        assert.isTrue(denyRegistryV1Exists, "Deny List Registry should exist after migration");
-        assert.isFalse(configRegistryV2Exists, "Configuration Registry should not exist after migration");
-        assert.isFalse(denyRegistryV2Exists, "Deny List Registry should not exist after migration");
+        assert.isTrue(programStateExists, "Program State account should exist after migration");
+        assert.isTrue(configRegistryV1Exists, "Configuration registry should exist after migration");
+        assert.isTrue(denyRegistryV1Exists, "Deny list registry should exist after migration");
+        assert.isFalse(configRegistryV2Exists, "Configuration registry should not exist after migration");
+        assert.isFalse(denyRegistryV2Exists, "Deny list registry should not exist after migration");
 
         let programState = await program.account.programStateAccount.fetch(
             getProgramStatePDA(program.programId)
         );
-        // check bump values has been updated
+        // check bump values has been updated.
         assert.equal(programState.bumpRegistry.configurationRegistryBump, v1BumpValues[0]);
         assert.equal(programState.bumpRegistry.denyListRegistryBump, v1BumpValues[1]);
 
@@ -179,7 +179,7 @@ describe("Migration Tests", async () => {
         const denyListV1 = await program.account.denyListRegistry.fetch(
             getDenyListRegistryPDA(program.programId)
         );
-        // assert deny list values are correctly migrated
+        // assert deny list values are correctly migrated.
         assert.equal(Number(denyListV1.updateCount), Number(denyListV2.updateCount));
         assert.equal(Number(denyListV1.lastUpdated), Number(denyListV2.lastUpdated));
     });

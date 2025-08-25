@@ -37,7 +37,7 @@ export const updateConfigsAndVerify = async (
         assert.fail("Config update failed");
     }
 
-    // verify whether config values were updated
+    // verify whether config values were updated.
     const updatedConfig = await fetchCurrentConfiguration(program);
     assert.equal(updatedConfig.oraclePubkey.toString(), input.oraclePubkey.toString());
     assert.equal(updatedConfig.priceMaximumAge.toString(), input.priceMaximumAge.toString());
@@ -77,7 +77,7 @@ export const updateConfigsAndVerifyFail = async (
     } catch(e) {
         expect(e!.toString()).to.include(expectedError);
         assert.ok(true, "Config update failed as expected");
-        return; // Exit early — test passes
+        return; // Exit early — test passes.
     }
     assert.fail("It was able to update config");
 }
