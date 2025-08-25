@@ -28,7 +28,6 @@ describe("System State Tests", async () => {
     it("Should fail to toggle system state if system is already in the desired state", async () => {
         // System is currently halted.
         await toggleSystemStateAndVerifyFail(program, true, "Invalid system state");
-
         // un-halt system.
         await toggleSystemStateAndVerify(program, false);
         await toggleSystemStateAndVerifyFail(program, false, "Invalid system state");

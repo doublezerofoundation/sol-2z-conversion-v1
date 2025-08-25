@@ -5,6 +5,7 @@ import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-flow/change-configs";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import {setFillsConsumerAndVerify, setFillsConsumerExpectUnauthorized} from "./core/test-flow/set-fills-consumer";
+import {ErrorMsg} from "./core/constants";
 
 describe("Configuration Registry Update Tests", async () => {
   const program = await setup();
@@ -19,7 +20,7 @@ describe("Configuration Registry Update Tests", async () => {
     await updateConfigsAndVerifyFail(
       program,
       DEFAULT_CONFIGS,
-      "Unauthorized admin",
+      ErrorMsg.UNAUTHORIZED_ADMIN,
       nonAdminUserKeyPair
     )
   });
@@ -62,7 +63,7 @@ describe("Configuration Registry Update Tests", async () => {
       ...DEFAULT_CONFIGS,
       maxDiscountRate: new anchor.BN(10001),
     },
-      "Invalid max discount rate"
+        ErrorMsg.INVALID_MAX_DISCOUNT_RATE
     );
 
     // Revert: Set max discount rate to 5000.
@@ -76,7 +77,7 @@ describe("Configuration Registry Update Tests", async () => {
       maxDiscountRate: new anchor.BN(5000),
       minDiscountRate: new anchor.BN(5001)
     },
-      "Invalid min discount rate"
+      ErrorMsg.INVALID_MIN_DISCOUNT_RATE
     );
 
     // Revert: Set min discount rate to 500
@@ -90,7 +91,7 @@ describe("Configuration Registry Update Tests", async () => {
       ...DEFAULT_CONFIGS,
       coefficient: new anchor.BN(100000001)
     },
-      "InvalidCoefficient"
+      ErrorMsg.INVALID_COEFFICIENT
     );
 
     // Revert: Set coefficient to default

@@ -14,7 +14,7 @@ import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData, getOraclePriceDataFor} from "./core/utils/price-oracle";
-import {BPS, TOKEN_DECIMAL} from "./core/constants";
+import {BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
@@ -117,7 +117,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
     });
@@ -144,7 +145,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is outdated"
+                ErrorMsg.STALE_PRICE
             );
         });
 
@@ -174,7 +175,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is not authentic"
+                ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
+                Events.ATTESTATION_INVALID
             );
         });
 
@@ -199,7 +201,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is invalid"
+                ErrorMsg.ATTESTATION_INVALID
             );
         });
 
@@ -224,7 +226,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided attestation is not authentic"
+                ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
+                Events.ATTESTATION_INVALID
             );
         });
     });
@@ -264,7 +267,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
@@ -307,7 +311,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
@@ -322,7 +327,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
@@ -337,7 +343,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "Provided bid is too low"
+                ErrorMsg.BID_TOO_LOW,
+                Events.BID_TOO_LOW
             );
         });
 
@@ -393,7 +400,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 tempUserKeyPair,
                 oraclePriceData,
-                "insufficient funds"
+                ErrorMsg.INSUFFICIENT_FUNDS,
             );
         });
     });
@@ -421,7 +428,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "User is blocked in the deny list"
+                ErrorMsg.ACCESS_BY_DENIED_PERSON,
+                Events.ACCESS_BY_DENIED_PERSON
             );
         });
 
@@ -459,7 +467,8 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                "System is halted"
+                ErrorMsg.SYSTEM_HALTED,
+                Events.ACCESS_DURING_SYSTEM_HALT
             );
         });
 

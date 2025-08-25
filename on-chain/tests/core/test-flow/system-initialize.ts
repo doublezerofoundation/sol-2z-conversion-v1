@@ -12,6 +12,8 @@ import { Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
 import {toggleSystemStateAndVerify} from "./system-state";
 import * as anchor from "@coral-xyz/anchor";
+import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
+import {Events} from "../constants";
 
 export async function systemInitializeAndVerify(
     program: Program<ConverterProgram>,
@@ -42,8 +44,9 @@ export async function systemInitializeAndVerify(
 
     // Initialization
     const programDataAccount: PublicKey = getProgramDataAccountPDA(program.programId);
+    let tx: string;
     try {
-        const tx = await program.methods.initializeSystem(
+        tx = await program.methods.initializeSystem(
             inputConfigs.oraclePubkey,
             inputConfigs.solQuantity,
             inputConfigs.priceMaximumAge,
@@ -86,6 +89,11 @@ export async function systemInitializeAndVerify(
     assert.equal(configInConfigRegistry.coefficient.toString(), inputConfigs.coefficient.toString());
     assert.equal(configInConfigRegistry.maxDiscountRate.toString(), inputConfigs.maxDiscountRate.toString());
     assert.equal(configInConfigRegistry.minDiscountRate.toString(), inputConfigs.minDiscountRate.toString());
+
+    // assert whether event has been emitted or not
+    const logs = await getTransactionLogs(program.provider, tx);
+    const event = await findAnchorEventInLogs(logs, program.idl, Events.SYSTEM_INITIALIZED);
+    expect(event, "SystemInitialized should be emitted").to.exist;
 }
 
 export async function systemInitializeFail(

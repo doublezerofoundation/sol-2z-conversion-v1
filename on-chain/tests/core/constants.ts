@@ -15,3 +15,32 @@ export namespace Seeds {
     export const MOCK_CONFIG_ACCOUNT = "config";
     export const MOCK_REVENUE_DISTRIBUTION_JOURNAL = "jour";
 }
+
+export namespace Events {
+    export const SYSTEM_INITIALIZED = "systemInitialized";
+    export const BID_TOO_LOW = "bidTooLowEvent";
+    export const ATTESTATION_INVALID = "attestationInvalid";
+    export const ACCESS_BY_DENIED_PERSON = "accessByDeniedPerson";
+    export const ACCESS_DURING_SYSTEM_HALT = "accessDuringSystemHalt";
+    export const SYSTEM_HALTED = "systemHalted";
+    export const SYSTEM_UNHALTED = "systemUnhalted";
+    export const TRADE = "tradeEvent";
+}
+
+export namespace ErrorMsg {
+    export const BID_TOO_LOW = "Provided bid is too low";
+    export const ATTESTATION_NOT_AUTHENTIC = "Provided attestation is not authentic";
+    export const ATTESTATION_INVALID = "Provided attestation is invalid";
+    export const INSUFFICIENT_FUNDS = "insufficient funds";
+    export const ACCESS_BY_DENIED_PERSON = "User is blocked in the deny list";
+    export const SYSTEM_HALTED = "System is halted";
+    export const RAW_CONSTRAINT_VIOLATION = "A raw constraint was violated";
+    export const INVALID_COEFFICIENT = "InvalidCoefficient";
+    export const INVALID_MIN_DISCOUNT_RATE = "Invalid min discount rate";
+    export const INVALID_MAX_DISCOUNT_RATE = "Invalid max discount rate";
+    export const UNAUTHORIZED_ADMIN = "Unauthorized admin";
+    export const STALE_PRICE = "Provided attestation is outdated";
+
+
+
+}

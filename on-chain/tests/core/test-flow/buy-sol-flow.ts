@@ -14,6 +14,8 @@ import {getConversionPriceAndVerify} from "./conversion-price";
 import {mint2z} from "./mock-transfer-program";
 import {airdropVault} from "../utils/mock-transfer-program-utils";
 import {fetchProgramState} from "../utils/accounts";
+import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
+import {Events} from "../constants";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
@@ -32,6 +34,7 @@ export async function buySolAndVerify(
     const vaultBalanceBefore = await mockProgConn.getBalance(pdaList.vault);
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
     const lastTradedSlotBefore = (await fetchProgramState(program)).lastTradeSlot.toNumber();
+    let txSig: string;
 
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
@@ -43,7 +46,7 @@ export async function buySolAndVerify(
             oraclePriceData
         )
         const tx: Transaction = new anchor.web3.Transaction().add(ix);
-        await program.provider.sendAndConfirm(tx, [signer]);
+        txSig = await program.provider.sendAndConfirm(tx, [signer]);
     } catch (e) {
         console.error("Buy Sol  failed:", e);
         assert.fail("Buy Sol  failed");
@@ -59,6 +62,10 @@ export async function buySolAndVerify(
     const vaultBalanceAfter = await program.provider.connection.getBalance(pdaList.vault);
     const lastTradedSlotAfter = (await fetchProgramState(program)).lastTradeSlot.toNumber();
 
+    // assert whether event has been emitted or not
+    const logs = await getTransactionLogs(program.provider, txSig);
+    const event = await findAnchorEventInLogs(logs, program.idl, Events.TRADE);
+    expect(event, "Trade event should be emitted").to.exist;
 
     assert.equal(
         tokenBalanceAfter,
@@ -102,6 +109,7 @@ export async function buySolFail(
     signer: Keypair,
     oraclePriceData: OraclePriceData,
     expectedError: string,
+    expectedEvent: string = ""
 ) {
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
@@ -116,6 +124,10 @@ export async function buySolFail(
         await program.provider.sendAndConfirm(tx, [signer]);
     } catch (error) {
         expect((new Error(error!.toString())).message).to.include(expectedError);
+        if(expectedEvent !== "") {
+            const event = findAnchorEventInLogs(error.logs, program.idl, expectedEvent);
+            expect(event, "Appropriate event should be emitted").to.exist;
+        }
         assert.ok(true, "Buy SOL is rejected as expected");
         return; // Exit early — test passes.
     }
