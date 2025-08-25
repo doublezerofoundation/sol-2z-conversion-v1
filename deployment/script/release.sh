@@ -221,7 +221,6 @@ update_release_tag() {
     elif [[ $apply_exit_code -eq 0 ]]; then
         echo "✅ Infrastructure deployment completed successfully"
         echo "New image tag deployed: $RELEASE_TAG"
-
     else
         echo "Checking terraform state for any partial changes..."
         terraform show -json > /dev/null 2>&1 || true
