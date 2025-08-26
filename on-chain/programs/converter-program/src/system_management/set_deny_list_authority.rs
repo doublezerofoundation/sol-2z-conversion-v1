@@ -5,7 +5,6 @@ use crate::program::ConverterProgram;
 
 #[derive(Accounts)]
 pub struct SetDenyListAuthority<'info> {
-    #[account(mut)]
     pub admin: Signer<'info>,
     #[account(
         mut,

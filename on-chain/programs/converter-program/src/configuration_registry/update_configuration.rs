@@ -32,7 +32,6 @@ pub struct ConfigurationRegistryUpdate<'info> {
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
-    #[account(mut)]
     pub admin: Signer<'info>,
 }
 
