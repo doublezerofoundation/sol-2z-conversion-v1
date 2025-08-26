@@ -67,7 +67,6 @@
         },
         {
           "name": "admin",
-          "writable": true,
           "signer": true
         }
       ],
@@ -320,7 +319,6 @@
         },
         {
           "name": "signer",
-          "writable": true,
           "signer": true
         }
       ],
@@ -351,12 +349,10 @@
       "accounts": [
         {
           "name": "signer",
-          "writable": true,
           "signer": true
         },
         {
           "name": "program_state",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -377,7 +373,6 @@
         },
         {
           "name": "configuration_registry",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -535,7 +530,6 @@
         },
         {
           "name": "withdraw_authority",
-          "writable": true,
           "pda": {
             "seeds": [
               {
@@ -570,10 +564,6 @@
         },
         {
           "name": "program_data"
-        },
-        {
-          "name": "rent",
-          "address": "SysvarRent111111111111111111111111111111111"
         },
         {
           "name": "system_program",
@@ -829,7 +819,6 @@
         },
         {
           "name": "admin",
-          "writable": true,
           "signer": true
         }
       ],
@@ -1009,7 +998,6 @@
       "accounts": [
         {
           "name": "admin",
-          "writable": true,
           "signer": true
         },
         {
@@ -1063,7 +1051,6 @@
       "accounts": [
         {
           "name": "admin",
-          "writable": true,
           "signer": true
         },
         {
@@ -1191,7 +1178,6 @@
       "accounts": [
         {
           "name": "admin",
-          "writable": true,
           "signer": true
         },
         {
@@ -1287,7 +1273,6 @@
         },
         {
           "name": "admin",
-          "writable": true,
           "signer": true
         }
       ],

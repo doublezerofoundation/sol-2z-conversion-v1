@@ -44,14 +44,6 @@ pub struct CalculateAskPrice<'info> {
 
 impl<'info> CalculateAskPrice<'info> {
     pub fn get_conversion_rate(&mut self, oracle_price_data: OraclePriceData) -> Result<u64> {
-        // check if the signer is in the deny list
-        if self
-            .deny_list_registry
-            .denied_addresses
-            .contains(&self.signer.key()) {
-            return Err(error!(DoubleZeroError::UserInsideDenyList));
-        }
-
         // checking attestation
         verify_attestation(
             &oracle_price_data,

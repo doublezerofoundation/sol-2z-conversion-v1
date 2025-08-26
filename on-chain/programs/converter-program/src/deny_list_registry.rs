@@ -40,13 +40,15 @@ impl<'info> UpdateDenyList<'info> {
         // Ensure only admin can modify
         self.program_state.assert_deny_list_authority(&self.admin)?;
 
-        if self.deny_list_registry.denied_addresses.contains(&address) {
-            return err!(DoubleZeroError::AlreadyExistsInDenyList);
-        }
+        require!(
+            !self.deny_list_registry.denied_addresses.contains(&address),
+            DoubleZeroError::AlreadyExistsInDenyList
+        );
 
-        if self.deny_list_registry.denied_addresses.len() >= MAX_DENY_LIST_SIZE as usize {
-            return err!(DoubleZeroError::DenyListFull);
-        }
+        require!(
+            self.deny_list_registry.denied_addresses.len() < MAX_DENY_LIST_SIZE as usize,
+            DoubleZeroError::DenyListFull
+        );
 
         self.deny_list_registry.denied_addresses.push(address);
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
@@ -67,9 +69,10 @@ impl<'info> UpdateDenyList<'info> {
         // Ensure only admin can modify
         self.program_state.assert_deny_list_authority(&self.admin)?;
 
-        if !self.deny_list_registry.denied_addresses.contains(&address) {
-            return err!(DoubleZeroError::AddressNotInDenyList);
-        }
+        require!(
+            self.deny_list_registry.denied_addresses.contains(&address),
+            DoubleZeroError::AddressNotInDenyList
+        );
 
         let position = self
             .deny_list_registry

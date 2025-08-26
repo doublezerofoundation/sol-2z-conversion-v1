@@ -105,7 +105,6 @@ impl<'info> InitializeSystem<'info> {
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
         bump_registry.withdraw_authority_bump = withdraw_authority_bump;
 
-        msg!("System is Initialized");
         emit!(SystemInitialized {});
         Ok(())
     }

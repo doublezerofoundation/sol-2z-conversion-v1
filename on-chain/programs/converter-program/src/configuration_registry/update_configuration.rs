@@ -37,8 +37,8 @@ pub struct ConfigurationRegistryUpdate<'info> {
 
 impl<'info> ConfigurationRegistryUpdate<'info> {
     pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
-        // Authentication and authorization
         self.program_state.assert_admin(&self.admin)?;
+
         if let Some(oracle_pubkey) = input.oracle_pubkey {
             self.configuration_registry.oracle_pubkey = oracle_pubkey;
         }
@@ -48,12 +48,12 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
         if let Some(price_maximum_age) = input.price_maximum_age {
             self.configuration_registry.price_maximum_age = price_maximum_age;
         }
+
         if let Some(coefficient) = input.coefficient {
-            if coefficient > 100000000 {
-                return err!(DoubleZeroError::InvalidCoefficient);
-            }
+            require!(coefficient <= 100_000_000, DoubleZeroError::InvalidCoefficient);
             self.configuration_registry.coefficient = coefficient;
         }
+
         if let Some(max_discount_rate) = input.max_discount_rate {
             require!(max_discount_rate <= 10_000, DoubleZeroError::InvalidMaxDiscountRate);
 
@@ -63,6 +63,7 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
             require!(max_discount_rate > min_rate, DoubleZeroError::InvalidMaxDiscountRate);
             self.configuration_registry.max_discount_rate = max_discount_rate;
         }
+
         if let Some(min_discount_rate) = input.min_discount_rate {
 
             let max_rate = input.max_discount_rate
@@ -71,6 +72,7 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
             require!(min_discount_rate < max_rate, DoubleZeroError::InvalidMinDiscountRate);
             self.configuration_registry.min_discount_rate = min_discount_rate;
         }
+
         Ok(())
     }
 }

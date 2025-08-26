@@ -1,8 +1,7 @@
 import { describe } from "mocha";
 import { getConversionPriceAndVerify, getConversionPriceToFail } from "./core/test-flow/conversion-price";
 import { getOraclePriceData, getOraclePriceDataFor } from "./core/utils/price-oracle";
-import { Keypair, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify } from "./core/test-flow/deny-list";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
@@ -26,9 +25,6 @@ describe("Conversion Price Tests", async () => {
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
         await initializeMockTransferSystemIfNeeded(mockTransferProgram);
-
-        // Set deny list authority to admin.
-        await setDenyListAuthorityAndVerify(program, getDefaultKeyPair().publicKey);
         await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
     });
 
@@ -178,18 +174,6 @@ describe("Conversion Price Tests", async () => {
     });
 
     // Failure cases -----------------------------------------------------------
-
-    it("Should fail to get conversion price for deny listed user", async () => {
-        // Add user to deny list.
-        const keypair = Keypair.generate()
-        await addToDenyListAndVerify(program, keypair.publicKey);
-
-        // Conversion price fetch should fail for deny listed user.
-        await getConversionPriceToFail(program, await getOraclePriceData(), "User is blocked in the deny list", keypair);
-
-        // Revert: Remove user from deny list.
-        await removeFromDenyListAndVerify(program, keypair.publicKey);
-    });
 
     it("Should fail to get conversion price for negative swap rate", async () => {
         // Get mock oracle price data with a negative swap rate.
