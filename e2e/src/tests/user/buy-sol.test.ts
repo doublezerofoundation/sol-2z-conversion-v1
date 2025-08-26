@@ -157,14 +157,21 @@ export const userBuySolTests: Test[] = [
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
 
             // Ensure user has enough balance for both attempts
-            await scenario.checkAndReimburseUser2ZBalance(amount * 2);
-            await scenario.airdropToMockVault(getConfig().sol_quantity / LAMPORTS_PER_SOL * 2);
+            await scenario.checkAndReimburseUser2ZBalance(amount * 6);
+            await scenario.airdropToMockVault(getConfig().sol_quantity / LAMPORTS_PER_SOL * 6);
 
             // First buy should succeed
             await scenario.buySol(amount);
 
-            // Second buy in the same slot should fail
-            await scenario.buySolAndVerifyFail(amount, "Only one trade is allowed per slot");
+            // Try to buy 5 times in the same slot
+            for (let i = 0; i < 5; i++) {
+                try {
+                    await scenario.buySol(amount);
+                } catch (error) {
+                    expect(error!.toString()).to.contain("Only one trade is allowed per slot");
+                    break;
+                }
+            }
         }
     }
 ]

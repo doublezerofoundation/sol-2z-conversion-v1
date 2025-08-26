@@ -1,5 +1,5 @@
 import { AdminClient } from "./core/admin-client";
-import { DEFAULT_KEYPAIR_PATH } from "./core/constants";
+import { DEFAULT_KEYPAIR_PATH, TOKEN_DECIMALS } from "./core/constants";
 import { UserClient } from "./core/user-client";
 import { getTestName } from "./core/utils/test-helper";
 import { InitializeScenario } from "./scenarios/initialize-scenario";
@@ -10,6 +10,9 @@ import { userBuySolTests } from "./tests/user/buy-sol.test";
 import { fillsConsumerUserTests } from "./tests/user/fills-consumer-user.test";
 import { BuySolScenario } from "./scenarios/buy-sol-scenario";
 import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
+import { getConfig } from "./core/utils/config-util";
+import { LAMPORTS_PER_SOL } from "@solana/web3.js";
+import { getOraclePriceData } from "./core/utils/price-oracle";
 
 describe("User Flow Tests", () => {
     let deployer: AdminClient;
@@ -57,6 +60,22 @@ describe("User Flow Tests", () => {
                 await test.execute(scenario);
             });
         }
+
+        after(async () => {
+            // Do buy sol to make sure there are some fills in the registry
+            // Reimburse the vault and user
+            await scenario.checkAndReimburseUser2ZBalance(25 * 5);
+            await scenario.airdropToMockVault(getConfig().sol_quantity / LAMPORTS_PER_SOL * 6);
+
+            // Buy sol
+            for (let i = 0; i < 3; i++) {
+                const oraclePrice = await getOraclePriceData();
+                const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+                await scenario.buySol(amount);
+                // Wait for 3 seconds to make sure the slot is over
+                await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+        });
     });
 
     describe("User Dequeue Fill Tests", () => {
