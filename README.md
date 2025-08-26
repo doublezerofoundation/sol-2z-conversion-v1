@@ -37,10 +37,6 @@ Ensure you have the following software versions installed:
 - **Docker**: v28.3.3
 - **jq**: 1.7
 
-# aws confug 
-#export AWS_ACCESS_KEY_ID=AKIA4OQNTDQZUJFGPAWS
-export AWS_SECRET_ACCESS_KEY
-
 
 ### Installation Commands
 ```bash
@@ -129,8 +125,9 @@ This Script give
 Update the `oracle_pubkey` with `Public key` in config.json  
 This keypair is used for signing price data in the swap-oracle service.
 
+> [!NOTE]
+> `Base58 secret Key` used by swap-pricing service we have to update it in parameter store when regional setup done.
 
-**Note**: `Base58 secret Key` use by swap-pricing service we have to update it in parameter store when regional setup done 
 ### On Chain Configuration Setup
 
 Create `config.json` at the project root with the following structure:
@@ -159,8 +156,7 @@ Create `config.json` at the project root with the following structure:
 - **coefficient**: Discount calculation curve coefficient (see formula below)
 
 
-# TODO mention what are the place we have to update programId anchor.toml , in both program
-# TODO mention update config of indexer program
+
 #### Coefficient Calculation Formula:
 
 $$
@@ -189,7 +185,40 @@ $$
 
 ## Phase 1: On-Chain Component Deployment
 
-### 1.3 Deploy On-Chain Programs
+### Deploy On-Chain Programs
+
+> [!NOTE]
+> Before deploy the program make sure you configure anchor correctly in both convertor program and mock double zero program. [Refer](#generate-data-signer-key).
+
+check the `anchor.toml`
+#### Converter program
+```bash 
+[programs.localnet]
+converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z" # update public key of the program
+
+[provider]
+cluster = "localnet"  # point to correct cluster (Devnet, Mainnet) 
+wallet = "~/.config/solana/id.json"  # Check this file point to actual network
+
+
+```
+
+#### Mock double zero program
+```bash
+
+[programs.localnet]
+mock_transfer_program = "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww"  # update public key of the program
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet" # point to correct cluster (Devnet, Mainnet) 
+wallet = "~/.config/solana/id.json" # Check this file point to actual network
+
+```
+
+
 
 #### Option A: Manual Deployment
 ```bash
@@ -226,8 +255,9 @@ Off-chain components use the `config` npm module where the environment name and 
 #### Environment-Config Mapping:
 - Environment: `dev1-test` → Config file: `dev1-test.json`
 - Environment: `production` → Config file: `production.json`
- 
-**Note** if not have config for env application take default.json as config file
+
+> [!NOTE]
+> if not have config for env application take default.json as config file.
 
 ## 2.2 Component Configurations
 
@@ -241,7 +271,7 @@ Create config file: `config/indexer/{env-name}.json`
   "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:{{AWS_REGION}}:{{ACCOUNT_ID}}:doublezero-{{ENV}}-app-errors"
 }
 ```
-**Note** Update `PROGRAM_ID ` with public key of the convertor program
+**Note** Update `PROGRAM_ID ` with public key of the convertor program [Refer](#generate-data-signer-key).
 
 #### Swap Oracle Service Configuration
 Create config file: `config/swap-oracle/{env-name}.json`
@@ -318,7 +348,9 @@ When using `--workspace deployment`, specify one of:
 - ECR repositories
 - CloudWatch log groups
 
-Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key.
+
+> [!NOTE]
+> Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key. [Refer](#generate-data-signer-key).
 
 ### Step 3: Artifact Publishing
 
