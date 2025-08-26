@@ -74,14 +74,14 @@ pub struct BuySol<'info> {
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     /// CHECK: program address - TODO: implement address validations after client informs actual programId
     #[account(mut)]
-    pub config_account: AccountInfo<'info>,
+    pub config_account: UncheckedAccount<'info>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
     #[account(mut)]
-    pub revenue_distribution_journal: AccountInfo<'info>,
+    pub revenue_distribution_journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
-    pub revenue_distribution_program: AccountInfo<'info>,
+    pub revenue_distribution_program: UncheckedAccount<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,
 }
@@ -129,8 +129,8 @@ impl<'info> BuySol<'info> {
             self.configuration_registry.max_discount_rate,
             self.configuration_registry.min_discount_rate,
             self.program_state.last_trade_slot,
-            clock.slot
-        )?;
+            clock.slot,
+        ).ok_or(DoubleZeroError::AskPriceCalculationError)?;
 
         msg!("Bid price {}", bid_price);
         msg!("Ask price {}", ask_price);
@@ -151,8 +151,7 @@ impl<'info> BuySol<'info> {
         let tokens_required = (sol_quantity as u128)
             .checked_mul(bid_price as u128)
             .ok_or(DoubleZeroError::ArithmeticError)?
-            .checked_div(LAMPORTS_PER_SOL as u128)
-            .ok_or(DoubleZeroError::ArithmeticError)?
+            .saturating_div(LAMPORTS_PER_SOL as u128)
             .try_into()
             .map_err(|_| DoubleZeroError::ArithmeticError)?;
 

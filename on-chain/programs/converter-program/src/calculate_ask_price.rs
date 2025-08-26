@@ -61,7 +61,7 @@ impl<'info> CalculateAskPrice<'info> {
             self.configuration_registry.min_discount_rate,
             self.program_state.last_trade_slot,
             clock.slot,
-        )?;
+        ).ok_or(DoubleZeroError::AskPriceCalculationError)?;
 
         set_return_data(conversion_rate.to_le_bytes().as_slice());
         Ok(conversion_rate)
@@ -75,63 +75,41 @@ pub fn calculate_conversion_rate(
     min_discount_rate: u64,
     s_last: u64,
     s_now: u64,
-) -> Result<u64> {
+) -> Option<u64> {
 
     // discount_rate = max(min(γ * (S_now - S_last) + Dmin, Dmax), Dmin)
-    let coefficient_decimal = Decimal::from_u64(coefficient)
-        .ok_or(error!(DoubleZeroError::InvalidCoefficient))?
-        .checked_div(Decimal::from_u64(100_000_000)
-            .ok_or(error!(DoubleZeroError::InvalidCoefficient))?)
-        .ok_or(error!(DoubleZeroError::InvalidCoefficient))?;
+    let coefficient_decimal = Decimal::from_u64(coefficient)?
+        / Decimal::from_u64(100_000_000)?;
 
-    let max_discount_rate_decimal = Decimal::from_u64(max_discount_rate)
-        .ok_or(error!(DoubleZeroError::InvalidMaxDiscountRate))?
-        .checked_div(Decimal::from_u64(DECIMAL_PRECISION * 100)
-            .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?)
-        .ok_or(error!(DoubleZeroError::InvalidMaxDiscountRate))?;
+    let max_discount_rate_decimal = Decimal::from_u64(max_discount_rate)?
+        / Decimal::from_u64(DECIMAL_PRECISION * 100)?;
 
-    let min_discount_rate_decimal = Decimal::from_u64(min_discount_rate)
-        .ok_or(error!(DoubleZeroError::InvalidMinDiscountRate))?
-        .checked_div(Decimal::from_u64(DECIMAL_PRECISION * 100)
-            .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?)
-        .ok_or(error!(DoubleZeroError::InvalidMinDiscountRate))?;
+    let min_discount_rate_decimal = Decimal::from_u64(min_discount_rate)?
+        / Decimal::from_u64(DECIMAL_PRECISION * 100)?;
 
-    let s_diff = s_now.checked_sub(s_last)
-        .ok_or(error!(DoubleZeroError::InvalidTradeSlot))?;
-    let s_diff_decimal = Decimal::from_u64(s_diff)
-        .ok_or(error!(DoubleZeroError::InvalidTradeSlot))?;
+    let s_diff = s_now.checked_sub(s_last)?;
+    let s_diff_decimal = Decimal::from_u64(s_diff)?;
 
     let discount_rate_decimal = coefficient_decimal
-        .checked_mul(s_diff_decimal)
-        .ok_or(error!(DoubleZeroError::ArithmeticError))?
-        .checked_add(min_discount_rate_decimal)
-        .ok_or(error!(DoubleZeroError::ArithmeticError))?
+        .checked_mul(s_diff_decimal)?
+        .checked_add(min_discount_rate_decimal)?
         .min(max_discount_rate_decimal)
         .max(min_discount_rate_decimal);
 
     // conversion_rate = oracle_swap_rate * (1 - discount_rate)
-    let oracle_swap_rate_decimal = Decimal::from_u64(oracle_price_data.swap_rate)
-        .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?
-        .checked_div(Decimal::from_u64(TOKEN_UNITS)
-            .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?)
-        .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?;
-    let one_decimal = Decimal::from_u64(1).unwrap();
+    let oracle_swap_rate_decimal = Decimal::from_u64(oracle_price_data.swap_rate)?
+        / Decimal::from_u64(TOKEN_UNITS)?;
+    let one_decimal = Decimal::from_u64(1)?;
     let discount_inverse_decimal = one_decimal
-        .checked_sub(discount_rate_decimal)
-        .ok_or(error!(DoubleZeroError::InvalidDiscountRate))?;
+        .checked_sub(discount_rate_decimal)?;
 
     let conversion_rate = oracle_swap_rate_decimal
-        .checked_mul(discount_inverse_decimal)
-        .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
+        .checked_mul(discount_inverse_decimal)?;
 
     let conversion_rate_u64 = conversion_rate
-        .checked_mul(Decimal::from_u64(TOKEN_UNITS)
-            .ok_or(error!(DoubleZeroError::InvalidConversionRate))?)
-        .ok_or(error!(DoubleZeroError::InvalidConversionRate))?
-        .to_u64()
-        .ok_or(error!(DoubleZeroError::InvalidConversionRate))?;
+        .checked_mul(Decimal::from_u64(TOKEN_UNITS)?)?.to_u64()?;
 
-    Ok(conversion_rate_u64)
+    Some(conversion_rate_u64)
 }
 
 #[cfg(test)]
@@ -218,7 +196,7 @@ mod tests {
                 s_last,
                 s_now,
             );
-            assert!(conversion_rate.is_err());
+            assert!(conversion_rate.is_none());
         }
     }
     
@@ -248,7 +226,7 @@ mod tests {
                 s_last,
                 s_now,
             );
-            assert!(conversion_rate.is_err());
+            assert!(conversion_rate.is_none());
         }
     }
 }

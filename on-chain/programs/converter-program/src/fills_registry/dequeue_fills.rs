@@ -74,11 +74,13 @@ impl<'info> DequeueFills<'info> {
                 fill
             } else {
                 // Partial dequeue.
-                let token_2z_dequeued = next_entry.token_2z_out
-                    .checked_mul(remaining_sol)
+                let token_2z_dequeued = (next_entry.token_2z_out as u128)
+                    .checked_mul(remaining_sol as u128)
                     .ok_or(DoubleZeroError::ArithmeticError)?
-                    .checked_div(next_entry.sol_in)
-                    .ok_or(DoubleZeroError::ArithmeticError)?;
+                    .checked_div(next_entry.sol_in as u128)
+                    .ok_or(DoubleZeroError::ArithmeticError)?
+                    .try_into()
+                    .map_err(|_| DoubleZeroError::ArithmeticError)?;
 
                 // Updated remainder fill.
                 fills_registry.fills[head_index] = Fill {
@@ -98,21 +100,10 @@ impl<'info> DequeueFills<'info> {
         }
 
         // Update registry statistics.
-        fills_registry.total_sol_pending = fills_registry.total_sol_pending
-            .checked_sub(sol_dequeued)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
-
-        fills_registry.total_2z_pending = fills_registry.total_2z_pending
-            .checked_sub(token_2z_dequeued)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
-
-        fills_registry.lifetime_sol_processed = fills_registry.lifetime_sol_processed
-            .checked_add(sol_dequeued)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
-
-        fills_registry.lifetime_2z_processed = fills_registry.lifetime_2z_processed
-            .checked_add(token_2z_dequeued)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
+        fills_registry.total_sol_pending -= sol_dequeued;
+        fills_registry.total_2z_pending -= token_2z_dequeued;
+        fills_registry.lifetime_sol_processed += sol_dequeued;
+        fills_registry.lifetime_2z_processed += token_2z_dequeued;
 
         let dequeue_fills_result = DequeueFillsResult {
             sol_dequeued,

@@ -1689,6 +1689,11 @@
       "code": 6029,
       "name": "SingleTradePerSlot",
       "msg": "Only one trade is allowed per slot"
+    },
+    {
+      "code": 6030,
+      "name": "AskPriceCalculationError",
+      "msg": "Error when calculating ask price"
     }
   ],
   "types": [
