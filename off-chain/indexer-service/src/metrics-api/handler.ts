@@ -22,11 +22,11 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         
         // Route to appropriate handler based on resource path
         if (httpMethod === 'GET') {
-            if (resource.endsWith('/metrics/buys')) {
+            if (resource.endsWith('/buys')) {
                 return await handleBuysMetrics(validatedRequest);
-            } else if (resource.endsWith('/metrics/errors')) {
+            } else if (resource.endsWith('/errors')) {
                 return await handleErrorsMetrics(validatedRequest);
-            } else if (resource.endsWith('/metrics/dequeues')) {
+            } else if (resource.endsWith('/dequeues')) {
                 return await handleDequeuesMetrics(validatedRequest);
             }
         }
