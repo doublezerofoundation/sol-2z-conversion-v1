@@ -24,7 +24,9 @@ use buy_sol::*;
 use deny_list_registry::*;
 use fills_registry::dequeue_fills::*;
 use fills_registry::fills_registry::*;
+#[cfg(feature = "test")]
 use migration::migrate_v1_to_v2::*;
+#[cfg(feature = "test")]
 use migration::rollback_v2_to_v1::*;
 
 declare_id!("YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z");
@@ -123,24 +125,23 @@ pub mod converter_program {
 
     //////////////////////// Example Migration ////////////////////////
     //////////////////////// !!! Only as an example ////////////////////////
+    #[cfg(feature = "test")]
     pub fn migrate_v1_to_v2(
         ctx: Context<MigrateV1ToV2>,
     ) -> Result<()> {
-        ctx.accounts.set_bumps(
+        ctx.accounts.process(
             ctx.bumps.configuration_registry_new,
             ctx.bumps.deny_list_registry_new
-        )?;
-        ctx.accounts.process()
+        )
     }
 
+    #[cfg(feature = "test")]
     pub fn rollback_v2_to_v1(
         ctx: Context<RollbackV2toV1>,
     ) -> Result<()> {
-        ctx.accounts.set_bumps(
+        ctx.accounts.process(
             ctx.bumps.configuration_registry_new,
             ctx.bumps.deny_list_registry_new
-        )?;
-
-        ctx.accounts.process()
+        )
     }
 }

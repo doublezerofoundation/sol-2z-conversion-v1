@@ -23,6 +23,7 @@ use std::{
     error::Error,
     str::FromStr
 };
+use anchor_client::solana_sdk::native_token::LAMPORTS_PER_SOL;
 use cli_common::utils::pda_helper::get_fills_registry_address;
 
 pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
@@ -52,10 +53,10 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
         data,
         accounts,
     };
-
     let result_bps: DequeueFillsResult = send_instruction_with_return_data(dequeue_fills_ix)?;
+    let sol_quantity = result_bps.sol_dequeued/ LAMPORTS_PER_SOL;
     println!("Dequeue fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
-    println!("SOL amount dequeued: {}", result_bps.sol_dequeued);
+    println!("SOL amount dequeued: {}", sol_quantity);
     println!("2Z token amount dequeued: {}", result_bps.token_2z_dequeued);
     println!("No of fills Consumed: {}", result_bps.fills_consumed);
     Ok(())

@@ -1,3 +1,5 @@
+#![cfg(feature = "test")] 
+
 use anchor_lang::prelude::*;
 
 // Sample Struct demonstrating the upgrades
