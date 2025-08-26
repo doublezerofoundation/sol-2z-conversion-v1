@@ -6,7 +6,6 @@ use anchor_client::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
         signature::{Signer, Keypair},
-        sysvar::rent
     },
     solana_client::rpc_client::RpcClient
 };
@@ -68,7 +67,6 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         AccountMeta::new(withdraw_authority_pda, false),
         AccountMeta::new(program_id, false),
         AccountMeta::new(program_data_account_pda, false),
-        AccountMeta::new_readonly(rent::id(), false),    // rent
         AccountMeta::new(system_program::ID, false),
         AccountMeta::new(payer.pubkey(), true),
     ];

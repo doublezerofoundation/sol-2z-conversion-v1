@@ -44,14 +44,6 @@ pub mod converter_program {
         min_discount_rate: u64
     ) -> Result<()> {
 
-        // Setting bumps values
-        ctx.accounts.set_bumps(
-            ctx.bumps.configuration_registry,
-            ctx.bumps.program_state,
-            ctx.bumps.deny_list_registry,
-            ctx.bumps.withdraw_authority
-        )?;
-
         // Calling Init instruction
         ctx.accounts.process(
             oracle_pubkey,
@@ -59,7 +51,11 @@ pub mod converter_program {
             price_maximum_age,
             coefficient,
             max_discount_rate,
-            min_discount_rate
+            min_discount_rate,
+            ctx.bumps.configuration_registry,
+            ctx.bumps.program_state,
+            ctx.bumps.deny_list_registry,
+            ctx.bumps.withdraw_authority
         )
     }
 

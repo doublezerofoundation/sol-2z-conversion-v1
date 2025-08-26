@@ -167,7 +167,7 @@ impl<'info> BuySol<'info> {
         let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
         token_interface::transfer_checked(cpi_context, tokens_required, 6)?;
 
-        // Does CPI calls to withdraw SOL and transfer it to signer.
+        // Does CPI call to withdraw SOL and transfer it to signer.
         let cpi_program_id = self.revenue_distribution_program.key();
 
         let account_metas = vec![

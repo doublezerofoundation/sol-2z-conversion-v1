@@ -24,23 +24,17 @@ use crate::common::constant::DECIMAL_PRECISION;
 
 #[derive(Accounts)]
 pub struct CalculateAskPrice<'info> {
-    #[account(mut)]
     pub signer: Signer<'info>,
-
     #[account(
-        mut,
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
-
     #[account(
-        mut,
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
-
     #[account(
         seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
         bump = program_state.bump_registry.deny_list_registry_bump,
@@ -195,7 +189,7 @@ mod tests {
 
         ] {
             let oracle_price_data = OraclePriceData {
-                swap_rate: swap_rate,
+                swap_rate,
                 timestamp: 0,
                 signature: "unused".to_string(),
             };
@@ -220,7 +214,7 @@ mod tests {
             (10000000, 4500, 5000, 1000, 200, 100), // invalid slot diff, s_last > s_now
         ] {
             let oracle_price_data = OraclePriceData {
-                swap_rate: swap_rate,
+                swap_rate,
                 timestamp: 0,
                 signature: "unused".to_string(),
             };
@@ -250,7 +244,7 @@ mod tests {
             (10000000, 4500, 5000, 1000, u64::MAX, u64::MAX), // invalid slots
         ] {
             let oracle_price_data = OraclePriceData {
-                swap_rate: swap_rate,
+                swap_rate,
                 timestamp: 0,
                 signature: "unused".to_string(),
             };

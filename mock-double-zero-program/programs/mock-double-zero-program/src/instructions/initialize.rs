@@ -51,7 +51,6 @@ pub struct InitializeAccounts<'info> {
     pub vault_account: SystemAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
-    pub rent: Sysvar<'info, Rent>,
     #[account(mut)]
     pub signer: Signer<'info>,
 }
@@ -60,7 +59,7 @@ impl<'info> InitializeAccounts<'info> {
     pub fn process(&mut self) -> Result<()> {
         // Transfer minimum amount to vault to initialize
         // Rent exempt the token buffer account
-        let minimum_balance = self.rent.minimum_balance(0);
+        let minimum_balance = Rent::get()?.minimum_balance(0);
 
         let sol_transfer_ix = transfer(
             &self.signer.key(),

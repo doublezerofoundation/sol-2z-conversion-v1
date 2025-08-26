@@ -13,5 +13,3 @@ pub struct ConfigurationRegistryV2 {
     pub min_discount_rate: u64,
     pub sol_amount: u64, // we add new field
 }
-
-// Implement methods if needed

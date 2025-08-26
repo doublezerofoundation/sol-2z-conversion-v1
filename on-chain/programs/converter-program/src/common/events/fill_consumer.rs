@@ -14,4 +14,3 @@ pub struct FillsDequeued {
     pub fills_consumed: u64,
     pub timestamp: i64
 }
-

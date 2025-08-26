@@ -25,11 +25,10 @@ export async function systemInitializeAndVerify(
         getProgramStatePDA(program.programId),
         getConfigurationRegistryPDA(program.programId),
         getDenyListRegistryPDA(program.programId),
-        getWithdrawAuthorityPDA(program.programId),
     ];
 
     // Accounts to be initialized should not exist before initialization.
-    let [programStateExists, configRegistryExists, denyRegistryExists, withdrawAuthorityExists] =
+    let [programStateExists, configRegistryExists, denyRegistryExists] =
         await Promise.all(
             accounts.map((pda) => accountExists(program.provider.connection, pda))
         );
@@ -37,7 +36,6 @@ export async function systemInitializeAndVerify(
     assert.isFalse(programStateExists, "Program State Account should not exist before initialization");
     assert.isFalse(configRegistryExists, "Configuration Registry should not exist before initialization");
     assert.isFalse(denyRegistryExists, "Deny List Registry should not exist before initialization");
-    assert.isFalse(withdrawAuthorityExists, "Withdraw Authority should not exist before initialization");
 
     // Initialize fills registry
     const fillsRegistryAddress: PublicKey = await initializeFillRegistry(program);
@@ -70,7 +68,7 @@ export async function systemInitializeAndVerify(
     let fillsRegistryExists: boolean;
     accounts.push(fillsRegistryAddress);
     // Verify existence of initialized accounts.
-    [programStateExists, configRegistryExists, denyRegistryExists, withdrawAuthorityExists, fillsRegistryExists] =
+    [programStateExists, configRegistryExists, denyRegistryExists, fillsRegistryExists] =
         await Promise.all(
             accounts.map((pda) => accountExists(program.provider.connection, pda))
         );
@@ -79,7 +77,6 @@ export async function systemInitializeAndVerify(
     assert.isTrue(configRegistryExists, "Configuration Registry should exist after initialization");
     assert.isTrue(fillsRegistryExists, "Fills Registry should exist after initialization");
     assert.isTrue(denyRegistryExists, "Deny List Registry should exist after initialization");
-    assert.isTrue(withdrawAuthorityExists, "Withdraw Authority should exist after initialization");
 
     // Verify config values are initialized as given.
     const configInConfigRegistry = await fetchCurrentConfiguration(program);
