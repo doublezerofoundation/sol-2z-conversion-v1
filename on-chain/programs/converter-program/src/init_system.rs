@@ -88,8 +88,8 @@ impl<'info> InitializeSystem<'info> {
         // Set last trade slot to current slot
         self.program_state.last_trade_slot = Clock::get()?.slot;
 
-        require!(max_discount_rate <= 10000, DoubleZeroError::InvalidMaxDiscountRate);
-        require!(coefficient <= 100000000, DoubleZeroError::InvalidCoefficient);
+        require!(max_discount_rate <= 10_000, DoubleZeroError::InvalidMaxDiscountRate);
+        require!(coefficient <= 100_000_000, DoubleZeroError::InvalidCoefficient);
         require!(min_discount_rate < max_discount_rate, DoubleZeroError::InvalidMinDiscountRate);
 
         self.configuration_registry.oracle_pubkey = oracle_pubkey;

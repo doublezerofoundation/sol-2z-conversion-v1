@@ -43,8 +43,9 @@ impl<'info> DequeueFills<'info> {
         max_sol_amount: u64,
     ) -> Result<DequeueFillsResult> {
 
-        require!(
-            self.signer.key() == self.configuration_registry.fills_consumer,
+        require_keys_eq!(
+            self.signer.key(),
+            self.configuration_registry.fills_consumer,
             DoubleZeroError::UnauthorizedFillConsumer
         );
 

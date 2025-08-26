@@ -1,5 +1,5 @@
 // Max sizes of vectors.
-pub const MAX_DENY_LIST_SIZE: u64 = 50;
+pub const MAX_DENY_LIST_SIZE: u64 = 310;
 pub const MAX_FILLS_QUEUE_SIZE: usize = 650000;
 
 /// Decimal precision for basis points.

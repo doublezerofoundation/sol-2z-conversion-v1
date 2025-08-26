@@ -4,7 +4,7 @@ export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e1111
 export const TOKEN_DECIMAL = 10 ** 6;
 export const BPS = 100; // basis points
 
-export const MAX_DENY_LIST_SIZE = 50;
+export const MAX_DENY_LIST_SIZE = 310;
 
 export namespace Seeds {
     export const CONFIGURATION_REGISTRY_SEED = "system_config_v1";
