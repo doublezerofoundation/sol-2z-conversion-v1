@@ -97,26 +97,36 @@ print_status_bar() {
 }
 
 # -------------------- Validator Management --------------------
+VALIDATOR_PID=""
+
 start_validator() {
     local RPC_PORT=$1
     shift
     local RPC_URL="http://127.0.0.1:$RPC_PORT"
     local EXTRA_ARGS="$@"
 
-    # Stop any running validator
-    VALIDATOR_PID=$(pgrep -f "solana-test-validator")
-    if [ -n "$VALIDATOR_PID" ]; then
-        stop_validator $VALIDATOR_PID
-    fi
-    wait_for_port_release $RPC_PORT
+    # Stop any running validator first
+    stop_validator
 
-    solana-test-validator --reset --quiet --rpc-port $RPC_PORT $EXTRA_ARGS &> /dev/null &
+    solana-test-validator --reset --quiet --rpc-port $RPC_PORT $EXTRA_ARGS \
+        &> /dev/null &
+
+    VALIDATOR_PID=$!
+    disown $VALIDATOR_PID  # prevent it from becoming zombie on exit
+
     wait_for_validator $RPC_URL
 }
 
 stop_validator() {
-    local PID=$1
-    kill -9 $PID 2>/dev/null || true
+    if [ -n "$VALIDATOR_PID" ] && kill -0 $VALIDATOR_PID 2>/dev/null; then
+        kill -9 $VALIDATOR_PID 2>/dev/null || true
+        wait $VALIDATOR_PID 2>/dev/null || true  # reap zombie if any
+        VALIDATOR_PID=""
+    else
+        # fallback: kill any leftover validators
+        pkill -9 -f "solana-test-validator" 2>/dev/null || true
+    fi
+    wait_for_port_release $BASE_RPC_PORT
 }
 
 wait_for_validator() {
