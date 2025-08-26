@@ -37,6 +37,11 @@ Ensure you have the following software versions installed:
 - **Docker**: v28.3.3
 - **jq**: 1.7
 
+# aws confug 
+#export AWS_ACCESS_KEY_ID=AKIA4OQNTDQZUJFGPAWS
+export AWS_SECRET_ACCESS_KEY
+
+
 ### Installation Commands
 ```bash
 # Solana CLI
@@ -50,6 +55,16 @@ rustup default 1.88.0
 
 # Configure Solana for local development
 solana config set -ul
+```
+
+### Setting up the AWS
+export `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+
+```bash
+
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+
 ```
 
 ## Main Provision Script Usage
@@ -66,9 +81,9 @@ solana config set -ul
 - `mock-double-zero-program` - Deploy mock program
 - `run-tests` - Execute test suites
 
-## Phase 1: On-Chain Component Deployment
 
-### 1.1 Environment Setup
+
+### Environment Setup
 
 #### Configure Local Validator
 ```bash
@@ -79,7 +94,9 @@ solana-test-validator
 solana logs -ul
 ```
 
-#### Generate Keypairs
+### Solana Keypair Management
+
+#### Generate Programs key
 ```bash
 # Create keys directory
 mkdir -p on-chain/.keys
@@ -93,7 +110,28 @@ solana-keygen new -o mock-double-zero-program/.keys/mock-double-zero-program-key
 
 ```
 
-### 1.2 Configuration Setup
+##### Generate Data signer key
+```bash
+# Install Python dependencies
+pip install solders base58
+
+# Generate new keypair
+cd deployment/script
+python3 script.py
+
+# Or load existing keypair
+python3 script.py <keypair.json>
+```
+This Script give
+- Public Key
+- Base58 Secret Key
+
+Update the `oracle_pubkey` with `Public key` in config.json  
+This keypair is used for signing price data in the swap-oracle service.
+
+
+**Note**: `Base58 secret Key` use by swap-pricing service we have to update it in parameter store when regional setup done 
+### On Chain Configuration Setup
 
 Create `config.json` at the project root with the following structure:
 
@@ -115,11 +153,14 @@ Create `config.json` at the project root with the following structure:
 ```
 
 #### Key Configuration Parameters:
-- **program_id**: Public key of the main converter program
-- **double_zero_program_id**: Public key of the mock transfer program
+- **program_id**: Public key of the main converter program (which is created by earlier step Generate Programs key )
+- **double_zero_program_id**: Public key of the mock transfer program (which is created by earlier step Generate Programs key )
 - **sol_quantity**: Amount of SOL per transaction (in Lamports)
 - **coefficient**: Discount calculation curve coefficient (see formula below)
 
+
+# TODO mention what are the place we have to update programId anchor.toml , in both program
+# TODO mention update config of indexer program
 #### Coefficient Calculation Formula:
 
 $$
@@ -146,8 +187,7 @@ $$
 $$
 
 
-
-
+## Phase 1: On-Chain Component Deployment
 
 ### 1.3 Deploy On-Chain Programs
 
@@ -186,6 +226,8 @@ Off-chain components use the `config` npm module where the environment name and 
 #### Environment-Config Mapping:
 - Environment: `dev1-test` → Config file: `dev1-test.json`
 - Environment: `production` → Config file: `production.json`
+ 
+**Note** if not have config for env application take default.json as config file
 
 ## 2.2 Component Configurations
 
@@ -199,6 +241,7 @@ Create config file: `config/indexer/{env-name}.json`
   "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:{{AWS_REGION}}:{{ACCOUNT_ID}}:doublezero-{{ENV}}-app-errors"
 }
 ```
+**Note** Update `PROGRAM_ID ` with public key of the convertor program
 
 #### Swap Oracle Service Configuration
 Create config file: `config/swap-oracle/{env-name}.json`
@@ -275,22 +318,7 @@ When using `--workspace deployment`, specify one of:
 - ECR repositories
 - CloudWatch log groups
 
-#### Solana Keypair Management
-```bash
-# Install Python dependencies
-pip install solders base58
-
-# Generate new keypair
-cd deployment/script
-python3 script.py
-
-# Or load existing keypair
-python3 script.py <keypair.json>
-```
-
 Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key.
-
-This keypair is used for signing price data in the swap-oracle service.
 
 ### Step 3: Artifact Publishing
 
