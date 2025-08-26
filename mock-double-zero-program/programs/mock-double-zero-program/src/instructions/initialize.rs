@@ -26,7 +26,7 @@ pub struct InitializeAccounts<'info> {
     #[account(
         init,
         payer = signer,
-        mint::decimals = 6,
+        mint::decimals = 8,
         mint::authority = double_zero_mint.key(),
         mint::freeze_authority = double_zero_mint.key(),
         seeds = [b"double_zero_mint"],

@@ -1,7 +1,7 @@
 import {PublicKey} from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
-export const TOKEN_DECIMAL = 10 ** 6;
+export const TOKEN_UNITS = 10 ** 8;
 export const BPS = 100; // basis points
 
 export const MAX_DENY_LIST_SIZE = 310;

@@ -14,7 +14,7 @@ import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData, getOraclePriceDataFor} from "./core/utils/price-oracle";
-import {BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
+import {BPS, ErrorMsg, Events, TOKEN_UNITS} from "./core/constants";
 import {airdropVault} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
@@ -76,7 +76,7 @@ describe("Buy Sol Tests", () => {
         it("User does buy SOL at higher price than ask price", async () => {
             const oraclePriceData = await getOraclePriceData();
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
-            const bidPrice = askPrice + 2 * TOKEN_DECIMAL;
+            const bidPrice = askPrice + 2 * TOKEN_UNITS;
 
             // Ensure that user has sufficient 2Z.
             await mint2z(

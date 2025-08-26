@@ -6,7 +6,7 @@ import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
 import { getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
-import {BPS, ErrorMsg, Events, TOKEN_DECIMAL} from "./core/constants";
+import {BPS, ErrorMsg, Events, TOKEN_UNITS} from "./core/constants";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
 import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
 import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
@@ -144,7 +144,7 @@ describe("Conversion Price Tests", async () => {
         // Reimburse system and user for trades
         const solQuantity = DEFAULT_CONFIGS.solQuantity.toNumber() / LAMPORTS_PER_SOL;
         await airdropVault(mockTransferProgram, DEFAULT_CONFIGS.solQuantity);
-        await mint2z(mockTransferProgram, userAta, 25 * solQuantity * TOKEN_DECIMAL);
+        await mint2z(mockTransferProgram, userAta, 25 * solQuantity * TOKEN_UNITS);
 
         // Get conversion price.
         const oraclePriceData = await getOraclePriceData();
@@ -155,7 +155,7 @@ describe("Conversion Price Tests", async () => {
         assert(price1 < maxPrice, "Conversion price should be less than maximum price");
 
         // Execute a trade.
-        const bidPrice = price1 + TOKEN_DECIMAL;
+        const bidPrice = price1 + TOKEN_UNITS;
         await buySolAndVerify(program, mockTransferProgram, userAta, bidPrice, user, oraclePriceData);
 
         // Get the new conversion price.

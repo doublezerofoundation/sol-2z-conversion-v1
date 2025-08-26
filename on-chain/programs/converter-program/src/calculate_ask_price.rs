@@ -11,7 +11,7 @@ use rust_decimal::{
 };
 use crate::{
     common::{
-        constant::TOKEN_DECIMALS,
+        constant::TOKEN_UNITS,
         error::DoubleZeroError,
         seeds::seed_prefixes::SeedPrefixes,
         structs::OraclePriceData, attestation_utils::verify_attestation,
@@ -80,7 +80,7 @@ pub fn calculate_conversion_rate(
     // discount_rate = max(min(γ * (S_now - S_last) + Dmin, Dmax), Dmin)
     let coefficient_decimal = Decimal::from_u64(coefficient)
         .ok_or(error!(DoubleZeroError::InvalidCoefficient))?
-        .checked_div(Decimal::from_u64(100000000)
+        .checked_div(Decimal::from_u64(100_000_000)
             .ok_or(error!(DoubleZeroError::InvalidCoefficient))?)
         .ok_or(error!(DoubleZeroError::InvalidCoefficient))?;
 
@@ -112,7 +112,7 @@ pub fn calculate_conversion_rate(
     // conversion_rate = oracle_swap_rate * (1 - discount_rate)
     let oracle_swap_rate_decimal = Decimal::from_u64(oracle_price_data.swap_rate)
         .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?
-        .checked_div(Decimal::from_u64(TOKEN_DECIMALS)
+        .checked_div(Decimal::from_u64(TOKEN_UNITS)
             .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?)
         .ok_or(error!(DoubleZeroError::InvalidOracleSwapRate))?;
     let one_decimal = Decimal::from_u64(1).unwrap();
@@ -125,7 +125,7 @@ pub fn calculate_conversion_rate(
         .ok_or(error!(DoubleZeroError::InvalidAskPrice))?;
 
     let conversion_rate_u64 = conversion_rate
-        .checked_mul(Decimal::from_u64(TOKEN_DECIMALS)
+        .checked_mul(Decimal::from_u64(TOKEN_UNITS)
             .ok_or(error!(DoubleZeroError::InvalidConversionRate))?)
         .ok_or(error!(DoubleZeroError::InvalidConversionRate))?
         .to_u64()
@@ -144,40 +144,40 @@ mod tests {
         for (swap_rate, coefficient, max_discount_rate, min_discount_rate, s_last, s_now, expected_rate) in [
 
             // 0% to 100% discounts under unbounded limits based on slot differences
-            (10000000, 50000, 10000, 0, 100, 100, 10000000), // 0% discount
-            (10000000, 50000, 10000, 0, 100, 300, 9000000), // 10% discount
-            (10000000, 50000, 10000, 0, 100, 600, 7500000), // 25% discount
-            (10000000, 50000, 10000, 0, 100, 1100, 5000000), // 50% discount
-            (10000000, 50000, 10000, 0, 100, 1600, 2500000), // 75% discount
-            (10000000, 50000, 10000, 0, 100, 2100, 0), // 100% discount
-            (10000000, 50000, 10000, 0, 100, 3000, 0), // 100% discount beyond max slot diff
+            (1_000_000_000, 50_000, 10_000, 0, 100, 100, 1_000_000_000), // 0% discount
+            (1_000_000_000, 50_000, 10_000, 0, 100, 300, 900_000_000), // 10% discount
+            (1_000_000_000, 50_000, 10_000, 0, 100, 600, 750_000_000), // 25% discount
+            (1_000_000_000, 50_000, 10_000, 0, 100, 1_100, 500_000_000), // 50% discount
+            (1_000_000_000, 50_000, 10_000, 0, 100, 1_600, 250_000_000), // 75% discount
+            (1_000_000_000, 50_000, 10_000, 0, 100, 2_100, 0), // 100% discount
+            (1_000_000_000, 50_000, 10_000, 0, 100, 3_000, 0), // 100% discount beyond max slot diff
 
             // 0% to 50% discounts under [10%, 50%] bounds based on slot differences
-            (10000000, 50000, 5000, 1000, 100, 100, 9000000), // 10% discount 0 slot diff
-            (10000000, 50000, 5000, 1000, 100, 200, 8500000), // 15% discount 100 slot diff
-            (10000000, 50000, 5000, 1000, 100, 300, 8000000), // 20% discount 200 slot diff
-            (10000000, 50000, 5000, 1000, 100, 400, 7500000), // 25% discount 300 slot diff
-            (10000000, 50000, 5000, 1000, 100, 500, 7000000), // 30% discount 400 slot diff
-            (10000000, 50000, 5000, 1000, 100, 600, 6500000), // 35% discount 500 slot diff
-            (10000000, 50000, 5000, 1000, 100, 700, 6000000), // 40% discount 600 slot diff
-            (10000000, 50000, 5000, 1000, 100, 800, 5500000), // 45% discount 700 slot diff
-            (10000000, 50000, 5000, 1000, 100, 900, 5000000), // 50% discount 800 slot diff
-            (10000000, 50000, 5000, 1000, 100, 1000, 5000000), // 50% discount holds beyond 800 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 100, 900_000_000), // 10% discount 0 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 200, 850_000_000), // 15% discount 100 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 300, 800_000_000), // 20% discount 200 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 400, 750_000_000), // 25% discount 300 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 500, 700_000_000), // 30% discount 400 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 600, 650_000_000), // 35% discount 500 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 700, 600_000_000), // 40% discount 600 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 800, 550_000_000), // 45% discount 700 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 900, 500_000_000), // 50% discount 800 slot diff
+            (1_000_000_000, 50_000, 5_000, 1_000, 100, 1_000, 500_000_000), // 50% discount holds beyond 800 slot diff
 
             // default settings for different slot diffs, coefficient = 0.00004500, bounds [10%, 50%]
-            (10000000, 4500, 5000, 1000, 100, 100, 9000000), // current slot is the same as last slot
-            (10000000, 4500, 5000, 1000, 100, 101, 8999550), // current slot is one more than last slot
-            (10000000, 4500, 5000, 1000, 100, 150, 8977500), // current slot is 50 more than last slot
-            (10000000, 4500, 5000, 1000, 100, 200, 8955000), // current slot is 100 more than last slot 
-            (10000000, 4500, 5000, 1000, 100, 8988, 5000400), // current slot is almost max slots
-            (10000000, 4500, 5000, 1000, 100, 8989, 5000000), // current slot is just passed max slots and capped at max
-            (10000000, 4500, 5000, 1000, 100, 10000, 5000000), // current slot is well beyond max slots and capped at max
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 100, 900_000_000), // current slot is the same as last slot
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 101, 899_955_000), // current slot is one more than last slot
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 150, 897_750_000), // current slot is 50 more than last slot
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 200, 895_500_000), // current slot is 100 more than last slot
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 8_988, 500_040_000), // current slot is almost max slots
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 8_989, 500_000_000), // current slot is just passed max slots and capped at max
+            (1_000_000_000, 4500, 5_000, 1_000, 100, 10_000, 500_000_000), // current slot is well beyond max slots and capped at max
 
             // edge cases
-            (10000000, 0, 5000, 1000, 100, 200, 9000000), // min coefficient bounded at min discount
-            (10000000, 100000000, 5000, 1000, 100, 200, 5000000), // max coefficient bounded at max discount
-            (0, 4500, 5000, 1000, 100, 200, 0), // zero swap rate
-            (10000000, 4500, 1000, 5000, 100, 200, 5000000), // min discount larger than max
+            (1_000_000_000, 0, 5_000, 1_000, 100, 200, 900_000_000), // min coefficient bounded at min discount
+            (1_000_000_000, 100_000_000, 5_000, 1_000, 100, 200, 500_000_000), // max coefficient bounded at max discount
+            (0, 4_500, 5_000, 1_000, 100, 200, 0), // zero swap rate
+            (1_000_000_000, 4_500, 1_000, 5_000, 100, 200, 500_000_000), // min discount larger than max
 
         ] {
             let oracle_price_data = OraclePriceData {
@@ -203,7 +203,7 @@ mod tests {
     #[test]
     fn test_calculate_conversion_rate_error() {
         for (swap_rate, coefficient, max_discount_rate, min_discount_rate, s_last, s_now) in [
-            (10000000, 4500, 5000, 1000, 200, 100), // invalid slot diff, s_last > s_now
+            (1_000_000_000, 4_500, 5_000, 1_000, 200, 100), // invalid slot diff, s_last > s_now
         ] {
             let oracle_price_data = OraclePriceData {
                 swap_rate,
@@ -226,14 +226,14 @@ mod tests {
     #[should_panic]
     fn test_calculate_conversion_rate_panic() {
         for (swap_rate, coefficient, max_discount_rate, min_discount_rate, s_last, s_now) in [
-            (u64::MAX, 4500, 5000, 1000, 100, 200), // invalid oracle swap rate
-            (10000000, u64::MAX, 5000, 1000, 100, 200), // invalid coefficient
-            (10000000, 4500, u64::MAX, 1000, 100, 200), // invalid max discount rate
-            (10000000, 4500, 5000, u64::MAX, 100, 200), // invalid min discount rate
-            (10000000, 4500, u64::MAX, u64::MAX, 100, 200), // invalid discount rates
-            (10000000, 4500, 5000, 1000, u64::MAX, 200), // invalid start slot
-            (10000000, 4500, 5000, 1000, 100, u64::MAX), // invalid start slot
-            (10000000, 4500, 5000, 1000, u64::MAX, u64::MAX), // invalid slots
+            (u64::MAX, 4_500, 5_000, 1_000, 100, 200), // invalid oracle swap rate
+            (1_000_000_000, u64::MAX, 5_000, 1_000, 100, 200), // invalid coefficient
+            (1_000_000_000, 4_500, u64::MAX, 1_000, 100, 200), // invalid max discount rate
+            (1_000_000_000, 4_500, 5_000, u64::MAX, 100, 200), // invalid min discount rate
+            (1_000_000_000, 4_500, u64::MAX, u64::MAX, 100, 200), // invalid discount rates
+            (1_000_000_000, 4_500, 5_000, 1_000, u64::MAX, 200), // invalid start slot
+            (1_000_000_000, 4_500, 5_000, 1_000, 100, u64::MAX), // invalid start slot
+            (1_000_000_000, 4_500, 5_000, 1_000, u64::MAX, u64::MAX), // invalid slots
         ] {
             let oracle_price_data = OraclePriceData {
                 swap_rate,

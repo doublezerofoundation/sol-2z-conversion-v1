@@ -7,10 +7,10 @@ use rust_decimal::{
     Decimal,
     prelude::ToPrimitive
 };
-use crate::constant::TOKEN_DECIMALS;
+use crate::constant::TOKEN_UNITS;
 
 pub fn parse_token_value(token_value: &String) -> Result<u64, Box<dyn Error>> {
-    let token_multiplier = Decimal::from(TOKEN_DECIMALS);
+    let token_multiplier = Decimal::from(TOKEN_UNITS);
     let amount_input = Decimal::from_str(token_value)?;
     let bid_price_parsed = (amount_input * token_multiplier).to_u64()
         .expect("Token value overflow or conversion failed");
