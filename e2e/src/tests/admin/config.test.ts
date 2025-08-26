@@ -35,7 +35,27 @@ export const configUpdateTests: Test[] = [
             let config = getConfig();
             config.max_discount_rate = 5000;
             config.min_discount_rate = 5001;
-            await scenario.updateConfigAndVerifyFail("Invalid min discount rate", config);
+            await scenario.updateConfigAndVerifyFail("Invalid max discount rate", config);
+        }
+    },
+    {
+        name: "config_update_fail_invalid_coefficient",
+        description: "Admin should not be able to update the config with an invalid coefficient",
+        execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
+            let config = getConfig();
+            config.coefficient = 100000001;
+            await scenario.updateConfigAndVerifyFail("Invalid coefficient", config);
+        }
+    },
+    {
+        name: "revert_config",
+        description: "Admin should be able to revert the config to the default values",
+        execute: async (scenario: ConfigScenario, invalidScenario: ConfigScenario) => {
+            let config = getConfig();
+            config.max_discount_rate = 5000;
+            config.min_discount_rate = 500;
+            config.coefficient = 4500;
+            await scenario.updateConfigAndVerify(config);
         }
     }
 ]
