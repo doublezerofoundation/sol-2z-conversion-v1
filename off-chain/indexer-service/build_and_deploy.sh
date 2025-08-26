@@ -50,10 +50,11 @@ main() {
 
     clean_project
     npm_install
-    build_project
     
     # Populate config files with AWS-specific values
     populate_config_files
+
+    build_project
 
     # Build and deploy metrics API Lambda
     build_metrics_api
