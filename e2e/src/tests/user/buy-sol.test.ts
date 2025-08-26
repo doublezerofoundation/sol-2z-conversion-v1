@@ -6,7 +6,6 @@ import { getOraclePriceData } from "../../core/utils/price-oracle";
 import { BuySolScenario } from "../../scenarios/buy-sol-scenario";
 import { extractTxHashFromResult } from "../../core/utils/test-helper";
 import { getConfig, updateConfig } from "../../core/utils/config-util";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 
 export const userBuySolTests: Test[] = [
     {
@@ -158,7 +157,10 @@ export const userBuySolTests: Test[] = [
 
             // Ensure user has enough balance for both attempts
             await scenario.checkAndReimburseUser2ZBalance(amount * 6);
-            await scenario.airdropToMockVault(getConfig().sol_quantity / LAMPORTS_PER_SOL * 6);
+            await scenario.airdropToMockVault(30 * 6);
+
+            // Wait for 3 seconds to make sure the slot is over
+            await new Promise(resolve => setTimeout(resolve, 3000));
 
             // First buy should succeed
             await scenario.buySol(amount);

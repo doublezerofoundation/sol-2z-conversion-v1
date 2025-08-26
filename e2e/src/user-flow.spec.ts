@@ -10,8 +10,6 @@ import { userBuySolTests } from "./tests/user/buy-sol.test";
 import { fillsConsumerUserTests } from "./tests/user/fills-consumer-user.test";
 import { BuySolScenario } from "./scenarios/buy-sol-scenario";
 import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
-import { getConfig } from "./core/utils/config-util";
-import { LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { getOraclePriceData } from "./core/utils/price-oracle";
 
 describe("User Flow Tests", () => {
@@ -65,15 +63,16 @@ describe("User Flow Tests", () => {
             // Do buy sol to make sure there are some fills in the registry
             // Reimburse the vault and user
             await scenario.checkAndReimburseUser2ZBalance(25 * 5);
-            await scenario.airdropToMockVault(getConfig().sol_quantity / LAMPORTS_PER_SOL * 6);
+            await scenario.airdropToMockVault(30 * 6);
 
             // Buy sol
             for (let i = 0; i < 3; i++) {
+                // Wait for 3 seconds to make sure the slot is over
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
                 const oraclePrice = await getOraclePriceData();
                 const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
                 await scenario.buySol(amount);
-                // Wait for 3 seconds to make sure the slot is over
-                await new Promise(resolve => setTimeout(resolve, 3000));
             }
         });
     });
