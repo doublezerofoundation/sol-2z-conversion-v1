@@ -145,7 +145,7 @@ components:
       required: [code, message]
 
 paths:
-  /metrics/buys:
+  /buys:
     get:
       tags: [Buys]
       summary: Bucketed buys count
@@ -184,7 +184,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /metrics/errors:
+  /errors:
     get:
       tags: [Errors]
       summary: Bucketed error frequency and breakdown
@@ -225,7 +225,7 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/Error' }
 
-  /metrics/dequeues:
+  /dequeues:
     get:
       tags: [Dequeues]
       summary: Bucketed dequeue counts and SOL amounts
