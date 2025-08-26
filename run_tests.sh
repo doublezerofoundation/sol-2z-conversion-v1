@@ -163,7 +163,7 @@ wait_for_port_release() {
 build_program() {
     local PROGRAM_NAME=$1
     log_info "Building the $PROGRAM_NAME program..."
-    anchor build > /dev/null
+    anchor build --features test > /dev/null
     yarn install > /dev/null
 }
 
