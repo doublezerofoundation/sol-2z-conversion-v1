@@ -179,7 +179,7 @@ describe("Consume fills tests", () => {
                 bidFactor
             );
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity) - 3 * LAMPORTS_PER_SOL;
-            expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
+            expectedTokenConsumed =  askPrice * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
 
             await consumeFillsSuccess(
@@ -219,8 +219,7 @@ describe("Consume fills tests", () => {
 
             maxSolAmount = numOfBuySols * Number(DEFAULT_CONFIGS.solQuantity);
             expectedTokenConsumed = askPrices.reduce((sum: number, askPrice: number): number => {
-                const adjustedPrice = Math.floor(askPrice * bidFactor);
-                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * askPrice / LAMPORTS_PER_SOL;
                 return sum + solAmount;
             }, 0);
             expectedFillsConsumed = numOfBuySols
@@ -259,8 +258,7 @@ describe("Consume fills tests", () => {
             const attempt1AskPrices = askPrices.slice(0,3);
             const attempt2AskPrices = askPrices.slice(3,6);
             const expectedTokenConsumedAttempt1 = attempt1AskPrices.reduce((sum: number, askPrice: number): number => {
-                const adjustedPrice = Math.floor(askPrice * bidFactor);
-                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * askPrice / LAMPORTS_PER_SOL;
                 return sum + solAmount;
             }, 0);
             expectedFillsConsumed = numOfBuySols/2;
@@ -278,8 +276,7 @@ describe("Consume fills tests", () => {
             );
 
             const expectedTokenConsumedAttempt2 = attempt2AskPrices.reduce((sum: number, askPrice: number): number => {
-                const adjustedPrice = Math.floor(askPrice * bidFactor);
-                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * adjustedPrice / LAMPORTS_PER_SOL;
+                const solAmount = Number(DEFAULT_CONFIGS.solQuantity) * askPrice / LAMPORTS_PER_SOL;
                 return sum + solAmount;
             }, 0);
 
@@ -328,10 +325,10 @@ describe("Consume fills tests", () => {
             const partiallyFilledSolAmount = maxSolAmount - Math.floor(partialConsumptionMultiplier) * solQuantity;
             reminderPartialFillSolAmount = solQuantity - partiallyFilledSolAmount;
             expectedTokenConsumed =
-                Math.floor(askPrices[0] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
-                Math.floor(askPrices[1] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
-                Math.floor(askPrices[2] * bidFactor) * solQuantity / LAMPORTS_PER_SOL +
-                partiallyFilledSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+                askPrices[0] * solQuantity / LAMPORTS_PER_SOL +
+                askPrices[1] * solQuantity / LAMPORTS_PER_SOL +
+                askPrices[2] * solQuantity / LAMPORTS_PER_SOL +
+                partiallyFilledSolAmount * askPrices[3] / LAMPORTS_PER_SOL;
             expectedFillsConsumed = Math.ceil(partialConsumptionMultiplier);
             finalCount = numOfBuySols - Math.floor(partialConsumptionMultiplier);
 
@@ -353,7 +350,7 @@ describe("Consume fills tests", () => {
             maxSolAmount = Math.floor(reminderPartialFillSolAmount * 2/3)
             reminderPartialFillSolAmount -= maxSolAmount;
             expectedFillsConsumed = 1;
-            expectedTokenConsumed = maxSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL;
+            expectedTokenConsumed = maxSolAmount * askPrices[3] / LAMPORTS_PER_SOL;
 
             await consumeFillsSuccess(
                 program,
@@ -374,8 +371,8 @@ describe("Consume fills tests", () => {
             maxSolAmount = reminderPartialFillSolAmount + Math.floor(partialConsumptionMultiplier * solQuantity);
             expectedFillsConsumed = 2;
             const partiallyFilledSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
-            expectedTokenConsumed = reminderPartialFillSolAmount * Math.floor(askPrices[3] * bidFactor) / LAMPORTS_PER_SOL
-                + partiallyFilledSolAmount * Math.floor(askPrices[4] * bidFactor) / LAMPORTS_PER_SOL;
+            expectedTokenConsumed = reminderPartialFillSolAmount * askPrices[3] / LAMPORTS_PER_SOL
+                + partiallyFilledSolAmount * askPrices[4] / LAMPORTS_PER_SOL;
 
             await consumeFillsSuccess(
                 program,
