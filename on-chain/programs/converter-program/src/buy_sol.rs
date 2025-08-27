@@ -147,7 +147,7 @@ impl<'info> BuySol<'info> {
         }
 
         let tokens_required = (sol_quantity as u128)
-            .checked_mul(bid_price as u128)
+            .checked_mul(ask_price as u128)
             .ok_or(DoubleZeroError::ArithmeticError)?
             .saturating_div(LAMPORTS_PER_SOL as u128)
             .try_into()
