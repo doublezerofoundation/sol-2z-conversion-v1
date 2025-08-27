@@ -1,6 +1,6 @@
 import ISwapRateService from "./ISwapRateService";
 import {PriceRate} from "../../types/common";
-const TWOZ_PRECISION = 9;
+const TWOZ_PRECISION = 8;
 import {injectable} from "inversify";
 
 @injectable()
