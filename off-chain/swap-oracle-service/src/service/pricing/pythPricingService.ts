@@ -84,7 +84,7 @@ export default class PythPricingService extends PricingServiceBase {
         }
 
         try {
-            await axios.get(`${this.pricingServicesConfig.endpoint}/live`);
+            await axios.get(new URL('live', this.pricingServicesConfig.endpoint).toString());
             isPricingConnected = true;
         } catch (error) {
             console.error("Error connecting to pricing service: ", error);

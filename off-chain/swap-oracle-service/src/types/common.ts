@@ -8,7 +8,8 @@ export enum ConfigField {
     PRICING_SERVICES = 'pricingServices'
 
 }
-
+export const TWOZ_PRECISION = 100000000;
+export const TWOZ_PRECISION_DECIMALS = 8;
 export enum PriceFeed {
     BTC_USD = 'BTC/USD',
     SOL_USD = 'SOL/USD',

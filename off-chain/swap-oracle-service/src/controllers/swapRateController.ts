@@ -1,14 +1,14 @@
 import {Request, Response} from 'express';
 import {IPricingService} from "../service/pricing/IPricingService";
-import {HealthCheckResult, PriceRate, TYPES} from "../types/common";
+import {HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
-import {AttestationService} from "../service/attestaion/attestationService";
+import {AttestationService} from "../service/attestation/attestationService";
 import {CacheService} from "../service/cache/cacheService";
 import IMetricsMonitoringService from "../service/monitor/IMetricsMonitoringService";
 import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
-const TWOZ_PRECISION = 100000000;
+
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 @injectable()
 export default class SwapRateController {
