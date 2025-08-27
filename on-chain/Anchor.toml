@@ -7,14 +7,14 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z" # TODO UPDATE reade me mention update public key of the program
+converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"  # TODO pointo dev add to reade me
-wallet = "~/.config/solana/id.json"  # Todo Update readme mention check this file poin to actual net work
+cluster = "localnet"
+wallet = "~/.config/solana/id.json"
 
 [scripts]
 system-initialize-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/system-initialize-tests.ts"
