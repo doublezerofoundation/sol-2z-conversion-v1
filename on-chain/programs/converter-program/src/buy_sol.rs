@@ -16,7 +16,6 @@ use crate::{
         attestation_utils::verify_attestation,
         events::{
             trade::{TradeEvent, BidTooLowEvent},
-            system::{AccessByDeniedPerson, AccessDuringSystemHalt}
         },
         structs::OraclePriceData,
         constant::{
@@ -97,17 +96,13 @@ impl<'info> BuySol<'info> {
     ) -> Result<()> {
 
         // System halt validation.
-        if self.program_state.is_halted {
-            emit!(AccessDuringSystemHalt { accessed_by: self.signer.key() });
-            return err!(DoubleZeroError::SystemIsHalted);
-        }
+        require!(!self.program_state.is_halted, DoubleZeroError::SystemIsHalted);
 
         // Checking whether address is inside the deny list.
-        let signer_key = self.signer.key;
-        if self.deny_list_registry.denied_addresses.contains(signer_key) {
-            emit!(AccessByDeniedPerson { accessed_by: self.signer.key() });
-            return err!(DoubleZeroError::UserInsideDenyList);
-        }
+        require!(
+            !self.deny_list_registry.denied_addresses.contains(self.signer.key),
+            DoubleZeroError::UserInsideDenyList
+        );
 
         // Restricting a single trade per slot.
         let clock = Clock::get()?;

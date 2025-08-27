@@ -116,6 +116,16 @@ function serializeForDynamo(obj: any): any {
      if (obj.constructor && obj.constructor.name === "PublicKey" && typeof obj.toString === "function") {
        return obj.toString();
      }
+
+     // BN detection and conversion
+     if (obj.constructor && obj.constructor.name === "BN" && typeof obj.toNumber === "function") {
+          try {
+               return obj.toNumber();
+          } catch (error) {
+               // If number is too large, convert to string
+               return obj.toString();
+          }
+     }
    
      // For objects, recursively serialize each property
      if (typeof obj === "object") {

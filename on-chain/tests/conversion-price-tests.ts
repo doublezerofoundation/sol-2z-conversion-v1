@@ -203,7 +203,6 @@ describe("Conversion Price Tests", async () => {
             oraclePriceData,
             ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
             getDefaultKeyPair(),
-            Events.ATTESTATION_INVALID
         );
     });
 
@@ -248,7 +247,6 @@ describe("Conversion Price Tests", async () => {
             oraclePriceData,
             ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
             getDefaultKeyPair(),
-            Events.ATTESTATION_INVALID
         );
     });
 

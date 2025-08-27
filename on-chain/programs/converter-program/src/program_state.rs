@@ -1,8 +1,5 @@
 use anchor_lang::prelude::*;
-use crate::{
-    common::error::DoubleZeroError,
-    common::events::system::UnauthorizedUser
-};
+use crate::common::error::DoubleZeroError;
 
 #[account]
 #[derive(InitSpace, Debug)]
@@ -25,17 +22,11 @@ pub struct BumpRegistry {
 
 impl ProgramStateAccount {
     pub fn assert_admin(&self, signer: &Signer) -> Result<()> {
-        if self.admin != signer.key() {
-            emit!(UnauthorizedUser { attempted_by: signer.key() });
-            return err!(DoubleZeroError::UnauthorizedAdmin);
-        }
+        require_keys_eq!(self.admin, signer.key(), DoubleZeroError::UnauthorizedAdmin);
         Ok(())
     }
     pub fn assert_deny_list_authority(&self, signer: &Signer) -> Result<()> {
-        if self.deny_list_authority != signer.key() {
-            emit!(UnauthorizedUser { attempted_by: signer.key() });
-            return err!(DoubleZeroError::UnauthorizedDenyListAuthority);
-        }
+        require_keys_eq!(self.deny_list_authority, signer.key(), DoubleZeroError::UnauthorizedDenyListAuthority);
         Ok(())
     }
 }
