@@ -82,7 +82,7 @@ describe("Buy Sol Tests", () => {
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -105,7 +105,7 @@ describe("Buy Sol Tests", () => {
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -158,12 +158,12 @@ describe("Buy Sol Tests", () => {
                 swapRate: 122131,
             };
 
-            const bidPrice = Number(oraclePriceData.swapRate);
+            const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -172,7 +172,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData,
                 ErrorMsg.ATTESTATION_NOT_AUTHENTIC
@@ -183,12 +183,12 @@ describe("Buy Sol Tests", () => {
             let oraclePriceData = await getOraclePriceData();
             oraclePriceData.signature = "invalid_signature";
 
-            const bidPrice = Number(oraclePriceData.swapRate);
+            const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -197,7 +197,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData,
                 ErrorMsg.ATTESTATION_INVALID
@@ -208,12 +208,12 @@ describe("Buy Sol Tests", () => {
             let oraclePriceData = await getOraclePriceData();
             oraclePriceData.signature = "";
 
-            const bidPrice = Number(oraclePriceData.swapRate);
+            const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -222,7 +222,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData,
                 ErrorMsg.ATTESTATION_NOT_AUTHENTIC
@@ -233,12 +233,12 @@ describe("Buy Sol Tests", () => {
     describe("Edge cases", async() => {
         it("User successfully buys SOL at the current ask price.", async () => {
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -247,7 +247,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData
             );
@@ -280,7 +280,7 @@ describe("Buy Sol Tests", () => {
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                oraclePriceData.swapRate * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -409,12 +409,12 @@ describe("Buy Sol Tests", () => {
             await addToDenyListAndVerify(program, userKeyPair.publicKey);
 
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = Number(oraclePriceData.swapRate);
+            const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -423,7 +423,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData,
                 ErrorMsg.ACCESS_BY_DENIED_PERSON
@@ -447,12 +447,12 @@ describe("Buy Sol Tests", () => {
             await toggleSystemStateAndVerify(program, true);
 
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = Number(oraclePriceData.swapRate);
+            const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -461,7 +461,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData,
                 ErrorMsg.SYSTEM_HALTED
@@ -594,8 +594,8 @@ describe("Buy Sol Tests", () => {
         it("User should be able to do buy SOL with proper rates", async () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
+                coefficient: new anchor.BN(1),
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
-                maxDiscountRate: new anchor.BN(55 * BPS),
             };
             await updateConfigsAndVerify(
                 program,
@@ -603,12 +603,12 @@ describe("Buy Sol Tests", () => {
             );
 
             const oraclePriceData = await getOraclePriceData();
-            const bidPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair) + 10000;
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair) + 10000;
             // Ensure that user has sufficient 2Z.
             await mint2z(
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure vault has funds.
             await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
@@ -617,7 +617,7 @@ describe("Buy Sol Tests", () => {
                 program,
                 mockTransferProgram,
                 tokenAccountForUser,
-                bidPrice,
+                askPrice,
                 userKeyPair,
                 oraclePriceData,
                 currentConfigs

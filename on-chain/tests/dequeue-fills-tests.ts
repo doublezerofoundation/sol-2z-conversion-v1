@@ -108,7 +108,7 @@ describe("Consume fills tests", () => {
                 bidFactor
             );
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity);
-            expectedTokenConsumed =  Math.floor(askPrice * bidFactor) * maxSolAmount / LAMPORTS_PER_SOL;
+            expectedTokenConsumed =  askPrice * maxSolAmount / LAMPORTS_PER_SOL;
             expectedFillsConsumed = 1
 
             await consumeFillsSuccess(

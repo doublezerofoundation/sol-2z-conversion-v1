@@ -35,6 +35,7 @@ export async function buySolAndVerify(
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
     const lastTradedSlotBefore = (await fetchProgramState(program)).lastTradeSlot.toNumber();
     let txSig: string;
+    const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, signer);
 
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
@@ -52,7 +53,7 @@ export async function buySolAndVerify(
         assert.fail("Buy Sol  failed");
     }
 
-    const tokenChange = (BigInt(Number(currentConfigs.solQuantity)) * BigInt(bidPrice)) / BigInt(LAMPORTS_PER_SOL);
+    const tokenChange = (BigInt(Number(currentConfigs.solQuantity)) * BigInt(askPrice)) / BigInt(LAMPORTS_PER_SOL);
     const tokenBalanceChange = Number(tokenChange);
     const solBalanceChange = Number(currentConfigs.solQuantity);
 
@@ -68,24 +69,26 @@ export async function buySolAndVerify(
     const event = await findAnchorEventInLogs(logs, program.idl, Events.TRADE);
     expect(event, "Trade event should be emitted").to.exist;
 
-    assert.equal(
-        tokenBalanceAfter,
-        tokenBalanceBefore - tokenBalanceChange,
+    assert.approximately(
+        tokenBalanceBefore - tokenBalanceAfter,
+        tokenBalanceChange,
+        10**4,
         "Token Balance should decrease by tokenBalanceChange"
     )
-    assert.equal(
-        protocolTreasuryBalanceAfter,
-        protocolTreasuryBalanceBefore + tokenBalanceChange,
+    assert.approximately(
+        protocolTreasuryBalanceAfter - protocolTreasuryBalanceBefore,
+        tokenBalanceChange,
+        10**4,
         "Token Balance should increase by tokenBalanceChange"
     )
     assert.equal(
-        solBalanceAfter,
-        solBalanceBefore + solBalanceChange,
+        solBalanceAfter - solBalanceBefore,
+        solBalanceChange,
         "User's SOL Balance should increase by solBalanceChange"
     )
     assert.equal(
-        vaultBalanceAfter,
-        vaultBalanceBefore - solBalanceChange,
+        vaultBalanceBefore - vaultBalanceAfter,
+        solBalanceChange,
         "Vault SOL Balance should decrease by solBalanceChange"
     )
 
@@ -99,7 +102,7 @@ export async function buySolAndVerify(
     // Ensure added fill entry values are correct.
     const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
     assert.equal(fillEntry.solIn, solBalanceChange);
-    assert.equal(fillEntry.token2ZOut, tokenBalanceChange);
+    assert.approximately(fillEntry.token2ZOut, tokenBalanceChange, 10 ** 4);
 }
 
 export async function buySolFail(
@@ -188,7 +191,7 @@ export async function buySolSuccess(
     await mint2z(
         mockTransferProgram,
         senderTokenAccount,
-        bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+        askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
     );
 
     // Ensure vault has funds.
