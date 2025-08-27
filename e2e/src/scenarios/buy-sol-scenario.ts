@@ -75,7 +75,9 @@ export class BuySolScenario extends CommonScenario {
         assert(Number(finalFillsRegistry.lifetime2ZProcessed) === Number(initialFillsRegistry.lifetime2ZProcessed), "Fills registry lifetime 2Z processed is not correct");
 
         // new fill should be added at the tail
-        const newFill = finalFillsRegistry.fills[Number(finalFillsRegistry.tail) - 1];        
+        const newFill = finalFillsRegistry.fills[
+            (Number(finalFillsRegistry.tail) + finalFillsRegistry.fills.length - 1) % finalFillsRegistry.fills.length
+        ];
         assert(Number(newFill.solIn) === solBalanceChange * LAMPORTS_PER_SOL, "Fills registry new fill sol in is not correct");
         assert(Math.abs(Number(newFill.token2ZOut) - actualTokenBalanceChange * TOKEN_DECIMALS) < tolerance, "Fills registry new fill token 2Z out is not correct");
 
