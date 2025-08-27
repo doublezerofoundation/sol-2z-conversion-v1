@@ -3,14 +3,14 @@ import 'reflect-metadata'
 
 import ISwapRateService from '../service/swap/ISwapRateService';
 import { PythSwapRateService } from '../service/swap/PythSwapRateService';
-import {AttestationService, IAttestationService} from '../service/attestaion/attestationService';
+import {AttestationService, IAttestationService} from '../service/attestation/attestationService';
 import { CacheService } from '../service/cache/cacheService';
 import { RedisCacheService } from '../service/cache/redisCacheService';
 import IMetricsMonitoringService from '../service/monitor/IMetricsMonitoringService';
 import CloudWatchMonitoringService from '../service/monitor/cloudWatchMonitoringService';
 import { HealthMonitoringService } from '../service/monitor/healthMonitoringService';
 import SwapRateController from '../controllers/swapRateController';
-import {IKeyManager, KeyManager} from '../service/attestaion/keyManager';
+import {IKeyManager, KeyManager} from '../service/attestation/keyManager';
 import { PricingServiceFactory } from './serviceFactory';
 import { configUtil } from '../utils/configUtil';
 import { TYPES } from '../types/common';

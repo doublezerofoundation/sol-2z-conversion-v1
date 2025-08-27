@@ -33,8 +33,6 @@ import {TYPES} from "../types/common";
         setInterval(async () => {
             console.log("Health monitoring started", Date.now());
             await this.healthMonitoringService.startMonitoring();
-            console.log("Health monitoring completed", Date.now(),
-                this.healthMonitoringService.getHealthMonitoringData());
         }, 60000);
     }
 

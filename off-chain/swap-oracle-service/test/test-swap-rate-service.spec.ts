@@ -16,7 +16,7 @@ const successTestData = [
                 exponent: 6,
                 confidence: 5000
        },
-        expectedSwapRate: 2.00603
+        expectedSwapRate: 2.00603015
 
     },
     {
@@ -31,7 +31,7 @@ const successTestData = [
             exponent: 6,
             confidence: 3000
         },
-        expectedSwapRate: 1.669339
+        expectedSwapRate: 1.66933868
 
     },
     {
@@ -46,7 +46,7 @@ const successTestData = [
             exponent: 6,
             confidence: 4440
         },
-        expectedSwapRate: 0.545258
+        expectedSwapRate: 0.54525835
 
     },
 ]
