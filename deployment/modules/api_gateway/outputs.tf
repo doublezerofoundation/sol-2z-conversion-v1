@@ -76,11 +76,6 @@ output "buys_resource_id" {
   value       = var.enable_metrics_api ? module.metrics_service[0].buys_resource_id : null
 }
 
-output "errors_resource_id" {
-  description = "The ID of the errors resource"
-  value       = var.enable_metrics_api ? module.metrics_service[0].errors_resource_id : null
-}
-
 output "dequeues_resource_id" {
   description = "The ID of the dequeues resource"
   value       = var.enable_metrics_api ? module.metrics_service[0].dequeues_resource_id : null
