@@ -19,7 +19,10 @@ use crate::{
             system::{AccessByDeniedPerson, AccessDuringSystemHalt}
         },
         structs::OraclePriceData,
-        constant::MAX_FILLS_QUEUE_SIZE
+        constant::{
+            MAX_FILLS_QUEUE_SIZE,
+            TOKEN_DECIMALS
+        }
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -167,11 +170,7 @@ impl<'info> BuySol<'info> {
 
         let cpi_program = self.token_program.to_account_info();
         let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
-        token_interface::transfer_checked(
-            cpi_context,
-            tokens_required,
-            self.double_zero_mint.decimals
-        )?;
+        token_interface::transfer_checked(cpi_context, tokens_required, TOKEN_DECIMALS)?;
 
         // Does CPI call to withdraw SOL and transfer it to signer.
         let cpi_program_id = self.revenue_distribution_program.key();

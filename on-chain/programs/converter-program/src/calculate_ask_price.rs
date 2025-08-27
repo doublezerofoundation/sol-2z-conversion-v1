@@ -11,7 +11,10 @@ use rust_decimal::{
 };
 use crate::{
     common::{
-        constant::TOKEN_UNITS,
+        constant::{
+            TOKEN_UNITS,
+            BPS
+        },
         error::DoubleZeroError,
         seeds::seed_prefixes::SeedPrefixes,
         structs::OraclePriceData, attestation_utils::verify_attestation,
@@ -20,7 +23,6 @@ use crate::{
     deny_list_registry::DenyListRegistry,
     program_state::ProgramStateAccount,
 };
-use crate::common::constant::DECIMAL_PRECISION;
 
 #[derive(Accounts)]
 pub struct CalculateAskPrice<'info> {
@@ -82,10 +84,10 @@ pub fn calculate_conversion_rate(
         / Decimal::from_u64(100_000_000)?;
 
     let max_discount_rate_decimal = Decimal::from_u64(max_discount_rate)?
-        / Decimal::from_u64(DECIMAL_PRECISION * 100)?;
+        / Decimal::from_u16(BPS * 100)?;
 
     let min_discount_rate_decimal = Decimal::from_u64(min_discount_rate)?
-        / Decimal::from_u64(DECIMAL_PRECISION * 100)?;
+        / Decimal::from_u16(BPS * 100)?;
 
     let s_diff = s_now.checked_sub(s_last)?;
     let s_diff_decimal = Decimal::from_u64(s_diff)?;
