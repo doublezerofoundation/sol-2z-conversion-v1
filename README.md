@@ -10,7 +10,7 @@ This system consists of following components.
    * Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality.
      It provides CPIs which is used by converter program to simulate actual transfer.
 2. Off-chain components
-   * Swap-oracle-pricing-service
+   * Swap-oracle-service
    * Indexer-service
    * Matrix Api
 3. CLI Tools
@@ -126,7 +126,7 @@ Update the `oracle_pubkey` with `Public key` in config.json
 This keypair is used for signing price data in the swap-oracle service.
 
 > [!NOTE]
-> `Base58 secret Key` used by swap-pricing service we have to update it in parameter store when regional setup done.
+> `Base58 secret Key` used by swap-oracle service we have to update it in parameter store when regional setup done.
 
 ### On Chain Configuration Setup
 
