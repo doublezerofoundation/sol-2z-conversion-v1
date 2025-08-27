@@ -99,8 +99,6 @@ impl<'info> DequeueFills<'info> {
             fills_consumed += 1;
         }
 
-        // Update registry statistics.
-        // Update registry statistics.
         fills_registry.total_sol_pending = fills_registry.total_sol_pending
             .checked_sub(sol_dequeued)
             .ok_or(DoubleZeroError::ArithmeticError)?;
