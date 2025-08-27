@@ -10,6 +10,8 @@ import { userBuySolTests } from "./tests/user/buy-sol.test";
 import { fillsConsumerUserTests } from "./tests/user/fills-consumer-user.test";
 import { BuySolScenario } from "./scenarios/buy-sol-scenario";
 import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
+import { getOraclePriceData } from "./core/utils/price-oracle";
+import { TOKEN_DECIMALS } from "./core/constants";
 
 describe("User Flow Tests", () => {
     let deployer: AdminClient;
@@ -57,6 +59,23 @@ describe("User Flow Tests", () => {
                 await test.execute(scenario);
             });
         }
+
+        after(async () => {
+            // Do buy sol to make sure there are some fills in the registry
+            // Reimburse the vault and user
+            await scenario.checkAndReimburseUser2ZBalance(25 * 5);
+            await scenario.airdropToMockVault(30 * 6);
+
+            // Buy sol
+            for (let i = 0; i < 3; i++) {
+                // Wait for 3 seconds to make sure the slot is over
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                const oraclePrice = await getOraclePriceData();
+                const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1;
+                await scenario.buySol(amount);
+            }
+        });
     });
 
     describe("User Dequeue Fill Tests", () => {

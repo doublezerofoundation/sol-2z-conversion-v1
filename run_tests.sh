@@ -98,31 +98,38 @@ print_status_bar() {
 
 # -------------------- Validator Management --------------------
 VALIDATOR_PID=""
+LEDGER_DIR=""
 
 start_validator() {
     local RPC_PORT=$1
+    shift
     local RPC_URL="http://127.0.0.1:$RPC_PORT"
+    local EXTRA_ARGS="$@"
 
-    # Stop any running validator first
-    stop_validator
+    stop_validator  # stop any old one cleanly
 
-    solana-test-validator --reset --quiet --rpc-port $RPC_PORT $EXTRA_ARGS \
-        &> /dev/null &
+    LEDGER_DIR="./.ledger-$RPC_PORT-$(date +%s)"
+    mkdir -p "$LEDGER_DIR"
+
+    solana-test-validator --reset --quiet --rpc-port $RPC_PORT --ledger "$LEDGER_DIR" $EXTRA_ARGS \
+        > validator.log 2>&1 &
 
     VALIDATOR_PID=$!
-    disown $VALIDATOR_PID  # prevent it from becoming zombie on exit
+    log_info "Started validator PID $VALIDATOR_PID on $RPC_URL"
 
     wait_for_validator $RPC_URL
 }
 
 stop_validator() {
     if [ -n "$VALIDATOR_PID" ] && kill -0 $VALIDATOR_PID 2>/dev/null; then
+        log_info "Stopping validator PID $VALIDATOR_PID"
         kill -9 $VALIDATOR_PID 2>/dev/null || true
-        wait $VALIDATOR_PID 2>/dev/null || true  # reap zombie if any
-        VALIDATOR_PID=""
-    else
-        # fallback: kill any leftover validators
-        pkill -9 -f "solana-test-validator" 2>/dev/null || true
+        wait $VALIDATOR_PID 2>/dev/null || true
+    fi
+    VALIDATOR_PID=""
+    if [ -n "$LEDGER_DIR" ]; then
+        rm -rf "$LEDGER_DIR"
+        LEDGER_DIR=""
     fi
     wait_for_port_release $BASE_RPC_PORT
 }
@@ -169,6 +176,9 @@ wait_for_port_release() {
     exit 1
 }
 
+# cleanup validator on exit
+trap 'stop_validator' EXIT
+
 # -------------------- Program Management --------------------
 build_program() {
     local PROGRAM_NAME=$1
@@ -210,7 +220,11 @@ run_test() {
     print_status_bar
     log_section "Running Test: $TEST_SCRIPT (RPC: $RPC_PORT)"
 
-    start_validator $RPC_PORT
+    EXTRA_ARGS=""
+    if [ "$TEST_SCRIPT" == "user-flow" ]; then
+        EXTRA_ARGS="--ticks-per-slot 300"
+    fi
+    start_validator $RPC_PORT $EXTRA_ARGS
 
     # Deploy the programs to the validator
     cd ./mock-double-zero-program || exit 1
