@@ -36,7 +36,7 @@ export default class SwapRateController {
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
             if (!await this.healthMonitoringService.getHealthStatus()) {
-                console.log("Health check failed")
+                console.error("Health check failed")
                 res.status(503).json({
                     error: 'Service temporarily unavailable',
                     details: 'Health check failed',
@@ -50,9 +50,6 @@ export default class SwapRateController {
             const swapRate = priceRate.swapRate * TWOZ_PRECISION
 
             const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
-            console.log("signedBytes: ", signedBytes)
-
-            console.log(signedBytes)
             const result = {
                 swapRate : swapRate,
                 timestamp: timestamp,
@@ -62,7 +59,6 @@ export default class SwapRateController {
                 cacheHit: isCacheHit,
 
             }
-            console.log("Result",result)
             res.json(result);
         } catch (error) {
             console.error('Error in priceRateHandler:', error);

@@ -76,7 +76,7 @@ export default class PythPricingService extends PricingServiceBase {
         let isConnected: boolean;
         try {
             lastPriceUpdate = await this.cacheService.get(`${this.getPricingServiceType()}-${ENV}-last-price-update`);
-            await axios.get(`${this.pricingServicesConfig.endpoint}live`)
+            await axios.get(`${this.pricingServicesConfig.endpoint}/live`)
             isConnected = true;
 
         } catch (error) {
