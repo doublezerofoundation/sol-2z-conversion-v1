@@ -100,10 +100,14 @@ impl<'info> DequeueFills<'info> {
         }
 
         // Update registry statistics.
-        fills_registry.total_sol_pending -= sol_dequeued;
-        fills_registry.total_2z_pending -= token_2z_dequeued;
-        fills_registry.lifetime_sol_processed += sol_dequeued;
-        fills_registry.lifetime_2z_processed += token_2z_dequeued;
+        // Update registry statistics.
+        fills_registry.total_sol_pending = fills_registry.total_sol_pending
+            .checked_sub(sol_dequeued)
+            .ok_or(DoubleZeroError::ArithmeticError)?;
+
+        fills_registry.total_2z_pending = fills_registry.total_2z_pending
+            .checked_sub(token_2z_dequeued)
+            .ok_or(DoubleZeroError::ArithmeticError)?;
 
         let dequeue_fills_result = DequeueFillsResult {
             sol_dequeued,

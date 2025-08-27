@@ -1702,14 +1702,6 @@
             "type": "u64"
           },
           {
-            "name": "lifetime_sol_processed",
-            "type": "u64"
-          },
-          {
-            "name": "lifetime_2z_processed",
-            "type": "u64"
-          },
-          {
             "name": "fills",
             "type": {
               "array": [

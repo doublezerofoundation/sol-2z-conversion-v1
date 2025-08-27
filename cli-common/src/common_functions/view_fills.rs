@@ -36,10 +36,6 @@ pub fn view_fills_registry() -> Result<(), Box<dyn Error>> {
              ui::BULLET, fills_registry.total_sol_pending / LAMPORTS_PER_SOL, fills_registry.total_sol_pending);
     println!("{} Total Unprocessed 2Z Volume {}, With Decimals {}",
              ui::BULLET, fills_registry.total_2z_pending / TOKEN_UNITS, fills_registry.total_2z_pending);
-    println!("{} Lifetime processed SOL Volume {}, In Lamports {}",
-             ui::BULLET, fills_registry.lifetime_sol_processed / LAMPORTS_PER_SOL, fills_registry.lifetime_sol_processed);
-    println!("{} Lifetime processed 2Z Volume {}, With Decimals {}",
-             ui::BULLET, fills_registry.lifetime_2z_processed / TOKEN_UNITS, fills_registry.lifetime_2z_processed);
     println!("\n");
     println!("{} Pending Fills", ui::LABEL);
 
