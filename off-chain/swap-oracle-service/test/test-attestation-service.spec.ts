@@ -1,7 +1,7 @@
-import {IKeyManager} from "../src/service/attestaion/keyManager";
+import {IKeyManager} from "../src/service/attestation/keyManager";
 import {MockKeyManager} from "./mock/mockKeyManager";
 import {TYPES} from "../src/types/common";
-import {IAttestationService} from "../src/service/attestaion/attestationService";
+import {IAttestationService} from "../src/service/attestation/attestationService";
 import {getUtf8Encoder, verifySignature} from "@solana/kit";
 import container from "../src/factory/serviceContainer";
 import {assert} from "chai";

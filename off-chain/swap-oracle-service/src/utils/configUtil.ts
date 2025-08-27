@@ -1,9 +1,5 @@
 import config from 'config';
 
-export interface AppConfig {
-    applicationPort: number;
-}
-
 export class ConfigUtil {
     private static instance: ConfigUtil;
     private config: typeof config;
@@ -27,11 +23,6 @@ export class ConfigUtil {
         return this.config.has(key);
     }
 
-    public getAll(): AppConfig {
-        return {
-            applicationPort: this.get<number>('applicationPort')
-        };
-    }
 }
 
 export const configUtil = ConfigUtil.getInstance();

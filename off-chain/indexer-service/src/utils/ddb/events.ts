@@ -28,29 +28,6 @@ export async function writeSolanaEvent(
 }
 
 /**
- * Write a Solana error to the database
- */
-export async function writeSolanaError(
-  txHash: string,
-  errorCode: string,
-  logs: string[],
-  slot: number,
-  timestamp: number
-) {
-  const params: PutCommandInput = {
-    TableName: `${table_prefix}-${DDBTable.SOLANA_ERROR}`,
-    Item: {
-      tx_hash: txHash,
-      error_code: errorCode,
-      logs,
-      slot,
-      timestamp,
-    },
-  };
-  await ddbDocClient.send(new PutCommand(params));
-}
-
-/**
  * Write a fill dequeue event to the database
  */
 export async function writeFillDequeue(

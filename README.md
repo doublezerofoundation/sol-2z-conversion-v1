@@ -10,7 +10,7 @@ This system consists of following components.
    * Mock Double Zero Transfer Program - On-chain program written in anchor to mock the transfer functionality.
      It provides CPIs which is used by converter program to simulate actual transfer.
 2. Off-chain components
-   * Swap-oracle-pricing-service
+   * Swap-oracle-service
    * Indexer-service
    * Matrix Api
 3. CLI Tools
@@ -37,6 +37,7 @@ Ensure you have the following software versions installed:
 - **Docker**: v28.3.3
 - **jq**: 1.7
 
+
 ### Installation Commands
 ```bash
 # Solana CLI
@@ -50,6 +51,16 @@ rustup default 1.88.0
 
 # Configure Solana for local development
 solana config set -ul
+```
+
+### Setting up the AWS
+export `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`
+
+```bash
+
+export AWS_ACCESS_KEY_ID=
+export AWS_SECRET_ACCESS_KEY=
+
 ```
 
 ## Main Provision Script Usage
@@ -68,7 +79,8 @@ solana config set -ul
 
 ## Phase 1: On-Chain Component Deployment
 
-### 1.1 Environment Setup
+
+### Environment Setup
 
 #### Configure Local Validator
 ```bash
@@ -79,7 +91,9 @@ solana-test-validator
 solana logs -ul
 ```
 
-#### Generate Keypairs
+### Solana Keypair Management
+
+#### Generate Programs key
 ```bash
 # Create keys directory
 mkdir -p on-chain/.keys
@@ -93,7 +107,29 @@ solana-keygen new -o mock-double-zero-program/.keys/mock-double-zero-program-key
 
 ```
 
-### 1.2 Configuration Setup
+##### Generate Data signer key
+```bash
+# Install Python dependencies
+pip install solders base58
+
+# Generate new keypair
+cd deployment/script
+python3 script.py
+
+# Or load existing keypair
+python3 script.py <keypair.json>
+```
+This Script give
+- Public Key
+- Base58 Secret Key
+
+Update the `oracle_pubkey` with `Public key` in config.json  
+This keypair is used for signing price data in the swap-oracle service.
+
+> [!NOTE]
+> `Base58 secret Key` used by swap-oracle service we have to update it in parameter store when regional setup done.
+
+### On Chain Configuration Setup
 
 Create `config.json` at the project root with the following structure:
 
@@ -114,10 +150,13 @@ Create `config.json` at the project root with the following structure:
 ```
 
 #### Key Configuration Parameters:
-- **program_id**: Public key of the main converter program
-- **double_zero_program_id**: Public key of the mock transfer program
+- **program_id**: Public key of the main converter program (which is created by earlier step Generate Programs key )
+- **double_zero_program_id**: Public key of the mock transfer program (which is created by earlier step Generate Programs key )
 - **sol_quantity**: Amount of SOL per transaction (in Lamports)
 - **coefficient**: Discount calculation curve coefficient (see formula below)
+- **price_oracle_end_point**: swap-oracle-service endpoint which is create from environment( used by User cli for get swap rate) 
+
+
 
 #### Coefficient Calculation Formula:
 
@@ -145,9 +184,43 @@ $$
 \gamma * 10000 \approx 104
 $$
 
-In the above example, considering that the $N$ is 432,000, the coefficient is approximately $1.042 \times 10^{-6}$. To account for this precision, we have set the maximum coefficient value to 8 decimal places. (6 + 2 decimal places for added precision)
 
-### 1.3 Deploy On-Chain Programs
+## Phase 1: On-Chain Component Deployment
+
+### Deploy On-Chain Programs
+
+> [!NOTE]
+> Before deploy the program make sure you configure anchor correctly in both convertor program and mock double zero program. [Refer](#generate-data-signer-key).
+
+check the `Anchor.toml`
+#### Converter program
+```bash 
+[programs.localnet]
+converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z" # update public key of the program
+
+[provider]
+cluster = "localnet"  # point to correct cluster (Devnet, Mainnet) 
+wallet = "~/.config/solana/id.json"  # Check this file point to actual network
+
+
+```
+
+#### Mock double zero program
+```bash
+
+[programs.localnet]
+mock_transfer_program = "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww"  # update public key of the program
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "localnet" # point to correct cluster (Devnet, Mainnet) 
+wallet = "~/.config/solana/id.json" # Check this file point to actual network
+
+```
+
+
 
 #### Option A: Manual Deployment
 ```bash
@@ -185,6 +258,9 @@ Off-chain components use the `config` npm module where the environment name and 
 - Environment: `dev1-test` → Config file: `dev1-test.json`
 - Environment: `production` → Config file: `production.json`
 
+> [!NOTE]
+> If there is no configuration for the environment application, take default.json as the configuration file..
+
 ## 2.2 Component Configurations
 
 #### Indexer Service Configuration
@@ -197,6 +273,7 @@ Create config file: `config/indexer/{env-name}.json`
   "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:{{AWS_REGION}}:{{ACCOUNT_ID}}:doublezero-{{ENV}}-app-errors"
 }
 ```
+**Note** Update `PROGRAM_ID ` with public key of the convertor program [Refer](#generate-data-signer-key).
 
 #### Swap Oracle Service Configuration
 Create config file: `config/swap-oracle/{env-name}.json`
@@ -207,7 +284,7 @@ Create config file: `config/swap-oracle/{env-name}.json`
     {
       "name": "pyth",
       "type": "pyth", 
-      "endpoint": "https://hermes.pyth.network/",
+      "endpoint": "https://hermes.pyth.network",
       "priceFeedIds": {
         "SOL/USD": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
         "2Z/USD": "0x879551021853eec7a7dc827578e8e69da7e4fa8148339aa0d3d5296405be4b1a"
@@ -273,22 +350,9 @@ When using `--workspace deployment`, specify one of:
 - ECR repositories
 - CloudWatch log groups
 
-#### Solana Keypair Management
-```bash
-# Install Python dependencies
-pip install solders base58
 
-# Generate new keypair
-cd deployment/script
-python3 script.py
-
-# Or load existing keypair
-python3 script.py <keypair.json>
-```
-
-Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key.
-
-This keypair is used for signing price data in the swap-oracle service.
+> [!NOTE]
+> Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key. [Refer](#generate-data-signer-key).
 
 ### Step 3: Artifact Publishing
 

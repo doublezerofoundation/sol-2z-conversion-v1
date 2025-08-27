@@ -37,8 +37,8 @@ pub struct ConfigurationRegistryUpdate<'info> {
 impl<'info> ConfigurationRegistryUpdate<'info> {
     pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
         require_keys_eq!(
-            self.admin.key(), 
-            self.program_state.admin, 
+            self.admin.key(),
+            self.program_state.admin,
             DoubleZeroError::UnauthorizedAdmin
         );
 

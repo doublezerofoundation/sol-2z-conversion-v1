@@ -8,7 +8,8 @@ export enum ConfigField {
     PRICING_SERVICES = 'pricingServices'
 
 }
-
+export const TWOZ_PRECISION = 100000000;
+export const TWOZ_PRECISION_DECIMALS = 8;
 export enum PriceFeed {
     BTC_USD = 'BTC/USD',
     SOL_USD = 'SOL/USD',
@@ -53,6 +54,7 @@ export interface PythHealthCheckResponse {
     serviceType: string;
     status: HealthStatus;
     hermes_connected: boolean;
+    cache_connected: boolean;
     last_price_update: string;
 }
 
@@ -91,3 +93,19 @@ export const TYPES = {
     SwapRateController: Symbol.for('SwapRateController'),
     ConfigUtil: Symbol.for('ConfigUtil'),
 };
+
+export interface AttestationData {
+    swapRate: number;
+    timestamp: number;
+}
+
+export interface AttestationResult {
+    signature: string;
+    recovery_id: number;
+}
+
+export interface KeyPair {
+    privateKey: Uint8Array;
+    publicKey: string;
+}
+

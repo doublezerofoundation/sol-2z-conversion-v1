@@ -62,4 +62,8 @@ export abstract class CommonScenario {
     public async getFillsRegistry(): Promise<FillsRegistry> {
         return await getFillsRegistry(this.admin.session.getProgram());
     }
+
+    public async updateConfig(): Promise<void> {
+        await this.admin.updateConfigsCommand();
+    }
 }

@@ -10,11 +10,6 @@ output "buys_resource_id" {
   value       = aws_api_gateway_resource.buys.id
 }
 
-output "errors_resource_id" {
-  description = "ID of the errors resource"
-  value       = aws_api_gateway_resource.errors.id
-}
-
 output "dequeues_resource_id" {
   description = "ID of the dequeues resource"
   value       = aws_api_gateway_resource.dequeues.id

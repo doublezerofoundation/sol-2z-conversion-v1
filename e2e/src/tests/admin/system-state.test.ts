@@ -9,7 +9,7 @@ export const systemStateTests: Test[] = [
         name: "system_state_toggle_fail",
         description: "Non-admin should not be able to toggle the system state",
         execute: async (scenario: SystemStateScenario, invalidScenario: SystemStateScenario) => {
-            await invalidScenario.toggleSystemStateAndVerifyFail(true, "Unauthorized Admin");
+            await invalidScenario.toggleSystemStateAndVerifyFail(true, "Unauthorized admin");
         }
     },
     {

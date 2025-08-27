@@ -7,6 +7,8 @@ const DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
 const MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
 const MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
 const MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
+const MOCK_CONFIG_ACCOUNT = Seeds.MOCK_CONFIG_ACCOUNT;
+const MOCK_REVENUE_DISTRIBUTION_JOURNAL = Seeds.MOCK_REVENUE_DISTRIBUTION_JOURNAL;
 
 const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
 
@@ -57,4 +59,28 @@ export async function getMockDoubleZeroTokenMintPDA(mockProgramId: PublicKey) {
         [Buffer.from(MOCK_2Z_TOKEN_MINT_SEED)],
         mockProgramId
     )[0]
+}
+
+export function getMockConfig(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_CONFIG_ACCOUNT)],
+        mockProgramId
+    )[0]
+}
+
+export function getMockRevenueDistributionJournal(mockProgramId: PublicKey) {
+    return PublicKey.findProgramAddressSync(
+        [Buffer.from(MOCK_REVENUE_DISTRIBUTION_JOURNAL)],
+        mockProgramId
+    )[0]
+}
+
+export async function getMockProgramPDAs(mockProgramId: PublicKey) {
+    return {
+        tokenMint: await getMockDoubleZeroTokenMintPDA(mockProgramId),
+        vault: await getMockVaultPDA(mockProgramId),
+        protocolTreasury: await getMockProtocolTreasuryAccount(mockProgramId),
+        journal: getMockRevenueDistributionJournal(mockProgramId),
+        config: getMockConfig(mockProgramId)
+    }
 }

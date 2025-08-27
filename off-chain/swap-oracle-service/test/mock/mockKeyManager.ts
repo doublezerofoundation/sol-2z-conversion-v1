@@ -1,4 +1,4 @@
-import {IKeyManager} from "../../src/service/attestaion/keyManager";
+import {IKeyManager} from "../../src/service/attestation/keyManager";
 import {createKeyPairSignerFromPrivateKeyBytes, KeyPairSigner} from "@solana/kit";
 import bs58 from "bs58";
 import {Keypair} from "@solana/web3.js";

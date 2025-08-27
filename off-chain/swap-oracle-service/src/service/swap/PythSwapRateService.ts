@@ -1,6 +1,5 @@
 import ISwapRateService from "./ISwapRateService";
-import {PriceRate} from "../../types/common";
-const TWOZ_PRECISION = 6;
+import {PriceRate, TWOZ_PRECISION_DECIMALS} from "../../types/common";
 import {injectable} from "inversify";
 
 @injectable()
@@ -22,7 +21,7 @@ export class PythSwapRateService implements ISwapRateService {
         console.log(`TWOZ USD Price: ${twozUsdPrice} ± ${twozConfidence}`);
 
         const twozPerSol = (solUsdPrice - solConfidence) /  (twozUsdPrice - twozConfidence);
-        const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION));
+        const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION_DECIMALS));
 
         console.log(`Rate: ${roundedTwozPerSol} TWOZ for 1 SOL`);
         return {

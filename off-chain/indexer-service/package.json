@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prebuild": "npm run test",
     "build": "tsc",
+    "build:docker": "tsc",
     "build:metrics-api": "tsc && npm run package:metrics-api",
     "package:metrics-api": "mkdir -p dist/metrics-api && cp -r dist/src/metrics-api/* dist/metrics-api/ && cp package.json dist/metrics-api/",
     "deploy:metrics-api": "./deploy-metrics-api.sh",
@@ -18,7 +20,6 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.859.0",
-    "@aws-sdk/client-sns": "^3.864.0",
     "@aws-sdk/lib-dynamodb": "^3.859.0",
     "@coral-xyz/anchor": "^0.30.1",
     "@solana/web3.js": "^1.98.2",

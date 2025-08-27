@@ -4,8 +4,7 @@ info:
   version: "1.1.0"
   description: |
     Serverless Metrics API exposing **bucketed counts** for:
-      - Buys
-      - Errors (with errorsByCode breakdown)
+      - Buys  
       - Dequeues (with amount aggregates)
 
     Clients specify a date range with `from` and `to` parameters.
@@ -65,23 +64,6 @@ components:
               example: 19
           required: [buys]
 
-    ErrorsBucket:
-      allOf:
-        - $ref: '#/components/schemas/BucketMeta'
-        - type: object
-          properties:
-            errors:
-              type: integer
-              minimum: 0
-              example: 4
-            errorsByCode:
-              type: object
-              description: Error code counts within the bucket
-              additionalProperties:
-                type: integer
-              example: { BidTooLow: 3, InvalidAttestation: 1 }
-          required: [errors, errorsByCode]
-
     DequeuesBucket:
       allOf:
         - $ref: '#/components/schemas/BucketMeta'
@@ -114,16 +96,6 @@ components:
         data:
           type: array
           items: { $ref: '#/components/schemas/BuysBucket' }
-      required: [from, to, data]
-
-    RangeResponseErrors:
-      type: object
-      properties:
-        from: { type: string, format: date }
-        to: { type: string, format: date }
-        data:
-          type: array
-          items: { $ref: '#/components/schemas/ErrorsBucket' }
       required: [from, to, data]
 
     RangeResponseDequeues:
@@ -173,47 +145,6 @@ paths:
                         start: "2025-08-02T00:00:00Z"
                         end:   "2025-08-03T00:00:00Z"
                         buys: 14
-        '400':
-          description: Invalid parameters
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-        '500':
-          description: Server error
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
-  /metrics/errors:
-    get:
-      tags: [Errors]
-      summary: Bucketed error frequency and breakdown
-      description: Returns total errors and errorsByCode aggregated within the range.
-      parameters:
-        - $ref: '#/components/parameters/FromDate'
-        - $ref: '#/components/parameters/ToDate'
-      responses:
-        '200':
-          description: Errors series
-          content:
-            application/json:
-              schema: { $ref: '#/components/schemas/RangeResponseErrors' }
-              examples:
-                daily:
-                  value:
-                    from: "2025-08-01"
-                    to: "2025-08-03"
-                    data:
-                      - bucket: "2025-08-01"
-                        start: "2025-08-01T00:00:00Z"
-                        end:   "2025-08-02T00:00:00Z"
-                        errors: 4
-                        errorsByCode: { BidTooLow: 3, InvalidAttestation: 1 }
-                      - bucket: "2025-08-02"
-                        start: "2025-08-02T00:00:00Z"
-                        end:   "2025-08-03T00:00:00Z"
-                        errors: 2
-                        errorsByCode: { BidTooLow: 1, StalePrice: 1 }
         '400':
           description: Invalid parameters
           content:
