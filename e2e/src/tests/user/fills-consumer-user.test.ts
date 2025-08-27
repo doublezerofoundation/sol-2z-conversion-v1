@@ -51,7 +51,7 @@ export const fillsConsumerUserTests: Test[] = [
 
             const fillsBefore = await scenario.getFillsRegistry();
             const headIndex = fillsBefore.head.toNumber() % fillsBefore.fills.length;
-            const headFill = fillsBefore.fills[headIndex - 1];
+            const headFill = fillsBefore.fills[(headIndex - 1 + fillsBefore.fills.length) % fillsBefore.fills.length];
             const headLamports = headFill.solIn.toNumber();
 
             // Consume half of the head fill (ensures partial, not full)
