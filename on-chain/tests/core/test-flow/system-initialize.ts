@@ -135,7 +135,6 @@ export async function initializeSystemIfNeeded(program: Program<ConverterProgram
     const adminKeypair: Keypair = getDefaultKeyPair();
     if (!await accountExists(program.provider.connection, getConfigurationRegistryPDA(program.programId))) {
         await systemInitializeAndVerify(program, adminKeypair);
-
     }
     // make system to unhalted state.
     try {

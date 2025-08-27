@@ -17,6 +17,7 @@ import { createTokenAccount } from "./core/utils/token-utils";
 import { airdropVault } from "./core/utils/mock-transfer-program-utils";
 import { initializeMockTransferSystemIfNeeded, mint2z } from "./core/test-flow/mock-transfer-program";
 import { buySolAndVerify } from "./core/test-flow/buy-sol-flow";
+import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
@@ -28,6 +29,7 @@ describe("Conversion Price Tests", async () => {
 
         // Set deny list authority to admin.
         await setDenyListAuthorityAndVerify(program, getDefaultKeyPair().publicKey);
+        await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
     });
 
     // Sanity checks -----------------------------------------------------------

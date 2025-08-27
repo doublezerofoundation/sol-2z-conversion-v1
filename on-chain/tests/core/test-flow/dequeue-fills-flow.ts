@@ -4,7 +4,7 @@ import {assert, expect} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
 import {FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
 import {
-    decodeAndValidateReturnData,
+    decodeAndValidateReturnData, delay,
     findAnchorEventInLogs,
     getTransactionLogs,
     getUint64FromBuffer,
@@ -51,6 +51,7 @@ export async function consumeFillsSuccess(
             if (i === 4) {
                 assert.fail("Transaction not found");
             }
+            await delay(500);
             continue;
         }
 
