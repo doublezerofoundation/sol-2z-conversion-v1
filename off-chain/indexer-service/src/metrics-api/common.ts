@@ -7,14 +7,6 @@ export interface BuyEventData {
     data: any;
 }
 
-export interface ErrorEventData {
-    tx_hash: string;
-    error_code: string;
-    slot: number;
-    timestamp: number;
-    logs: string[];
-}
-
 export interface DequeueEventData {
     tx_hash: string;
     timestamp: number;
@@ -40,7 +32,6 @@ export interface DenyListActionData {
 // ---- DynamoDB Table Names ----
 export enum DDBTable {
     SOLANA_EVENT = 'solana-event',
-    SOLANA_ERROR = 'solana-error',
     FILL_DEQUEUE = 'fill-dequeue',
     DENY_LIST_ACTION = 'deny-list-action'
 }

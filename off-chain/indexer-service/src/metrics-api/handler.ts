@@ -2,7 +2,6 @@ import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda';
 import { validateDateRange, isValidationError } from './helpers/validation';
 import { createErrorResponse } from './helpers/response';
 import { handleBuysMetrics } from './handlers/buys';
-import { handleErrorsMetrics } from './handlers/errors';
 import { handleDequeuesMetrics } from './handlers/dequeues';
 
 /**
@@ -24,8 +23,6 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
         if (httpMethod === 'GET') {
             if (resource.endsWith('/metrics/buys')) {
                 return await handleBuysMetrics(validatedRequest);
-            } else if (resource.endsWith('/metrics/errors')) {
-                return await handleErrorsMetrics(validatedRequest);
             } else if (resource.endsWith('/metrics/dequeues')) {
                 return await handleDequeuesMetrics(validatedRequest);
             }

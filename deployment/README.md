@@ -211,29 +211,29 @@ For updating an existing environment with a new release:
 ./one_time_setup.sh us-east-1
 
 # 2. Account level resource creation
- ./account_creation.sh create --region us-east-1
+ ./account_creation.sh --action create --region us-east-1
  
 # 3. Regional Lvevel resource creation
- ./regional_creation.sh create --region us-east-1
+ ./regional_creation.sh --action create --region us-east-1
 
 # 4. Publish artifacts FIRST
-./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
+./release.sh --action publish-artifacts --region us-east-1 --release-tag v3.0.0-nightly
 
 # 5. Create environment using published artifacts
-./env_creation.sh create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
+./env_creation.sh --action create --env dev-test --release-tag v3.0.0-nightly --region us-east-1
 ```
 ### Strategy 2: Update Existing Environment
 ``` bash
 # Single command for publish and deploy to existing environment
-./release.sh publish-artifacts-and-upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test
+./release.sh --action publish-artifacts-and-upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test
 ```
 ### Strategy 3: Staged Deployment
 ``` bash
 # 1. Publish artifacts first
-./release.sh publish-artifacts --region us-east-1 --release-tag v3.0.2-nightly
+./release.sh --action publish-artifacts --region us-east-1 --release-tag v3.0.2-nightly
 
 # 2. Deploy to specific services as needed
-./release.sh upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test --service-name swap-oracle-service
+./release.sh --action upgrade --region us-east-1 --release-tag v3.0.2-nightly --env dev-test --service-name swap-oracle-service
 ```
 
 ## Solana Keypair Management
@@ -287,22 +287,6 @@ Update AWS Parameter Store with the Base58 encoded secret key for secure storage
 - **Environment Progression**: Recommended dev → staging → prod workflow
 - **Monitoring**: Comprehensive deployment status tracking and health checks
 - **Rollback Capabilities**: Automatic rollback for failed deployments
-
-## Email Notification Configuration
-
-The system supports email notifications for error alerts via AWS SNS. Configure email subscribers to receive notifications about transaction errors.
-
-### Setup Email Subscribers
-
-1. **Edit Configuration File**: Update `deployment/environments/terraform.tfvars`:
-   ```terraform
-   # SNS Configuration
-   email_subscribers = [
-     "admin@yourdomain.com",
-     "alerts@yourdomain.com", 
-     "devops@yourdomain.com"
-   ]
-   ```
 
 ## Troubleshooting
 ### Common Issues and Solutions

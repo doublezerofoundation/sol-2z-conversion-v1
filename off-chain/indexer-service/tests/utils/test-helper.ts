@@ -59,11 +59,9 @@ export async function mockPromisePool<T>(
  * Creates standard mock dependencies object for processor tests
  */
 export function createProcessorMocks(stubs: {
-    writeSolanaError?: SinonStub;
     writeSolanaEvent?: SinonStub;
     writeFillDequeue?: SinonStub;
     writeDenyListAction?: SinonStub;
-    sendErrorNotification?: SinonStub;
     getTransactionStub?: SinonStub;
     getBlockTimeStub?: SinonStub;
     parseLogsStub?: SinonStub;
@@ -71,14 +69,9 @@ export function createProcessorMocks(stubs: {
      return {
           '../utils/config': require('../mock/config-util'),
           '../utils/ddb/events': {
-               writeSolanaError: stubs.writeSolanaError || stub(),
                writeSolanaEvent: stubs.writeSolanaEvent || stub(),
                writeFillDequeue: stubs.writeFillDequeue || stub(),
                writeDenyListAction: stubs.writeDenyListAction || stub(),
-               '@noCallThru': true
-          },
-          '../utils/notifications': {
-               sendErrorNotification: stubs.sendErrorNotification || stub(),
                '@noCallThru': true
           },
           '@solana/web3.js': {

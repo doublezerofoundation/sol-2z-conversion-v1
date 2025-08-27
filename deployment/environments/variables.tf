@@ -193,13 +193,6 @@ variable "release_tag" {
   default     = "latest"
 }
 
-# SNS Configuration
-variable "email_subscribers" {
-  description = "List of email addresses to subscribe to error notifications"
-  type        = list(string)
-  default     = []
-}
-
 variable "accountId" {
   description = "aws account id"
   type        = string

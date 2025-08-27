@@ -11,7 +11,7 @@ COPY idl ./idl
 COPY src ./src
 COPY config ./config
 
-RUN npm run build
+RUN npm run build:docker
 
 # runtime image
 FROM node:20-alpine AS runner
@@ -26,5 +26,4 @@ RUN npm ci --only=production
 
 COPY --from=builder /app/dist ./dist
 
-    
 CMD ["node", "dist/src/index.js"]

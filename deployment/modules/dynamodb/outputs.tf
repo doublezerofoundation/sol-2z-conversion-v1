@@ -18,16 +18,6 @@ output "solana_event_table_arn" {
   value       = aws_dynamodb_table.solana_event.arn
 }
 
-output "solana_error_table_name" {
-  description = "Name of the solana-error DynamoDB table"
-  value       = aws_dynamodb_table.solana_error.name
-}
-
-output "solana_error_table_arn" {
-  description = "ARN of the solana-error DynamoDB table"
-  value       = aws_dynamodb_table.solana_error.arn
-}
-
 output "fill_dequeue_table_name" {
   description = "Name of the fill-dequeue DynamoDB table"
   value       = aws_dynamodb_table.fill_dequeue.name
@@ -54,7 +44,6 @@ output "all_table_arns" {
   value = [
     aws_dynamodb_table.system_state.arn,
     aws_dynamodb_table.solana_event.arn,
-    aws_dynamodb_table.solana_error.arn,
     aws_dynamodb_table.fill_dequeue.arn,
     aws_dynamodb_table.deny_list_action.arn
   ]

@@ -111,7 +111,7 @@ variable "enable_pricing_service" {
 }
 
 variable "enable_metrics_api" {
-  description = "Enable metrics API resources (/metrics/buys, /metrics/errors, /metrics/dequeues)"
+  description = "Enable metrics API resources (/metrics/buys, /metrics/dequeues)"
   type        = bool
   default     = false
 }

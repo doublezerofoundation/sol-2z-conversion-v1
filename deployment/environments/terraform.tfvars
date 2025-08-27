@@ -39,10 +39,3 @@ enable_indexer_service     = true
 
 # Release Tag
 release_tag = "v1.0.0"
-
-# SNS Configuration
-email_subscribers = [
-#   "admin@yourdomain.com",
-#   "alerts@yourdomain.com", 
-#   "devops@yourdomain.com"
-]
