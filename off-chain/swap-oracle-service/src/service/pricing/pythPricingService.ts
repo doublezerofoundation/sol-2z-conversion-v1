@@ -72,8 +72,8 @@ export default class PythPricingService extends PricingServiceBase {
     }
 
     async getHealth(): Promise<HealthCheckResult> {
-        let lastPriceUpdate: string;
-        let isConnected: boolean;
+        let lastPriceUpdate: string = '';
+        let isConnected: boolean = false;
         try {
             lastPriceUpdate = await this.cacheService.get(`${this.getPricingServiceType()}-${ENV}-last-price-update`);
             await axios.get(`${this.pricingServicesConfig.endpoint}/live`)
