@@ -17,7 +17,6 @@ pub struct SetFillsConsumer<'info> {
         bump = program_state.bump_registry.configuration_registry_bump
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
-    // Program state, to verify admin
     #[account(
         seeds = [SeedPrefixes::ProgramState.as_bytes()],
         bump = program_state.bump_registry.program_state_bump,

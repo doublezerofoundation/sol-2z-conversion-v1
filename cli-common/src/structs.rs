@@ -31,8 +31,6 @@ impl AccountDeserialize for ConfigurationRegistry {
 pub struct FillsRegistry {
     pub total_sol_pending: u64,      // Total SOL in not dequeued fills
     pub total_2z_pending: u64,       // Total 2Z in not dequeued fills
-    pub lifetime_sol_processed: u64, // Cumulative SOL processed
-    pub lifetime_2z_processed: u64,  // Cumulative 2Z processed
     pub fills: [Fill; MAX_FILLS_QUEUE_SIZE],
     pub head: u64,   // index of oldest element
     pub tail: u64,   // index to insert next element

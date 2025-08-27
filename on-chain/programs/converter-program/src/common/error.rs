@@ -92,4 +92,7 @@ pub enum DoubleZeroError {
 
     #[msg("Only one trade is allowed per slot")]
     SingleTradePerSlot, //6029
+
+    #[msg("Error when calculating ask price")]
+    AskPriceCalculationError, //6030
 }

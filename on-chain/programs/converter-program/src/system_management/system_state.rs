@@ -11,7 +11,6 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct SystemState<'info> {
-    #[account(mut)]
     pub admin: Signer<'info>,
     #[account(
         mut,

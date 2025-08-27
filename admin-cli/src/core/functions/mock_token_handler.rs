@@ -8,7 +8,6 @@ use anchor_client::{
         instruction::{AccountMeta, Instruction},
         pubkey::Pubkey,
         signer::Signer,
-        sysvar::rent,
     },
 };
 use solana_commitment_config::CommitmentConfig;
@@ -55,7 +54,6 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         AccountMeta::new(vault_account_pda, false),
         AccountMeta::new(spl_token_2022::id(), false),
         AccountMeta::new(system_program::ID, false),
-        AccountMeta::new_readonly(rent::id(), false),    // rent
         AccountMeta::new(payer.pubkey(), true),
     ];
 

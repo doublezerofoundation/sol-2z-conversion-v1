@@ -10,6 +10,7 @@ name = "converter_program"
 
 [features]
 default = []
+test = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []
@@ -24,4 +25,3 @@ base64 = { workspace = true }
 brine-ed25519 = {workspace = true}
 anchor-spl = { workspace = true }
 bytemuck = { workspace = true }
-solana-system-interface = { workspace = true, features = ["bincode"] }

@@ -18,7 +18,10 @@ use crate::{
             trade::{TradeEvent, BidTooLowEvent},
         },
         structs::OraclePriceData,
-        constant::MAX_FILLS_QUEUE_SIZE
+        constant::{
+            MAX_FILLS_QUEUE_SIZE,
+            TOKEN_DECIMALS
+        }
     },
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -73,14 +76,14 @@ pub struct BuySol<'info> {
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     /// CHECK: program address - TODO: implement address validations after client informs actual programId
     #[account(mut)]
-    pub config_account: AccountInfo<'info>,
+    pub config_account: UncheckedAccount<'info>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
     #[account(mut)]
-    pub revenue_distribution_journal: AccountInfo<'info>,
+    pub revenue_distribution_journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
-    pub revenue_distribution_program: AccountInfo<'info>,
+    pub revenue_distribution_program: UncheckedAccount<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,
 }
@@ -124,8 +127,8 @@ impl<'info> BuySol<'info> {
             self.configuration_registry.max_discount_rate,
             self.configuration_registry.min_discount_rate,
             self.program_state.last_trade_slot,
-            clock.slot
-        )?;
+            clock.slot,
+        ).ok_or(DoubleZeroError::AskPriceCalculationError)?;
 
         msg!("Bid price {}", bid_price);
         msg!("Ask price {}", ask_price);
@@ -143,10 +146,12 @@ impl<'info> BuySol<'info> {
             return err!(DoubleZeroError::BidTooLow);
         }
 
-        let tokens_required = sol_quantity.checked_mul(bid_price)
+        let tokens_required = (sol_quantity as u128)
+            .checked_mul(bid_price as u128)
             .ok_or(DoubleZeroError::ArithmeticError)?
-            .checked_div(LAMPORTS_PER_SOL)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
+            .saturating_div(LAMPORTS_PER_SOL as u128)
+            .try_into()
+            .map_err(|_| DoubleZeroError::ArithmeticError)?;
 
         msg!("Tokens required {}", tokens_required);
 
@@ -160,9 +165,9 @@ impl<'info> BuySol<'info> {
 
         let cpi_program = self.token_program.to_account_info();
         let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
-        token_interface::transfer_checked(cpi_context, tokens_required, 6)?;
+        token_interface::transfer_checked(cpi_context, tokens_required, TOKEN_DECIMALS)?;
 
-        // Does CPI calls to withdraw SOL and transfer it to signer.
+        // Does CPI call to withdraw SOL and transfer it to signer.
         let cpi_program_id = self.revenue_distribution_program.key();
 
         let account_metas = vec![

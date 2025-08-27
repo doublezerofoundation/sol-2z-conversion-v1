@@ -1,3 +1,5 @@
+#![cfg(feature = "test")]
+
 use crate::common::seeds::seed_prefixes_v2::SeedPrefixesV2;
 use crate::common::seeds::seed_prefixes_v1::SeedPrefixesV1;
 use crate::common::constant::DISCRIMINATOR_SIZE;
@@ -52,7 +54,11 @@ pub struct MigrateV1ToV2<'info> {
 }
 
 impl<'info> MigrateV1ToV2<'info> {
-    pub fn process(&mut self) -> Result<()> {
+    pub fn process(
+        &mut self,
+        configuration_registry_bump: u8,
+        deny_list_registry_bump: u8,
+    ) -> Result<()> {
         // Authentication and authorization
         self.program_state.assert_admin(&self.admin)?;
 
@@ -74,14 +80,8 @@ impl<'info> MigrateV1ToV2<'info> {
         self.deny_list_registry_new.last_updated = self.deny_list_registry_old.last_updated;
         self.deny_list_registry_new.update_count = self.deny_list_registry_old.update_count;
         self.deny_list_registry_new.new_field = 0; // add some value to new field
-        Ok(())
-    }
 
-    pub fn set_bumps(
-        &mut self,
-        configuration_registry_bump: u8,
-        deny_list_registry_bump: u8,
-    )-> Result<()> {
+        // set bumps
         let bump_registry = &mut self.program_state.bump_registry;
         bump_registry.configuration_registry_bump = configuration_registry_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;

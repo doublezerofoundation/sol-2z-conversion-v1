@@ -8,7 +8,7 @@ use anchor_client::{
 };
 use anchor_client::solana_sdk::native_token::LAMPORTS_PER_SOL;
 use cli_common::{
-    constant::TOKEN_DECIMALS,
+    constant::TOKEN_UNITS,
     structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_instruction_with_return_data},
     utils::{
@@ -69,7 +69,7 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
         data,
     };
     let result_bps: u64 = send_instruction_with_return_data(ix)?;
-    let result = result_bps as f64 / TOKEN_DECIMALS as f64;
+    let result = result_bps as f64 / TOKEN_UNITS as f64;
 
     println!("{} Current estimated conversion rate: {} 2Z per SOL", ui::OK, result);
     Ok(())
