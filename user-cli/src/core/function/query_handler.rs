@@ -48,7 +48,6 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
     let user_config = UserConfig::load_user_config()?;
 
     let oracle_price_data = fetch_oracle_price(user_config.price_oracle_end_point).await?;
-    println!("Printing price -----{}", oracle_price_data);
     let mut data = hash(GET_PRICE_INSTRUCTION).to_bytes()[..8].to_vec();
     data = [data, oracle_price_data.try_to_vec()?].concat();
 
@@ -69,7 +68,6 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
         accounts,
         data,
     };
-    println!("Hellooo -----{}");
     let result_bps: u64 = send_instruction_with_return_data(ix)?;
     let result = result_bps as f64 / TOKEN_DECIMALS as f64;
 
