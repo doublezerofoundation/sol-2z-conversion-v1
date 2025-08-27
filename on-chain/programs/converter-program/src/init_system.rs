@@ -13,7 +13,7 @@ use crate::{
     program::ConverterProgram
 };
 
-/// Only the current upgrade authority can call this
+/// Only the current upgrade authority can call this.
 #[derive(Accounts)]
 pub struct InitializeSystem<'info> {
     #[account(
@@ -56,7 +56,7 @@ pub struct InitializeSystem<'info> {
     ]
     pub program_data: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,
-    /// current upgrade have to sign
+    /// current upgrade have to sign.
     #[account(mut)]
     pub authority: Signer<'info>
 }

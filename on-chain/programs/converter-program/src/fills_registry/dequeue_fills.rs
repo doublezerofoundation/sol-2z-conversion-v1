@@ -31,7 +31,7 @@ pub struct DequeueFills<'info> {
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
         mut,
-        constraint = fills_registry.key() == program_state.fills_registry_address
+        address = program_state.fills_registry_address
     )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     pub signer: Signer<'info>

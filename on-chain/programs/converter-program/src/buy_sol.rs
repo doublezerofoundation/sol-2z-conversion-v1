@@ -50,7 +50,7 @@ pub struct BuySol<'info> {
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(
         mut,
-        constraint = fills_registry.key() == program_state.fills_registry_address
+        address = program_state.fills_registry_address
     )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
@@ -180,7 +180,7 @@ impl<'info> BuySol<'info> {
         ];
 
         // Call CPI for SOL withdrawal.
-        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol" after clients confirms
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol" after client confirms
         let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
         cpi_data = [
             cpi_data,

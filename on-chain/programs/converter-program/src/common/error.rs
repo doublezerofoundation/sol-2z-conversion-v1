@@ -2,6 +2,7 @@ use anchor_lang::prelude::*;
 
 // NOTE: Anchor 0.30.1 adds 6000 for user error codes)
 #[error_code]
+/// Error codes specifies all possible custom errors in the DoubleZero program.
 pub enum DoubleZeroError {
     #[msg("User is blocked in the deny list")]
     UserInsideDenyList, // 6000 0x1796

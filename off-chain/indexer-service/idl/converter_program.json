@@ -572,7 +572,7 @@
         {
           "name": "authority",
           "docs": [
-            "current upgrade have to sign"
+            "current upgrade have to sign."
           ],
           "writable": true,
           "signer": true
