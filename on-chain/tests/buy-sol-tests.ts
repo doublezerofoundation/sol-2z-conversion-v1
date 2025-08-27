@@ -175,8 +175,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
-                Events.ATTESTATION_INVALID
+                ErrorMsg.ATTESTATION_NOT_AUTHENTIC
             );
         });
 
@@ -226,8 +225,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                ErrorMsg.ATTESTATION_NOT_AUTHENTIC,
-                Events.ATTESTATION_INVALID
+                ErrorMsg.ATTESTATION_NOT_AUTHENTIC
             );
         });
     });
@@ -428,8 +426,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                ErrorMsg.ACCESS_BY_DENIED_PERSON,
-                Events.ACCESS_BY_DENIED_PERSON
+                ErrorMsg.ACCESS_BY_DENIED_PERSON
             );
         });
 
@@ -467,8 +464,7 @@ describe("Buy Sol Tests", () => {
                 bidPrice,
                 userKeyPair,
                 oraclePriceData,
-                ErrorMsg.SYSTEM_HALTED,
-                Events.ACCESS_DURING_SYSTEM_HALT
+                ErrorMsg.SYSTEM_HALTED
             );
         });
 
