@@ -184,6 +184,7 @@ $$
 \gamma * 10000 \approx 104
 $$
 
+In the above example, considering that the $N$ is 432,000, the coefficient is approximately $1.042 \times 10^{-6}$. To account for this precision, we have set the maximum coefficient value to 8 decimal places. (6 + 2 decimal places for added precision)
 
 ## Phase 1: On-Chain Component Deployment
 
