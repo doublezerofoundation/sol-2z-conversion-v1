@@ -4,6 +4,7 @@ use crate::common::seeds::seed_prefixes_v2::SeedPrefixesV2;
 use crate::common::seeds::seed_prefixes_v1::SeedPrefixesV1;
 use crate::common::constant::DISCRIMINATOR_SIZE;
 use anchor_lang::prelude::*;
+use crate::common::error::DoubleZeroError;
 use crate::configuration_registry::configuration_registry::ConfigurationRegistry;
 use crate::deny_list_registry::DenyListRegistry;
 use crate::migration::sample_configuration_registry_v2::ConfigurationRegistryV2;
@@ -60,7 +61,11 @@ impl<'info> RollbackV2toV1<'info> {
         deny_list_registry_bump: u8,
     ) -> Result<()> {
         // Authentication and authorization
-        self.program_state.assert_admin(&self.admin)?;
+        require_keys_eq!(
+            self.admin.key(),
+            self.program_state.admin,
+            DoubleZeroError::UnauthorizedAdmin
+        );
 
         // migration of configuration registry
 

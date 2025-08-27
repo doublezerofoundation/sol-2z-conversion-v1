@@ -23,7 +23,11 @@ pub struct SystemState<'info> {
 impl<'info> SystemState<'info> {
     pub fn process(&mut self, set_to: bool) -> Result<()> {
         // Authentication check
-        self.program_state.assert_admin(&self.admin)?;
+        require_keys_eq!(
+            self.admin.key(), 
+            self.program_state.admin, 
+            DoubleZeroError::UnauthorizedAdmin
+        );
 
         // Update system state
         if set_to && !self.program_state.is_halted {

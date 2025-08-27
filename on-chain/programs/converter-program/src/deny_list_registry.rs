@@ -37,8 +37,12 @@ pub struct UpdateDenyList<'info> {
 
 impl<'info> UpdateDenyList<'info> {
     pub fn add_to_deny_list(&mut self, address: Pubkey) -> Result<()> {
-        // Ensure only admin can modify
-        self.program_state.assert_deny_list_authority(&self.admin)?;
+        // Ensure only deny list authority can modify.
+        require_keys_eq!(
+            self.admin.key(),
+            self.program_state.deny_list_authority,
+            DoubleZeroError::UnauthorizedDenyListAuthority
+        );
 
         require!(
             !self.deny_list_registry.denied_addresses.contains(&address),
@@ -66,8 +70,12 @@ impl<'info> UpdateDenyList<'info> {
     }
 
     pub fn remove_from_deny_list(&mut self, address: Pubkey) -> Result<()> {
-        // Ensure only admin can modify
-        self.program_state.assert_deny_list_authority(&self.admin)?;
+        // Ensure only deny list authority can modify.
+        require_keys_eq!(
+            self.admin.key(),
+            self.program_state.deny_list_authority,
+            DoubleZeroError::UnauthorizedDenyListAuthority
+        );
 
         if let Some(pos) = self.deny_list_registry.denied_addresses
             .iter()

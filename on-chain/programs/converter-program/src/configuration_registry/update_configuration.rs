@@ -36,7 +36,11 @@ pub struct ConfigurationRegistryUpdate<'info> {
 
 impl<'info> ConfigurationRegistryUpdate<'info> {
     pub fn process_update(&mut self, input: ConfigurationRegistryInput) -> Result<()> {
-        self.program_state.assert_admin(&self.admin)?;
+        require_keys_eq!(
+            self.admin.key(), 
+            self.program_state.admin, 
+            DoubleZeroError::UnauthorizedAdmin
+        );
 
         if let Some(oracle_pubkey) = input.oracle_pubkey {
             self.configuration_registry.oracle_pubkey = oracle_pubkey;

@@ -5,7 +5,8 @@ use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
         events::fill_consumer::*,
-    }
+        error::DoubleZeroError
+    },
 };
 
 /// Only the admin can call this
@@ -28,7 +29,11 @@ pub struct SetFillsConsumer<'info> {
 impl<'info> SetFillsConsumer<'info> {
     pub fn set_fills_consumer(&mut self, new_consumer: Pubkey) -> Result<()> {
         // Ensure only admin can modify
-        self.program_state.assert_admin(&self.admin)?;
+        require_keys_eq!(
+            self.admin.key(), 
+            self.program_state.admin, 
+            DoubleZeroError::UnauthorizedAdmin
+        );
         self.configuration_registry.fills_consumer = new_consumer;
         emit!(FillsConsumerChanged {
             changed_by: self.admin.key(),
