@@ -154,6 +154,7 @@ Create `config.json` at the project root with the following structure:
 - **double_zero_program_id**: Public key of the mock transfer program (which is created by earlier step Generate Programs key )
 - **sol_quantity**: Amount of SOL per transaction (in Lamports)
 - **coefficient**: Discount calculation curve coefficient (see formula below)
+- **price_oracle_end_point**: swap-oracle-service endpoint which is create from environment( used by User cli for get swap rate) 
 
 
 
@@ -190,7 +191,7 @@ $$
 > [!NOTE]
 > Before deploy the program make sure you configure anchor correctly in both convertor program and mock double zero program. [Refer](#generate-data-signer-key).
 
-check the `anchor.toml`
+check the `Anchor.toml`
 #### Converter program
 ```bash 
 [programs.localnet]
@@ -257,7 +258,7 @@ Off-chain components use the `config` npm module where the environment name and 
 - Environment: `production` → Config file: `production.json`
 
 > [!NOTE]
-> if not have config for env application take default.json as config file.
+> If there is no configuration for the environment application, take default.json as the configuration file..
 
 ## 2.2 Component Configurations
 
