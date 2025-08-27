@@ -95,22 +95,13 @@ build_metrics_api() {
     fi
     
     log_info "Metrics API Lambda build completed"
-    log_info "Build directory contents:"
-    ls -la "$BUILD_DIR"
 }
 
 package_lambda() {
     log_info "Packaging Lambda function..."
-    
-    # Show summary of what we're about to package
-    log_info "Lambda build directory summary:"
-    log_info "- Handler: $(ls -la "$BUILD_DIR/metrics-api/handler.js" 2>/dev/null && echo "Found" || echo "Missing")"
-    log_info "- Dependencies: $(ls -d "$BUILD_DIR/node_modules" 2>/dev/null && echo "$(ls "$BUILD_DIR/node_modules" | wc -l) packages" || echo "Missing")"
-    
     cd "$BUILD_DIR"
     
     # Create ZIP file with all contents (quietly to avoid verbose output)
-    log_info "Creating ZIP package..."
     zip -r -q "$(basename "$S3_OBJECT_KEY")" . -x "*.DS_Store" "*.git*" "*.zip"
     
     cd - > /dev/null
@@ -135,13 +126,6 @@ upload_to_s3() {
     local git_branch=$(git branch --show-current 2>/dev/null || echo "unknown") 
     local build_timestamp=$(date -u +%Y%m%d-%H%M%S)
     local version_tag="${BUILD_TAG}-${build_timestamp}-${git_commit}"
-    
-    log_info "Build information:"
-    log_info "  - Build Tag: $BUILD_TAG"
-    log_info "  - Git Commit: $git_commit"
-    log_info "  - Git Branch: $git_branch"
-    log_info "  - Version Tag: $version_tag"
-    log_info "  - S3 Versioned Key: $S3_VERSIONED_KEY"
     
     # Check if bucket exists
     if ! aws s3api head-bucket --bucket "$S3_BUCKET_NAME" --region "$AWS_REGION" 2>/dev/null; then
