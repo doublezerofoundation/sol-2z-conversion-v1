@@ -6,7 +6,6 @@ use base64::{
 use brine_ed25519::sig_verify;
 use crate::common::{
     error::DoubleZeroError,
-    events::system::AttestationInvalid,
     structs::OraclePriceData
 };
 
@@ -29,7 +28,6 @@ pub fn verify_attestation(
     // ed25519 signature verification
     sig_verify(&oracle_public_key.to_bytes(), &signature_vec, message_bytes)
             .map_err(|_| {
-                emit!(AttestationInvalid {});
                 error!(DoubleZeroError::AttestationVerificationError)
             })?;
     msg!("Signature verified successfully");
