@@ -1,4 +1,4 @@
-#![cfg(feature = "test")] 
+#![cfg(feature = "test")]
 
 use anchor_lang::prelude::*;
 
