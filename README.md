@@ -106,7 +106,6 @@ Create `config.json` at the project root with the following structure:
   "sol_quantity": 25000000000,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "skip_preflight": false,
   "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
   "coefficient": 4500,
   "max_discount_rate": 5000,

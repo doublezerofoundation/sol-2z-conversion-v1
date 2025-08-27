@@ -65,7 +65,6 @@ pub fn send_batch_instructions_with_signers(
         .map_err(|_| "Error when getting latest block hash")?;
 
     let tx_config = RpcSendTransactionConfig {
-        skip_preflight: config.skip_preflight,
         preflight_commitment: Some(CommitmentConfig::confirmed().commitment),
         ..RpcSendTransactionConfig::default()
     };
@@ -125,7 +124,6 @@ pub fn send_instruction_with_return_data<T: ReturnData<T>>(
     );
 
     let tx_config = RpcSendTransactionConfig {
-        skip_preflight: config.skip_preflight,
         preflight_commitment: Some(CommitmentConfig::confirmed().commitment),
         ..RpcSendTransactionConfig::default()
     };

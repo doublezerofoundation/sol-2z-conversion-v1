@@ -15,7 +15,6 @@ pub struct Config {
     pub oracle_pubkey: Option<String>,
     pub sol_quantity: Option<u64>,
     pub price_maximum_age: Option<i64>,
-    pub skip_preflight: bool,
     pub price_oracle_end_point: Option<String>,
     pub coefficient: Option<u64>,
     pub max_discount_rate: Option<u64>,
