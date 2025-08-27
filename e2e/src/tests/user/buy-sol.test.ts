@@ -107,7 +107,7 @@ export const userBuySolTests: Test[] = [
         description: "BidTooLowEvent should be emitted if the bid is too low",
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
-            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) - 10
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) - 10;
             await scenario.checkAndReimburseUser2ZBalance(amount);
             await scenario.checkAndReimburseVaultSolBalance();
 
