@@ -97,7 +97,7 @@ impl<'info> BuySol<'info> {
 
         // Checking whether address is inside the deny list.
         require!(
-            !self.deny_list_registry.denied_addresses.contains(self.signer.key),
+            !self.deny_list_registry.denied_addresses.contains(self.signer.key()),
             DoubleZeroError::UserInsideDenyList
         );
 
