@@ -1036,45 +1036,6 @@
   ],
   "events": [
     {
-      "name": "AccessByDeniedPerson",
-      "discriminator": [
-        181,
-        22,
-        9,
-        206,
-        162,
-        32,
-        55,
-        116
-      ]
-    },
-    {
-      "name": "AccessDuringSystemHalt",
-      "discriminator": [
-        80,
-        237,
-        28,
-        189,
-        254,
-        247,
-        154,
-        214
-      ]
-    },
-    {
-      "name": "AttestationInvalid",
-      "discriminator": [
-        189,
-        98,
-        32,
-        217,
-        237,
-        151,
-        236,
-        116
-      ]
-    },
-    {
       "name": "BidTooLowEvent",
       "discriminator": [
         213,
@@ -1189,19 +1150,6 @@
         230,
         97,
         238
-      ]
-    },
-    {
-      "name": "UnauthorizedUser",
-      "discriminator": [
-        66,
-        93,
-        243,
-        166,
-        168,
-        14,
-        155,
-        229
       ]
     }
   ],
@@ -1363,37 +1311,6 @@
     }
   ],
   "types": [
-    {
-      "name": "AccessByDeniedPerson",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "accessed_by",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AccessDuringSystemHalt",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "accessed_by",
-            "type": "pubkey"
-          }
-        ]
-      }
-    },
-    {
-      "name": "AttestationInvalid",
-      "type": {
-        "kind": "struct",
-        "fields": []
-      }
-    },
     {
       "name": "BidTooLowEvent",
       "type": {
@@ -1844,18 +1761,6 @@
           {
             "name": "epoch",
             "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "UnauthorizedUser",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "attempted_by",
-            "type": "pubkey"
           }
         ]
       }

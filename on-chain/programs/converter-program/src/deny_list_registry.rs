@@ -69,19 +69,13 @@ impl<'info> UpdateDenyList<'info> {
         // Ensure only admin can modify
         self.program_state.assert_deny_list_authority(&self.admin)?;
 
-        require!(
-            self.deny_list_registry.denied_addresses.contains(&address),
-            DoubleZeroError::AddressNotInDenyList
-        );
-
-        let position = self
-            .deny_list_registry
-            .denied_addresses
+        if let Some(pos) = self.deny_list_registry.denied_addresses
             .iter()
-            .position(|&x| x == address)
-            .ok_or(ErrorCode::ConstraintRaw)?;
-
-        self.deny_list_registry.denied_addresses.remove(position);
+            .position(|&x| x == address) {
+            self.deny_list_registry.denied_addresses.remove(pos);
+        } else {
+            return err!(DoubleZeroError::AddressNotInDenyList);
+        }
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
         self.deny_list_registry.update_count += 1;
 

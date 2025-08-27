@@ -21,9 +21,6 @@ export namespace Seeds {
 export namespace Events {
     export const SYSTEM_INITIALIZED = "systemInitialized";
     export const BID_TOO_LOW = "bidTooLowEvent";
-    export const ATTESTATION_INVALID = "attestationInvalid";
-    export const ACCESS_BY_DENIED_PERSON = "accessByDeniedPerson";
-    export const ACCESS_DURING_SYSTEM_HALT = "accessDuringSystemHalt";
     export const SYSTEM_HALTED = "systemHalted";
     export const SYSTEM_UNHALTED = "systemUnhalted";
     export const TRADE = "tradeEvent";
