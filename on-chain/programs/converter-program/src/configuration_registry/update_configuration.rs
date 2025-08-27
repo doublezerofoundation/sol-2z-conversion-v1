@@ -6,7 +6,6 @@ use crate::{
         seeds::seed_prefixes::SeedPrefixes,
         error::DoubleZeroError
     },
-    AccountInfo
 };
 
 #[derive(AnchorSerialize, AnchorDeserialize)]
