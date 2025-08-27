@@ -53,6 +53,7 @@ export interface PythHealthCheckResponse {
     serviceType: string;
     status: HealthStatus;
     hermes_connected: boolean;
+    cache_connected: boolean;
     last_price_update: string;
 }
 

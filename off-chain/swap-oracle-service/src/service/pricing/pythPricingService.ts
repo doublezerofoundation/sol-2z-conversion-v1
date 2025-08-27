@@ -73,24 +73,32 @@ export default class PythPricingService extends PricingServiceBase {
 
     async getHealth(): Promise<HealthCheckResult> {
         let lastPriceUpdate: string = '';
-        let isConnected: boolean = false;
+        let isCacheConnected: boolean = false;
+        let isPricingConnected: boolean = false;
+
         try {
             lastPriceUpdate = await this.cacheService.get(`${this.getPricingServiceType()}-${ENV}-last-price-update`);
-            await axios.get(`${this.pricingServicesConfig.endpoint}/live`)
-            isConnected = true;
-
+            isCacheConnected = true;
         } catch (error) {
-            console.error("Error fetching price: ", error)
-            isConnected = false;
-
+            console.error("Error fetching from cache: ", error);
         }
+
+        try {
+            await axios.get(`${this.pricingServicesConfig.endpoint}/live`);
+            isPricingConnected = true;
+        } catch (error) {
+            console.error("Error connecting to pricing service: ", error);
+        }
+
+        const isConnected = isCacheConnected && isPricingConnected;
 
         return {
             serviceType: this.getPricingServiceType(),
-            status : isConnected ? HealthStatus.HEALTHY : HealthStatus.UN_HEALTHY,
-            hermes_connected : isConnected,
+            status: isConnected ? HealthStatus.HEALTHY : HealthStatus.UN_HEALTHY,
+            hermes_connected: isPricingConnected,
+            cache_connected: isCacheConnected,
             last_price_update: lastPriceUpdate,
-        }
+        };
     }
 
 
