@@ -5,7 +5,6 @@ export interface Config {
   RPC_URL: string;
   PROGRAM_ID: string;
   CONCURRENCY: number;
-  SNS_ERROR_TOPIC_ARN?: string;
 }
 
 const ENV = process.env.ENVIRONMENT || "default_env";

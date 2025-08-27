@@ -288,22 +288,6 @@ Update AWS Parameter Store with the Base58 encoded secret key for secure storage
 - **Monitoring**: Comprehensive deployment status tracking and health checks
 - **Rollback Capabilities**: Automatic rollback for failed deployments
 
-## Email Notification Configuration
-
-The system supports email notifications for error alerts via AWS SNS. Configure email subscribers to receive notifications about transaction errors.
-
-### Setup Email Subscribers
-
-1. **Edit Configuration File**: Update `deployment/environments/terraform.tfvars`:
-   ```terraform
-   # SNS Configuration
-   email_subscribers = [
-     "admin@yourdomain.com",
-     "alerts@yourdomain.com", 
-     "devops@yourdomain.com"
-   ]
-   ```
-
 ## Troubleshooting
 ### Common Issues and Solutions
 #### Artifact Publishing Issues

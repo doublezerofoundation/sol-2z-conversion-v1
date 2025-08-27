@@ -74,50 +74,6 @@ resource "aws_dynamodb_table" "solana_event" {
   tags = local.common_tags
 }
 
-# solana-error
-resource "aws_dynamodb_table" "solana_error" {
-  name         = "${var.name_prefix}-solana-error"
-  billing_mode = "PAY_PER_REQUEST"
-
-  hash_key = "tx_hash"
-
-  attribute {
-    name = "tx_hash"
-    type = "S"
-  }
-  attribute {
-    name = "error_code"
-    type = "S"
-  }
-  attribute {
-    name = "slot"
-    type = "N"
-  }
-  attribute {
-    name = "timestamp"
-    type = "N"
-  }
-
-  global_secondary_index {
-    name            = "error_code_timestamp_idx"
-    hash_key        = "error_code"
-    range_key       = "timestamp"
-    projection_type = "ALL"
-  }
-  global_secondary_index {
-    name            = "timestamp_idx"
-    hash_key        = "timestamp"
-    projection_type = "ALL"
-  }
-  global_secondary_index {
-    name            = "slot_timestamp_idx"
-    hash_key        = "slot"
-    range_key       = "timestamp"
-    projection_type = "ALL"
-  }
-  tags = local.common_tags
-}
-
 # fill-dequeue
 resource "aws_dynamodb_table" "fill_dequeue" {
   name         = "${var.name_prefix}-fill-dequeue"

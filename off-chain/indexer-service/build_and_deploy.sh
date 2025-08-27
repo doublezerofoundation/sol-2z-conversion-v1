@@ -2,19 +2,6 @@
 
 set -euo pipefail
 
-# Cleanup function to restore configs on exit
-cleanup() {
-    if [ -f "$SCRIPT_DIR/config/default.json.bak" ]; then
-        mv "$SCRIPT_DIR/config/default.json.bak" "$SCRIPT_DIR/config/default.json" 2>/dev/null || true
-    fi
-    if [ -f "$SCRIPT_DIR/config/prod.json.bak" ]; then
-        mv "$SCRIPT_DIR/config/prod.json.bak" "$SCRIPT_DIR/config/prod.json" 2>/dev/null || true
-    fi
-}
-
-# Set trap to ensure cleanup happens on script exit
-trap cleanup EXIT
-
 # Source utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/../../build_utils.sh"
@@ -50,9 +37,6 @@ main() {
 
     clean_project
     npm_install
-    
-    # Populate config files with AWS-specific values
-    populate_config_files
 
     build_project
 
@@ -64,9 +48,6 @@ main() {
     build_image $IMAGE_TAG
 
     push_image $IMAGE_TAG
-
-    # Clean up - restore original config files
-    restore_config_files
 
     log_info "Build and deploy completed successfully!"
     log_info "Docker Image URI: $IMAGE_TAG"
@@ -191,50 +172,6 @@ upload_to_s3() {
             {Key=ReleaseTag,Value=$BUILD_TAG}
         ]" \
         2>/dev/null || log_warn "Failed to add tags to S3 object"
-}
-
-populate_config_files() {
-    log_info "Populating config files with AWS-specific values..."
-    
-    log_info "Config population parameters:"
-    log_info "  - Account ID: $ACCOUNT_ID"
-    log_info "  - AWS Region: $AWS_REGION"
-    log_info "  - Environment: $ENV"
-    
-    # Create backup copies before modifying
-    cp "$SCRIPT_DIR/config/default.json" "$SCRIPT_DIR/config/default.json.bak"
-    cp "$SCRIPT_DIR/config/prod.json" "$SCRIPT_DIR/config/prod.json.bak"
-    
-    # Replace placeholders in default.json
-    sed -i "s/{{ACCOUNT_ID}}/$ACCOUNT_ID/g" "$SCRIPT_DIR/config/default.json"
-    sed -i "s/{{AWS_REGION}}/$AWS_REGION/g" "$SCRIPT_DIR/config/default.json"
-    sed -i "s/{{ENV}}/$ENV/g" "$SCRIPT_DIR/config/default.json"
-    
-    # Replace placeholders in prod.json
-    sed -i "s/{{ACCOUNT_ID}}/$ACCOUNT_ID/g" "$SCRIPT_DIR/config/prod.json"
-    sed -i "s/{{AWS_REGION}}/$AWS_REGION/g" "$SCRIPT_DIR/config/prod.json"
-    sed -i "s/{{ENV}}/$ENV/g" "$SCRIPT_DIR/config/prod.json"
-    
-    log_info "Updated configuration files:"
-    log_info "default.json SNS ARN: $(grep 'SNS_ERROR_TOPIC_ARN' "$SCRIPT_DIR/config/default.json")"
-    log_info "prod.json SNS ARN: $(grep 'SNS_ERROR_TOPIC_ARN' "$SCRIPT_DIR/config/prod.json")"
-    
-    log_info "Config files populated successfully"
-}
-
-restore_config_files() {
-    log_info "Restoring original config files..."
-    
-    # Restore from backups if they exist
-    if [ -f "$SCRIPT_DIR/config/default.json.bak" ]; then
-        mv "$SCRIPT_DIR/config/default.json.bak" "$SCRIPT_DIR/config/default.json"
-    fi
-    
-    if [ -f "$SCRIPT_DIR/config/prod.json.bak" ]; then
-        mv "$SCRIPT_DIR/config/prod.json.bak" "$SCRIPT_DIR/config/prod.json"
-    fi
-    
-    log_info "Original config files restored"
 }
 
 # Handle script arguments

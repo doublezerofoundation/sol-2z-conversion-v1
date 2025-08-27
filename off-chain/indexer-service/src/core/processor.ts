@@ -1,11 +1,10 @@
-import { Connection, TransactionError, PublicKey } from '@solana/web3.js';
+import { Connection, PublicKey } from '@solana/web3.js';
 import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
 import idlJson from '../../idl/converter_program.json';
 
 import Config from '../utils/config';
 import { EventType } from '../common';
-import { writeSolanaEvent, writeSolanaError, writeFillDequeue, writeDenyListAction } from '../utils/ddb/events';
-import { sendErrorNotification } from '../utils/notifications';
+import { writeSolanaEvent, writeFillDequeue, writeDenyListAction } from '../utils/ddb/events';
 
 const connection = new Connection(Config.RPC_URL, 'confirmed');
 const idl        = idlJson as Idl;
@@ -23,17 +22,7 @@ export async function processTx(sig: string) {
      const { err } = tx.meta;
 
      if (err) {
-          const errorName = handleTxError(sig, err);
-          await writeSolanaError(sig, errorName ?? 'UnknownError', logMessages, slot, timestamp);
-          
-          // Notify admin via email
-          await sendErrorNotification({
-               signature: sig,
-               errorName: errorName ?? 'UnknownError',
-               slot,
-               timestamp,
-               logMessages
-          });
+          console.log(`⚠️ [${timestamp}] Transaction ${sig} failed with error:`, err);
           return;
      }     
      
@@ -67,35 +56,6 @@ export async function processTx(sig: string) {
                default:
                     await writeSolanaEvent(sig, eventId, e.name, safeData, slot, timestamp);
           }
-     }
-}
-
-/**
- * Extracts Anchor custom error codes from a TransactionError
- * and logs a human‑readable message (falling back to raw error).
- */
-function handleTxError(sig: string, err: TransactionError): string | undefined {
-
-     // pull out the Custom code if present
-     let customCode: number | undefined;
-     if (typeof err === 'object' && 'InstructionError' in err) {
-          const [, info] = (err as any).InstructionError as [number, { Custom?: number }];
-          customCode = info.Custom;
-     }
-   
-     // look up in IDL
-     if (customCode != null && Array.isArray(idl.errors)) {
-          const errDef = idl.errors.find(e => e.code === customCode);
-          if (errDef) {
-               console.info(`Failed tx ${sig}: ${errDef.name} - ${errDef.msg}`);
-               return errDef.name;
-          } else {
-               console.info(`Failed tx ${sig}: Unknown custom error ${customCode}`);
-               return `UnknownCustomError(${customCode})`;
-          }
-     } else {
-          console.info(`Failed tx ${sig}:`, err);
-          return 'RawError'; // No custom error found, log raw error
      }
 }
 

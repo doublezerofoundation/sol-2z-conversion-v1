@@ -316,11 +316,3 @@ module "dynamodb" {
   environment  = var.environment
 }
 
-module "sns" {
-  source            = "../modules/sns"
-  name_prefix       = "doublezero-${var.environment}"     
-  environment       = var.environment
-  email_subscribers = var.email_subscribers
-  additional_tags   = { Project = "DoubleZero" }
-}
-
