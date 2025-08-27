@@ -72,7 +72,7 @@ describe("User Flow Tests", () => {
                 await new Promise(resolve => setTimeout(resolve, 3000));
 
                 const oraclePrice = await getOraclePriceData();
-                const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+                const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1;
                 await scenario.buySol(amount);
             }
         });
