@@ -126,9 +126,9 @@ $$
 $$
 
 Where:
-- N: Desired slots between trades for discount rate change
-- D_max: Maximum discount rate (basis points)
-- D_min: Minimum discount rate (basis points)
+- $N$: Desired number of slots between trades where the discount rate changes from $D_{min}$ to $D_{max}$
+- $D_{max}$: Maximum discount rate (basis points)
+- $D_{min}$: Minimum discount rate (basis points)
 
 Example:
 
@@ -139,14 +139,13 @@ $N$ = 432,000 (1 epoch)
 $$
 \gamma = \frac{5000 - 500}{432000} \approx 0.01042
 $$
-The coefficient is then multiplied by 10000 to get the final coefficient. This is done to avoid floating point precision issues and preserve the precision of coefficient.
+The coefficient is then multiplied by 10,000 to get the final coefficient. This is done to avoid floating point precision issues and preserve the precision of coefficient.
+
 $$
 \gamma * 10000 \approx 104
 $$
 
-
-
-
+In the above example, considering that the $N$ is 432,000, the coefficient is approximately $1.042 \times 10^{-6}$. To account for this precision, we have set the maximum coefficient value to 8 decimal places. (6 + 2 decimal places for added precision)
 
 ### 1.3 Deploy On-Chain Programs
 
