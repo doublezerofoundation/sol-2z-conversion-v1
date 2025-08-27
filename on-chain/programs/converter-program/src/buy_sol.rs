@@ -96,9 +96,8 @@ impl<'info> BuySol<'info> {
         require!(!self.program_state.is_halted, DoubleZeroError::SystemIsHalted);
 
         // Checking whether address is inside the deny list.
-        let signer_key = self.signer.key;
         require!(
-            !self.deny_list_registry.denied_addresses.contains(signer_key),
+            !self.deny_list_registry.denied_addresses.contains(self.signer.key),
             DoubleZeroError::UserInsideDenyList
         );
 
