@@ -4,8 +4,6 @@ import {getProgramStatePDA} from "./pda-helper";
 export interface FillsRegistry {
     totalSolPending: number,
     total2ZPending: number,
-    lifetimeSolProcessed: number,
-    lifetime2ZProcessed: number,
     head: number,
     tail: number,
     count: number,
@@ -30,8 +28,6 @@ export async function getFillsRegistryAccount(program): Promise<FillsRegistry> {
     const fillsRegistry: FillsRegistry = {
         totalSolPending: Number(rawFillsRegistry.totalSolPending),
         total2ZPending: Number(rawFillsRegistry.total2ZPending),
-        lifetime2ZProcessed: Number(rawFillsRegistry.lifetime2ZProcessed),
-        lifetimeSolProcessed: Number(rawFillsRegistry.lifetimeSolProcessed),
         count: Number(rawFillsRegistry.count),
         head: Number(rawFillsRegistry.head),
         tail: Number(rawFillsRegistry.tail),

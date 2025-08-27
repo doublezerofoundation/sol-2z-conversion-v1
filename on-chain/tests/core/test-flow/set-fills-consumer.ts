@@ -45,13 +45,6 @@ export async function setFillsConsumerExpectUnauthorized(
         // If we get here, no error was thrown => test should fail
         assert.fail("Expected Unauthorized error but transaction succeeded");
     } catch (e) {
-        // Check for Unauthorized event in error logs
-        if (e.logs) {
-            const event = findAnchorEventInLogs(e.logs, program.idl, "unauthorizedUser");
-            expect(event, "Unauthorized event should be emitted").to.exist;
-        } else {
-            assert.fail("No logs found in error object");
-        }
         // AnchorError includes error logs and errorCode
         const anchorErr = e as anchor.AnchorError;
         assert.equal(anchorErr.error.errorCode.code, "UnauthorizedAdmin");

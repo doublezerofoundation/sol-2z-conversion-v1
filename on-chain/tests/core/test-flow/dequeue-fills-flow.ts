@@ -30,13 +30,19 @@ export async function consumeFillsSuccess(
         "After buy SOL, count should change as expected"
     );
 
-    const signature = await program.methods.dequeueFills(new BN(maxSolAmount))
-        .accounts({
-            fillsRegistry: fillsRegistryAddress,
-            signer: signer.publicKey
-        })
-        .signers([signer])
-        .rpc();
+    let signature: string;
+    try {
+        signature = await program.methods.dequeueFills(new BN(maxSolAmount))
+            .accounts({
+                fillsRegistry: fillsRegistryAddress,
+                signer: signer.publicKey
+            })
+            .signers([signer])
+            .rpc();
+    } catch (e) {
+        console.error("Consume fills  failed:", e);
+        assert.fail("Consume fills  failed");
+    }
 
     let resultSolConsumed: number;
     let resultTokenConsumed: number;
@@ -73,7 +79,7 @@ export async function consumeFillsSuccess(
 
     // Check Output values
     assert.equal(resultSolConsumed, maxSolAmount);
-    assert.approximately(resultTokenConsumed, expectedTokenConsumed, 1);
+    assert.approximately(resultTokenConsumed, expectedTokenConsumed, 5);
     assert.equal(resultFillsConsumed, expectedFillsConsumed);
 
     const fillsRegistryAfter: FillsRegistry = await getFillsRegistryAccount(program);

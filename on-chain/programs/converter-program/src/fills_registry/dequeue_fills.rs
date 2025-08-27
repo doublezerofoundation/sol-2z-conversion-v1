@@ -31,10 +31,9 @@ pub struct DequeueFills<'info> {
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
         mut,
-        constraint = fills_registry.key() == program_state.fills_registry_address
+        address = program_state.fills_registry_address
     )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
-    #[account(mut)]
     pub signer: Signer<'info>
 }
 
@@ -44,8 +43,9 @@ impl<'info> DequeueFills<'info> {
         max_sol_amount: u64,
     ) -> Result<DequeueFillsResult> {
 
-        require!(
-            self.signer.key() == self.configuration_registry.fills_consumer,
+        require_keys_eq!(
+            self.signer.key(),
+            self.configuration_registry.fills_consumer,
             DoubleZeroError::UnauthorizedFillConsumer
         );
 
@@ -74,11 +74,13 @@ impl<'info> DequeueFills<'info> {
                 fill
             } else {
                 // Partial dequeue.
-                let token_2z_dequeued = next_entry.token_2z_out
-                    .checked_mul(remaining_sol)
+                let token_2z_dequeued = (next_entry.token_2z_out as u128)
+                    .checked_mul(remaining_sol as u128)
                     .ok_or(DoubleZeroError::ArithmeticError)?
-                    .checked_div(next_entry.sol_in)
-                    .ok_or(DoubleZeroError::ArithmeticError)?;
+                    .checked_div(next_entry.sol_in as u128)
+                    .ok_or(DoubleZeroError::ArithmeticError)?
+                    .try_into()
+                    .map_err(|_| DoubleZeroError::ArithmeticError)?;
 
                 // Updated remainder fill.
                 fills_registry.fills[head_index] = Fill {
@@ -97,21 +99,12 @@ impl<'info> DequeueFills<'info> {
             fills_consumed += 1;
         }
 
-        // Update registry statistics.
         fills_registry.total_sol_pending = fills_registry.total_sol_pending
             .checked_sub(sol_dequeued)
             .ok_or(DoubleZeroError::ArithmeticError)?;
 
         fills_registry.total_2z_pending = fills_registry.total_2z_pending
             .checked_sub(token_2z_dequeued)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
-
-        fills_registry.lifetime_sol_processed = fills_registry.lifetime_sol_processed
-            .checked_add(sol_dequeued)
-            .ok_or(DoubleZeroError::ArithmeticError)?;
-
-        fills_registry.lifetime_2z_processed = fills_registry.lifetime_2z_processed
-            .checked_add(token_2z_dequeued)
             .ok_or(DoubleZeroError::ArithmeticError)?;
 
         let dequeue_fills_result = DequeueFillsResult {

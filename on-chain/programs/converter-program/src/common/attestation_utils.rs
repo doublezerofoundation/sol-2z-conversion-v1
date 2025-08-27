@@ -6,7 +6,6 @@ use base64::{
 use brine_ed25519::sig_verify;
 use crate::common::{
     error::DoubleZeroError,
-    events::system::AttestationInvalid,
     structs::OraclePriceData
 };
 
@@ -29,7 +28,6 @@ pub fn verify_attestation(
     // ed25519 signature verification
     sig_verify(&oracle_public_key.to_bytes(), &signature_vec, message_bytes)
             .map_err(|_| {
-                emit!(AttestationInvalid {});
                 error!(DoubleZeroError::AttestationVerificationError)
             })?;
     msg!("Signature verified successfully");
@@ -43,10 +41,7 @@ pub fn verify_attestation(
 
     // If the difference is greater than the maximum age, the price is either
     // stale or the timestamp is in the future (beyond acceptable clock skew)
-    require!(
-        difference <= price_maximum_age,
-        DoubleZeroError::StalePrice
-    );
+    require!(difference <= price_maximum_age, DoubleZeroError::StalePrice);
     msg!("Timestamp verified successfully");
 
     Ok(())

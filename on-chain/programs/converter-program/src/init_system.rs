@@ -1,8 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::{
-    program::invoke,
-};
-use solana_system_interface::instruction::transfer;
 use crate::{
     common::{
         constant::DISCRIMINATOR_SIZE,
@@ -17,7 +13,7 @@ use crate::{
     program::ConverterProgram
 };
 
-/// Only the current upgrade authority can call this
+/// Only the current upgrade authority can call this.
 #[derive(Accounts)]
 pub struct InitializeSystem<'info> {
     #[account(
@@ -47,7 +43,6 @@ pub struct InitializeSystem<'info> {
     #[account(zero)]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
-        mut,
         seeds = [SeedPrefixes::WithdrawAuthority.as_bytes()],
         bump
     )]
@@ -60,9 +55,8 @@ pub struct InitializeSystem<'info> {
         constraint = program_data.upgrade_authority_address == Some(authority.key()))
     ]
     pub program_data: Account<'info, ProgramData>,
-    pub rent: Sysvar<'info, Rent>,
     pub system_program: Program<'info, System>,
-    /// current upgrade have to sign
+    /// current upgrade have to sign.
     #[account(mut)]
     pub authority: Signer<'info>
 }
@@ -75,23 +69,12 @@ impl<'info> InitializeSystem<'info> {
         price_maximum_age: i64,
         coefficient: u64,
         max_discount_rate: u64,
-        min_discount_rate: u64
+        min_discount_rate: u64,
+        configuration_registry_bump: u8,
+        program_state_bump: u8,
+        deny_list_registry_bump: u8,
+        withdraw_authority_bump: u8,
     ) -> Result<()> {
-
-        // Transfer minimum amount to withdraw_authority to initialize
-        // Rent exempt the withdraw_authority
-        let minimum_balance = self.rent.minimum_balance(0);
-
-        let sol_transfer_ix = transfer(
-            &self.authority.key(),
-            &self.withdraw_authority.key(),
-            minimum_balance,
-        );
-
-        invoke(
-            &sol_transfer_ix,
-            &[self.authority.to_account_info(), self.withdraw_authority.to_account_info()],
-        )?;
 
         // Initializing Fills Registry
         self.fills_registry.load_init()?;
@@ -105,22 +88,9 @@ impl<'info> InitializeSystem<'info> {
         // Set last trade slot to current slot
         self.program_state.last_trade_slot = Clock::get()?.slot;
 
-        // Validate D_max is between 0 and 1 and D_max is greater than D_min
-        if max_discount_rate > 10000 || max_discount_rate < min_discount_rate {
-            return err!(DoubleZeroError::InvalidMaxDiscountRate);
-        }
-
-        // Validate coefficient is between 0 and 100000000
-        if coefficient > 100000000 {
-            return err!(DoubleZeroError::InvalidCoefficient);
-        }
-
-        // Setting initial configurations
-
-        // Validate D_min is between 0 and D_max
-        if min_discount_rate > max_discount_rate {
-            return err!(DoubleZeroError::InvalidMinDiscountRate);
-        }
+        require!(max_discount_rate <= 10_000, DoubleZeroError::InvalidMaxDiscountRate);
+        require!(coefficient <= 100_000_000, DoubleZeroError::InvalidCoefficient);
+        require!(min_discount_rate < max_discount_rate, DoubleZeroError::InvalidMinDiscountRate);
 
         self.configuration_registry.oracle_pubkey = oracle_pubkey;
         self.configuration_registry.sol_quantity = sol_quantity;
@@ -129,24 +99,13 @@ impl<'info> InitializeSystem<'info> {
         self.configuration_registry.max_discount_rate = max_discount_rate;
         self.configuration_registry.min_discount_rate = min_discount_rate;
 
-        msg!("System is Initialized");
-        emit!(SystemInitialized {});
-        Ok(())
-    }
-
-    pub fn set_bumps(
-        &mut self,
-        configuration_registry_bump: u8,
-        program_state_bump: u8,
-        deny_list_registry_bump: u8,
-        withdraw_authority_bump: u8,
-    )-> Result<()> {
-
         let bump_registry = &mut self.program_state.bump_registry;
         bump_registry.configuration_registry_bump = configuration_registry_bump;
         bump_registry.program_state_bump = program_state_bump;
         bump_registry.deny_list_registry_bump = deny_list_registry_bump;
         bump_registry.withdraw_authority_bump = withdraw_authority_bump;
+
+        emit!(SystemInitialized {});
         Ok(())
     }
 }

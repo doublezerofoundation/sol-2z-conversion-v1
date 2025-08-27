@@ -1,4 +1,4 @@
-import {TOKEN_DECIMAL} from "../constants";
+import {TOKEN_UNITS} from "../constants";
 import { Keypair } from "@solana/web3.js";
 import nacl from "tweetnacl";
 
@@ -14,7 +14,7 @@ export interface OraclePriceData {
 
 // Mock the price oracle data
 export const getOraclePriceDataFor = async (swapRate: number, timestamp: number): Promise<OraclePriceData> => {
-    const swapRateInt = Math.floor(swapRate * TOKEN_DECIMAL);
+    const swapRateInt = Math.floor(swapRate * TOKEN_UNITS);
     const attestation = await generateRandomAttestation(swapRateInt, timestamp);
 
     return {

@@ -77,6 +77,7 @@ export AWS_SECRET_ACCESS_KEY=
 - `mock-double-zero-program` - Deploy mock program
 - `run-tests` - Execute test suites
 
+## Phase 1: On-Chain Component Deployment
 
 
 ### Environment Setup
@@ -141,7 +142,6 @@ Create `config.json` at the project root with the following structure:
   "sol_quantity": 25000000000,
   "slot_threshold": 134,
   "price_maximum_age": 324,
-  "skip_preflight": false,
   "price_oracle_end_point": "https://clic19jsil.execute-api.us-east-1.amazonaws.com/dev4/api/v1/swap-rate",
   "coefficient": 4500,
   "max_discount_rate": 5000,
@@ -165,24 +165,26 @@ $$
 $$
 
 Where:
-- N: Desired slots between trades for discount rate change
-- D_max: Maximum discount rate (basis points)
-- D_min: Minimum discount rate (basis points)
+- $N$: Desired number of slots between trades where the discount rate changes from $D_{min}$ to $D_{max}$
+- $D_{max}$: Maximum discount rate (basis points)
+- $D_{min}$: Minimum discount rate (basis points)
 
 Example:
-```
-D_{max} = 5000 (50%)
-D_{min} = 500 (5%)
-N = 10000 (10000 slots)
-```
-$$
-\gamma = \frac{5000 - 500}{10000} = 0.45
-$$
+
+$D_{max}$ = 5000 (50%)\
+$D_{min}$ = 500 (5%)\
+$N$ = 432,000 (1 epoch)
 
 $$
-\gamma * 10000 = 4500
+\gamma = \frac{5000 - 500}{432000} \approx 0.01042
+$$
+The coefficient is then multiplied by 10,000 to get the final coefficient. This is done to avoid floating point precision issues and preserve the precision of coefficient.
+
+$$
+\gamma * 10000 \approx 104
 $$
 
+In the above example, considering that the $N$ is 432,000, the coefficient is approximately $1.042 \times 10^{-6}$. To account for this precision, we have set the maximum coefficient value to 8 decimal places. (6 + 2 decimal places for added precision)
 
 ## Phase 1: On-Chain Component Deployment
 

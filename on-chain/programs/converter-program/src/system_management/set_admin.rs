@@ -7,9 +7,7 @@ use crate::{
 
 #[derive(Accounts)]
 pub struct SetAdmin<'info> {
-    #[account(mut)]
     pub admin: Signer<'info>,
-
     #[account(
         mut,
         seeds = [SeedPrefixes::ProgramState.as_bytes()],

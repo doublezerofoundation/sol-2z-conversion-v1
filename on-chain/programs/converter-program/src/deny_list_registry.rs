@@ -32,22 +32,27 @@ pub struct UpdateDenyList<'info> {
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
-    #[account(mut)]
     pub admin: Signer<'info>,
 }
 
 impl<'info> UpdateDenyList<'info> {
     pub fn add_to_deny_list(&mut self, address: Pubkey) -> Result<()> {
-        // Ensure only admin can modify
-        self.program_state.assert_deny_list_authority(&self.admin)?;
+        // Ensure only deny list authority can modify.
+        require_keys_eq!(
+            self.admin.key(),
+            self.program_state.deny_list_authority,
+            DoubleZeroError::UnauthorizedDenyListAuthority
+        );
 
-        if self.deny_list_registry.denied_addresses.contains(&address) {
-            return err!(DoubleZeroError::AlreadyExistsInDenyList);
-        }
+        require!(
+            !self.deny_list_registry.denied_addresses.contains(&address),
+            DoubleZeroError::AlreadyExistsInDenyList
+        );
 
-        if self.deny_list_registry.denied_addresses.len() >= MAX_DENY_LIST_SIZE as usize {
-            return err!(DoubleZeroError::DenyListFull);
-        }
+        require!(
+            self.deny_list_registry.denied_addresses.len() < MAX_DENY_LIST_SIZE as usize,
+            DoubleZeroError::DenyListFull
+        );
 
         self.deny_list_registry.denied_addresses.push(address);
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
@@ -65,21 +70,20 @@ impl<'info> UpdateDenyList<'info> {
     }
 
     pub fn remove_from_deny_list(&mut self, address: Pubkey) -> Result<()> {
-        // Ensure only admin can modify
-        self.program_state.assert_deny_list_authority(&self.admin)?;
+        // Ensure only deny list authority can modify.
+        require_keys_eq!(
+            self.admin.key(),
+            self.program_state.deny_list_authority,
+            DoubleZeroError::UnauthorizedDenyListAuthority
+        );
 
-        if !self.deny_list_registry.denied_addresses.contains(&address) {
+        if let Some(pos) = self.deny_list_registry.denied_addresses
+            .iter()
+            .position(|&x| x == address) {
+            self.deny_list_registry.denied_addresses.remove(pos);
+        } else {
             return err!(DoubleZeroError::AddressNotInDenyList);
         }
-
-        let position = self
-            .deny_list_registry
-            .denied_addresses
-            .iter()
-            .position(|&x| x == address)
-            .ok_or(ErrorCode::ConstraintRaw)?;
-
-        self.deny_list_registry.denied_addresses.remove(position);
         self.deny_list_registry.last_updated = Clock::get()?.unix_timestamp;
         self.deny_list_registry.update_count += 1;
 

@@ -52,7 +52,8 @@ export async function buySolAndVerify(
         assert.fail("Buy Sol  failed");
     }
 
-    const tokenBalanceChange = Number(currentConfigs.solQuantity) * bidPrice / LAMPORTS_PER_SOL;
+    const tokenChange = (BigInt(Number(currentConfigs.solQuantity)) * BigInt(bidPrice)) / BigInt(LAMPORTS_PER_SOL);
+    const tokenBalanceChange = Number(tokenChange);
     const solBalanceChange = Number(currentConfigs.solQuantity);
 
     const tokenBalanceAfter = await getTokenBalance(program.provider.connection, senderTokenAccount);

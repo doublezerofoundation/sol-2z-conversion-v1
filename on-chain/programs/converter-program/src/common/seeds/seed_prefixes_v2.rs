@@ -1,5 +1,7 @@
 // V2 of all seed prefixes
 // Not used
+#![cfg(feature = "test")]
+
 
 #[derive(Debug, Clone, Copy)]
 pub enum SeedPrefixesV2 {

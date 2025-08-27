@@ -1,10 +1,10 @@
 import {PublicKey} from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
-export const TOKEN_DECIMAL = 10 ** 6;
+export const TOKEN_UNITS = 10 ** 8;
 export const BPS = 100; // basis points
 
-export const MAX_DENY_LIST_SIZE = 50;
+export const MAX_DENY_LIST_SIZE = 310;
 
 export namespace Seeds {
     export const CONFIGURATION_REGISTRY_SEED = "system_config_v1";
@@ -21,9 +21,6 @@ export namespace Seeds {
 export namespace Events {
     export const SYSTEM_INITIALIZED = "systemInitialized";
     export const BID_TOO_LOW = "bidTooLowEvent";
-    export const ATTESTATION_INVALID = "attestationInvalid";
-    export const ACCESS_BY_DENIED_PERSON = "accessByDeniedPerson";
-    export const ACCESS_DURING_SYSTEM_HALT = "accessDuringSystemHalt";
     export const SYSTEM_HALTED = "systemHalted";
     export const SYSTEM_UNHALTED = "systemUnhalted";
     export const TRADE = "tradeEvent";

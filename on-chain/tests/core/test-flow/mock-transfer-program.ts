@@ -79,6 +79,7 @@ export async function mint2z(
     recipientTokenAccount: PublicKey,
     amount: number
 ) {
+    amount = Math.ceil(amount);
     const balanceBeforeMint = await getTokenBalance(program.provider.connection, recipientTokenAccount);
     try {
         await program.methods.mint2Z(new anchor.BN(amount))

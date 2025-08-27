@@ -22,7 +22,6 @@ pub fn find_or_initialize_associated_token_account(payer: Keypair, mint: Pubkey,
         println!("Associated token exists with address {}", associated_token_account);
         return Ok(associated_token_account);
     }
-
     println!("Associated Token does not exists. Creating ...");
     let create_ata_instruction = create_associated_token_account(
         &payer.pubkey(),      // funding address
