@@ -1,5 +1,5 @@
 import { AdminClient } from "./core/admin-client";
-import { DEFAULT_KEYPAIR_PATH, TOKEN_DECIMALS } from "./core/constants";
+import { DEFAULT_KEYPAIR_PATH } from "./core/constants";
 import { UserClient } from "./core/user-client";
 import { getTestName } from "./core/utils/test-helper";
 import { InitializeScenario } from "./scenarios/initialize-scenario";
@@ -11,6 +11,7 @@ import { fillsConsumerUserTests } from "./tests/user/fills-consumer-user.test";
 import { BuySolScenario } from "./scenarios/buy-sol-scenario";
 import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
 import { getOraclePriceData } from "./core/utils/price-oracle";
+import { TOKEN_DECIMALS } from "./core/constants";
 
 describe("User Flow Tests", () => {
     let deployer: AdminClient;
