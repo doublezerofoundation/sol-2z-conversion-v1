@@ -48,7 +48,7 @@ pub fn view_fills_registry() -> Result<(), Box<dyn Error>> {
         // Circular queue indexing
         let idx = (fills_registry.head as usize + i) % MAX_FILLS_QUEUE_SIZE;
         let fill = &fills_registry.fills[idx];
-        let fill_quantity = fill.sol_in/ LAMPORTS_PER_SOL;
+        let fill_quantity = fill.sol_in / LAMPORTS_PER_SOL;
         println!("Fill {}: sol_in:{} token_2z_out:{}", i, fill_quantity, fill.token_2z_out);
     }
     Ok(())
