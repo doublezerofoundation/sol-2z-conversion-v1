@@ -1,19 +1,19 @@
 import {CacheService} from "./cacheService";
 import { createClient, RedisClientType } from "redis";
 import process from "node:process";
+import {inject, injectable} from "inversify";
+import {ConfigUtil} from "../../utils/configUtil";
+import {ConfigField, TYPES} from "../../types/common";
 const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT
 const REDIS_PORT =  process.env.REDIS_PORT
 const REDIS_URL = `rediss://${REDIS_ENDPOINT}:${REDIS_PORT}`
-const TTL_SECONDS = 10
-import {injectable} from "inversify";
-
 @injectable()
 export class RedisCacheService implements CacheService {
     private redisClient: RedisClientType;
     private isConnected: boolean = false;
 
 
-    constructor() {
+    constructor(@inject(TYPES.ConfigUtil) private configUtil: ConfigUtil) {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
@@ -57,13 +57,22 @@ export class RedisCacheService implements CacheService {
         }
     }
 
+    private getCacheTTL(): number {
+        try {
+            return this.configUtil.get<number>(ConfigField.PRICE_CACHE_TTL_SECONDS) || 10; // 10
+        } catch (error) {
+            console.warn("Failed to get TTL from config, using default:", error);
+            return 10; // fallback
+        }
+    }
+
     async add(key: string, value: any,isTTL:boolean): Promise<any> {
         try {
             await this.ensureConnection();
             const stringValue = typeof value === 'string' ? value : JSON.stringify(value);
             if(isTTL) {
                 return await this.redisClient.set(key, stringValue, {
-                    EX: TTL_SECONDS,
+                    EX: this.getCacheTTL(),
                 });
             }
             await this.redisClient.set(key, stringValue);

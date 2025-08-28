@@ -280,7 +280,8 @@ Create config file: `config/indexer/{env-name}.json`
 Create config file: `config/swap-oracle/{env-name}.json`
 ```json
 {
-  "applicationPort": 8080,
+  "applicationPort": 8080, 
+  "priceCacheTTLSeconds": 30,
   "pricingServices": [
     {
       "name": "pyth",
