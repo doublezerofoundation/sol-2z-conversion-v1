@@ -23,6 +23,9 @@ QUIET_MODE=0
 BASE_RPC_PORT=8899
 DEBUG_MODE=0
 
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cd "$SCRIPT_DIR"
+
 # -------------------- CLI Args --------------------
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -144,7 +147,17 @@ stop_validator() {
         log_info "Stopping validator PID $VALIDATOR_PID"
         kill "$VALIDATOR_PID" 2>/dev/null || true
         wait "$VALIDATOR_PID" 2>/dev/null || true
+    else
+        # No tracked PID – check for any process on this port
+        local PID_ON_PORT
+        PID_ON_PORT=$(lsof -ti tcp:$BASE_RPC_PORT 2>/dev/null || true)
+        if [ -n "$PID_ON_PORT" ]; then
+            log_warning "Killing existing validator (PID $PID_ON_PORT) on port $BASE_RPC_PORT"
+            kill -9 "$PID_ON_PORT" 2>/dev/null || true
+            wait "$PID_ON_PORT" 2>/dev/null || true
+        fi
     fi
+
     VALIDATOR_PID=""
 
     if [ -n "$LEDGER_DIR" ]; then
@@ -228,14 +241,14 @@ build_cli() {
 
 copy_cli_to_e2e() {
     # Remove the existing CLI directory
-    rm -rf ./e2e/cli
+    rm -rf $SCRIPT_DIR/e2e/cli
 
     log_info "Copying the CLI binaries to the E2E directory..."
-    mkdir -p ./e2e/cli
-    cp ./target/debug/admin-cli ./e2e/cli/
-    cp ./target/debug/user-cli ./e2e/cli/
-    cp ./target/debug/integration-cli ./e2e/cli/
-    cp ./config.json ./e2e/cli/
+    mkdir -p $SCRIPT_DIR/e2e/cli
+    cp $SCRIPT_DIR/target/debug/admin-cli $SCRIPT_DIR/e2e/cli/
+    cp $SCRIPT_DIR/target/debug/user-cli $SCRIPT_DIR/e2e/cli/
+    cp $SCRIPT_DIR/target/debug/integration-cli $SCRIPT_DIR/e2e/cli/
+    cp $SCRIPT_DIR/config.json $SCRIPT_DIR/e2e/cli/
     log_success "CLI copied to the E2E directory"
 }
 
@@ -255,13 +268,13 @@ run_test() {
     start_validator $RPC_PORT $EXTRA_ARGS
 
     # Deploy the programs to the validator
-    cd ./mock-double-zero-program || exit 1
-    deploy_program $RPC_URL "mock-double-zero-program"
-    cd ../on-chain || exit 1
-    deploy_program $RPC_URL "converter-program"
+    cd $SCRIPT_DIR/mock-double-zero-program || exit 1
+    deploy_program $RPC_URL "mock-double-zero-program" || { log_error "Deploy failed"; exit 1; }
+    cd $SCRIPT_DIR/on-chain || exit 1
+    deploy_program $RPC_URL "converter-program" || { log_error "Deploy failed"; exit 1; }
 
     if [ "$TEST_TYPE" == "e2e" ]; then
-        cd ../e2e || exit 1
+        cd $SCRIPT_DIR/e2e || exit 1
         npm run $TEST_SCRIPT
         RESULT=$?
     else
@@ -280,11 +293,13 @@ run_test() {
     COMPLETED_COUNT=$((COMPLETED_COUNT + 1))
     print_status_bar
     echo ""
-    cd ../ || exit 1
+    cd $SCRIPT_DIR || exit 1
 }
 
 # -------------------- Main Execution --------------------
 print_header
+# Ensure no leftover validator is running before we start
+stop_validator
 trap 'killall -9 solana-test-validator 2>/dev/null || true' EXIT
 
 # Build the double zero converter program
@@ -292,9 +307,9 @@ cd ./on-chain || exit 1
 build_program "converter-program"
 
 # Build the mock double zero transfer program
-cd ../mock-double-zero-program || exit 1
+cd $SCRIPT_DIR/mock-double-zero-program || exit 1
 build_program "mock-double-zero-program"
-cd ../
+cd $SCRIPT_DIR
 
 # Build the admin and user CLI
 if [ "$TEST_TYPE" == "e2e" ]; then
@@ -302,9 +317,9 @@ if [ "$TEST_TYPE" == "e2e" ]; then
     copy_cli_to_e2e
 
     # Install the dependencies for the e2e test suite
-    cd ./e2e || exit 1
+    cd $SCRIPT_DIR/e2e || exit 1
     npm install > /dev/null
-    cd ../
+    cd $SCRIPT_DIR
 fi
 
 for TEST_SCRIPT in "${ACTIVE_TESTS[@]}"; do
@@ -330,4 +345,8 @@ print_footer
 # Stop any running validators
 stop_validator
 
-exit 0
+if [ $FAILED_COUNT -gt 0 ]; then
+    exit 1
+else
+    exit 0
+fi
