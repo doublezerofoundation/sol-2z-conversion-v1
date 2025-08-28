@@ -40,17 +40,25 @@ export class BuySolScenario extends CommonScenario {
 
         const finalFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
 
+        const askPriceResult = await this.user.getPriceCommand();
+        const askPriceRegex = /conversion rate:\s(\d+.\d+)\s2Z\sper\sSOL/m;
+        const askPriceString = askPriceResult.match(askPriceRegex)?.[1];
+        const askPrice = Number(askPriceString);
+
         // compute expected values
         const { solQuantity } = await getConfigurationRegistryAccount(this.admin.session.getProgram());
-        const tokenBalanceChange = amount * Number(solQuantity) / LAMPORTS_PER_SOL;
+        const tokenBalanceChange = askPrice * Number(solQuantity) / LAMPORTS_PER_SOL;
         const solBalanceChange = Number(solQuantity) / LAMPORTS_PER_SOL;
-        const tolerance = 0.00001;
+
+        // Higher tolerance due to ask price constantly changing
+        const tokenTolerance = 1;
+        const solTolerance = 0.00001;
 
         // verify balances
-        assert(Math.abs(finalUser2ZBalance - (initialUser2ZBalance - tokenBalanceChange)) < tolerance, "User 2Z balance is not correct");
-        assert(Math.abs(finalUserSolBalance - (initialUserSolBalance + solBalanceChange)) < tolerance, "User SOL balance is not correct");
-        assert(Math.abs(finalVaultSolBalance - (initialVaultSolBalance - solBalanceChange)) < tolerance, "Vault SOL balance is not correct");
-        assert(Math.abs(finalVault2ZBalance - (initialVault2ZBalance + tokenBalanceChange)) < tolerance, "Vault 2Z balance is not correct");
+        assert(Math.abs(finalUser2ZBalance - (initialUser2ZBalance - tokenBalanceChange)) < tokenTolerance, "User 2Z balance is not correct");
+        assert(Math.abs(finalUserSolBalance - (initialUserSolBalance + solBalanceChange)) < solTolerance, "User SOL balance is not correct");
+        assert(Math.abs(finalVaultSolBalance - (initialVaultSolBalance - solBalanceChange)) < solTolerance, "Vault SOL balance is not correct");
+        assert(Math.abs(finalVault2ZBalance - (initialVault2ZBalance + tokenBalanceChange)) < tokenTolerance, "Vault 2Z balance is not correct");
 
         // verify fills registry
         // count should be incremented by 1
@@ -67,14 +75,14 @@ export class BuySolScenario extends CommonScenario {
 
         // total 2Z pending should be incremented by the amount of 2Z bought
         const actualTokenBalanceChange = Number(finalVault2ZBalance) - Number(initialVault2ZBalance);
-        assert(Math.abs(Number(finalFillsRegistry.total2ZPending) - Number(initialFillsRegistry.total2ZPending) - (actualTokenBalanceChange * TOKEN_DECIMALS)) < tolerance, "Fills registry total 2Z pending is not correct");
+        assert(Math.abs(Number(finalFillsRegistry.total2ZPending) - Number(initialFillsRegistry.total2ZPending) - (actualTokenBalanceChange * TOKEN_DECIMALS)) < tokenTolerance, "Fills registry total 2Z pending is not correct");
 
         // new fill should be added at the tail
         const newFill = finalFillsRegistry.fills[
             (Number(finalFillsRegistry.tail) + finalFillsRegistry.fills.length - 1) % finalFillsRegistry.fills.length
         ];
         assert(Number(newFill.solIn) === solBalanceChange * LAMPORTS_PER_SOL, "Fills registry new fill sol in is not correct");
-        assert(Math.abs(Number(newFill.token2ZOut) - actualTokenBalanceChange * TOKEN_DECIMALS) < tolerance, "Fills registry new fill token 2Z out is not correct");
+        assert(Math.abs(Number(newFill.token2ZOut) - actualTokenBalanceChange * TOKEN_DECIMALS) < tokenTolerance, "Fills registry new fill token 2Z out is not correct");
 
         return result;
     }
