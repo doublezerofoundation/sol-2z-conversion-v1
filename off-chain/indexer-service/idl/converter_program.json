@@ -168,7 +168,7 @@
           "writable": true
         },
         {
-          "name": "withdraw_authority",
+          "name": "withdraw_sol_authority",
           "pda": {
             "seeds": [
               {
@@ -183,15 +183,9 @@
                   97,
                   119,
                   95,
-                  97,
-                  117,
-                  116,
-                  104,
+                  115,
                   111,
-                  114,
-                  105,
-                  116,
-                  121
+                  108
                 ]
               }
             ]
@@ -214,11 +208,10 @@
           "writable": true
         },
         {
-          "name": "config_account",
-          "writable": true
+          "name": "program_config"
         },
         {
-          "name": "revenue_distribution_journal",
+          "name": "journal",
           "writable": true
         },
         {
@@ -544,15 +537,9 @@
                   97,
                   119,
                   95,
-                  97,
-                  117,
-                  116,
-                  104,
+                  115,
                   111,
-                  114,
-                  105,
-                  116,
-                  121
+                  108
                 ]
               }
             ]

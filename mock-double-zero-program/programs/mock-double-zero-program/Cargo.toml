@@ -10,6 +10,7 @@ name = "mock_transfer_program"
 
 [features]
 default = []
+test = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []

@@ -57,7 +57,7 @@ pub struct BuySol<'info> {
         seeds = [SeedPrefixes::WithdrawAuthority.as_bytes()],
         bump = program_state.bump_registry.withdraw_authority_bump,
     )]
-    pub withdraw_authority: SystemAccount<'info>,
+    pub withdraw_sol_authority: SystemAccount<'info>,
     #[account(
         mut,
         token::mint = double_zero_mint,
@@ -75,11 +75,10 @@ pub struct BuySol<'info> {
     #[account(mut)]
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
     /// CHECK: program address - TODO: implement address validations after client informs actual programId
-    #[account(mut)]
-    pub config_account: UncheckedAccount<'info>,
+    pub program_config: UncheckedAccount<'info>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
     #[account(mut)]
-    pub revenue_distribution_journal: UncheckedAccount<'info>,
+    pub journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
@@ -171,9 +170,9 @@ impl<'info> BuySol<'info> {
         let cpi_program_id = self.revenue_distribution_program.key();
 
         let account_metas = vec![
-            AccountMeta::new(self.config_account.key(), false),
-            AccountMeta::new_readonly(self.withdraw_authority.key(), true),
-            AccountMeta::new(self.revenue_distribution_journal.key(), false),
+            AccountMeta::new_readonly(self.program_config.key(), false),
+            AccountMeta::new_readonly(self.withdraw_sol_authority.key(), true),
+            AccountMeta::new(self.journal.key(), false),
             AccountMeta::new(self.signer.key(), false),
             AccountMeta::new(self.vault_account.key(), false),
             AccountMeta::new_readonly(self.system_program.key(), false)
@@ -196,9 +195,9 @@ impl<'info> BuySol<'info> {
         invoke_signed(
             &cpi_ix,
             &[
-                self.config_account.to_account_info(),
-                self.withdraw_authority.to_account_info(),
-                self.revenue_distribution_journal.to_account_info(),
+                self.program_config.to_account_info(),
+                self.withdraw_sol_authority.to_account_info(),
+                self.journal.to_account_info(),
                 self.signer.to_account_info(),
                 self.vault_account.to_account_info(),
             ],
