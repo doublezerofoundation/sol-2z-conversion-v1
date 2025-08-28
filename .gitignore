@@ -115,3 +115,5 @@ target
 .keys
 logs
 test-logs
+.ledger-*
+validator.log

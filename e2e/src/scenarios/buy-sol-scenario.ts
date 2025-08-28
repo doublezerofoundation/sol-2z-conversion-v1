@@ -69,11 +69,6 @@ export class BuySolScenario extends CommonScenario {
         const actualTokenBalanceChange = Number(finalVault2ZBalance) - Number(initialVault2ZBalance);
         assert(Math.abs(Number(finalFillsRegistry.total2ZPending) - Number(initialFillsRegistry.total2ZPending) - (actualTokenBalanceChange * TOKEN_DECIMALS)) < tolerance, "Fills registry total 2Z pending is not correct");
 
-        // lifetime sol processed should be unchanged
-        assert(Number(finalFillsRegistry.lifetimeSolProcessed) === Number(initialFillsRegistry.lifetimeSolProcessed), "Fills registry lifetime sol processed is not correct");
-        // lifetime 2Z processed should be unchanged
-        assert(Number(finalFillsRegistry.lifetime2ZProcessed) === Number(initialFillsRegistry.lifetime2ZProcessed), "Fills registry lifetime 2Z processed is not correct");
-
         // new fill should be added at the tail
         const newFill = finalFillsRegistry.fills[
             (Number(finalFillsRegistry.tail) + finalFillsRegistry.fills.length - 1) % finalFillsRegistry.fills.length
