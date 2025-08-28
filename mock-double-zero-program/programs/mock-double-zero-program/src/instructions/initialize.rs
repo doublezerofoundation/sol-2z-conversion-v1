@@ -14,7 +14,7 @@ pub struct InitializeAccounts<'info> {
         seeds = [b"config"],
         bump,
     )]
-    pub program_config_key: Account<'info, Config>,
+    pub program_config: Account<'info, Config>,
     #[account(
         init,
         payer = signer,
@@ -22,7 +22,7 @@ pub struct InitializeAccounts<'info> {
         seeds = [b"jour"],
         bump,
     )]
-    pub journal_key: Account<'info, RevenueDistributionJournal>,
+    pub journal: Account<'info, RevenueDistributionJournal>,
     #[account(
         init,
         payer = signer,

@@ -11,13 +11,13 @@ pub struct WithdrawSol<'info> {
         bump,
     )]
     pub program_config_key: Account<'info, Config>,
-    pub withdraw_sol_authority_key: Signer<'info>,
+    pub withdraw_sol_authority: Signer<'info>,
     #[account(
         mut,
         seeds = [b"jour"],
         bump,
     )]
-    pub journal_key: Account<'info, RevenueDistributionJournal>,
+    pub journal: Account<'info, RevenueDistributionJournal>,
     #[account(mut)]
     pub sol_recipient: SystemAccount<'info>,
     #[account(

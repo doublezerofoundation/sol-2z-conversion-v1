@@ -168,7 +168,7 @@
           "writable": true
         },
         {
-          "name": "withdraw_sol_authority_key",
+          "name": "withdraw_sol_authority",
           "pda": {
             "seeds": [
               {
@@ -208,10 +208,10 @@
           "writable": true
         },
         {
-          "name": "program_config_key"
+          "name": "program_config"
         },
         {
-          "name": "journal_key",
+          "name": "journal",
           "writable": true
         },
         {
