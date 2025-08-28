@@ -5,7 +5,8 @@ export enum ConfigField {
     PRICING_SERVICE = 'pricingService',
     HREMES_ENDPOINT = 'hermesEndpoint',
     PRICING_SERVICE_TYPE = 'pricingServiceType',
-    PRICING_SERVICES = 'pricingServices'
+    PRICING_SERVICES = 'pricingServices',
+    PRICE_CACHE_TTL_SECONDS = 'priceCacheTTLSeconds',
 
 }
 export const TWOZ_PRECISION = 100000000;

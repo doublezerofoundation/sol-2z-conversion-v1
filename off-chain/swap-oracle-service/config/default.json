@@ -1,5 +1,6 @@
 {
   "applicationPort": 8080,
+  "priceCacheTTLSeconds": 30,
   "pricingServices": [
     {
       "name": "pyth",
