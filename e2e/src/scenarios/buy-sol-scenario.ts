@@ -119,8 +119,8 @@ export class BuySolScenario extends CommonScenario {
             vaultAccount: mockProgramPDAs.vault,
             protocolTreasuryTokenAccount: mockProgramPDAs.protocolTreasury,
             doubleZeroMint: mockProgramPDAs.tokenMint,
-            configAccount: mockProgramPDAs.config,
-            revenueDistributionJournal: mockProgramPDAs.journal,
+            programConfig: mockProgramPDAs.config,
+            journal: mockProgramPDAs.journal,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
             revenueDistributionProgram: this.user.session.getMockProgram().programId,
             signer: this.user.session.getPublicKey()
