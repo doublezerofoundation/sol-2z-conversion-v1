@@ -227,6 +227,9 @@ build_cli() {
 }
 
 copy_cli_to_e2e() {
+    # Remove the existing CLI directory
+    rm -rf ./e2e/cli
+
     log_info "Copying the CLI binaries to the E2E directory..."
     mkdir -p ./e2e/cli
     cp ./target/debug/admin-cli ./e2e/cli/
