@@ -106,41 +106,67 @@ start_validator() {
     local RPC_URL="http://127.0.0.1:$RPC_PORT"
     local EXTRA_ARGS="$@"
 
-    stop_validator  # stop any old one cleanly
+    stop_validator  # ensure no leftovers
 
     LEDGER_DIR="./.ledger-$RPC_PORT-$(date +%s)"
     mkdir -p "$LEDGER_DIR"
 
-    solana-test-validator --reset --quiet --rpc-port $RPC_PORT --ledger "$LEDGER_DIR" $EXTRA_ARGS \
+    log_info "Starting validator on $RPC_URL with ledger $LEDGER_DIR"
+
+    solana-test-validator \
+        --reset \
+        --quiet \
+        --rpc-port "$RPC_PORT" \
+        --ledger "$LEDGER_DIR" \
+        $EXTRA_ARGS \
         > validator.log 2>&1 &
 
     VALIDATOR_PID=$!
-    log_info "Started validator PID $VALIDATOR_PID on $RPC_URL"
 
-    wait_for_validator $RPC_URL
+    # Confirm process is alive
+    sleep 1
+    if ! kill -0 "$VALIDATOR_PID" 2>/dev/null; then
+        log_error "Validator failed to launch (check validator.log)."
+        exit 1
+    fi
+
+    # Wait for JSON-RPC to respond
+    if ! wait_for_validator "$RPC_URL"; then
+        log_warning "Validator didn’t start properly, retrying once..."
+        stop_validator
+        sleep 2
+        start_validator "$RPC_PORT" "$@"
+    fi
 }
 
 stop_validator() {
-    if [ -n "$VALIDATOR_PID" ] && kill -0 $VALIDATOR_PID 2>/dev/null; then
+    if [ -n "$VALIDATOR_PID" ] && kill -0 "$VALIDATOR_PID" 2>/dev/null; then
         log_info "Stopping validator PID $VALIDATOR_PID"
-        kill -9 $VALIDATOR_PID 2>/dev/null || true
-        wait $VALIDATOR_PID 2>/dev/null || true
+        kill "$VALIDATOR_PID" 2>/dev/null || true
+        wait "$VALIDATOR_PID" 2>/dev/null || true
     fi
     VALIDATOR_PID=""
+
     if [ -n "$LEDGER_DIR" ]; then
         rm -rf "$LEDGER_DIR"
         LEDGER_DIR=""
     fi
-    wait_for_port_release $BASE_RPC_PORT
+
+    wait_for_port_release "$BASE_RPC_PORT"
 }
 
 wait_for_validator() {
     local RPC_URL=$1
-    local RETRIES=10
-    local SLEEP_TIME=3
+    local RETRIES=15
+    local SLEEP_TIME=2
 
     for ((i=1; i<=RETRIES; i++)); do
-        RESPONSE=$(curl -s -X POST $RPC_URL \
+        if ! kill -0 "$VALIDATOR_PID" 2>/dev/null; then
+            log_error "Validator process died unexpectedly (see validator.log)."
+            return 1
+        fi
+
+        RESPONSE=$(curl -s -X POST "$RPC_URL" \
             -H "Content-Type: application/json" \
             -d '{"jsonrpc":"2.0","id":1,"method":"getVersion"}')
 
@@ -153,8 +179,7 @@ wait_for_validator() {
         sleep $SLEEP_TIME
     done
 
-    log_error "Validator did not respond at $RPC_URL after $RETRIES attempts."
-    exit 1
+    return 1
 }
 
 wait_for_port_release() {
@@ -163,7 +188,7 @@ wait_for_port_release() {
     local SLEEP_TIME=1
 
     for ((i=1; i<=RETRIES; i++)); do
-        if ! lsof -i :$PORT > /dev/null 2>&1; then
+        if ! lsof -i :$PORT >/dev/null 2>&1; then
             log_info "Port $PORT is free."
             return 0
         fi
@@ -176,7 +201,7 @@ wait_for_port_release() {
     exit 1
 }
 
-# cleanup validator on exit
+# Cleanup validator on script exit
 trap 'stop_validator' EXIT
 
 # -------------------- Program Management --------------------
