@@ -116,3 +116,4 @@ target
 logs
 test-logs
 .ledger-*
+validator.log
