@@ -6,7 +6,7 @@ use crate::{
         CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS,
         MOCK_2Z_TOKEN_MINT_SEED, MOCK_PROTOCOL_TREASURY_SEED,
         MOCK_VAULT_SEED, PROGRAM_STATE_SEEDS, MOCK_CONFIG_ACCOUNT,
-        MOCK_REVENUE_DISTRIBUTION_JOURNAL, WITHDRAW_AUTHORITY_SEEDS
+        MOCK_REVENUE_DISTRIBUTION_JOURNAL, WITHDRAW_SOL_AUTHORITY_SEEDS
     },
     transaction_executor::get_account_data,
 };
@@ -39,7 +39,7 @@ pub fn get_deny_list_registry_pda(program_id: Pubkey) -> (Pubkey, u8) {
 
 pub fn get_withdraw_authority_pda(program_id: Pubkey) -> (Pubkey, u8) {
     Pubkey::find_program_address(
-        &[WITHDRAW_AUTHORITY_SEEDS],
+        &[WITHDRAW_SOL_AUTHORITY_SEEDS],
         &program_id,
     )
 }

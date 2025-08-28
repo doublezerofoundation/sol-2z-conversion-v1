@@ -7,18 +7,17 @@ use crate::instructions::revenue_distribution_journal::RevenueDistributionJourna
 #[derive(Accounts)]
 pub struct WithdrawSol<'info> {
     #[account(
-        mut,
         seeds = [b"config"],
         bump,
     )]
-    pub config_account: Account<'info, Config>,
-    pub withdraw_authority: Signer<'info>,
+    pub program_config_key: Account<'info, Config>,
+    pub withdraw_sol_authority_key: Signer<'info>,
     #[account(
         mut,
         seeds = [b"jour"],
         bump,
     )]
-    pub revenue_distribution_journal: Account<'info, RevenueDistributionJournal>,
+    pub journal_key: Account<'info, RevenueDistributionJournal>,
     #[account(mut)]
     pub sol_recipient: SystemAccount<'info>,
     #[account(

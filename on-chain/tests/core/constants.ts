@@ -10,7 +10,7 @@ export namespace Seeds {
     export const CONFIGURATION_REGISTRY_SEED = "system_config_v1";
     export const PROGRAM_STATE_SEED = "state_v1";
     export const DENY_LIST_REGISTRY_SEED = "deny_list_v1";
-    export const WITHDRAW_AUTHORITY_SEED = "withdraw_authority";
+    export const WITHDRAW_AUTHORITY_SEED = "withdraw_sol";
     export const MOCK_VAULT_SEED = "vault";
     export const MOCK_PROTOCOL_TREASURY_SEED = "protocol_treasury";
     export const MOCK_2Z_TOKEN_MINT_SEED = "double_zero_mint";

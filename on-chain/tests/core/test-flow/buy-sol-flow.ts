@@ -162,8 +162,8 @@ export async function prepareBuySolInstruction(
             vaultAccount: mockProgramPDAs.vault,
             protocolTreasuryTokenAccount: mockProgramPDAs.protocolTreasury,
             doubleZeroMint: mockProgramPDAs.tokenMint,
-            configAccount: mockProgramPDAs.config,
-            revenueDistributionJournal: mockProgramPDAs.journal,
+            programConfigKey: mockProgramPDAs.config,
+            journalKey: mockProgramPDAs.journal,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
             revenueDistributionProgram: mockTransferProgram.programId,
             signer: signer.publicKey
