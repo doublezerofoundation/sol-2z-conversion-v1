@@ -56,8 +56,6 @@ export class FillsConsumerScenario extends CommonScenario {
         const {
             totalSolPending: totalSolPendingBefore,
             total2ZPending: total2ZPendingBefore,
-            lifetimeSolProcessed: lifetimeSolProcessedBefore,
-            lifetime2ZProcessed: lifetime2ZProcessedBefore,
             fills: fillsArrayBefore,
             head: headBefore,
             tail: tailBefore,
@@ -67,8 +65,6 @@ export class FillsConsumerScenario extends CommonScenario {
         const {
             totalSolPending: totalSolPendingAfter,
             total2ZPending: total2ZPendingAfter,
-            lifetimeSolProcessed: lifetimeSolProcessedAfter,
-            lifetime2ZProcessed: lifetime2ZProcessedAfter,
             fills: fillsArrayAfter,
             head: headAfter,
             tail: tailAfter,
@@ -104,7 +100,7 @@ export class FillsConsumerScenario extends CommonScenario {
                 const partial2ZConsumed = Math.floor(
                     (fill.token2ZOut.toNumber() * partialSolConsumed) / fillSolAmount
                 );
-                
+
                 expectedSolConsumed += partialSolConsumed;
                 expected2ZConsumed += partial2ZConsumed;
                 partialFillIndex = fillIndex;
@@ -125,16 +121,6 @@ export class FillsConsumerScenario extends CommonScenario {
         expect(fillsAfter.total2ZPending.toNumber()).to.equal(expectedTotal2ZPending,
             "total2ZPending should decrease by the amount of 2Z tokens consumed");
 
-        // Validate lifetimeSolProcessed: should increase by the amount consumed
-        const expectedLifetimeSolProcessed = lifetimeSolProcessedBefore.toNumber() + expectedSolConsumed;
-        expect(fillsAfter.lifetimeSolProcessed.toNumber()).to.equal(expectedLifetimeSolProcessed,
-            "lifetimeSolProcessed should increase by the amount of SOL consumed");
-
-        // Validate lifetime2ZProcessed: should increase by the amount consumed
-        const expectedLifetime2ZProcessed = lifetime2ZProcessedBefore.toNumber() + expected2ZConsumed;
-        expect(fillsAfter.lifetime2ZProcessed.toNumber()).to.equal(expectedLifetime2ZProcessed,
-            "lifetime2ZProcessed should increase by the amount of 2Z tokens consumed");
-
         // Validate count: should decrease by the number of completely consumed fills
         const expectedCount = countBefore.toNumber() - expectedFillsConsumed;
         expect(fillsAfter.count.toNumber()).to.equal(expectedCount,
@@ -152,12 +138,12 @@ export class FillsConsumerScenario extends CommonScenario {
         // Validate fills array: check for partial consumption
         let currentHeadIndex = headBefore.toNumber();
         let fillsChecked = 0;
-        
+
         while (fillsChecked < countBefore.toNumber()) {
             const fillIndex = currentHeadIndex % fillsArrayBefore.length;
             const fillBefore = fillsArrayBefore[fillIndex];
             const fillAfter = fillsArrayAfter[fillIndex];
-            
+
             if (fillsChecked < expectedFillsConsumed) {
                 // This fill was completely consumed, so head should have advanced past it
                 // The fill data remains in memory but is no longer accessible via head pointer
@@ -171,7 +157,7 @@ export class FillsConsumerScenario extends CommonScenario {
                 const expectedRemaining2Z = fillBefore.token2ZOut.toNumber() - Math.floor(
                     (fillBefore.token2ZOut.toNumber() * partialSolConsumed) / fillBefore.solIn.toNumber()
                 );
-                
+
                 expect(fillAfter.solIn.toNumber()).to.equal(expectedRemainingSol,
                     `Partially consumed fill at index ${fillIndex} should have reduced solIn`);
                 expect(fillAfter.token2ZOut.toNumber()).to.equal(expectedRemaining2Z,
@@ -183,7 +169,7 @@ export class FillsConsumerScenario extends CommonScenario {
                 expect(fillAfter.token2ZOut.toNumber()).to.equal(fillBefore.token2ZOut.toNumber(),
                     `Unconsumed fill at index ${fillIndex} should have unchanged token2ZOut`);
             }
-            
+
             currentHeadIndex = (currentHeadIndex + 1) % fillsArrayBefore.length;
             fillsChecked++;
         }

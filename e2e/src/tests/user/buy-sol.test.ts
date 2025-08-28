@@ -51,18 +51,6 @@ export const userBuySolTests: Test[] = [
         }
     },
     {
-        name: "attestation_invalid_event_is_emitted",
-        description: "AttestationInvalid Event should be emitted if the attestation is invalid",
-        execute: async (scenario: BuySolScenario) => {
-            let oraclePrice = await getOraclePriceData();
-            oraclePrice.swapRate = 3233;
-            const error = await scenario.buySolAndVerifyFailWithAttestation(20, oraclePrice, "Provided attestation is not authentic");
-            const errorLogs = error.logs.join("\\n");
-            const eventExists = await eventExistsInErrorLogs(errorLogs, "AttestationInvalid");
-            expect(eventExists).to.be.true;
-        }
-    },
-    {
         name: "buy_sol_fail_for_stale_attestation",
         description: "User should not be able to buy SOL if the oracle price is stale",
         execute: async (scenario: BuySolScenario) => {

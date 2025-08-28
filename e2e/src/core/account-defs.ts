@@ -35,8 +35,6 @@ export interface DenyListRegistry {
 export interface FillsRegistry {
     totalSolPending: BN,
     total2ZPending: BN,
-    lifetimeSolProcessed: BN,
-    lifetime2ZProcessed: BN,
     fills: Fills[],
     head: BN,
     tail: BN,
