@@ -107,7 +107,7 @@ export class FillsConsumerScenario extends CommonScenario {
                 remainingSol = 0;
                 // Head doesn't advance for partial consumption
             }
-            
+
             fillsProcessed++;
         }
 
