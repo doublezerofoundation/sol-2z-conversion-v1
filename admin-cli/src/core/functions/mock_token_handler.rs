@@ -32,15 +32,15 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let payer = load_payer_from_env()?;
 
-    let vault_account_pda = pda_helper::get_vault_pda(mock_program_id).0;
     let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
     let protocol_treasury_token_account_pda = pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
     let config_account = pda_helper::get_config_pda(mock_program_id).0;
     let journal_account = pda_helper::get_journal_pda(mock_program_id).0;
 
-    println!("Mock vault address {}", vault_account_pda);
-    println!("Mock 2Z token mint {}", token_mint_account_pda);
-    println!("Mock protocol treasury token account {}", protocol_treasury_token_account_pda);
+    println!("{}  Mock 2Z token mint {}", ui::LABEL, token_mint_account_pda);
+    println!("{}  Mock protocol treasury token account {}", ui::LABEL, protocol_treasury_token_account_pda);
+    println!("{}  Mock config account {}", ui::LABEL, config_account);
+    println!("{}  Journal account {}", ui::LABEL, journal_account);
 
     // Building instruction data
     let data = hash(MOCK_SYSTEM_INITIALIZE).to_bytes()[..8].to_vec();
@@ -51,7 +51,6 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         AccountMeta::new(journal_account, false),
         AccountMeta::new(token_mint_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),
-        AccountMeta::new(vault_account_pda, false),
         AccountMeta::new(spl_token_2022::id(), false),
         AccountMeta::new(system_program::ID, false),
         AccountMeta::new(payer.pubkey(), true),
@@ -122,21 +121,21 @@ pub fn mint_to_protocol_treasury_token_account(amount: String) -> Result<(), Box
     let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     let protocol_treasury_token_account =
         pda_helper::get_protocol_treasury_token_account_pda(mock_program_id).0;
-    println!("Mock protocol treasury token account {}", protocol_treasury_token_account);
+    println!("{} Mock protocol treasury token account {}", ui::BULLET, protocol_treasury_token_account);
     mint_to_account(protocol_treasury_token_account, amount)
 }
 
-pub fn airdrop_vault(amount: String) -> Result<(), Box<dyn Error>> {
+pub fn airdrop_journal(amount: String) -> Result<(), Box<dyn Error>> {
     let admin_config = AdminConfig::load_admin_config()?;
     let mock_program_id = Pubkey::from_str(&admin_config.double_zero_program_id)?;
     load_payer_from_env()?;
     let amount_parsed = parse_sol_value(&amount)?;
-    let vault_account = pda_helper::get_vault_pda(mock_program_id).0;
-    println!("Mock vault address: {}", vault_account);
-    println!("Requesting airdrop for amount: {}", amount_parsed);
+    let journal_account = pda_helper::get_journal_pda(mock_program_id).0;
+    println!("{} Mock journal address: {}", ui::BULLET, journal_account);
+    println!("{} Requesting airdrop for amount: {}", ui::WAITING, amount_parsed);
 
     let client = RpcClient::new_with_commitment(admin_config.rpc_url, CommitmentConfig::confirmed());
-    let sig = client.request_airdrop(&vault_account, amount_parsed).expect("Airdrop failed");
+    let sig = client.request_airdrop(&journal_account, amount_parsed).expect("Airdrop failed");
     println!("{} Airdrop requested. Signature: {}",ui::OK , sig);
     Ok(())
 }

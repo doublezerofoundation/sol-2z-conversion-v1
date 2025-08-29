@@ -64,8 +64,8 @@ export class AdminClient {
         return await this.session.executeCliCommand(`init-mock-program`);
     }
 
-    public async airdropToMockVaultCommand(amount: number): Promise<void> {
-        await this.session.executeCliCommand(`airdrop-to-mock-vault -a ${amount}`);
+    public async airdropToMockJournalCommand(amount: number): Promise<void> {
+        await this.session.executeCliCommand(`airdrop-to-mock-journal -a ${amount}`);
     }
 
     public async mockTokenMintCommand(amount: number, toUser: PublicKey): Promise<void> {

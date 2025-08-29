@@ -3,8 +3,8 @@ use clap::Subcommand;
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     /**
-    Initializes the system by creating the configuration registry, vault,
-    protocol treasury, and program state account.Init, Change the configs of the system
+    Initializes the system by creating the configuration registry, deny list registry
+    fills registry, and program state account.Init, Change the configs of the system
     **/
     Init,
     /// Displays current configuration registry contents.
@@ -60,10 +60,10 @@ pub enum Commands {
         authority: String,
     },
 
-    /// Initializes Mock Transfer Program Accounts.
+    /// Initializes mock transfer program accounts.
     InitMockProgram,
 
-    /// Mints Mock 2Z token to specified address. If no address specified, defaults to ATA.
+    /// Mints mock 2Z token to specified address. If no address specified, defaults to ATA.
     MockTokenMint {
         #[arg(short = 't')]
         to_address: Option<String>,
@@ -72,18 +72,18 @@ pub enum Commands {
         amount: String,
     },
 
-    /// Mints Mock 2Z token to protocol Treasury Account.
+    /// Mints mock 2Z token to protocol Treasury Account.
     MintToMockProtocolTreasury {
         #[arg(short = 'a', required = true)]
         amount: String,
     },
 
-    /// Airdrop to Mock Vault.
-    AirdropToMockVault{
+    /// Airdrop to mock journal.
+    AirdropToMockJournal {
         #[arg(short = 'a', required = true)]
         amount: String,
     },
 
-    /// View Fills Registry, which tracks individual fill records and overall aggregate statistics.
+    /// View fills registry, which tracks individual fill records and overall aggregate statistics.
     ViewFills
 }

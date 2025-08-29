@@ -515,10 +515,10 @@ Initializes Mock token Program Accounts
 cargo run -p admin-cli -- init-mock-program
 ```
 
-### Airdrop to Mock Vault
-Sends a specified amount of SOL to Mock Vault
+### Airdrop to Mock Journal
+Sends a specified amount of SOL to Mock Journal
 ```sh
-cargo run -p admin-cli -- airdrop-to-mock-vault -a <AMOUNT>
+cargo run -p admin-cli -- airdrop-to-mock-journal -a <AMOUNT>
 ```
 - `AMOUNT`: SOL amount to be airdropped.
 

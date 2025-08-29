@@ -40,7 +40,7 @@ show_help() {
   echo ""
   echo "OPTIONS:"
   echo "  -m, --mode Mode      Set the mode of operation (deploy_only, build_only, build_and_deploy)."
-  echo "  -r, --restart-validator Start/ Restart validator (Only in the local net)"
+  echo "  -rv, --restart-validator Start/ Restart validator (Only in the local net)"
   echo "  -h, --help          Show this help message"
   echo ""
   echo "Example:"
@@ -124,7 +124,7 @@ while [[ $# -gt 0 ]]; do
             mode="$2"
             shift 2
             ;;
-        -r|--restart-validator)
+        -rv|--restart-validator)
             restart_validator=true
             shift
             ;;

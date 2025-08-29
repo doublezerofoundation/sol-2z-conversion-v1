@@ -12,7 +12,7 @@ import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
 import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
 import {getConversionPriceAndVerify} from "./conversion-price";
 import {mint2z} from "./mock-transfer-program";
-import {airdropVault} from "../utils/mock-transfer-program-utils";
+import {airdropJournal} from "../utils/mock-transfer-program-utils";
 import {fetchProgramState} from "../utils/accounts";
 import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
 import {Events} from "../constants";
@@ -31,7 +31,7 @@ export async function buySolAndVerify(
     const tokenBalanceBefore = await getTokenBalance(mockProgConn, senderTokenAccount);
     const protocolTreasuryBalanceBefore = await getTokenBalance(mockProgConn, pdaList.protocolTreasury);
     const solBalanceBefore = await mockProgConn.getBalance(signer.publicKey);
-    const vaultBalanceBefore = await mockProgConn.getBalance(pdaList.vault);
+    const journalBalanceBefore = await mockProgConn.getBalance(pdaList.journal);
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
     const lastTradedSlotBefore = (await fetchProgramState(program)).lastTradeSlot.toNumber();
     let txSig: string;
@@ -61,7 +61,7 @@ export async function buySolAndVerify(
     const solBalanceAfter = await program.provider.connection.getBalance(signer.publicKey);
     const protocolTreasuryBalanceAfter =
         await getTokenBalance(program.provider.connection, pdaList.protocolTreasury);
-    const vaultBalanceAfter = await program.provider.connection.getBalance(pdaList.vault);
+    const journalBalanceAfter = await program.provider.connection.getBalance(pdaList.journal);
     const lastTradedSlotAfter = (await fetchProgramState(program)).lastTradeSlot.toNumber();
 
     // assert whether event has been emitted or not
@@ -87,9 +87,9 @@ export async function buySolAndVerify(
         "User's SOL Balance should increase by solBalanceChange"
     )
     assert.equal(
-        vaultBalanceBefore - vaultBalanceAfter,
+        journalBalanceBefore - journalBalanceAfter,
         solBalanceChange,
-        "Vault SOL Balance should decrease by solBalanceChange"
+        "Journal SOL Balance should decrease by solBalanceChange"
     )
 
     // check last traded slot.
@@ -159,7 +159,6 @@ export async function prepareBuySolInstruction(
         .accounts({
             fillsRegistry: fillsRegistryAddress,
             userTokenAccount: senderTokenAccount,
-            vaultAccount: mockProgramPDAs.vault,
             protocolTreasuryTokenAccount: mockProgramPDAs.protocolTreasury,
             doubleZeroMint: mockProgramPDAs.tokenMint,
             programConfig: mockProgramPDAs.config,
@@ -174,7 +173,7 @@ export async function prepareBuySolInstruction(
 
 /// Prepares success scenario and Calls buySolAndVerify.
 /// gets Oracle Price and set the bid price based on bidFactor.
-/// Mints sufficient 2Z to user and airdrops necessary SOL to Vault.
+/// Mints sufficient 2Z to user and airdrops necessary SOL to journal.
 export async function buySolSuccess(
     program: Program<ConverterProgram>,
     mockTransferProgram: Program<MockTransferProgram>,
@@ -194,8 +193,8 @@ export async function buySolSuccess(
         askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
     );
 
-    // Ensure vault has funds.
-    await airdropVault(mockTransferProgram, currentConfigs.solQuantity);
+    // Ensure journal has funds.
+    await airdropJournal(mockTransferProgram, currentConfigs.solQuantity);
     await buySolAndVerify(
         program,
         mockTransferProgram,

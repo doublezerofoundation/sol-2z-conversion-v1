@@ -86,7 +86,7 @@ export const userBuySolTests: Test[] = [
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) - 10
             await scenario.checkAndReimburseUser2ZBalance(amount);
-            await scenario.checkAndReimburseVaultSolBalance();
+            await scenario.checkAndReimburseJournalSolBalance();
 
             const result = await scenario.buySolAndVerifyFail(amount, "Provided bid is too low");
         }
@@ -98,7 +98,7 @@ export const userBuySolTests: Test[] = [
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) - 10;
             await scenario.checkAndReimburseUser2ZBalance(amount);
-            await scenario.checkAndReimburseVaultSolBalance();
+            await scenario.checkAndReimburseJournalSolBalance();
 
             const result = await scenario.buySolAndVerifyFail(amount, "Provided bid is too low");
             const eventExists = await eventExistsInErrorLogs(result, "BidTooLowEvent");
@@ -155,7 +155,7 @@ export const userBuySolTests: Test[] = [
 
             // Ensure user has enough balance for both attempts
             await scenario.checkAndReimburseUser2ZBalance(amount * 6);
-            await scenario.airdropToMockVault(30 * 6);
+            await scenario.airdropToJournal(30 * 6);
 
             // Wait for 3 seconds to make sure the slot is over
             await new Promise(resolve => setTimeout(resolve, 3000));

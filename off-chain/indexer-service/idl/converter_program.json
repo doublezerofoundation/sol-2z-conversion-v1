@@ -196,11 +196,10 @@
           "writable": true
         },
         {
-          "name": "vault_account",
-          "writable": true
-        },
-        {
           "name": "protocol_treasury_token_account",
+          "docs": [
+            "TODO: implement address validations after knowing protocol treasury token account"
+          ],
           "writable": true
         },
         {
@@ -216,10 +215,6 @@
         },
         {
           "name": "token_program"
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
         },
         {
           "name": "revenue_distribution_program"

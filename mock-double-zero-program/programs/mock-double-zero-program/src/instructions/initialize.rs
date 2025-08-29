@@ -1,7 +1,5 @@
 use crate::instructions::revenue_distribution_journal::RevenueDistributionJournal;
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke;
-use solana_system_interface::instruction::transfer;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
 use crate::instructions::config::Config;
 
@@ -43,12 +41,6 @@ pub struct InitializeAccounts<'info> {
         bump,
     )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
-    #[account(
-        mut,
-        seeds = [b"vault"],
-        bump
-    )]
-    pub vault_account: SystemAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     pub system_program: Program<'info, System>,
     #[account(mut)]
@@ -57,21 +49,6 @@ pub struct InitializeAccounts<'info> {
 
 impl<'info> InitializeAccounts<'info> {
     pub fn process(&mut self) -> Result<()> {
-        // Transfer minimum amount to vault to initialize
-        // Rent exempt the token buffer account
-        let minimum_balance = Rent::get()?.minimum_balance(0);
-
-        let sol_transfer_ix = transfer(
-            &self.signer.key(),
-            &self.vault_account.key(),
-            minimum_balance,
-        );
-
-        invoke(
-            &sol_transfer_ix,
-            &[self.signer.to_account_info(), self.vault_account.to_account_info()],
-        )?;
-
         Ok(())
     }
 }

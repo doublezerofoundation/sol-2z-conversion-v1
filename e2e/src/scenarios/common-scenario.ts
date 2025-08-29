@@ -51,8 +51,8 @@ export abstract class CommonScenario {
         await this.admin.setFillsConsumerCommand(consumer.toString());
     }
 
-    public async airdropToMockVault(amount: number): Promise<void> {
-        await this.admin.airdropToMockVaultCommand(amount);
+    public async airdropToJournal(amount: number): Promise<void> {
+        await this.admin.airdropToMockJournalCommand(amount);
     }
 
     public async mockTokenMint(amount: number, toUser: PublicKey): Promise<void> {

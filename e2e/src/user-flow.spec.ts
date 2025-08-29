@@ -12,6 +12,7 @@ import { BuySolScenario } from "./scenarios/buy-sol-scenario";
 import { FillsConsumerScenario } from "./scenarios/fills-consumer-scenario";
 import { getOraclePriceData } from "./core/utils/price-oracle";
 import { TOKEN_DECIMALS } from "./core/constants";
+import {getConfig, updateConfig} from "./core/utils/config-util";
 
 describe("User Flow Tests", () => {
     let deployer: AdminClient;
@@ -52,6 +53,11 @@ describe("User Flow Tests", () => {
 
         before(async () => {
             scenario = new BuySolScenario(nonDeployerAdmin, user);
+            // update price max age to be low
+            const config = getConfig();
+            config.coefficient = 1;
+            updateConfig(config);
+            await scenario.updateConfig();
         });
 
         for (const [i, test] of userBuySolTests.entries()) {
@@ -62,9 +68,9 @@ describe("User Flow Tests", () => {
 
         after(async () => {
             // Do buy sol to make sure there are some fills in the registry
-            // Reimburse the vault and user
+            // Reimburse the journal and user
             await scenario.checkAndReimburseUser2ZBalance(25 * 5);
-            await scenario.airdropToMockVault(30 * 6);
+            await scenario.airdropToJournal(30 * 6);
 
             // Buy sol
             for (let i = 0; i < 3; i++) {
@@ -83,6 +89,11 @@ describe("User Flow Tests", () => {
 
         before(async () => {
             scenario = new FillsConsumerScenario(nonDeployerAdmin, user);
+            // update price max age to be low
+            const config = getConfig();
+            config.coefficient = 1;
+            updateConfig(config);
+            await scenario.updateConfig();
         });
 
         for (const [i, test] of fillsConsumerUserTests.entries()) {

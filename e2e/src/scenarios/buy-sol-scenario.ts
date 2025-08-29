@@ -1,16 +1,21 @@
-import { LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
-import { AdminClient } from "../core/admin-client";
-import { TOKEN_DECIMALS } from "../core/constants";
-import { UserClient } from "../core/user-client";
-import { findOrInitializeAssociatedTokenAccount, getConfigurationRegistryAccount } from "../core/utils/account-helper";
-import { getMockDoubleZeroTokenMintPDA, getMockProgramPDAs, getMockProtocolTreasuryAccount, getMockVaultPDA } from "../core/utils/pda-helper";
-import { CommonScenario } from "./common-scenario";
-import { expect, assert } from "chai";
-import { getConfig } from "../core/utils/config-util";
-import { getFillsRegistry, getFillsRegistryAccountAddress } from "../core/utils/fills-registry";
-import { getOraclePriceData, OraclePriceData } from "../core/utils/price-oracle";
-import { AnchorError, BN } from "@coral-xyz/anchor";
-import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import {LAMPORTS_PER_SOL, PublicKey} from "@solana/web3.js";
+import {AdminClient} from "../core/admin-client";
+import {TOKEN_DECIMALS} from "../core/constants";
+import {UserClient} from "../core/user-client";
+import {findOrInitializeAssociatedTokenAccount, getConfigurationRegistryAccount} from "../core/utils/account-helper";
+import {
+    getMockDoubleZeroTokenMintPDA,
+    getMockProgramPDAs,
+    getMockProtocolTreasuryAccount,
+    getMockRevenueDistributionJournal
+} from "../core/utils/pda-helper";
+import {CommonScenario} from "./common-scenario";
+import {assert, expect} from "chai";
+import {getConfig} from "../core/utils/config-util";
+import {getFillsRegistry, getFillsRegistryAccountAddress} from "../core/utils/fills-registry";
+import {OraclePriceData} from "../core/utils/price-oracle";
+import {AnchorError, BN} from "@coral-xyz/anchor";
+import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
 
 export class BuySolScenario extends CommonScenario {
     private readonly user: UserClient;
@@ -24,8 +29,8 @@ export class BuySolScenario extends CommonScenario {
         // get initial values
         const initialUser2ZBalance = await this.checkAndReimburseUser2ZBalance(amount);
         const initialUserSolBalance = await this.getUserSolBalance();
-        const initialVaultSolBalance = await this.checkAndReimburseVaultSolBalance();
-        const initialVault2ZBalance = await this.getVault2ZBalance();
+        const initialJournalSolBalance = await this.checkAndReimburseJournalSolBalance();
+        const initialProtocolTreasuryBalance2ZBalance = await this.getProtocolTreasury2ZBalance();
 
         const initialFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
 
@@ -41,8 +46,8 @@ export class BuySolScenario extends CommonScenario {
         // get final values
         const finalUser2ZBalance = await this.getUser2ZBalance();
         const finalUserSolBalance = await this.getUserSolBalance();
-        const finalVaultSolBalance = await this.getVaultSolBalance();
-        const finalVault2ZBalance = await this.getVault2ZBalance();
+        const finalJournalSolBalance = await this.getJournalSolBalance();
+        const finalProtocolTreasury2ZBalance = await this.getProtocolTreasury2ZBalance();
 
         const finalFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
 
@@ -54,9 +59,9 @@ export class BuySolScenario extends CommonScenario {
         const tolerance = 0.0001;
 
         const userTokenChange = Math.abs(Number(finalUser2ZBalance) - initialUser2ZBalance);
-        const vaultTokenChange = Math.abs(Number(finalVault2ZBalance) - initialVault2ZBalance);
+        const protocolTreasuryTokenChange = Math.abs(Number(finalProtocolTreasury2ZBalance) - initialProtocolTreasuryBalance2ZBalance);
         const userSolChange = Math.abs(Number(finalUserSolBalance) - initialUserSolBalance);
-        const vaultSolChange = Math.abs(Number(finalVaultSolBalance) - initialVaultSolBalance);
+        const journalSolChange = Math.abs(Number(finalJournalSolBalance) - initialJournalSolBalance);
 
         // verify balances
         assert.approximately(
@@ -72,16 +77,16 @@ export class BuySolScenario extends CommonScenario {
             "User SOL balance is not correct"
         );
         assert.approximately(
-            vaultSolChange,
+            journalSolChange,
             solBalanceChange,
             tolerance,
-            "Vault SOL balance is not correct"
+            "Journal SOL balance is not correct"
         );
         assert.approximately(
-            vaultTokenChange,
+            protocolTreasuryTokenChange,
             tokenBalanceChange,
             tolerance,
-            "Vault 2Z balance is not correct"
+            "Journal 2Z balance is not correct"
         );
 
         // verify fills registry
@@ -98,7 +103,7 @@ export class BuySolScenario extends CommonScenario {
         assert(Number(finalFillsRegistry.totalSolPending) === Number(initialFillsRegistry.totalSolPending) + solBalanceChange * LAMPORTS_PER_SOL, "Fills registry total sol pending is not correct");
 
         // total 2Z pending should be incremented by the amount of 2Z bought
-        const actualTokenBalanceChange = Number(finalVault2ZBalance) - Number(initialVault2ZBalance);
+        const actualTokenBalanceChange = Number(finalProtocolTreasury2ZBalance) - Number(initialProtocolTreasuryBalance2ZBalance);
         assert(Math.abs(Number(finalFillsRegistry.total2ZPending) - Number(initialFillsRegistry.total2ZPending) - (actualTokenBalanceChange * TOKEN_DECIMALS)) < tolerance, "Fills registry total 2Z pending is not correct");
 
         // new fill should be added at the tail
@@ -148,7 +153,6 @@ export class BuySolScenario extends CommonScenario {
         .accounts({
             fillsRegistry: fillsRegistryAddress,
             userTokenAccount: senderTokenAccount,
-            vaultAccount: mockProgramPDAs.vault,
             protocolTreasuryTokenAccount: mockProgramPDAs.protocolTreasury,
             doubleZeroMint: mockProgramPDAs.tokenMint,
             programConfig: mockProgramPDAs.config,
@@ -157,7 +161,7 @@ export class BuySolScenario extends CommonScenario {
             revenueDistributionProgram: this.user.session.getMockProgram().programId,
             signer: this.user.session.getPublicKey()
         })
-        .signers([this.user.session.getKeypair()]);;
+        .signers([this.user.session.getKeypair()]);
 
         try {
             await buySolTx.rpc();
@@ -191,16 +195,16 @@ export class BuySolScenario extends CommonScenario {
         return tokenAmount;
     }
 
-    public async checkAndReimburseVaultSolBalance(): Promise<number> {
-        const vaultSolBalance = await this.getVaultSolBalance();
+    public async checkAndReimburseJournalSolBalance(): Promise<number> {
+        const journalSolBalance = await this.getJournalSolBalance();
         const requiredAmount = getConfig().sol_quantity / LAMPORTS_PER_SOL;
 
-        if (vaultSolBalance >= requiredAmount) {
-            return vaultSolBalance;
+        if (journalSolBalance >= requiredAmount) {
+            return journalSolBalance;
         }
 
-        await this.airdropToMockVault(requiredAmount);
-        return vaultSolBalance + requiredAmount;
+        await this.airdropToJournal(requiredAmount);
+        return journalSolBalance + requiredAmount;
     }
 
     public async getUser2ZBalance(): Promise<number> {
@@ -215,11 +219,10 @@ export class BuySolScenario extends CommonScenario {
         return balance.value.uiAmount ?? 0;
     }
 
-    public async getVault2ZBalance(): Promise<number> {
-        const mockVaultPDA = await getMockProtocolTreasuryAccount(this.admin.session.getMockProgram().programId);
-        const mockVaultBalance = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(mockVaultPDA);
-        const balance = mockVaultBalance.value.uiAmount ?? 0;
-        return balance;
+    public async getProtocolTreasury2ZBalance(): Promise<number> {
+        const mockProtocolTreasuryAcc = getMockProtocolTreasuryAccount(this.admin.session.getMockProgram().programId);
+        const mockProtocolTreasury = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(mockProtocolTreasuryAcc);
+        return mockProtocolTreasury.value.uiAmount ?? 0;
     }
 
     public async getUserSolBalance(): Promise<number> {
@@ -227,18 +230,13 @@ export class BuySolScenario extends CommonScenario {
         return balance / LAMPORTS_PER_SOL;
     }
 
-    public async getVaultSolBalance(): Promise<number> {
-        const mockVaultPDA = await getMockVaultPDA(this.admin.session.getMockProgram().programId);
-        const mockVaultBalance = await this.admin.session.getMockProgram().provider.connection.getBalance(mockVaultPDA);
-        return mockVaultBalance / LAMPORTS_PER_SOL;
+    public async getJournalSolBalance(): Promise<number> {
+        const mockJournalPDA = getMockRevenueDistributionJournal(this.admin.session.getMockProgram().programId);
+        const mockJournalBalance = await this.admin.session.getMockProgram().provider.connection.getBalance(mockJournalPDA);
+        return mockJournalBalance / LAMPORTS_PER_SOL;
     }
 
     public getUserPublicKey(): PublicKey {
         return this.user.session.getPublicKey();
-    }
-
-    public async getCurrentSlot(): Promise<number> {
-        const slot = await this.admin.session.getProgram().provider.connection.getSlot();
-        return slot;
     }
 }

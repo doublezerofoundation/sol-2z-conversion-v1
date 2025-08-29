@@ -64,8 +64,7 @@ pub struct BuySol<'info> {
         constraint = user_token_account.owner == signer.key()
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
-    #[account(mut)]
-    pub vault_account: SystemAccount<'info>,
+    /// TODO: implement address validations after knowing protocol treasury token account
     #[account(
         mut,
         token::mint = double_zero_mint,
@@ -80,7 +79,6 @@ pub struct BuySol<'info> {
     #[account(mut)]
     pub journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
-    pub system_program: Program<'info, System>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
     pub revenue_distribution_program: UncheckedAccount<'info>,
     #[account(mut)]
@@ -174,13 +172,11 @@ impl<'info> BuySol<'info> {
             AccountMeta::new_readonly(self.withdraw_sol_authority.key(), true),
             AccountMeta::new(self.journal.key(), false),
             AccountMeta::new(self.signer.key(), false),
-            AccountMeta::new(self.vault_account.key(), false),
-            AccountMeta::new_readonly(self.system_program.key(), false)
         ];
 
         // Call CPI for SOL withdrawal.
-        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol" after client confirms
-        let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec();
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol"
+        let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec(); //TODO: better to put hardcoded hash  [122, 132, 40, 170, 61, 93, 253, 179] to improve performance
         cpi_data = [
             cpi_data,
             sol_quantity.to_le_bytes().to_vec(),
@@ -199,7 +195,6 @@ impl<'info> BuySol<'info> {
                 self.withdraw_sol_authority.to_account_info(),
                 self.journal.to_account_info(),
                 self.signer.to_account_info(),
-                self.vault_account.to_account_info(),
             ],
             &[&[
                 SeedPrefixes::WithdrawAuthority.as_bytes(),

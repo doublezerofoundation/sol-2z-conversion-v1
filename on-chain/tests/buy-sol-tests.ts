@@ -15,7 +15,7 @@ import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData, getOraclePriceDataFor} from "./core/utils/price-oracle";
 import {BPS, ErrorMsg, Events, TOKEN_UNITS} from "./core/constants";
-import {airdropVault} from "./core/utils/mock-transfer-program-utils";
+import {airdropJournal} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
 import {assert, expect} from "chai";
@@ -45,7 +45,7 @@ describe("Buy Sol Tests", () => {
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
             program,
-            {...DEFAULT_CONFIGS, coefficient: new anchor.BN(1)}
+            DEFAULT_CONFIGS
         );
 
         currentConfigs = DEFAULT_CONFIGS;
@@ -84,8 +84,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
@@ -107,8 +107,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -135,8 +135,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -165,8 +165,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -190,8 +190,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -215,8 +215,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -240,8 +240,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
@@ -282,8 +282,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 oraclePriceData.swapRate * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
@@ -355,8 +355,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
@@ -388,8 +388,8 @@ describe("Buy Sol Tests", () => {
                 tempUserKeyPair.publicKey,
             );
 
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -416,8 +416,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -454,8 +454,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
@@ -490,8 +490,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity);
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity);
 
             try {
                 const buySol1: TransactionInstruction = await prepareBuySolInstruction(
@@ -548,8 +548,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForTempUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity);
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity);
 
             try {
                 const buySol1: TransactionInstruction = await prepareBuySolInstruction(
@@ -594,7 +594,6 @@ describe("Buy Sol Tests", () => {
         it("User should be able to do buy SOL with proper rates", async () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
-                coefficient: new anchor.BN(1),
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
             };
             await updateConfigsAndVerify(
@@ -610,8 +609,8 @@ describe("Buy Sol Tests", () => {
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
-            // Ensure vault has funds.
-            await airdropVault(mockTransferProgram, currentConfigs.solQuantity)
+            // Ensure journal has funds.
+            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
