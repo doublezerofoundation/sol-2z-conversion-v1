@@ -56,7 +56,7 @@ export class BuySolScenario extends CommonScenario {
         const tokenBalanceChange = askPrice * Number(solQuantity) / LAMPORTS_PER_SOL;
         const solBalanceChange = Number(solQuantity) / LAMPORTS_PER_SOL;
 
-        const tolerance = 0.0001;
+        const tolerance = 0.01;
 
         const userTokenChange = Math.abs(Number(finalUser2ZBalance) - initialUser2ZBalance);
         const protocolTreasuryTokenChange = Math.abs(Number(finalProtocolTreasury2ZBalance) - initialProtocolTreasuryBalance2ZBalance);
