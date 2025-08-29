@@ -98,9 +98,9 @@ pub fn handle() -> Result<(), Box<dyn Error>> {
             mock_token_handler::mint_to_protocol_treasury_token_account(amount)
         }
 
-        // Mock vault airdrop
-        Some(Commands::AirdropToMockVault {  amount }) => {
-            mock_token_handler::airdrop_vault(amount)
+        // Mock journal airdrop
+        Some(Commands::AirdropToMockJournal {  amount }) => {
+            mock_token_handler::airdrop_journal(amount)
         }
 
         // View Fills Registry

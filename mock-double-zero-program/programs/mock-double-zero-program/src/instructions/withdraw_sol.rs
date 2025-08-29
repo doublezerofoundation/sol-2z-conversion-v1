@@ -1,6 +1,4 @@
 use anchor_lang::prelude::*;
-use anchor_lang::solana_program::program::invoke_signed;
-use solana_system_interface::instruction::transfer;
 use crate::instructions::config::Config;
 use crate::instructions::revenue_distribution_journal::RevenueDistributionJournal;
 
@@ -20,28 +18,12 @@ pub struct WithdrawSol<'info> {
     pub journal: Account<'info, RevenueDistributionJournal>,
     #[account(mut)]
     pub sol_recipient: SystemAccount<'info>,
-    pub system_program: Program<'info, System>,
 }
 impl<'info> WithdrawSol<'info> {
-    pub fn process(&mut self, amount_out: u64, jour_bump: u8) -> Result<()> {
+    pub fn process(&mut self, amount_out: u64,) -> Result<()> {
         // Transfer SOL from journal
-        let sol_transfer_ix = transfer(
-            &self.journal.key(),
-            &self.sol_recipient.key(),
-            amount_out,
-        );
-
-        invoke_signed(
-            &sol_transfer_ix,
-            &[
-                self.sol_recipient.to_account_info(),
-                self.journal.to_account_info(),
-            ],
-            &[&[
-                b"jour",
-                &[jour_bump],
-            ]],
-        )?;
+        self.journal.sub_lamports(amount_out)?;
+        self.sol_recipient.add_lamports(amount_out)?;
         Ok(())
     }
 }

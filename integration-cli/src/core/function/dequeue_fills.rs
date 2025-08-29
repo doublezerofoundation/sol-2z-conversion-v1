@@ -16,7 +16,8 @@ use cli_common::{
     utils::{
         env_var::load_payer_from_env,
         pda_helper,
-        fixed_point_utils::parse_sol_value
+        fixed_point_utils::parse_sol_value,
+        ui::{LABEL, BULLET}
     },
 };
 use std::{
@@ -41,6 +42,10 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
     let fills_registry = get_fills_registry_address(program_id, config.rpc_url)?;
 
+    println!("{LABEL} Fills registry address: {}", fills_registry);
+    println!("{LABEL} Configuration registry PDA: {}", configuration_registry_pda);
+    println!("{LABEL} Program state PDA: {}", program_state_pda);
+
     let accounts = vec![
         AccountMeta::new(configuration_registry_pda, false),
         AccountMeta::new(program_state_pda, false),
@@ -53,11 +58,11 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
         data,
         accounts,
     };
+    println!("Dequeue fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
     let result_bps: DequeueFillsResult = send_instruction_with_return_data(dequeue_fills_ix)?;
     let sol_quantity = result_bps.sol_dequeued / LAMPORTS_PER_SOL;
-    println!("Dequeue fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
-    println!("SOL amount dequeued: {}", sol_quantity);
-    println!("2Z token amount dequeued: {}", result_bps.token_2z_dequeued);
-    println!("No of fills Consumed: {}", result_bps.fills_consumed);
+    println!("{BULLET} SOL amount dequeued: {}", sol_quantity);
+    println!("{BULLET} 2Z token amount dequeued: {}", result_bps.token_2z_dequeued);
+    println!("{BULLET} No of fills Consumed: {}", result_bps.fills_consumed);
     Ok(())
 }

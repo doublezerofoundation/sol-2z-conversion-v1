@@ -5,7 +5,7 @@ use crate::{
     seeds::{
         CONFIGURATION_REGISTRY_SEEDS, DENY_LIST_REGISTRY_SEEDS,
         MOCK_2Z_TOKEN_MINT_SEED, MOCK_PROTOCOL_TREASURY_SEED,
-        MOCK_VAULT_SEED, PROGRAM_STATE_SEEDS, MOCK_CONFIG_ACCOUNT,
+        PROGRAM_STATE_SEEDS, MOCK_CONFIG_ACCOUNT,
         MOCK_REVENUE_DISTRIBUTION_JOURNAL, WITHDRAW_SOL_AUTHORITY_SEEDS
     },
     transaction_executor::get_account_data,
@@ -46,13 +46,6 @@ pub fn get_withdraw_authority_pda(program_id: Pubkey) -> (Pubkey, u8) {
 /// Get the program data account PDA for a program using the v3 loader.
 pub fn get_program_data_account_pda(program_id: Pubkey) -> Pubkey {
     solana_loader_v3_interface::get_program_data_address(&program_id)
-}
-
-pub fn get_vault_pda(transfer_program_id: Pubkey) ->  (Pubkey, u8) {
-    Pubkey::find_program_address(
-        &[MOCK_VAULT_SEED],
-        &transfer_program_id,
-    )
 }
 
 pub fn get_config_pda(transfer_program_id: Pubkey) ->  (Pubkey, u8) {

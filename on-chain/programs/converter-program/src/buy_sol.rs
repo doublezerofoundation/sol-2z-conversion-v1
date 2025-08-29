@@ -64,6 +64,7 @@ pub struct BuySol<'info> {
         constraint = user_token_account.owner == signer.key()
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
+    /// TODO: implement address validations after knowing protocol treasury token account
     #[account(
         mut,
         token::mint = double_zero_mint,
@@ -78,7 +79,6 @@ pub struct BuySol<'info> {
     #[account(mut)]
     pub journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
-    pub system_program: Program<'info, System>,
     /// CHECK: program address - TODO: implement address validations after client informs actual address
     pub revenue_distribution_program: UncheckedAccount<'info>,
     #[account(mut)]
@@ -172,7 +172,6 @@ impl<'info> BuySol<'info> {
             AccountMeta::new_readonly(self.withdraw_sol_authority.key(), true),
             AccountMeta::new(self.journal.key(), false),
             AccountMeta::new(self.signer.key(), false),
-            AccountMeta::new_readonly(self.system_program.key(), false)
         ];
 
         // Call CPI for SOL withdrawal.

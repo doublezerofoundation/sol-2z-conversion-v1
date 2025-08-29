@@ -22,7 +22,6 @@ pub mod mock_transfer_program {
     ) -> Result<()> {
         ctx.accounts.process(
             amount_out,
-            ctx.bumps.journal
         )
     }
 
