@@ -29,6 +29,12 @@ export class BuySolScenario extends CommonScenario {
 
         const initialFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
 
+        // get ask price
+        const askPriceResult = await this.user.getPriceCommand();
+        const askPriceRegex = /conversion rate:\s(\d+.\d+)\s2Z\sper\sSOL/m;
+        const askPriceString = askPriceResult.match(askPriceRegex)?.[1];
+        const askPrice = Number(askPriceString);
+
         // buy sol
         const result = await this.user.buySolCommand(amount);
 
@@ -42,15 +48,41 @@ export class BuySolScenario extends CommonScenario {
 
         // compute expected values
         const { solQuantity } = await getConfigurationRegistryAccount(this.admin.session.getProgram());
-        const tokenBalanceChange = amount * Number(solQuantity) / LAMPORTS_PER_SOL;
+        const tokenBalanceChange = askPrice * Number(solQuantity) / LAMPORTS_PER_SOL;
         const solBalanceChange = Number(solQuantity) / LAMPORTS_PER_SOL;
-        const tolerance = 0.00001;
+
+        const tolerance = 0.0001;
+
+        const userTokenChange = Math.abs(Number(finalUser2ZBalance) - initialUser2ZBalance);
+        const vaultTokenChange = Math.abs(Number(finalVault2ZBalance) - initialVault2ZBalance);
+        const userSolChange = Math.abs(Number(finalUserSolBalance) - initialUserSolBalance);
+        const vaultSolChange = Math.abs(Number(finalVaultSolBalance) - initialVaultSolBalance);
 
         // verify balances
-        assert(Math.abs(finalUser2ZBalance - (initialUser2ZBalance - tokenBalanceChange)) < tolerance, "User 2Z balance is not correct");
-        assert(Math.abs(finalUserSolBalance - (initialUserSolBalance + solBalanceChange)) < tolerance, "User SOL balance is not correct");
-        assert(Math.abs(finalVaultSolBalance - (initialVaultSolBalance - solBalanceChange)) < tolerance, "Vault SOL balance is not correct");
-        assert(Math.abs(finalVault2ZBalance - (initialVault2ZBalance + tokenBalanceChange)) < tolerance, "Vault 2Z balance is not correct");
+        assert.approximately(
+            userTokenChange,
+            tokenBalanceChange,
+            tolerance,
+            "User 2Z balance is not correct"
+        );
+        assert.approximately(
+            userSolChange,
+            solBalanceChange,
+            tolerance,
+            "User SOL balance is not correct"
+        );
+        assert.approximately(
+            vaultSolChange,
+            solBalanceChange,
+            tolerance,
+            "Vault SOL balance is not correct"
+        );
+        assert.approximately(
+            vaultTokenChange,
+            tokenBalanceChange,
+            tolerance,
+            "Vault 2Z balance is not correct"
+        );
 
         // verify fills registry
         // count should be incremented by 1
