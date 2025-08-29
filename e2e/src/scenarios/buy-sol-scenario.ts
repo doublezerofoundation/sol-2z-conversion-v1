@@ -59,9 +59,9 @@ export class BuySolScenario extends CommonScenario {
         const tolerance = 0.0001;
 
         const userTokenChange = Math.abs(Number(finalUser2ZBalance) - initialUser2ZBalance);
-        const vaultTokenChange = Math.abs(Number(finalVault2ZBalance) - initialVault2ZBalance);
+        const protocolTreasuryTokenChange = Math.abs(Number(finalProtocolTreasury2ZBalance) - initialProtocolTreasuryBalance2ZBalance);
         const userSolChange = Math.abs(Number(finalUserSolBalance) - initialUserSolBalance);
-        const vaultSolChange = Math.abs(Number(finalVaultSolBalance) - initialVaultSolBalance);
+        const journalSolChange = Math.abs(Number(finalJournalSolBalance) - initialJournalSolBalance);
 
         // verify balances
         assert.approximately(
@@ -77,16 +77,16 @@ export class BuySolScenario extends CommonScenario {
             "User SOL balance is not correct"
         );
         assert.approximately(
-            vaultSolChange,
+            journalSolChange,
             solBalanceChange,
             tolerance,
-            "Vault SOL balance is not correct"
+            "Journal SOL balance is not correct"
         );
         assert.approximately(
-            vaultTokenChange,
+            protocolTreasuryTokenChange,
             tokenBalanceChange,
             tolerance,
-            "Vault 2Z balance is not correct"
+            "Journal 2Z balance is not correct"
         );
 
         // verify fills registry
@@ -161,7 +161,7 @@ export class BuySolScenario extends CommonScenario {
             revenueDistributionProgram: this.user.session.getMockProgram().programId,
             signer: this.user.session.getPublicKey()
         })
-        .signers([this.user.session.getKeypair()]);;
+        .signers([this.user.session.getKeypair()]);
 
         try {
             await buySolTx.rpc();
@@ -238,10 +238,5 @@ export class BuySolScenario extends CommonScenario {
 
     public getUserPublicKey(): PublicKey {
         return this.user.session.getPublicKey();
-    }
-
-    public async getCurrentSlot(): Promise<number> {
-        const slot = await this.admin.session.getProgram().provider.connection.getSlot();
-        return slot;
     }
 }
