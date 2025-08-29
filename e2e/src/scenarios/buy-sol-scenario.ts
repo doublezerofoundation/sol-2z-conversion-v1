@@ -70,16 +70,14 @@ export class BuySolScenario extends CommonScenario {
             tolerance,
             "User 2Z balance is not correct"
         );
-        assert.approximately(
+        assert.equal(
             userSolChange,
             solBalanceChange,
-            tolerance,
             "User SOL balance is not correct"
         );
-        assert.approximately(
+        assert.equal(
             journalSolChange,
             solBalanceChange,
-            tolerance,
             "Journal SOL balance is not correct"
         );
         assert.approximately(
