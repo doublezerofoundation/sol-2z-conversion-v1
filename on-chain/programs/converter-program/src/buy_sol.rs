@@ -175,8 +175,8 @@ impl<'info> BuySol<'info> {
         ];
 
         // Call CPI for SOL withdrawal.
-        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol" after client confirms
-        let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec(); //TODO: better to put hardcoded hash after client confirms
+        let cpi_instruction =  b"global:withdraw_sol"; //TODO: need to change to "dz::ix::withdraw_sol"
+        let mut cpi_data = hash(cpi_instruction).to_bytes()[..8].to_vec(); //TODO: better to put hardcoded hash  [122, 132, 40, 170, 61, 93, 253, 179] to improve performance
         cpi_data = [
             cpi_data,
             sol_quantity.to_le_bytes().to_vec(),
