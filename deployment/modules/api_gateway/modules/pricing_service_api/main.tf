@@ -62,6 +62,23 @@ resource "aws_api_gateway_method_response" "swap_rate_options_200" {
   }
 }
 
+# Add integration response for OPTIONS
+resource "aws_api_gateway_integration_response" "swap_rate_options_200" {
+  rest_api_id = var.api_id
+  resource_id = aws_api_gateway_resource.swap_rate.id
+  http_method = aws_api_gateway_method.swap_rate_options.http_method
+  status_code = aws_api_gateway_method_response.swap_rate_options_200.status_code
+
+  response_parameters = {
+    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
+    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
+  }
+
+  depends_on = [
+    aws_api_gateway_integration.swap_rate_options
+  ]
+}
 
 
 
