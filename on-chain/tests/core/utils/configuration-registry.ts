@@ -20,7 +20,7 @@ export const DEFAULT_CONFIGS: SystemConfig = {
     oraclePubkey: ORACLE_KEYPAIR.publicKey,
     solQuantity: new anchor.BN(25 * LAMPORTS_PER_SOL),
     priceMaximumAge: new anchor.BN(324),
-    coefficient: new anchor.BN(4500),
+    coefficient: new anchor.BN(1),
     maxDiscountRate: new anchor.BN(50 * BPS),
     minDiscountRate: new anchor.BN(10 * BPS),
 };

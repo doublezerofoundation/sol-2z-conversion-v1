@@ -45,7 +45,7 @@ describe("Buy Sol Tests", () => {
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
             program,
-            {...DEFAULT_CONFIGS, coefficient: new anchor.BN(1)}
+            DEFAULT_CONFIGS
         );
 
         currentConfigs = DEFAULT_CONFIGS;
@@ -594,7 +594,6 @@ describe("Buy Sol Tests", () => {
         it("User should be able to do buy SOL with proper rates", async () => {
             currentConfigs = {
                 ...DEFAULT_CONFIGS,
-                coefficient: new anchor.BN(1),
                 solQuantity: new anchor.BN(24 * LAMPORTS_PER_SOL),
             };
             await updateConfigsAndVerify(

@@ -48,7 +48,4 @@ export namespace ErrorMsg {
     export const UNAUTHORIZED_FILLS_CONSUMER = "User is not authorized to do fills consumption";
     export const ADDRESS_ALREADY_IN_USE = "already in use";
     export const INVALID_SYSTEM_STATE = "Invalid system state";
-
-
-
 }

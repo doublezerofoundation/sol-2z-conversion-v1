@@ -45,7 +45,7 @@ describe("Consume fills tests", () => {
         // Update configurations to Default Configuration
         await updateConfigsAndVerify(
             program,
-            {...DEFAULT_CONFIGS, coefficient: new anchor.BN(1)}
+            DEFAULT_CONFIGS
         );
 
         currentConfigs = DEFAULT_CONFIGS;
