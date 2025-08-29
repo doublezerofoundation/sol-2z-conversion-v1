@@ -20,45 +20,13 @@ resource "aws_api_gateway_integration" "swap_rate_get" {
   resource_id = aws_api_gateway_resource.swap_rate.id
   http_method = aws_api_gateway_method.swap_rate_get.http_method
 
-  integration_http_method = "GET"
-  type                    = "HTTP"
+  integration_http_method = "ANY"
+  type                    = "HTTP_PROXY"
   uri                     = "http://${var.nlb_dns_name}/api/v1/swap-rate"
-
   connection_type = var.connection_type
   connection_id   = var.connection_id
 }
 
-# Add method response for swap-rate GET
-resource "aws_api_gateway_method_response" "swap_rate_get_200" {
-  rest_api_id = var.api_id
-  resource_id = aws_api_gateway_resource.swap_rate.id
-  http_method = aws_api_gateway_method.swap_rate_get.http_method
-  status_code = "200"
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-# Add integration response for swap-rate GET
-resource "aws_api_gateway_integration_response" "swap_rate_get_200" {
-  rest_api_id = var.api_id
-  resource_id = aws_api_gateway_resource.swap_rate.id
-  http_method = aws_api_gateway_method.swap_rate_get.http_method
-  status_code = aws_api_gateway_method_response.swap_rate_get_200.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-
-  depends_on = [
-    aws_api_gateway_integration.swap_rate_get
-  ]
-}
 
 # Create OPTIONS method for CORS preflight requests
 resource "aws_api_gateway_method" "swap_rate_options" {
@@ -114,7 +82,6 @@ resource "aws_api_gateway_integration_response" "swap_rate_options_200" {
 
 
 
-
 # Create 'health' resource under 'api/v1'
 resource "aws_api_gateway_resource" "health" {
   rest_api_id = var.api_id
@@ -136,45 +103,15 @@ resource "aws_api_gateway_integration" "health_get" {
   resource_id = aws_api_gateway_resource.health.id
   http_method = aws_api_gateway_method.health_get.http_method
 
-  integration_http_method = "GET"
-  type                    = "HTTP"
+  integration_http_method = "ANY"
+  type                    = "HTTP_PROXY"
   uri                     = "http://${var.nlb_dns_name}/api/v1/health"
 
   connection_type = var.connection_type
   connection_id   = var.connection_id
 }
 
-# Add method response for health GET
-resource "aws_api_gateway_method_response" "health_get_200" {
-  rest_api_id = var.api_id
-  resource_id = aws_api_gateway_resource.health.id
-  http_method = aws_api_gateway_method.health_get.http_method
-  status_code = "200"
 
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-# Add integration response for health GET
-resource "aws_api_gateway_integration_response" "health_get_200" {
-  rest_api_id = var.api_id
-  resource_id = aws_api_gateway_resource.health.id
-  http_method = aws_api_gateway_method.health_get.http_method
-  status_code = aws_api_gateway_method_response.health_get_200.status_code
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-    "method.response.header.Access-Control-Allow-Methods" = "'GET,OPTIONS'"
-    "method.response.header.Access-Control-Allow-Origin"  = "'*'"
-  }
-
-  depends_on = [
-    aws_api_gateway_integration.health_get
-  ]
-}
 
 # Create OPTIONS method for CORS preflight requests
 resource "aws_api_gateway_method" "health_options" {
