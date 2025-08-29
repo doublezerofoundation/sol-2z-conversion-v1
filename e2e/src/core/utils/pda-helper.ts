@@ -4,7 +4,6 @@ import { Seeds } from "../enums/seeds";
 const CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
 const PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
 const DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
-const MOCK_VAULT_SEED = Seeds.MOCK_VAULT_SEED;
 const MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
 const MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
 const MOCK_CONFIG_ACCOUNT = Seeds.MOCK_CONFIG_ACCOUNT;
@@ -40,14 +39,7 @@ export async function getProgramDataAccountPDA(programId: PublicKey) {
     )[0];
 }
 
-export async function getMockVaultPDA(mockProgramId: PublicKey) {
-    return PublicKey.findProgramAddressSync(
-        [Buffer.from(MOCK_VAULT_SEED)],
-        mockProgramId
-    )[0]
-}
-
-export async function getMockProtocolTreasuryAccount(mockProgramId: PublicKey) {
+export function getMockProtocolTreasuryAccount(mockProgramId: PublicKey) {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_PROTOCOL_TREASURY_SEED)],
         mockProgramId
@@ -78,8 +70,7 @@ export function getMockRevenueDistributionJournal(mockProgramId: PublicKey) {
 export async function getMockProgramPDAs(mockProgramId: PublicKey) {
     return {
         tokenMint: await getMockDoubleZeroTokenMintPDA(mockProgramId),
-        vault: await getMockVaultPDA(mockProgramId),
-        protocolTreasury: await getMockProtocolTreasuryAccount(mockProgramId),
+        protocolTreasury: getMockProtocolTreasuryAccount(mockProgramId),
         journal: getMockRevenueDistributionJournal(mockProgramId),
         config: getMockConfig(mockProgramId)
     }

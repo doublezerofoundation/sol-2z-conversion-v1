@@ -62,9 +62,9 @@ describe("User Flow Tests", () => {
 
         after(async () => {
             // Do buy sol to make sure there are some fills in the registry
-            // Reimburse the vault and user
+            // Reimburse the journal and user
             await scenario.checkAndReimburseUser2ZBalance(25 * 5);
-            await scenario.airdropToMockVault(30 * 6);
+            await scenario.airdropToJournal(30 * 6);
 
             // Buy sol
             for (let i = 0; i < 3; i++) {
