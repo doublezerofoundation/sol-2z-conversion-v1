@@ -68,7 +68,8 @@ export const userBuySolTests: Test[] = [
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             // buy sol and verify fail
-            await scenario.buySolAndVerifyFailWithAttestation(20, oraclePrice, "Provided attestation is outdated");
+            const bidAmount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 5;
+            await scenario.buySolAndVerifyFailWithAttestation(bidAmount, oraclePrice, "Provided attestation is outdated");
 
             // reset config
             config.price_maximum_age = 300;
@@ -108,6 +109,15 @@ export const userBuySolTests: Test[] = [
         name: "user_buy_sol_success",
         description: "User should be able to buy SOL if they have enough 2Z",
         execute: async (scenario: BuySolScenario) => {
+            // Set low coefficient to avoid rounding errors
+            const config = getConfig();
+            config.coefficient = 1;
+            updateConfig(config);
+
+            // update configureation registry
+            await scenario.updateConfig();
+
+            // buy sol and verify
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
             await scenario.buySolAndVerify(amount);
