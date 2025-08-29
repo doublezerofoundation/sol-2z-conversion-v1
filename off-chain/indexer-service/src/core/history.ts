@@ -41,5 +41,4 @@ export async function recoverHistory() {
 
   // enable real-time cursor 
   endRecovery();
-  console.log('✅ History recovery complete!');
 }

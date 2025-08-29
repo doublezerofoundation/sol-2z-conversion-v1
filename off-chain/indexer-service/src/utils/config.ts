@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 
 export interface Config {
+  applicationPort: number;
   RPC_URL: string;
   PROGRAM_ID: string;
   CONCURRENCY: number;
