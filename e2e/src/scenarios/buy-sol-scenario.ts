@@ -116,7 +116,6 @@ export class BuySolScenario extends CommonScenario {
         .accounts({
             fillsRegistry: fillsRegistryAddress,
             userTokenAccount: senderTokenAccount,
-            vaultAccount: mockProgramPDAs.vault,
             protocolTreasuryTokenAccount: mockProgramPDAs.protocolTreasury,
             doubleZeroMint: mockProgramPDAs.tokenMint,
             programConfig: mockProgramPDAs.config,

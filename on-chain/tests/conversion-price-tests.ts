@@ -14,7 +14,7 @@ import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mo
 import { Idl, Program } from "@coral-xyz/anchor";
 import { getMockDoubleZeroTokenMintPDA } from "./core/utils/pda-helper";
 import { createTokenAccount } from "./core/utils/token-utils";
-import { airdropVault } from "./core/utils/mock-transfer-program-utils";
+import { airdropJournal } from "./core/utils/mock-transfer-program-utils";
 import { initializeMockTransferSystemIfNeeded, mint2z } from "./core/test-flow/mock-transfer-program";
 import { buySolAndVerify } from "./core/test-flow/buy-sol-flow";
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
@@ -147,7 +147,7 @@ describe("Conversion Price Tests", async () => {
 
         // Reimburse system and user for trades
         const solQuantity = DEFAULT_CONFIGS.solQuantity.toNumber() / LAMPORTS_PER_SOL;
-        await airdropVault(mockTransferProgram, DEFAULT_CONFIGS.solQuantity);
+        await airdropJournal(mockTransferProgram, DEFAULT_CONFIGS.solQuantity);
         await mint2z(mockTransferProgram, userAta, 25 * solQuantity * TOKEN_UNITS);
 
         // Get conversion price.

@@ -1,7 +1,8 @@
 import {
     getMockConfig,
-    getMockDoubleZeroTokenMintPDA, getMockProtocolTreasuryAccount,
-    getMockRevenueDistributionJournal, getMockVaultPDA,
+    getMockDoubleZeroTokenMintPDA,
+    getMockProtocolTreasuryAccount,
+    getMockRevenueDistributionJournal,
 } from "../utils/pda-helper";
 import {assert} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";
@@ -18,7 +19,6 @@ export async function initializeMockTransferSystemAndVerify(
 ) {
     // List of accounts to be verified.
     const pdas = [
-        getMockVaultPDA(program.programId),
         getMockDoubleZeroTokenMintPDA(program.programId),
         getMockProtocolTreasuryAccount(program.programId),
         getMockConfig(program.programId),
@@ -26,11 +26,10 @@ export async function initializeMockTransferSystemAndVerify(
     ];
 
     // Accounts to be initialized should not exist before initialization.
-    let [mockVaultExists, mockTokenMintExists, mockProtocolTreasuryAccountExists, mockConfigExists, mockRevenueDistributionJournalExists] = await Promise.all(
+    let [mockTokenMintExists, mockProtocolTreasuryAccountExists, mockConfigExists, mockRevenueDistributionJournalExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))
     );
 
-    assert.isFalse(mockVaultExists, "Mock Vault Account should not exist before initialization");
     assert.isFalse(mockTokenMintExists, "Mock Token Mint should not exist before initialization");
     assert.isFalse(mockProtocolTreasuryAccountExists, "Mock Protocol Treasury Account should not exist before initialization");
     assert.isFalse(mockConfigExists, "Mock Config Account should not exist before initialization");
@@ -51,11 +50,10 @@ export async function initializeMockTransferSystemAndVerify(
 
 
     // Verify Existence of Initialized Accounts
-    [mockVaultExists, mockTokenMintExists, mockProtocolTreasuryAccountExists, mockConfigExists, mockRevenueDistributionJournalExists] = await Promise.all(
+    [mockTokenMintExists, mockProtocolTreasuryAccountExists, mockConfigExists, mockRevenueDistributionJournalExists] = await Promise.all(
         pdas.map((pda) => accountExists(program.provider.connection, pda))
     );
 
-    assert.isTrue(mockVaultExists, "Mock Vault Account should exist after initialization");
     assert.isTrue(mockTokenMintExists, "Mock Token Mint should exist after initialization");
     assert.isTrue(mockProtocolTreasuryAccountExists, "Mock Protocol Treasury Account should exist after initialization");
     assert.isTrue(mockConfigExists, "Mock Protocol Treasury Account should exist after initialization");
