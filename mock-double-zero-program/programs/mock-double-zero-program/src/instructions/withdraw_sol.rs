@@ -20,19 +20,13 @@ pub struct WithdrawSol<'info> {
     pub journal: Account<'info, RevenueDistributionJournal>,
     #[account(mut)]
     pub sol_recipient: SystemAccount<'info>,
-    #[account(
-        mut,
-        seeds = [b"vault"],
-        bump
-    )]
-    pub vault_account: SystemAccount<'info>,
     pub system_program: Program<'info, System>,
 }
 impl<'info> WithdrawSol<'info> {
-    pub fn process(&mut self, amount_out: u64, vault_bump: u8) -> Result<()> {
-        // Transfer SOL from vault
+    pub fn process(&mut self, amount_out: u64, jour_bump: u8) -> Result<()> {
+        // Transfer SOL from journal
         let sol_transfer_ix = transfer(
-            &self.vault_account.key(),
+            &self.journal.key(),
             &self.sol_recipient.key(),
             amount_out,
         );
@@ -41,11 +35,11 @@ impl<'info> WithdrawSol<'info> {
             &sol_transfer_ix,
             &[
                 self.sol_recipient.to_account_info(),
-                self.vault_account.to_account_info(),
+                self.journal.to_account_info(),
             ],
             &[&[
-                b"vault",
-                &[vault_bump],
+                b"jour",
+                &[jour_bump],
             ]],
         )?;
         Ok(())
