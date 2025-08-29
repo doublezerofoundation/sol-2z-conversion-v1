@@ -1,29 +1,17 @@
-# build image
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci
-
-COPY tsconfig.json ./
-COPY idl ./idl
-COPY src ./src
-COPY config ./config
-
-RUN npm run build:docker
-
-# runtime image
-FROM node:20-alpine AS runner
-
-WORKDIR /app
-
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/package-lock.json ./
-COPY --from=builder /app/config ./config
-COPY --from=builder /app/config ./dist/config
 RUN npm ci --only=production
 
-COPY --from=builder /app/dist ./dist
+COPY dist ./dist
+COPY config ./config
+COPY config ./dist/config
+COPY idl ./idl
+COPY bin ./bin
 
+RUN chmod +x bin/service
+
+EXPOSE 8080
 CMD ["node", "dist/src/index.js"]
