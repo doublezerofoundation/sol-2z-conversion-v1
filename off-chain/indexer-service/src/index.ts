@@ -18,10 +18,15 @@ async function startServer() {
         console.log(`RPC URL: ${config.RPC_URL}`);
         console.log(`Program ID: ${config.PROGRAM_ID}`);
         
-        tailRealTime();
-        recoverHistory()
-            .then(() => console.log('✅ Historical data recovery completed'))
-            .catch(error => console.error('❌ Historical data recovery failed:', error));
+        (async () => {
+            try {
+                tailRealTime();
+                await recoverHistory();
+                console.log('✅ Historical data recovery completed');
+            } catch (error) {
+                console.error('❌ Historical data recovery failed:', error);
+            }
+        })();
 
         const server = app.listen(PORT, () => {
             console.log(`Indexer Service started on port ${PORT}`);
