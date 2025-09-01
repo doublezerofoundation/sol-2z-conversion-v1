@@ -142,3 +142,9 @@ variable "redis_port" {
   type        = string
   default     = "6379"
 }
+
+variable "skip_image_validation" {
+  description = "Specify whether ECR image validation is needed"
+  type        = bool
+  default     = false
+}
