@@ -6,13 +6,13 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-mock_transfer_program = "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww"
+mock_transfer_program = "9Hij2pLie5j6Nt49s1nozgrLwMqEVKbbF2eABHBF5sWj"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "localnet"
+cluster = "https://api.devnet.solana.com"
 wallet = "~/.config/solana/id.json"
 
 [scripts]

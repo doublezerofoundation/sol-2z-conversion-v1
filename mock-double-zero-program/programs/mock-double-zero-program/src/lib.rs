@@ -6,7 +6,7 @@ use instructions::initialize::*;
 use instructions::withdraw_sol::*;
 use instructions::mint_2z::*;
 
-declare_id!("8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww");
+declare_id!("9Hij2pLie5j6Nt49s1nozgrLwMqEVKbbF2eABHBF5sWj");
 #[program]
 pub mod mock_transfer_program {
     use super::*;
