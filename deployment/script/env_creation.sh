@@ -34,13 +34,14 @@ validate_arguments() {
         print_error_and_exit "--env is required"
     fi
 
-    if [[ -z "${RELEASE_TAG}" ]]; then
-        print_error_and_exit "--release-tag is required"
-    fi
+    if [[ "${COMMAND}" == "create" ]]; then
+          if [[ -z "${RELEASE_TAG}" ]]; then
+              print_error_and_exit "--release-tag is required for create command"
+          fi
 
-
-    if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
-        print_warning "Release tag '${RELEASE_TAG}' doesn't follow semantic versioning format (vX.Y.Z)"
+          if [[ ! "${RELEASE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
+              print_warning "Release tag '${RELEASE_TAG}' doesn't follow semantic versioning format (vX.Y.Z)"
+          fi
     fi
 }
 
@@ -134,9 +135,9 @@ destroy_environment() {
     fi
 
     if [[ $AUTO_APPROVE -eq 1 ]]; then
-        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}"  -auto-approve
+        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}" -var="skip_image_validation=true" -auto-approve
     else
-        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}"
+        terraform destroy -var="release_tag=${RELEASE_TAG}" -var="environment=${ENVIRONMENT}" -var="aws_region=${REGION}" -var="accountId=${account_id}" -var="skip_image_validation=true"
     fi
 
     if [[ $? -ne 0 ]]; then

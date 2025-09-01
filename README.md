@@ -400,7 +400,7 @@ When using `--workspace deployment`, specify one of:
 #### Environment Cleanup
 ```bash
 # Destroy environment
-./provision.sh -w deployment -sc environment -a destroy --env <env> --region <region> --release-tag <release-tag>
+./provision.sh -w deployment -sc environment -a destroy --env <env> --region <region> 
 
 # Destroy regional resources  
 ./provision.sh -w deployment -sc regional -a destroy --region <region>

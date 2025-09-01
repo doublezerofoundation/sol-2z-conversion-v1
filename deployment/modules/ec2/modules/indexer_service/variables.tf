@@ -131,3 +131,9 @@ variable "container_environment_vars" {
   type        = map(string)
   default     = {}
 }
+
+variable "skip_image_validation" {
+  description = "Specify whether ECR image validation is needed"
+  type        = bool
+  default     = false
+}

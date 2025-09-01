@@ -36,6 +36,7 @@ health_check_unhealthy_threshold = 3
 # Off-chain Service Configuration
 enable_swap_oracle_service = true
 enable_indexer_service     = true
+skip_image_validation = false
 
 # Release Tag
 release_tag = "v1.0.0"

@@ -37,15 +37,11 @@ resource "aws_cloudwatch_log_group" "user_data_logs" {
 }
 
 data "aws_ecr_image" "app_image" {
+  count           = var.skip_image_validation ? 0 : 1
   repository_name = var.ecr_repository
   image_tag       = var.swap_oracle_service_image_tag
 }
 
-# Local value to ensure image validation
-locals {
-  validated_image_uri = "${local.ecr_registry}/${var.ecr_repository}:${var.swap_oracle_service_image_tag}"
-  image_exists        = data.aws_ecr_image.app_image.id != null
-}
 
 # Launch Template
 resource "aws_launch_template" "this" {
@@ -75,7 +71,6 @@ resource "aws_launch_template" "this" {
     })
   )
 
-  depends_on = [data.aws_ecr_image.app_image]
 
   block_device_mappings {
     device_name = "/dev/xvda"

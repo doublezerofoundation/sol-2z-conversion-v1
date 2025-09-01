@@ -37,6 +37,7 @@ resource "aws_cloudwatch_log_group" "container_logs" {
 
 # ECR Image data source
 data "aws_ecr_image" "app_image" {
+  count           = var.skip_image_validation ? 0 : 1
   repository_name = var.ecr_repository
   image_tag       = var.indexer_service_image_tag
 }
@@ -187,7 +188,7 @@ resource "aws_autoscaling_group" "indexer" {
     ignore_changes       = [desired_capacity] # Prevent drift from manual scaling
   }
 
-  depends_on = [data.aws_ecr_image.app_image]
+
 }
 
 # Auto Scaling Policies (Optional - for manual scaling if needed)
