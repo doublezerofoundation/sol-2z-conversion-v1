@@ -154,7 +154,7 @@ Create `config.json` at the project root with the following structure:
 - **double_zero_program_id**: Public key of the mock transfer program (which is created by earlier step Generate Programs key )
 - **sol_quantity**: Amount of SOL per transaction (in Lamports)
 - **coefficient**: Discount calculation curve coefficient (see formula below)
-- **price_oracle_end_point**: swap-oracle-service endpoint which is create from environment( used by User cli for get swap rate) 
+- **price_oracle_end_point**: swap-oracle-service endpoint which is created after environment creation( used by User cli to get swap rate. So doesnt need to be set at deployment to blockchain) 
 
 
 
@@ -265,19 +265,18 @@ Off-chain components use the `config` npm module where the environment name and 
 ## 2.2 Component Configurations
 
 #### Indexer Service Configuration
-Create config file: `config/indexer/{env-name}.json`
+Create config file: `indexer-service/config/{env-name}.json`
 ```json
 {
   "RPC_URL": "https://api.devnet.solana.com",
   "PROGRAM_ID": "program_id",
-  "CONCURRENCY": 8,
-  "SNS_ERROR_TOPIC_ARN": "arn:aws:sns:{{AWS_REGION}}:{{ACCOUNT_ID}}:doublezero-{{ENV}}-app-errors"
+  "CONCURRENCY": 8
 }
 ```
 **Note** Update `PROGRAM_ID ` with public key of the convertor program [Refer](#generate-data-signer-key).
 
 #### Swap Oracle Service Configuration
-Create config file: `config/swap-oracle/{env-name}.json`
+Create config file: `swap-oracle-service/config/{env-name}.json`
 ```json
 {
   "applicationPort": 8080, 
