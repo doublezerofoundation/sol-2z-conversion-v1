@@ -1,7 +1,7 @@
 {
   "rpc_url": "https://api.devnet.solana.com",
   "program_id": "9VXbHTyZnz4PvJpjkLow4yL1nfLAPUx6UA6BGXg4E57e",
-  "double_zero_program_id": "9Hij2pLie5j6Nt49s1nozgrLwMqEVKbbF2eABHBF5sWj",
+  "double_zero_program_id": "8zcSkup8UHVRtQzNTV6KXzkqBJudDZkouzA6PZ7zBSEh",
   "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
   "sol_quantity": 25000000000,
   "price_maximum_age": 324,
