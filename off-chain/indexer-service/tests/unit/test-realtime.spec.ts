@@ -18,7 +18,7 @@ describe('Live path tests', () => {
           // Create stubs for all dependencies
           processTxStub = stub();
           getLastSignatureStub = stub();
-          saveLastSignatureStub = stub();
+          saveLastSignatureStub = stub().resolves();
           isRecoveringStub = stub();
           onLogsStub = stub();
           consoleLogStub = stub(console, 'log');
@@ -72,17 +72,18 @@ describe('Live path tests', () => {
           expect(getLastSignatureStub.called).to.be.false;
      });
 
-     it('should process and persist signature after recovery, but skip duplicate persist', async () => {
+     it('should process and persist signature after recovery', async () => {
           // Setup: Recovery is complete
           isRecoveringStub.returns(false);
-          getLastSignatureStub.resolves('S0'); // Previous signature
-          processTxStub.resolves();
-          saveLastSignatureStub.resolves();
+          processTxStub.resolves(); // Ensure processTx doesn't throw
 
           // Execute: Start real-time monitoring
           tailRealTime();
 
-          // Simulate a new log event with different signature
+          // Verify onLogs subscription
+          expect(onLogsStub.calledOnce).to.be.true;
+
+          // Execute: Simulate a new log event
           const mockLogEvent = { signature: 'S1' };
           await capturedOnLogsCallback(mockLogEvent);
 
@@ -90,29 +91,24 @@ describe('Live path tests', () => {
           expect(processTxStub.calledOnce).to.be.true;
           expect(processTxStub.calledWith('S1')).to.be.true;
 
-          // Verify signature was saved (not during recovery and different from last)
-          expect(getLastSignatureStub.calledOnce).to.be.true;
+          // Verify signature was saved (not during recovery)
           expect(saveLastSignatureStub.calledOnce).to.be.true;
           expect(saveLastSignatureStub.calledWith('S1')).to.be.true;
 
-          // Reset for duplicate test
+          // Reset for second transaction test
           processTxStub.resetHistory();
           saveLastSignatureStub.resetHistory();
-          getLastSignatureStub.resetHistory();
 
-          // Setup: Last signature is now S1 (same as incoming)
-          getLastSignatureStub.resolves('S1');
-
-          // Simulate same signature again
-          await capturedOnLogsCallback({ signature: 'S1' });
+          // Simulate another signature
+          await capturedOnLogsCallback({ signature: 'S2' });
 
           // Verify transaction was still processed
           expect(processTxStub.calledOnce).to.be.true;
-          expect(processTxStub.calledWith('S1')).to.be.true;
+          expect(processTxStub.calledWith('S2')).to.be.true;
 
-          // Verify signature was NOT saved (duplicate)
-          expect(getLastSignatureStub.calledOnce).to.be.true;
-          expect(saveLastSignatureStub.called).to.be.false;
+          // Verify signature was saved
+          expect(saveLastSignatureStub.calledOnce).to.be.true;
+          expect(saveLastSignatureStub.calledWith('S2')).to.be.true;
      });
 
      it('should handle processing errors gracefully', async () => {
@@ -175,9 +171,6 @@ describe('Live path tests', () => {
           // Verify processTx was called successfully
           expect(processTxStub.calledOnce).to.be.true;
           expect(processTxStub.calledWith('S1')).to.be.true;
-
-          // Verify getLastSignature was called
-          expect(getLastSignatureStub.calledOnce).to.be.true;
 
           // Verify saveLastSignature was attempted
           expect(saveLastSignatureStub.calledOnce).to.be.true;

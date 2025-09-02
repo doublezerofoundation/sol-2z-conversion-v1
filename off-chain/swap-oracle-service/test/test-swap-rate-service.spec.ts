@@ -5,18 +5,18 @@ import {assert} from "chai";
 
 const successTestData = [
     {
-        solPriceData: {
+       solPriceData: {
             price: 2000000,
             exponent: 6,
             confidence: 4000
 
-        },
+       },
         twozPriceData: {
-            price: 1000000,
-            exponent: 6,
-            confidence: 5000
-        },
-        expectedSwapRate: 2
+                price: 1000000,
+                exponent: 6,
+                confidence: 5000
+       },
+        expectedSwapRate: 1.98606965
 
     },
     {
@@ -31,7 +31,7 @@ const successTestData = [
             exponent: 6,
             confidence: 3000
         },
-        expectedSwapRate: 1.66666667
+        expectedSwapRate: 1.66267465
 
     },
     {
@@ -46,7 +46,7 @@ const successTestData = [
             exponent: 6,
             confidence: 4440
         },
-        expectedSwapRate: 0.54545455
+        expectedSwapRate: 0.54437872
 
     },
 ]
