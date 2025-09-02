@@ -11,13 +11,17 @@ export class PythSwapRateService implements ISwapRateService {
 
     swapRateCalculation(solPriceData: any, twozPriceData: any): PriceRate {
         const solUsdPrice = this.convertPrice(solPriceData.price, solPriceData.exponent);
+        const solConfidence = this.convertPrice(solPriceData.confidence, solPriceData.exponent);
+
         const twozUsdPrice = this.convertPrice(twozPriceData.price, twozPriceData.exponent);
+        const twozConfidence = this.convertPrice(twozPriceData.confidence, twozPriceData.exponent);
 
-        console.log(`SOL USD Price: ${solUsdPrice}`);
-        console.log(`TWOZ USD Price: ${twozUsdPrice}`);
+        const conservativeSolPrice = solUsdPrice - solConfidence; // Lower SOL price
+        const conservativeTwozPrice = twozUsdPrice + twozConfidence; // Higher TWOZ price
 
-        const twozPerSol = solUsdPrice / twozUsdPrice;
+        const twozPerSol = conservativeSolPrice / conservativeTwozPrice;
         const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION_DECIMALS));
+
 
         console.log(`Rate: ${roundedTwozPerSol} TWOZ for 1 SOL`);
         return {
