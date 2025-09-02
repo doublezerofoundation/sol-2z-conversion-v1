@@ -8,7 +8,7 @@ use crate::{
         withdraw_sol::withdraw_sol,
     }
 };
-use solana_program::{account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, msg, pubkey::Pubkey};
+use solana_program::{account_info::AccountInfo, entrypoint, entrypoint::ProgramResult, pubkey::Pubkey};
 
 entrypoint!(process_instruction);
 
