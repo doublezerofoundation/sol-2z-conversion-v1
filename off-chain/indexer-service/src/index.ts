@@ -1,13 +1,13 @@
 import express, { Request, Response } from 'express';
 import { recoverHistory } from './core/history';
 import { tailRealTime } from './core/realtime';
-import config, { getLogLevel } from './utils/config';
+import { configUtil } from './utils/configUtil';
 import { logger } from './utils/logger';
 
-// Initialize logger 
-logger.setLevel(getLogLevel());
+// Initialize logger with config
+logger.setLevel(configUtil.getLogLevel());
 
-const PORT = config.applicationPort;
+const PORT = process.env.PORT || configUtil.getApplicationPort();
 
 async function startServer() {
     try {
@@ -20,9 +20,9 @@ async function startServer() {
         // Start the indexer in the background
         logger.info('Starting indexer service...');
         logger.info('Configuration loaded', {
-            rpcUrl: config.RPC_URL,
-            programId: config.PROGRAM_ID,
-            concurrency: config.CONCURRENCY,
+            rpcUrl: configUtil.getRpcUrl(),
+            programId: configUtil.getProgramId(),
+            concurrency: configUtil.getConcurrency(),
             port: PORT
         });
         

@@ -1,3 +1,12 @@
+// ---- Configuration Fields ----
+export enum ConfigField {
+    APPLICATION_PORT = 'applicationPort',
+    RPC_URL = 'rpcUrl',
+    PROGRAM_ID = 'programId',
+    CONCURRENCY = 'concurrency',
+    LOG_LEVEL = 'logLevel',
+}
+
 // ---- DynamoDB Table Names ----
 export enum DDBTable {
      SOLANA_EVENT = "solana-event",
