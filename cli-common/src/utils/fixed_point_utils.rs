@@ -33,7 +33,7 @@ pub fn convert_sol_value(sol_amount: u64) -> Decimal {
 }
 
 pub fn convert_token_value(token_amount: u64) -> Decimal {
-    let with_decimals = Decimal::from_u64(token_amount).expect("Invalid sol value");
+    let with_decimals = Decimal::from_u64(token_amount).expect("Invalid token value");
     let token_val = Decimal::from_u64(TOKEN_UNITS).unwrap();
     with_decimals / token_val
 }
