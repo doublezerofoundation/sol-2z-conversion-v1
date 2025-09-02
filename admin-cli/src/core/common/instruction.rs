@@ -12,5 +12,5 @@ pub const SET_DENY_LIST_AUTHORITY_INSTRUCTION: &[u8] = b"global:set_deny_list_au
 
 
 // mock program
-pub const MOCK_SYSTEM_INITIALIZE: &[u8] = b"global:initialize";
-pub const MOCK_TOKEN_MINT_INSTRUCTION: &[u8] = b"global:mint_2z";
+pub const MOCK_SYSTEM_INITIALIZE: &[u8] = b"dz::ix::initialize";
+pub const MOCK_TOKEN_MINT_INSTRUCTION: &[u8] = b"dz::ix::mint2z";

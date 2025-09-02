@@ -5,7 +5,7 @@ members = [
     "admin-cli",
     "user-cli",
     "integration-cli",
-    "mock-double-zero-program/programs/mock-double-zero-program"
+    "mock-double-zero-program"
 ]
 resolver = "2"
 
@@ -25,6 +25,11 @@ solana-loader-v3-interface = "5.0.0"
 base64 = "0.22.1"
 brine-ed25519 = "0.2.0"
 bytemuck = { version = "1.23.2", features = ["min_const_generics"] }
+
+## mock-program
+solana-program = "2.3.0"
+borsh = "1.5.7"
+thiserror = "2.0.16"
 
 # Workspace members (internal dependencies)
 cli-common = { path = "cli-common" }

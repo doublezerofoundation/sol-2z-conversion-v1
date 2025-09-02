@@ -10,6 +10,7 @@ use anchor_client::{
         signer::Signer,
     },
 };
+use anchor_client::solana_sdk::sysvar;
 use solana_commitment_config::CommitmentConfig;
 
 use cli_common::{
@@ -52,6 +53,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         AccountMeta::new(token_mint_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),
         AccountMeta::new(spl_token_2022::id(), false),
+        AccountMeta::new(sysvar::rent::ID, false),
         AccountMeta::new(system_program::ID, false),
         AccountMeta::new(payer.pubkey(), true),
     ];
