@@ -29,11 +29,20 @@ async function startServer() {
         (async () => {
             try {
                 tailRealTime();
+            } catch (error) {
+                logger.error('Failed to start real-time indexing', { 
+                    error: error instanceof Error ? error.message : String(error),
+                    component: 'realtime'
+                });
+            }
+
+            try {
                 await recoverHistory();
-                logger.info('Historical data recovery completed');
             } catch (error) {
                 logger.error('Historical data recovery failed', { 
-                    error: error instanceof Error ? error.message : String(error) 
+                    error: error instanceof Error ? error.message : String(error),
+                    component: 'history',
+                    impact: 'Real-time indexing continues normally'
                 });
             }
         })();
