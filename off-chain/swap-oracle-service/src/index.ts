@@ -2,16 +2,18 @@ import 'reflect-metadata';
 import App from './app/app';
 import container from "./factory/serviceContainer";
 import {TYPES} from "./types/common";
-import {ConfigUtil} from "./utils/configUtil";
+import {ConfigUtil, getLogLevel} from "./utils/configUtil";
 import {HealthMonitoringService} from "./service/monitor/healthMonitoringService";
+import { logger } from './utils/logger';
 
+logger.setLevel(getLogLevel());
 const config = container.get<ConfigUtil>(TYPES.ConfigUtil);
 const healthMonitoringService = container.get<HealthMonitoringService>(TYPES.HealthMonitoringService);
 
 const app = new App(config,healthMonitoringService)
 app.startServer()
     .then(() => {
-        console.log('Server started successfully');
+        logger.info('Server started successfully');
     })
     .catch((error) => {
         console.error('Failed to start server:', error);

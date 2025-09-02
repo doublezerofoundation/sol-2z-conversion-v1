@@ -1,6 +1,7 @@
 {
   "applicationPort": 8080,
   "priceCacheTTLSeconds": 30,
+  "LOG_LEVEL": "INFO",
   "pricingServices": [
     {
       "name": "pyth-prod",
