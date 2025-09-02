@@ -2,7 +2,6 @@ use anchor_lang::{
     prelude::*,
     solana_program::{
         native_token::LAMPORTS_PER_SOL,
-        hash::hash,
         instruction::Instruction,
         program::invoke_signed
     }
