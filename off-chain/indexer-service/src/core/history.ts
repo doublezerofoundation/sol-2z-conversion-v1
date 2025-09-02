@@ -3,17 +3,21 @@ import Config from '../utils/config';
 import { getLastSignature, endRecovery } from './state';
 import { promisePool } from '../utils/concurrency';
 import { processTx } from './processor';
+import { logger } from '../utils/logger';
 
 export async function recoverHistory() {
   const program_id = new PublicKey(Config.PROGRAM_ID);
   const lastSig = await getLastSignature();
   if (!lastSig) {
-    console.log('No last signature found, skipping history recovery.');
+    logger.info('No last signature found, skipping history recovery');
     endRecovery();
     return;
   }
 
-  console.log(`⏳ Catching up from head down to last processed sig: ${lastSig}`);
+  logger.info('Starting historical data recovery', { 
+    lastSignature: lastSig,
+    programId: Config.PROGRAM_ID 
+  });
 
   const connection = new Connection(Config.RPC_URL, 'confirmed');
   let before: string | undefined;
@@ -26,7 +30,15 @@ export async function recoverHistory() {
         until: lastSig ?? undefined,      // recovery will stop once it reaches this signature
       }
     );
-    if (sigInfos.length === 0) break;
+    if (sigInfos.length === 0) {
+      logger.debug('No more signatures found, ending history recovery');
+      break;
+    }
+
+    logger.debug('Processing historical batch', { 
+      batchSize: sigInfos.length, 
+      beforeSignature: before 
+    });
 
     // process all signatures
     await promisePool(
@@ -39,6 +51,7 @@ export async function recoverHistory() {
     before = sigInfos[sigInfos.length - 1].signature;
   }
 
+  logger.info('History recovery completed.');
   // enable real-time cursor 
   endRecovery();
 }

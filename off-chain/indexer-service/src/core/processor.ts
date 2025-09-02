@@ -5,6 +5,7 @@ import idlJson from '../../idl/converter_program.json';
 import Config from '../utils/config';
 import { EventType } from '../common';
 import { writeSolanaEvent, writeFillDequeue, writeDenyListAction } from '../utils/ddb/events';
+import { logger } from '../utils/logger';
 
 const connection = new Connection(Config.RPC_URL, 'confirmed');
 const idl        = idlJson as Idl;
@@ -22,13 +23,22 @@ export async function processTx(sig: string) {
      const { err } = tx.meta;
 
      if (err) {
-          console.log(`⚠️ [${timestamp}] Transaction ${sig} failed with error:`, err);
+          logger.warn('Transaction failed', { 
+               signature: sig, 
+               timestamp, 
+               error: err 
+          });
           return;
      }     
      
      const events = [...parser.parseLogs(logMessages)];
      for (const e of events) {
-          console.log(`✅ [${timestamp}] Event ${e.name} @${sig}`, e.data);
+          logger.info('Event processed', { 
+               eventName: e.name, 
+               signature: sig, 
+               timestamp, 
+               data: e.data 
+          });
           const eventId = `${slot}-${sig}-${e.name}`;
           const safeData = serializeForDynamo(e.data);
           switch (e.name) {

@@ -2,6 +2,7 @@ import { Connection, Logs, PublicKey } from '@solana/web3.js';
 import { processTx } from './processor';
 import { getLastSignature, saveLastSignature, isRecovering} from './state';
 import Config from '../utils/config';
+import { logger } from '../utils/logger';
 
 /**
  * Subscribes to real-time logs for the program and processes new transactions.
@@ -10,7 +11,7 @@ import Config from '../utils/config';
  * processes the transaction, and updates last Processed signature if recovery is done.
  */
 export function tailRealTime() {
-  console.log(`📡 Subscribing to logs for ${Config.PROGRAM_ID}`);
+  logger.info('Subscribing to real-time logs', { programId: Config.PROGRAM_ID });
   const connection = new Connection(Config.RPC_URL, 'confirmed');
   const program_id = new PublicKey(Config.PROGRAM_ID);
   connection.onLogs(
