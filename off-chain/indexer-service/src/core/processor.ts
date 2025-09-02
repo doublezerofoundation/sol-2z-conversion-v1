@@ -2,15 +2,15 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { BorshCoder, EventParser, Idl } from '@coral-xyz/anchor';
 import idlJson from '../../idl/converter_program.json';
 
-import Config from '../utils/config';
+import { configUtil } from '../utils/configUtil';
 import { EventType } from '../common';
 import { writeSolanaEvent, writeFillDequeue, writeDenyListAction } from '../utils/ddb/events';
 import { logger } from '../utils/logger';
 
-const connection = new Connection(Config.RPC_URL, 'confirmed');
+const connection = new Connection(configUtil.getRpcUrl(), 'confirmed');
 const idl        = idlJson as Idl;
 const coder      = new BorshCoder(idl);
-const parser     = new EventParser(new PublicKey(Config.PROGRAM_ID), coder);
+const parser     = new EventParser(new PublicKey(configUtil.getProgramId()), coder);
 
 export async function processTx(sig: string) {
      const tx = await connection.getTransaction(sig, { commitment: 'confirmed' });
