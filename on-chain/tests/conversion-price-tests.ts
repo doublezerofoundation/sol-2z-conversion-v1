@@ -7,11 +7,8 @@ import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import { setup } from "./core/setup";
 import { assert } from "chai";
 import { getDefaultKeyPair, getRandomKeyPair } from "./core/utils/accounts";
-import {BPS, ErrorMsg, Events, TOKEN_UNITS} from "./core/constants";
+import {BPS, ErrorMsg, TOKEN_UNITS} from "./core/constants";
 import { DEFAULT_CONFIGS } from "./core/utils/configuration-registry";
-import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
-import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
-import { Idl, Program } from "@coral-xyz/anchor";
 import { getMockDoubleZeroTokenMintPDA } from "./core/utils/pda-helper";
 import { createTokenAccount } from "./core/utils/token-utils";
 import { airdropJournal } from "./core/utils/mock-transfer-program-utils";
@@ -21,11 +18,10 @@ import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 
 describe("Conversion Price Tests", async () => {
     const program = await setup();
-    const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as Idl, program.provider);
 
     before("Initialize the system if needed", async () => {
         await initializeSystemIfNeeded(program)
-        await initializeMockTransferSystemIfNeeded(mockTransferProgram);
+        await initializeMockTransferSystemIfNeeded(program);
 
         // Set deny list authority to admin.
         await setDenyListAuthorityAndVerify(program, getDefaultKeyPair().publicKey);
@@ -142,13 +138,13 @@ describe("Conversion Price Tests", async () => {
         const user = await getRandomKeyPair(program.provider.connection);
 
         // Create mock mint token ATA for user.
-        const mockTokenMintPda = getMockDoubleZeroTokenMintPDA(mockTransferProgram.programId);
+        const mockTokenMintPda = getMockDoubleZeroTokenMintPDA();
         const userAta = await createTokenAccount(program.provider.connection, mockTokenMintPda, user.publicKey);
 
         // Reimburse system and user for trades
         const solQuantity = DEFAULT_CONFIGS.solQuantity.toNumber() / LAMPORTS_PER_SOL;
-        await airdropJournal(mockTransferProgram, DEFAULT_CONFIGS.solQuantity);
-        await mint2z(mockTransferProgram, userAta, 25 * solQuantity * TOKEN_UNITS);
+        await airdropJournal(program, DEFAULT_CONFIGS.solQuantity);
+        await mint2z(program, userAta, 25 * solQuantity * TOKEN_UNITS);
 
         // Get conversion price.
         const oraclePriceData = await getOraclePriceData();
@@ -160,7 +156,7 @@ describe("Conversion Price Tests", async () => {
 
         // Execute a trade.
         const bidPrice = price1 + TOKEN_UNITS;
-        await buySolAndVerify(program, mockTransferProgram, userAta, bidPrice, user, oraclePriceData);
+        await buySolAndVerify(program, userAta, bidPrice, user, oraclePriceData);
 
         // Get the new conversion price.
         const price2 = await getConversionPriceAndVerify(program, oraclePriceData);

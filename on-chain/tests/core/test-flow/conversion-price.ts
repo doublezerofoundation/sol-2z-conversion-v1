@@ -1,6 +1,6 @@
 import { BN, Program } from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
-import { getOraclePriceData, OraclePriceData } from "../utils/price-oracle";
+import { OraclePriceData } from "../utils/price-oracle";
 import { assert, expect } from "chai";
 import {
     decodeAndValidateReturnData, delay,

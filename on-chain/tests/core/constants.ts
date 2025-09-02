@@ -1,6 +1,7 @@
 import {PublicKey} from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
+export const MOCK_TRANSFER_PROGRAM = new PublicKey("8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww");
 export const TOKEN_UNITS = 10 ** 8;
 export const BPS = 100; // basis points
 
@@ -47,4 +48,9 @@ export namespace ErrorMsg {
     export const UNAUTHORIZED_FILLS_CONSUMER = "User is not authorized to do fills consumption";
     export const ADDRESS_ALREADY_IN_USE = "already in use";
     export const INVALID_SYSTEM_STATE = "Invalid system state";
+}
+
+export namespace MockProgramInstructions {
+    export const MOCK_SYSTEM_INITIALIZE = "dz::ix::initialize";
+    export const MOCK_TOKEN_MINT_INSTRUCTION = "dz::ix::mint2z";
 }
