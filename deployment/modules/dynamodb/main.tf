@@ -26,6 +26,10 @@ resource "aws_dynamodb_table" "system_state" {
     projection_type = "ALL"
   }
 
+  server_side_encryption {
+    enabled = true
+  }
+
   tags = local.common_tags
 }
 
@@ -69,6 +73,10 @@ resource "aws_dynamodb_table" "solana_event" {
     hash_key        = "event_type"
     range_key       = "slot"
     projection_type = "ALL"
+  }
+
+  server_side_encryption {
+    enabled = true
   }
 
   tags = local.common_tags
@@ -115,6 +123,10 @@ resource "aws_dynamodb_table" "fill_dequeue" {
     hash_key        = "sol_dequeued"
     range_key       = "timestamp"
     projection_type = "ALL"
+  }
+
+  server_side_encryption {
+    enabled = true
   }
 
   tags = local.common_tags
@@ -181,6 +193,10 @@ resource "aws_dynamodb_table" "deny_list_action" {
     hash_key        = "action_by"
     range_key       = "timestamp"
     projection_type = "ALL"
+  }
+
+  server_side_encryption {
+    enabled = true
   }
 
   tags = local.common_tags
