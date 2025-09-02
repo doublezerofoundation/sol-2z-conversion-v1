@@ -7,6 +7,7 @@ use rust_decimal::{
     Decimal,
     prelude::ToPrimitive
 };
+use rust_decimal::prelude::FromPrimitive;
 use crate::constant::TOKEN_UNITS;
 
 pub fn parse_token_value(token_value: &String) -> Result<u64, Box<dyn Error>> {
@@ -23,4 +24,16 @@ pub fn parse_sol_value(sol_value: &String) -> Result<u64, Box<dyn Error>> {
     let sol_value_parsed = (amount_input * lamports_per_sol).to_u64()
         .expect("Sol value overflow or conversion failed");
     Ok(sol_value_parsed)
+}
+
+pub fn convert_sol_value(sol_amount: u64) -> Decimal {
+    let sol_in_lamports = Decimal::from_u64(sol_amount).expect("Invalid sol value");
+    let lamports_per_sol = Decimal::from_u64(LAMPORTS_PER_SOL).unwrap();
+    sol_in_lamports / lamports_per_sol
+}
+
+pub fn convert_token_value(token_amount: u64) -> Decimal {
+    let with_decimals = Decimal::from_u64(token_amount).expect("Invalid sol value");
+    let token_val = Decimal::from_u64(LAMPORTS_PER_SOL).unwrap();
+    with_decimals / token_val
 }

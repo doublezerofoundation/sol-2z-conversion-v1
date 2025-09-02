@@ -6,9 +6,7 @@ use anchor_client::{
         hash::hash, instruction::Instruction, pubkey::Pubkey, signer::Signer,
     },
 };
-use anchor_client::solana_sdk::native_token::LAMPORTS_PER_SOL;
 use cli_common::{
-    constant::TOKEN_UNITS,
     structs::ConfigurationRegistry,
     transaction_executor::{get_account_data, send_instruction_with_return_data},
     utils::{
@@ -16,9 +14,10 @@ use cli_common::{
             get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
         },
         ui,
+        env_var::load_payer_from_env,
+        fixed_point_utils::{convert_sol_value, convert_token_value}
     },
 };
-use cli_common::utils::env_var::load_payer_from_env;
 use crate::core::{
     common::instruction::GET_PRICE_INSTRUCTION, config::UserConfig,
     utils::price_utils::fetch_oracle_price,
@@ -32,7 +31,7 @@ pub fn get_quantity() -> Result<(), Box<dyn Error>> {
     let config_registry_pda = get_configuration_registry_pda(program_id).0;
     let config_registry: ConfigurationRegistry =
         get_account_data(user_config.rpc_url, config_registry_pda)?;
-    let sol_quantity_in_sol = config_registry.sol_quantity/ LAMPORTS_PER_SOL;
+    let sol_quantity_in_sol = convert_sol_value(config_registry.sol_quantity);
 
     println!(
         "{} Current tradable SOL quantity \n In lamports: {} \n In SOL: {}",
@@ -69,8 +68,7 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
         data,
     };
     let result_bps: u64 = send_instruction_with_return_data(ix)?;
-    let result = result_bps as f64 / TOKEN_UNITS as f64;
-
+    let result = convert_token_value(result_bps);
     println!("{} Current estimated conversion rate: {} 2Z per SOL", ui::OK, result);
     Ok(())
 }
