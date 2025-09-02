@@ -72,7 +72,7 @@ export const userBuySolTests: Test[] = [
             await scenario.buySolAndVerifyFailWithAttestation(bidAmount, oraclePrice, "Provided attestation is outdated");
 
             // reset config
-            config.price_maximum_age = 500;
+            config.price_maximum_age = 2000;
             updateConfig(config);
 
             // update configureation registry
