@@ -24,17 +24,17 @@ export class ConfigUtil {
         return this.config.has(key);
     }
 
-}
-
-export function getLogLevel(): LogLevel {
-    const logLevelStr = ConfigUtil.getInstance().get<string>("LOG_LEVEL")|| 'INFO';
-    switch (logLevelStr.toUpperCase()) {
-        case 'ERROR': return LogLevel.ERROR;
-        case 'WARN': return LogLevel.WARN;
-        case 'INFO': return LogLevel.INFO;
-        case 'DEBUG': return LogLevel.DEBUG;
-        default: return LogLevel.INFO;
+    public getLogLevel(): LogLevel {
+        const logLevelStr = this.get<string>("LOG_LEVEL") || process.env.LOG_LEVEL || 'INFO';
+        switch (logLevelStr.toUpperCase()) {
+            case 'ERROR': return LogLevel.ERROR;
+            case 'WARN': return LogLevel.WARN;
+            case 'INFO': return LogLevel.INFO;
+            case 'DEBUG': return LogLevel.DEBUG;
+            default: return LogLevel.INFO;
+        }
     }
+
 }
 
 
