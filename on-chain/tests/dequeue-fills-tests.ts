@@ -1,7 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program} from "@coral-xyz/anchor";
-import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
-import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
 import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
 import {initializeMockTransferSystemIfNeeded} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
@@ -22,7 +20,6 @@ describe("Consume fills tests", () => {
     anchor.setProvider(anchor.AnchorProvider.env());
 
     const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
-    const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as anchor.Idl, anchor.getProvider());
     let adminKeyPair: Keypair = getDefaultKeyPair();
     let mockTransferProgramPDAs: any;
     let tokenAccountForUser: PublicKey;
@@ -35,10 +32,7 @@ describe("Consume fills tests", () => {
     before("Set up the system", async() => {
         await initializeSystemIfNeeded(program);
         // Initializing the Mock Transfer system If not already initialized!
-        await initializeMockTransferSystemIfNeeded(
-            mockTransferProgram,
-            adminKeyPair,
-        )
+        await initializeMockTransferSystemIfNeeded(program, adminKeyPair)
         // Set deny list authority to admin
         await setDenyListAuthorityAndVerify(program, adminKeyPair.publicKey);
 
@@ -50,17 +44,17 @@ describe("Consume fills tests", () => {
 
         currentConfigs = DEFAULT_CONFIGS;
 
-        mockTransferProgramPDAs = getMockProgramPDAs(mockTransferProgram.programId);
+        mockTransferProgramPDAs = getMockProgramPDAs();
 
         // create key pair & token account for user
         userKeyPair = anchor.web3.Keypair.generate();
         await airdrop(
-            mockTransferProgram.provider.connection,
+            program.provider.connection,
             userKeyPair.publicKey,
             10 * LAMPORTS_PER_SOL
         );
         tokenAccountForUser = await createTokenAccount(
-            mockTransferProgram.provider.connection,
+            program.provider.connection,
             mockTransferProgramPDAs.tokenMint,
             userKeyPair.publicKey,
         );
@@ -70,7 +64,6 @@ describe("Consume fills tests", () => {
         it("Rejects fill consumption by unauthorized user", async () => {
             await buySolSuccess(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
                 currentConfigs,
@@ -101,7 +94,6 @@ describe("Consume fills tests", () => {
             const bidFactor = 1.1;
             const askPrice = await buySolSuccess(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
                 currentConfigs,
@@ -133,7 +125,6 @@ describe("Consume fills tests", () => {
             const bidFactor = 1.1;
             await buySolSuccess(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
                 currentConfigs,
@@ -172,7 +163,6 @@ describe("Consume fills tests", () => {
             const bidFactor = 1.1;
             const askPrice = await buySolSuccess(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
                 currentConfigs,
@@ -208,7 +198,6 @@ describe("Consume fills tests", () => {
                 askPrices.push(
                     await buySolSuccess(
                         program,
-                        mockTransferProgram,
                         tokenAccountForUser,
                         userKeyPair,
                         currentConfigs,
@@ -245,7 +234,6 @@ describe("Consume fills tests", () => {
                 askPrices.push(
                     await buySolSuccess(
                         program,
-                        mockTransferProgram,
                         tokenAccountForUser,
                         userKeyPair,
                         currentConfigs,
@@ -312,7 +300,6 @@ describe("Consume fills tests", () => {
                 askPrices.push(
                     await buySolSuccess(
                         program,
-                        mockTransferProgram,
                         tokenAccountForUser,
                         userKeyPair,
                         currentConfigs,

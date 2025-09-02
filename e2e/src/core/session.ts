@@ -6,10 +6,8 @@ import os from 'os';
 import path from 'path';
 import { exec } from "child_process";
 import { Program } from "@coral-xyz/anchor";
-import { DEFAULT_RPC_URL } from "./constants";
 import idlJson from "../../../on-chain/target/idl/converter_program.json";
-import { MockTransferProgram } from "../../../mock-double-zero-program/target/types/mock_transfer_program";
-import mockIdl from "../../../mock-double-zero-program/target/idl/mock_transfer_program.json";
+import {getConfig} from "./utils/config-util";
 
 export enum SessionType {
     ADMIN = "admin",
@@ -22,12 +20,11 @@ export abstract class Session {
     private rpcUrl: string;
     private sessionType: SessionType;
     private program: anchor.Program<ConverterProgram>;
-    private mockProgram: anchor.Program<MockTransferProgram>;
 
     protected abstract getBinaryPath(): string;
     protected abstract getSessionType(): SessionType;
 
-    constructor(keyPairPath?: string, rpcUrl: string = DEFAULT_RPC_URL) {
+    constructor(keyPairPath?: string, rpcUrl: string = getConfig().rpc_url) {
         if (keyPairPath && keyPairPath.startsWith("~")) {
             keyPairPath = path.join(os.homedir(), keyPairPath.slice(1));
         }
@@ -58,7 +55,6 @@ export abstract class Session {
         });
         anchor.setProvider(provider);
         this.program = new anchor.Program(idl, provider);
-        this.mockProgram = new anchor.Program(mockIdl, provider);
     }
 
     public async logSessionInfo(): Promise<void> {
@@ -101,10 +97,6 @@ export abstract class Session {
 
     public getProgram(): Program<ConverterProgram> {
         return this.program;
-    }
-
-    public getMockProgram(): Program<MockTransferProgram> {
-        return this.mockProgram;
     }
 
     public getPublicKey(): PublicKey {

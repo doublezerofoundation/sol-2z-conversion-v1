@@ -1,5 +1,6 @@
 import { PublicKey } from "@solana/web3.js";
 import { Seeds } from "../enums/seeds";
+import {getConfig} from "./config-util";
 
 const CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
 const PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
@@ -8,8 +9,6 @@ const MOCK_PROTOCOL_TREASURY_SEED = Seeds.MOCK_PROTOCOL_TREASURY_SEED;
 const MOCK_2Z_TOKEN_MINT_SEED = Seeds.MOCK_2Z_TOKEN_MINT_SEED;
 const MOCK_CONFIG_ACCOUNT = Seeds.MOCK_CONFIG_ACCOUNT;
 const MOCK_REVENUE_DISTRIBUTION_JOURNAL = Seeds.MOCK_REVENUE_DISTRIBUTION_JOURNAL;
-
-const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
 
 export async function getConfigurationRegistryPDA(programId: PublicKey) {
     return PublicKey.findProgramAddressSync(
@@ -32,46 +31,40 @@ export async function getDenyListRegistryPDA(programId: PublicKey) {
     )[0]
 }
 
-export async function getProgramDataAccountPDA(programId: PublicKey) {
-    return  PublicKey.findProgramAddressSync(
-        [programId.toBytes()],
-        BPF_UPGRADEABLE_LOADER_ID
-    )[0];
-}
 
-export function getMockProtocolTreasuryAccount(mockProgramId: PublicKey) {
+export function getMockProtocolTreasuryAccount() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_PROTOCOL_TREASURY_SEED)],
-        mockProgramId
+        new PublicKey(getConfig().double_zero_program_id)
     )[0]
 }
 
-export async function getMockDoubleZeroTokenMintPDA(mockProgramId: PublicKey) {
+export async function getMockDoubleZeroTokenMintPDA() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_2Z_TOKEN_MINT_SEED)],
-        mockProgramId
+        new PublicKey(getConfig().double_zero_program_id)
     )[0]
 }
 
-export function getMockConfig(mockProgramId: PublicKey) {
+export function getMockConfig() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_CONFIG_ACCOUNT)],
-        mockProgramId
+        new PublicKey(getConfig().double_zero_program_id)
     )[0]
 }
 
-export function getMockRevenueDistributionJournal(mockProgramId: PublicKey) {
+export function getMockRevenueDistributionJournal() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_REVENUE_DISTRIBUTION_JOURNAL)],
-        mockProgramId
+        new PublicKey(getConfig().double_zero_program_id)
     )[0]
 }
 
-export async function getMockProgramPDAs(mockProgramId: PublicKey) {
+export async function getMockProgramPDAs() {
     return {
-        tokenMint: await getMockDoubleZeroTokenMintPDA(mockProgramId),
-        protocolTreasury: getMockProtocolTreasuryAccount(mockProgramId),
-        journal: getMockRevenueDistributionJournal(mockProgramId),
-        config: getMockConfig(mockProgramId)
+        tokenMint: await getMockDoubleZeroTokenMintPDA(),
+        protocolTreasury: getMockProtocolTreasuryAccount(),
+        journal: getMockRevenueDistributionJournal(),
+        config: getMockConfig()
     }
 }

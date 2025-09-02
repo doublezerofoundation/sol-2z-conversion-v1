@@ -1,5 +1,4 @@
 import { ConverterProgram } from "../../../../on-chain/target/types/converter_program";
-import { MockTransferProgram } from "../../../../mock-double-zero-program/target/types/mock_transfer_program";
 import { Program } from "@coral-xyz/anchor";
 import { SystemConfig, SystemState } from "../account-defs";
 import { getConfigurationRegistryPDA, getProgramStatePDA } from "./pda-helper";
@@ -28,7 +27,7 @@ export const findOrInitializeAssociatedTokenAccount = async (
     payer: Keypair,
     ataOwner: PublicKey,
     mint: PublicKey,
-    program: Program<MockTransferProgram>
+    program: Program<ConverterProgram>
 ) => {
     const associatedTokenAddress = getAssociatedTokenAddressSync(mint, ataOwner, false, TOKEN_2022_PROGRAM_ID);
 
