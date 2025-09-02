@@ -1,6 +1,8 @@
 use borsh::BorshDeserialize;
-use solana_program::hash::hash;
-use solana_program::program_error::ProgramError;
+use solana_program::{
+    hash::hash,
+    program_error::ProgramError
+};
 
 pub enum MockProgramInstruction {
     Initialize,
@@ -23,21 +25,21 @@ impl MockProgramInstruction {
             return Err(ProgramError::InvalidInstructionData);
         }
 
-        let (discm_bytes, rest) = input.split_at(8);
+        let (discriminator_bytes, rest) = input.split_at(8);
 
-        match discm_bytes {
+        match discriminator_bytes {
             x if x == compute_discriminator("dz::ix::initialize") => Ok(Self::Initialize),
 
             x if x == compute_discriminator("dz::ix::withdraw_sol") => {
-                let payload = AmountPayload::try_from_slice(rest)
+                let AmountPayload { amount } = AmountPayload::try_from_slice(rest)
                     .map_err(|_| ProgramError::InvalidInstructionData)?;
-                Ok(Self::WithdrawSol { amount: payload.amount })
+                Ok(Self::WithdrawSol { amount })
             }
 
             x if x == compute_discriminator("dz::ix::mint2z") => {
-                let payload = AmountPayload::try_from_slice(rest)
+                let AmountPayload { amount } = AmountPayload::try_from_slice(rest)
                     .map_err(|_| ProgramError::InvalidInstructionData)?;
-                Ok(Self::Mint2Z { amount: payload.amount })
+                Ok(Self::Mint2Z { amount })
             }
             _ => Err(ProgramError::InvalidInstructionData),
         }

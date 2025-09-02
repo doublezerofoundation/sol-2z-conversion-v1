@@ -2,12 +2,15 @@ use solana_program::program_error::ProgramError;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum ReviewError {
+pub enum DoubleZeroError {
     #[error("Account not initialized yet")]
     UninitializedAccount,
 
     #[error("PDA derived does not equal PDA passed in")]
     InvalidPDA,
+
+    #[error("Provided account is not correct")]
+    InvalidAccount,
 
     #[error("Input data exceeds max length")]
     InvalidDataLength,
@@ -16,8 +19,8 @@ pub enum ReviewError {
     InvalidRating,
 }
 
-impl From<ReviewError> for ProgramError {
-    fn from(e: ReviewError) -> Self {
+impl From<DoubleZeroError> for ProgramError {
+    fn from(e: DoubleZeroError) -> Self {
         ProgramError::Custom(e as u32)
     }
 }
