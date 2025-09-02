@@ -25,6 +25,7 @@ export namespace Events {
     export const SYSTEM_UNHALTED = "systemUnhalted";
     export const TRADE = "tradeEvent";
     export const FILLS_CONSUMED = "fillsDequeued";
+    export const CONFIG_UPDATED = "ConfigChanged";
 }
 
 export namespace ErrorMsg {
