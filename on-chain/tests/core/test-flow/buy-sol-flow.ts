@@ -6,7 +6,6 @@ import { ConverterProgram } from "../../../target/types/converter_program";
 import {getTokenBalance} from "../utils/token-utils";
 import * as anchor from "@coral-xyz/anchor";
 import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
-import {MockTransferProgram} from "../../../../mock-double-zero-program/target/types/mock_transfer_program";
 import {getOraclePriceData, OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
 import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
@@ -15,23 +14,22 @@ import {mint2z} from "./mock-transfer-program";
 import {airdropJournal} from "../utils/mock-transfer-program-utils";
 import {fetchProgramState} from "../utils/accounts";
 import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
-import {Events} from "../constants";
+import {Events, MOCK_TRANSFER_PROGRAM} from "../constants";
 
 export async function buySolAndVerify(
     program: Program<ConverterProgram>,
-    mockTransferProgram: Program<MockTransferProgram>,
     senderTokenAccount: PublicKey,
     bidPrice: number,
     signer: Keypair,
     oraclePriceData: OraclePriceData,
     currentConfigs = DEFAULT_CONFIGS,
 ) {
-    const mockProgConn = mockTransferProgram.provider.connection;
-    const pdaList = getMockProgramPDAs(mockTransferProgram.programId);
-    const tokenBalanceBefore = await getTokenBalance(mockProgConn, senderTokenAccount);
-    const protocolTreasuryBalanceBefore = await getTokenBalance(mockProgConn, pdaList.protocolTreasury);
-    const solBalanceBefore = await mockProgConn.getBalance(signer.publicKey);
-    const journalBalanceBefore = await mockProgConn.getBalance(pdaList.journal);
+    const connection = program.provider.connection;
+    const pdaList = getMockProgramPDAs();
+    const tokenBalanceBefore = await getTokenBalance(connection, senderTokenAccount);
+    const protocolTreasuryBalanceBefore = await getTokenBalance(connection, pdaList.protocolTreasury);
+    const solBalanceBefore = await connection.getBalance(signer.publicKey);
+    const journalBalanceBefore = await connection.getBalance(pdaList.journal);
     const fillsRegistryBefore: FillsRegistry = await getFillsRegistryAccount(program);
     const lastTradedSlotBefore = (await fetchProgramState(program)).lastTradeSlot.toNumber();
     let txSig: string;
@@ -40,7 +38,6 @@ export async function buySolAndVerify(
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
             program,
-            mockTransferProgram,
             senderTokenAccount,
             bidPrice,
             signer,
@@ -107,7 +104,6 @@ export async function buySolAndVerify(
 
 export async function buySolFail(
     program: Program<ConverterProgram>,
-    mockTransferProgram: Program<MockTransferProgram>,
     senderTokenAccount: PublicKey,
     bidPrice: number,
     signer: Keypair,
@@ -118,7 +114,6 @@ export async function buySolFail(
     try {
         const ix: TransactionInstruction = await prepareBuySolInstruction(
             program,
-            mockTransferProgram,
             senderTokenAccount,
             bidPrice,
             signer,
@@ -140,13 +135,12 @@ export async function buySolFail(
 
 export async function prepareBuySolInstruction(
     program: Program<ConverterProgram>,
-    mockTransferProgram: Program<MockTransferProgram>,
     senderTokenAccount: PublicKey,
     bidPrice: number,
     signer: Keypair,
     oraclePriceData: OraclePriceData,
 ): Promise<TransactionInstruction> {
-    const mockProgramPDAs = getMockProgramPDAs(mockTransferProgram.programId);
+    const mockProgramPDAs = getMockProgramPDAs();
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
     return await program.methods.buySol(
         new anchor.BN(bidPrice),
@@ -164,7 +158,7 @@ export async function prepareBuySolInstruction(
             programConfig: mockProgramPDAs.config,
             journal: mockProgramPDAs.journal,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
-            revenueDistributionProgram: mockTransferProgram.programId,
+            revenueDistributionProgram: MOCK_TRANSFER_PROGRAM,
             signer: signer.publicKey
         })
         .signers([signer])
@@ -176,7 +170,6 @@ export async function prepareBuySolInstruction(
 /// Mints sufficient 2Z to user and airdrops necessary SOL to journal.
 export async function buySolSuccess(
     program: Program<ConverterProgram>,
-    mockTransferProgram: Program<MockTransferProgram>,
     senderTokenAccount: PublicKey,
     signer: Keypair,
     currentConfigs = DEFAULT_CONFIGS,
@@ -188,16 +181,15 @@ export async function buySolSuccess(
 
     // Ensure that user has sufficient 2Z.
     await mint2z(
-        mockTransferProgram,
+        program,
         senderTokenAccount,
         askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
     );
 
     // Ensure journal has funds.
-    await airdropJournal(mockTransferProgram, currentConfigs.solQuantity);
+    await airdropJournal(program, currentConfigs.solQuantity);
     await buySolAndVerify(
         program,
-        mockTransferProgram,
         senderTokenAccount,
         bidPrice,
         signer,

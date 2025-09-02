@@ -1,7 +1,5 @@
 import * as anchor from "@coral-xyz/anchor";
 import {Program} from "@coral-xyz/anchor";
-import {MockTransferProgram} from "../../mock-double-zero-program/target/types/mock_transfer_program";
-import mockTransferProgramIdl from "../../mock-double-zero-program/target/idl/mock_transfer_program.json";
 import {airdrop, getDefaultKeyPair} from "./core/utils/accounts";
 import {initializeMockTransferSystemIfNeeded, mint2z} from "./core/test-flow/mock-transfer-program";
 import {createTokenAccount} from "./core/utils/token-utils";
@@ -25,7 +23,6 @@ describe("Buy Sol Tests", () => {
     anchor.setProvider(anchor.AnchorProvider.env());
 
     const program = anchor.workspace.converterProgram as Program<ConverterProgram>;
-    const mockTransferProgram: Program<MockTransferProgram> = new Program(mockTransferProgramIdl as anchor.Idl, anchor.getProvider());
     let adminKeyPair: Keypair = getDefaultKeyPair();
     let mockTransferProgramPDAs;
     let tokenAccountForUser: PublicKey;
@@ -36,7 +33,7 @@ describe("Buy Sol Tests", () => {
         await initializeSystemIfNeeded(program);
         // Initializing the Mock Transfer system If not already initialized.
         await initializeMockTransferSystemIfNeeded(
-            mockTransferProgram,
+            program,
             adminKeyPair,
         )
         // Set deny list authority to admin.
@@ -49,17 +46,17 @@ describe("Buy Sol Tests", () => {
         );
 
         currentConfigs = DEFAULT_CONFIGS;
-        mockTransferProgramPDAs = getMockProgramPDAs(mockTransferProgram.programId);
+        mockTransferProgramPDAs = getMockProgramPDAs();
 
         // create key pair & token account for user.
         userKeyPair = anchor.web3.Keypair.generate();
         await airdrop(
-            mockTransferProgram.provider.connection,
+            program.provider.connection,
             userKeyPair.publicKey,
             10 * LAMPORTS_PER_SOL
         );
         tokenAccountForUser = await createTokenAccount(
-            mockTransferProgram.provider.connection,
+            program.provider.connection,
             mockTransferProgramPDAs.tokenMint,
             userKeyPair.publicKey,
         );
@@ -80,16 +77,15 @@ describe("Buy Sol Tests", () => {
 
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -103,16 +99,15 @@ describe("Buy Sol Tests", () => {
             const bidPrice = askPrice - 100000;
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -131,16 +126,15 @@ describe("Buy Sol Tests", () => {
             const bidPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -161,16 +155,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,
@@ -186,16 +179,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,
@@ -211,16 +203,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,
@@ -236,16 +227,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,
@@ -260,7 +250,6 @@ describe("Buy Sol Tests", () => {
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -278,16 +267,15 @@ describe("Buy Sol Tests", () => {
             const bidPrice = Math.ceil(oraclePriceData.swapRate * (1 - minDiscountRate));
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 oraclePriceData.swapRate * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -304,7 +292,6 @@ describe("Buy Sol Tests", () => {
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -320,7 +307,6 @@ describe("Buy Sol Tests", () => {
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -336,7 +322,6 @@ describe("Buy Sol Tests", () => {
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -351,16 +336,15 @@ describe("Buy Sol Tests", () => {
             const bidPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 bidPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 bidPrice,
                 userKeyPair,
@@ -378,22 +362,21 @@ describe("Buy Sol Tests", () => {
             // create key pair & token account for user
             const tempUserKeyPair = anchor.web3.Keypair.generate();
             await airdrop(
-                mockTransferProgram.provider.connection,
+                program.provider.connection,
                 tempUserKeyPair.publicKey,
                 10 * LAMPORTS_PER_SOL
             );
             const tokenAccountForTempUser = await createTokenAccount(
-                mockTransferProgram.provider.connection,
+                program.provider.connection,
                 mockTransferProgramPDAs.tokenMint,
                 tempUserKeyPair.publicKey,
             );
 
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForTempUser,
                 bidPrice,
                 tempUserKeyPair,
@@ -412,16 +395,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,
@@ -434,7 +416,6 @@ describe("Buy Sol Tests", () => {
             await removeFromDenyListAndVerify(program, userKeyPair.publicKey);
             await buySolSuccess(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
             );
@@ -450,16 +431,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = Number(oraclePriceData.swapRate);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolFail(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,
@@ -473,7 +453,6 @@ describe("Buy Sol Tests", () => {
 
             await buySolSuccess(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 userKeyPair,
             );
@@ -486,17 +465,16 @@ describe("Buy Sol Tests", () => {
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity);
+            await airdropJournal(program, currentConfigs.solQuantity);
 
             try {
                 const buySol1: TransactionInstruction = await prepareBuySolInstruction(
                     program,
-                    mockTransferProgram,
                     tokenAccountForUser,
                     askPrice,
                     userKeyPair,
@@ -504,7 +482,6 @@ describe("Buy Sol Tests", () => {
                 );
                 const buySol2: TransactionInstruction = await prepareBuySolInstruction(
                     program,
-                    mockTransferProgram,
                     tokenAccountForUser,
                     askPrice * 5,
                     userKeyPair,
@@ -531,30 +508,29 @@ describe("Buy Sol Tests", () => {
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
             const tempUserKeyPair = anchor.web3.Keypair.generate();
             const tokenAccountForTempUser = await createTokenAccount(
-                mockTransferProgram.provider.connection,
+                program.provider.connection,
                 mockTransferProgramPDAs.tokenMint,
                 tempUserKeyPair.publicKey,
             );
 
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
 
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForTempUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity);
+            await airdropJournal(program, currentConfigs.solQuantity);
 
             try {
                 const buySol1: TransactionInstruction = await prepareBuySolInstruction(
                     program,
-                    mockTransferProgram,
                     tokenAccountForUser,
                     askPrice,
                     userKeyPair,
@@ -562,7 +538,6 @@ describe("Buy Sol Tests", () => {
                 );
                 const buySol2: TransactionInstruction = await prepareBuySolInstruction(
                     program,
-                    mockTransferProgram,
                     tokenAccountForTempUser,
                     askPrice * 5,
                     tempUserKeyPair,
@@ -605,16 +580,15 @@ describe("Buy Sol Tests", () => {
             const askPrice = await getConversionPriceAndVerify(program, oraclePriceData, userKeyPair) + 10000;
             // Ensure that user has sufficient 2Z.
             await mint2z(
-                mockTransferProgram,
+                program,
                 tokenAccountForUser,
                 askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
             );
             // Ensure journal has funds.
-            await airdropJournal(mockTransferProgram, currentConfigs.solQuantity)
+            await airdropJournal(program, currentConfigs.solQuantity)
 
             await buySolAndVerify(
                 program,
-                mockTransferProgram,
                 tokenAccountForUser,
                 askPrice,
                 userKeyPair,

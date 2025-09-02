@@ -5,7 +5,7 @@
   "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
   "sol_quantity": 25000000000,
   "price_maximum_age": 324,
-  "price_oracle_end_point": "https://geuvq4zbm4.execute-api.us-east-1.amazonaws.com/release1/api/v1/swap-rate",
+  "price_oracle_end_point": "https://pzyqps6p57.execute-api.us-east-1.amazonaws.com/qa-release/api/v1/swap-rate",
   "coefficient": 4500,
   "max_discount_rate": 5000,
   "min_discount_rate": 500

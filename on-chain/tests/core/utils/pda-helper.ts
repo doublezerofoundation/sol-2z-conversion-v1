@@ -1,5 +1,5 @@
 import {PublicKey} from "@solana/web3.js";
-import {BPF_UPGRADEABLE_LOADER_ID, Seeds} from "../constants";
+import {BPF_UPGRADEABLE_LOADER_ID, MOCK_TRANSFER_PROGRAM, Seeds} from "../constants";
 import CONFIGURATION_REGISTRY_SEED = Seeds.CONFIGURATION_REGISTRY_SEED;
 import PROGRAM_STATE_SEED = Seeds.PROGRAM_STATE_SEED;
 import DENY_LIST_REGISTRY_SEED = Seeds.DENY_LIST_REGISTRY_SEED;
@@ -42,37 +42,37 @@ export function getProgramDataAccountPDA(programId: PublicKey) {
         BPF_UPGRADEABLE_LOADER_ID
     )[0];
 }
-export function getMockDoubleZeroTokenMintPDA(mockProgramId: PublicKey) {
+export function getMockDoubleZeroTokenMintPDA() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_2Z_TOKEN_MINT_SEED)],
-        mockProgramId
+        MOCK_TRANSFER_PROGRAM
     )[0]
 }
-export function getMockProtocolTreasuryAccount(mockProgramId: PublicKey) {
+export function getMockProtocolTreasuryAccount() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_PROTOCOL_TREASURY_SEED)],
-        mockProgramId
+        MOCK_TRANSFER_PROGRAM
     )[0]
 }
-export function getMockConfig(mockProgramId: PublicKey) {
+export function getMockConfig() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_CONFIG_ACCOUNT)],
-        mockProgramId
+        MOCK_TRANSFER_PROGRAM
     )[0]
 }
 
-export function getMockRevenueDistributionJournal(mockProgramId: PublicKey) {
+export function getMockRevenueDistributionJournal() {
     return PublicKey.findProgramAddressSync(
         [Buffer.from(MOCK_REVENUE_DISTRIBUTION_JOURNAL)],
-        mockProgramId
+        MOCK_TRANSFER_PROGRAM
     )[0]
 }
 
-export function getMockProgramPDAs(mockProgramId: PublicKey) {
+export function getMockProgramPDAs() {
     return {
-        tokenMint: getMockDoubleZeroTokenMintPDA(mockProgramId),
-        protocolTreasury: getMockProtocolTreasuryAccount(mockProgramId),
-        journal: getMockRevenueDistributionJournal(mockProgramId),
-        config: getMockConfig(mockProgramId)
+        tokenMint: getMockDoubleZeroTokenMintPDA(),
+        protocolTreasury: getMockProtocolTreasuryAccount(),
+        journal: getMockRevenueDistributionJournal(),
+        config: getMockConfig()
     }
 }
