@@ -197,3 +197,9 @@ variable "accountId" {
   description = "aws account id"
   type        = string
 }
+
+variable "skip_image_validation" {
+  description = "Specify whether ECR image validation is needed"
+  type        = bool
+  default     = false
+}

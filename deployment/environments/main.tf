@@ -255,6 +255,7 @@ module "ec2" {
   enable_indexer_service     = var.enable_indexer_service
   swap_oracle_service_image_tag = var.release_tag
   indexer_service_image_tag = var.release_tag
+  skip_image_validation = var.skip_image_validation
 
   # Use the IAM instance profile from the account level
   instance_profile_name = data.terraform_remote_state.account.outputs.ec2_instance_profile_name

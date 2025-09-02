@@ -218,18 +218,31 @@ wait_for_port_release() {
 trap 'stop_validator' EXIT
 
 # -------------------- Program Management --------------------
-build_program() {
+build_anchor_program() {
     local PROGRAM_NAME=$1
     log_info "Building the $PROGRAM_NAME program..."
     anchor build -- --features test > /dev/null
     yarn install > /dev/null
 }
 
-deploy_program() {
+build_native_program() {
+    local PROGRAM_NAME=$1
+    log_info "Building the $PROGRAM_NAME program..."
+    cargo build-sbf > /dev/null
+}
+
+deploy_anchor_program() {
     local RPC_URL=$1
     local PROGRAM_NAME=$2
     log_info "Deploying $PROGRAM_NAME program to $RPC_URL"
     anchor deploy --provider.cluster $RPC_URL --program-name $PROGRAM_NAME --program-keypair ./.keys/$PROGRAM_NAME-keypair.json
+}
+
+deploy_mock_program() {
+    log_info "Deploying mock transfer program"
+    solana program deploy \
+            target/deploy/mock_transfer_program.so \
+            --program-id .keys/mock-double-zero-program-keypair.json
 }
 
 # -------------------- CLI Management --------------------
@@ -269,9 +282,9 @@ run_test() {
 
     # Deploy the programs to the validator
     cd $SCRIPT_DIR/mock-double-zero-program || exit 1
-    deploy_program $RPC_URL "mock-double-zero-program" || { log_error "Deploy failed"; exit 1; }
+    deploy_mock_program
     cd $SCRIPT_DIR/on-chain || exit 1
-    deploy_program $RPC_URL "converter-program" || { log_error "Deploy failed"; exit 1; }
+    deploy_anchor_program $RPC_URL "converter-program" || { log_error "Deploy failed"; exit 1; }
 
     if [ "$TEST_TYPE" == "e2e" ]; then
         cd $SCRIPT_DIR/e2e || exit 1
@@ -304,11 +317,11 @@ trap 'killall -9 solana-test-validator 2>/dev/null || true' EXIT
 
 # Build the double zero converter program
 cd ./on-chain || exit 1
-build_program "converter-program"
+build_anchor_program "converter-program"
 
 # Build the mock double zero transfer program
 cd $SCRIPT_DIR/mock-double-zero-program || exit 1
-build_program "mock-double-zero-program"
+build_native_program "mock-double-zero-program"
 cd $SCRIPT_DIR
 
 # Build the admin and user CLI

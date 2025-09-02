@@ -40,7 +40,7 @@ show_help() {
   echo ""
   echo "OPTIONS:"
   echo "  -m, --mode Mode      Set the mode of operation (deploy_only, build_only, build_and_deploy)."
-  echo "  -r, --restart-validator Start/ Restart validator (Only in the local net)"
+  echo "  -rv, --restart-validator Start/ Restart validator (Only in the local net)"
   echo "  -h, --help          Show this help message"
   echo ""
   echo "Example:"
@@ -91,7 +91,7 @@ kill_validator() {
 build_program() {
     log_section "Building program..."
 
-    if ! anchor build; then
+    if ! cargo build-sbf; then
         log_error "Program build failed"
         return 1
     fi
@@ -100,11 +100,12 @@ build_program() {
 }
 
 deploy_program() {
-    log_section "Deploying Anchor program..."
+    log_section "Deploying solana program..."
 
-    if ! anchor deploy \
-        --program-name mock-double-zero-program \
-        --program-keypair .keys/mock-double-zero-program-keypair.json; then
+    if ! solana program deploy \
+        target/deploy/mock_transfer_program.so \
+        --program-id .keys/mock-double-zero-program-keypair.json
+    then
         log_error "Mock Transfer Program deployment failed"
         return 1
     fi
@@ -124,7 +125,7 @@ while [[ $# -gt 0 ]]; do
             mode="$2"
             shift 2
             ;;
-        -r|--restart-validator)
+        -rv|--restart-validator)
             restart_validator=true
             shift
             ;;
