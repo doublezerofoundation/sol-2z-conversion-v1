@@ -2,5 +2,6 @@
   "applicationPort": 8080,
   "RPC_URL": "https://api.devnet.solana.com",
   "PROGRAM_ID": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969",
-  "CONCURRENCY": 8
+  "CONCURRENCY": 8,
+  "LOG_LEVEL": "INFO"
 }

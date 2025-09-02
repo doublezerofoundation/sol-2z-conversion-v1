@@ -1,7 +1,11 @@
 import express, { Request, Response } from 'express';
 import { recoverHistory } from './core/history';
 import { tailRealTime } from './core/realtime';
-import config from './utils/config';
+import config, { getLogLevel } from './utils/config';
+import { logger } from './utils/logger';
+
+// Initialize logger 
+logger.setLevel(getLogLevel());
 
 const PORT = config.applicationPort;
 
@@ -14,29 +18,35 @@ async function startServer() {
         });
         
         // Start the indexer in the background
-        console.log('🚀 Starting indexer service...');
-        console.log(`RPC URL: ${config.RPC_URL}`);
-        console.log(`Program ID: ${config.PROGRAM_ID}`);
+        logger.info('Starting indexer service...');
+        logger.info('Configuration loaded', {
+            rpcUrl: config.RPC_URL,
+            programId: config.PROGRAM_ID,
+            concurrency: config.CONCURRENCY,
+            port: PORT
+        });
         
         (async () => {
             try {
                 tailRealTime();
                 await recoverHistory();
-                console.log('✅ Historical data recovery completed');
+                logger.info('Historical data recovery completed');
             } catch (error) {
-                console.error('❌ Historical data recovery failed:', error);
+                logger.error('Historical data recovery failed', { 
+                    error: error instanceof Error ? error.message : String(error) 
+                });
             }
         })();
 
         const server = app.listen(PORT, () => {
-            console.log(`Indexer Service started on port ${PORT}`);
+            logger.info(`Indexer Service started on port ${PORT}`);
         });
         
         // Graceful shutdown
         const shutdown = () => {
-            console.log('Shutting down gracefully...');
+            logger.info('Shutting down gracefully...');
             server.close(() => {
-                console.log('Server closed');
+                logger.info('Server closed');
                 process.exit(0);
             });
         };
@@ -45,7 +55,9 @@ async function startServer() {
         process.on('SIGINT', shutdown);
         
     } catch (error) {
-        console.error('Failed to start server:', error);
+        logger.error('Failed to start server', { 
+            error: error instanceof Error ? error.message : String(error) 
+        });
         process.exit(1);
     }
 }
