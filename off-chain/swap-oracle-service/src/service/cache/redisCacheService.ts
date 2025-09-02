@@ -4,6 +4,7 @@ import process from "node:process";
 import {inject, injectable} from "inversify";
 import {ConfigUtil} from "../../utils/configUtil";
 import {ConfigField, TYPES} from "../../types/common";
+import {logger} from "../../utils/logger";
 const REDIS_ENDPOINT = process.env.REDIS_ENDPOINT
 const REDIS_PORT =  process.env.REDIS_PORT
 const REDIS_URL = `rediss://${REDIS_ENDPOINT}:${REDIS_PORT}`
@@ -17,33 +18,31 @@ export class RedisCacheService implements CacheService {
         this.redisClient = createClient({
             url: REDIS_URL,
         });
-        console.log("redis derived url",REDIS_URL)
+        logger.debug("redis derived url",REDIS_URL)
         this.redisClient.on("error", (err) => {
-            console.error("Redis Client Error", err);
+            logger.error("Redis Client Error", err);
             this.isConnected = false;
         });
 
         this.redisClient.on("connect", () => {
-            console.log("Redis client connected");
+            logger.error("Redis client connected");
             this.isConnected = true;
         });
 
         this.redisClient.on("disconnect", () => {
-            console.log("Redis client disconnected");
+            logger.error("Redis client disconnected");
             this.isConnected = false;
         });
-        console.log("Redis client configured (not connected yet)");
-
-
+        logger.info("Redis client configured (not connected yet)");
     }
 
 
     private async connect(): Promise<void> {
         try {
-            console.log("Connecting to Redis...");
+            logger.info("Connecting to Redis...");
             await this.redisClient.connect();
         } catch (error) {
-            console.error("Failed to connect to Redis:", error);
+            logger.error("Failed to connect to Redis:", error);
         }
     }
 
@@ -61,7 +60,7 @@ export class RedisCacheService implements CacheService {
         try {
             return this.configUtil.get<number>(ConfigField.PRICE_CACHE_TTL_SECONDS) || 10; // 10
         } catch (error) {
-            console.warn("Failed to get TTL from config, using default:", error);
+            logger.warn("Failed to get TTL from config, using default:", error);
             return 10; // fallback
         }
     }
@@ -77,7 +76,7 @@ export class RedisCacheService implements CacheService {
             }
             await this.redisClient.set(key, stringValue);
         } catch (error) {
-            console.error(`Error adding key ${key}:`, error);
+            logger.error(`Error adding key ${key}:`, error);
             return null;
         }
     }
@@ -86,7 +85,7 @@ export class RedisCacheService implements CacheService {
         try {
             await this.ensureConnection();
             const value: string | {} = await this.redisClient.get(key);
-            console.log("value from redis",value)
+            logger.info("value from redis",value)
             if (value === null) return null;
             try {
                 return JSON.parse(value as string);
@@ -94,7 +93,7 @@ export class RedisCacheService implements CacheService {
                 return value;
             }
         } catch (error) {
-            console.error(`Error getting key ${key}:`, error);
+            logger.error(`Error getting key ${key}:`, error);
             return null;
         }
     }

@@ -16,6 +16,6 @@ app.startServer()
         logger.info('Server started successfully');
     })
     .catch((error) => {
-        console.error('Failed to start server:', error);
+        logger.error('Failed to start server:', error);
         process.exit(1);
 });

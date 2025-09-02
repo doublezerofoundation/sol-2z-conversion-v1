@@ -8,6 +8,7 @@ import IMetricsMonitoringService from "../service/monitor/IMetricsMonitoringServ
 import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
+import {logger} from "../utils/logger";
 
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 @injectable()
@@ -36,7 +37,7 @@ export default class SwapRateController {
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
             if (!await this.healthMonitoringService.getHealthStatus()) {
-                console.error("Health check failed")
+                logger.error("Health check failed")
                 res.status(503).json({
                     error: 'Service temporarily unavailable',
                     details: 'Health check failed',
@@ -61,7 +62,7 @@ export default class SwapRateController {
             }
             res.json(result);
         } catch (error) {
-            console.error('Error in priceRateHandler:', error);
+            logger.error('Error in priceRateHandler:', error);
             res.status(500).json({error: 'Internal server error'});
         }
     }
@@ -81,7 +82,7 @@ export default class SwapRateController {
             });
 
         } catch (error) {
-            console.error('Error in healthCheckHandler:', error);
+            logger.error('Error in healthCheckHandler:', error);
             res.status(500).json({error: 'Internal server error'});
         }
     }
@@ -108,7 +109,7 @@ export default class SwapRateController {
                     const result = await service.retrieveSwapRate();
                     return { success: true, data: result, service: service.getPricingServiceType() };
                 } catch (error) {
-                    console.error(`Error from ${service.getPricingServiceType()}:`, error);
+                    logger.error(`Error from ${service.getPricingServiceType()}:`, error);
                     return { success: false, error, service: service.getPricingServiceType() };
                 }
             });
@@ -125,7 +126,7 @@ export default class SwapRateController {
                 }
             });
 
-            console.log(`Successful rates: ${successfulRates.length}, Failures: ${failures.length}`);
+            logger.info(`Successful rates: ${successfulRates.length}, Failures: ${failures.length}`);
 
             if (successfulRates.length === 0) {
                 throw new Error(`All pricing services failed. Failed services: ${failures.join(', ')}`);
@@ -139,7 +140,7 @@ export default class SwapRateController {
 
             return { priceRate, isCacheHit: false };
         } catch (error) {
-            console.error('Error retrieving swap rate:', error);
+            logger.error('Error retrieving swap rate:', error);
             this.circuitBreakerService.reportPriceRetrievalFailure();
             throw error;
         }

@@ -6,6 +6,7 @@ import axios from "axios";
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 import {injectable} from "inversify";
 import ISwapRateService from "../swap/ISwapRateService";
+import {logger} from "../../utils/logger";
 
 @injectable()
 export default class PythPricingService extends PricingServiceBase {
@@ -41,7 +42,7 @@ export default class PythPricingService extends PricingServiceBase {
                 [feedID],
                 {encoding: "base64"}
             )
-            console.log(priceData.parsed)
+            logger.info(`Fetched Price data for FeedID: ${feedID}`, priceData.parsed)
             const priceDataValue = {
                 confidence: priceData.parsed[0].price.conf,
                 price: priceData.parsed[0].price.price,
@@ -52,7 +53,7 @@ export default class PythPricingService extends PricingServiceBase {
             return priceDataValue;
 
         } catch (error) {
-            console.error("Error fetching price: ", error)
+            logger.error("Error fetching price: ", error)
             throw error;
 
         }
@@ -61,13 +62,13 @@ export default class PythPricingService extends PricingServiceBase {
 
     async retrieveSwapRate() {
         if (!this.solUsdFeedID || !this.twozUsdFeedID) {
-            console.error('Missing feed IDs for price retrieval');
+            logger.error('Missing feed IDs for price retrieval');
             throw new Error('Missing required feed IDs');
         }
         const solPrice = await this.fetchPrice(this.solUsdFeedID);
         const twozPrice = await this.fetchPrice(this.twozUsdFeedID);
-        console.log("Sol Price: ", solPrice)
-        console.log("Twoz Price: ", twozPrice)
+        logger.info("Sol Price: ", solPrice)
+        logger.info("Twoz Price: ", twozPrice)
         return await this.swapRateCal(solPrice, twozPrice)
     }
 
@@ -80,14 +81,14 @@ export default class PythPricingService extends PricingServiceBase {
             lastPriceUpdate = await this.cacheService.get(`${this.getPricingServiceType()}-${ENV}-last-price-update`);
             isCacheConnected = true;
         } catch (error) {
-            console.error("Error fetching from cache: ", error);
+            logger.error("Error fetching from cache: ", error);
         }
 
         try {
             await axios.get(new URL('live', this.pricingServicesConfig.endpoint).toString());
             isPricingConnected = true;
         } catch (error) {
-            console.error("Error connecting to pricing service: ", error);
+            logger.error("Error connecting to pricing service: ", error);
         }
 
         const isConnected = isCacheConnected && isPricingConnected;
