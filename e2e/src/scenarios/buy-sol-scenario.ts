@@ -136,10 +136,10 @@ export class BuySolScenario extends CommonScenario {
         const senderTokenAccount = await findOrInitializeAssociatedTokenAccount(
             this.admin.session.getKeypair(),
             this.user.session.getPublicKey(),
-            await getMockDoubleZeroTokenMintPDA(this.admin.session.getMockProgram().programId),
-            this.admin.session.getMockProgram()
+            await getMockDoubleZeroTokenMintPDA(),
+            this.admin.session.getProgram()
         );
-        const mockProgramPDAs = await getMockProgramPDAs(this.admin.session.getMockProgram().programId);
+        const mockProgramPDAs = await getMockProgramPDAs();
 
         // manually call the buy sol command with the attestation
         const buySolTx = this.user.session.getProgram().methods.buySol(
@@ -158,7 +158,7 @@ export class BuySolScenario extends CommonScenario {
             programConfig: mockProgramPDAs.config,
             journal: mockProgramPDAs.journal,
             tokenProgram: TOKEN_2022_PROGRAM_ID,
-            revenueDistributionProgram: this.user.session.getMockProgram().programId,
+            revenueDistributionProgram: getConfig().double_zero_program_id,
             signer: this.user.session.getPublicKey()
         })
         .signers([this.user.session.getKeypair()]);
@@ -176,11 +176,11 @@ export class BuySolScenario extends CommonScenario {
         const ata = await findOrInitializeAssociatedTokenAccount(
             this.admin.session.getKeypair(),
             this.user.session.getPublicKey(),
-            await getMockDoubleZeroTokenMintPDA(this.admin.session.getMockProgram().programId),
-            this.admin.session.getMockProgram()
+            await getMockDoubleZeroTokenMintPDA(),
+            this.admin.session.getProgram()
         );
 
-        const balance = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(ata);
+        const balance = await this.admin.session.getProgram().provider.connection.getTokenAccountBalance(ata);
         let tokenAmount = balance.value.uiAmount ?? 0;
         const solQuantity = getConfig().sol_quantity / LAMPORTS_PER_SOL;
         const requiredAmount = amount * solQuantity;
@@ -211,28 +211,28 @@ export class BuySolScenario extends CommonScenario {
         const ata = await findOrInitializeAssociatedTokenAccount(
             this.admin.session.getKeypair(),
             this.user.session.getPublicKey(),
-            await getMockDoubleZeroTokenMintPDA(this.admin.session.getMockProgram().programId),
-            this.admin.session.getMockProgram()
+            await getMockDoubleZeroTokenMintPDA(),
+            this.admin.session.getProgram()
         );
 
-        const balance = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(ata);
+        const balance = await this.admin.session.getProgram().provider.connection.getTokenAccountBalance(ata);
         return balance.value.uiAmount ?? 0;
     }
 
     public async getProtocolTreasury2ZBalance(): Promise<number> {
-        const mockProtocolTreasuryAcc = getMockProtocolTreasuryAccount(this.admin.session.getMockProgram().programId);
-        const mockProtocolTreasury = await this.admin.session.getMockProgram().provider.connection.getTokenAccountBalance(mockProtocolTreasuryAcc);
+        const mockProtocolTreasuryAcc = getMockProtocolTreasuryAccount();
+        const mockProtocolTreasury = await this.admin.session.getProgram().provider.connection.getTokenAccountBalance(mockProtocolTreasuryAcc);
         return mockProtocolTreasury.value.uiAmount ?? 0;
     }
 
     public async getUserSolBalance(): Promise<number> {
-        const balance = await this.admin.session.getMockProgram().provider.connection.getBalance(this.user.session.getPublicKey());
+        const balance = await this.admin.session.getProgram().provider.connection.getBalance(this.user.session.getPublicKey());
         return balance / LAMPORTS_PER_SOL;
     }
 
     public async getJournalSolBalance(): Promise<number> {
-        const mockJournalPDA = getMockRevenueDistributionJournal(this.admin.session.getMockProgram().programId);
-        const mockJournalBalance = await this.admin.session.getMockProgram().provider.connection.getBalance(mockJournalPDA);
+        const mockJournalPDA = getMockRevenueDistributionJournal();
+        const mockJournalBalance = await this.admin.session.getProgram().provider.connection.getBalance(mockJournalPDA);
         return mockJournalBalance / LAMPORTS_PER_SOL;
     }
 

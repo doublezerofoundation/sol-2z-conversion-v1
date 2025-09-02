@@ -239,10 +239,12 @@ deploy_anchor_program() {
 }
 
 deploy_mock_program() {
+    local RPC_URL=$1
     log_info "Deploying mock transfer program"
     solana program deploy \
             target/deploy/mock_transfer_program.so \
-            --program-id .keys/mock-double-zero-program-keypair.json
+            --program-id .keys/mock-double-zero-program-keypair.json \
+            --url "$RPC_URL"
 }
 
 # -------------------- CLI Management --------------------
@@ -282,7 +284,7 @@ run_test() {
 
     # Deploy the programs to the validator
     cd $SCRIPT_DIR/mock-double-zero-program || exit 1
-    deploy_mock_program
+    deploy_mock_program $RPC_URL
     cd $SCRIPT_DIR/on-chain || exit 1
     deploy_anchor_program $RPC_URL "converter-program" || { log_error "Deploy failed"; exit 1; }
 
