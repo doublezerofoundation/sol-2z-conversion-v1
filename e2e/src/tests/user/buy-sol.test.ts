@@ -109,6 +109,7 @@ export const userBuySolTests: Test[] = [
         name: "user_buy_sol_success",
         description: "User should be able to buy SOL if they have enough 2Z",
         execute: async (scenario: BuySolScenario) => {
+
             // Set low coefficient to avoid rounding errors
             const config = getConfig();
             config.coefficient = 1;
@@ -119,7 +120,9 @@ export const userBuySolTests: Test[] = [
 
             // buy sol and verify
             const oraclePrice = await getOraclePriceData();
-            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1;
+            await scenario.checkAndReimburseUser2ZBalance(amount);
+            await scenario.checkAndReimburseJournalSolBalance();
             await scenario.buySolAndVerify(amount);
         }
     },
@@ -129,6 +132,8 @@ export const userBuySolTests: Test[] = [
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
             const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+            await scenario.checkAndReimburseUser2ZBalance(amount);
+            await scenario.checkAndReimburseJournalSolBalance();
             const result = await scenario.buySolAndVerify(amount);
 
             const txHash = extractTxHashFromResult(result);
@@ -141,7 +146,9 @@ export const userBuySolTests: Test[] = [
         description: "Fill registry should be updated when a user buys SOL",
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
-            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1;
+            await scenario.checkAndReimburseUser2ZBalance(amount);
+            await scenario.checkAndReimburseJournalSolBalance();
             await scenario.buySolAndVerify(amount);
             // verification is covered in the buySolAndVerify function
         }
@@ -151,7 +158,8 @@ export const userBuySolTests: Test[] = [
         description: "User should not be able to buy SOL twice in the same slot",
         execute: async (scenario: BuySolScenario) => {
             const oraclePrice = await getOraclePriceData();
-            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1
+            const amount = (oraclePrice.swapRate / TOKEN_DECIMALS) + 1;
+            await scenario.checkAndReimburseJournalSolBalance();
 
             // Ensure user has enough balance for both attempts
             await scenario.checkAndReimburseUser2ZBalance(amount * 6);
