@@ -19,7 +19,7 @@ export class Logger {
      constructor(config: Partial<LoggerConfig> = {}) {
           this.config = {
                level: LogLevel.INFO,
-               service: 'indexer-service',
+               service: 'swap-oracle-service',
                timestamp: true,
                colors: true,
                ...config

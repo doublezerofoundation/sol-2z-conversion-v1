@@ -6,7 +6,7 @@ import axios from "axios";
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 import {injectable} from "inversify";
 import ISwapRateService from "../swap/ISwapRateService";
-import {logger} from "@common/logger";
+import {logger} from "../../utils/logger";
 import {ConfigurationError, PriceServiceError} from "../../utils/error";
 
 @injectable()

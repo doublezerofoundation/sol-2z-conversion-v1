@@ -6,6 +6,7 @@ COPY package.json package-lock.json ./
 RUN npm ci --only=production
 
 COPY dist ./dist
+COPY config ./config
 COPY config ./dist/config
 
 EXPOSE 8080
