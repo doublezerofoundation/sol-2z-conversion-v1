@@ -166,14 +166,13 @@ describe('Indexer Service smoke tests', () => {
           expect(processTxStub.calledWith('LIVE2')).to.be.true;
           expect(saveLastSignatureStub.calledWith('LIVE2')).to.be.true;
 
-          // Test duplicate signature handling
+          // Test another signature - no duplicate checking anymore
           processTxStub.resetHistory();
           saveLastSignatureStub.resetHistory();
-          getLastSignatureStub.resolves('LIVE2'); // Same as incoming
 
-          await capturedOnLogsCallback({ signature: 'LIVE2' });
-          expect(processTxStub.calledWith('LIVE2')).to.be.true; // Still processes
-          expect(saveLastSignatureStub.called).to.be.false; // But doesn't save duplicate
+          await capturedOnLogsCallback({ signature: 'LIVE3' });
+          expect(processTxStub.calledWith('LIVE3')).to.be.true; // Still processes
+          expect(saveLastSignatureStub.calledWith('LIVE3')).to.be.true; // Always saves now
      });
 
      it('should handle bootstrap flow when no history exists', async () => {
