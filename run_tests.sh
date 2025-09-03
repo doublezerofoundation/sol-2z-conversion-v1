@@ -234,17 +234,44 @@ build_native_program() {
 deploy_anchor_program() {
     local RPC_URL=$1
     local PROGRAM_NAME=$2
+    local CONVERTER_PROGRAM_PRIVATE_KEY="[88,12,53,120,196,208,4,193,202,237,81,120,71,28,31,224,41,207,
+    76,0,99,32,173,9,43,131,184,51,4,250,93,103,8,40,223,86,126,86,244,129,130,52,229,
+    190,48,74,233,221,131,198,112,195,129,221,203,25,177,111,111,25,201,69,205,115]"
+    # Create a temporary keypair file
+    local KEYPAIR_FILE
+    KEYPAIR_FILE=$(mktemp)
+
+    # Write the private key to the temp file
+    echo "$CONVERTER_PROGRAM_PRIVATE_KEY" > "$KEYPAIR_FILE"
+
     log_info "Deploying $PROGRAM_NAME program to $RPC_URL"
-    anchor deploy --provider.cluster $RPC_URL --program-name $PROGRAM_NAME --program-keypair ./.keys/$PROGRAM_NAME-keypair.json
+    anchor deploy \
+        --provider.cluster "$RPC_URL" \
+        --program-name "$PROGRAM_NAME" \
+        --program-keypair "$KEYPAIR_FILE"
+
+    # Remove the temp file after deployment
+    rm -f "$KEYPAIR_FILE"
 }
 
 deploy_mock_program() {
     local RPC_URL=$1
+    local MOCK_PROGRAM_PRIVATE_KEY="[41,100,166,45,2,252,199,133,111,34,143,135,15,162,37,112,
+    66,179,228,45,86,90,71,52,1,98,138,127,212,132,153,139,110,106,250,31,25,233,164,66,37,154,
+    30,122,115,179,246,155,232,105,154,14,237,244,119,175,13,188,194,6,3,40,42,2]"
+    # Create a temporary keypair file
+    local KEYPAIR_FILE
+    KEYPAIR_FILE=$(mktemp)
+    # Write the private key to the temp file
+    echo "$MOCK_PROGRAM_PRIVATE_KEY" > "$KEYPAIR_FILE"
     log_info "Deploying mock transfer program"
     solana program deploy \
-            target/deploy/mock_transfer_program.so \
-            --program-id .keys/mock-double-zero-program-keypair.json \
-            --url "$RPC_URL"
+        target/deploy/mock_transfer_program.so \
+        --program-id "$KEYPAIR_FILE" \
+        --url "$RPC_URL"
+
+    # Remove the temp file after deployment
+    rm -f "$KEYPAIR_FILE"
 }
 
 # -------------------- CLI Management --------------------
