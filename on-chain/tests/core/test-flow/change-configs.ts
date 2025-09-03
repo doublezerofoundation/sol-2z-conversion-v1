@@ -5,6 +5,8 @@ import { getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA
 import { Program } from "@coral-xyz/anchor";
 import { assert, expect } from "chai";
 import { ConverterProgram } from "../../../target/types/converter_program";
+import {findAnchorEventInLogs, getTransactionLogs} from "../utils/return-data";
+import {Events} from "../constants";
 
 export const updateConfigsAndVerify = async (
     program: Program<ConverterProgram>,
@@ -24,9 +26,9 @@ export const updateConfigsAndVerify = async (
     assert.isTrue(programStateExists, "Program state should be initialized");
     assert.isTrue(configRegistryExists, "Config Registry should be initialized");
     assert.isTrue(denyRegistryExists, "Deny List should be initialized");
-
+    let txSig: string;
     try {
-        await program.methods.updateConfigurationRegistry(input)
+        txSig = await program.methods.updateConfigurationRegistry(input)
         .accounts({
             admin: adminKeypair.publicKey,
         })
@@ -36,6 +38,11 @@ export const updateConfigsAndVerify = async (
         console.error("Config update failed", e.errorLogs);
         assert.fail("Config update failed");
     }
+
+    // assert whether event has been emitted or not
+    const logs = await getTransactionLogs(program.provider, txSig);
+    const event = await findAnchorEventInLogs(logs, program.idl, Events.CONFIG_UPDATED);
+    expect(event, "Config changed event should be emitted").to.exist;
 
     // verify whether config values were updated.
     const updatedConfig = await fetchCurrentConfiguration(program);

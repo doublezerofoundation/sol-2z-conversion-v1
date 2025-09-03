@@ -170,7 +170,7 @@ describe("Consume fills tests", () => {
             );
             maxSolAmount = Number(DEFAULT_CONFIGS.solQuantity) - 3 * LAMPORTS_PER_SOL;
             expectedTokenConsumed =  askPrice * maxSolAmount / LAMPORTS_PER_SOL;
-            expectedFillsConsumed = 1
+            expectedFillsConsumed = 0
 
             await consumeFillsSuccess(
                 program,
@@ -316,7 +316,7 @@ describe("Consume fills tests", () => {
                 askPrices[1] * solQuantity / LAMPORTS_PER_SOL +
                 askPrices[2] * solQuantity / LAMPORTS_PER_SOL +
                 partiallyFilledSolAmount * askPrices[3] / LAMPORTS_PER_SOL;
-            expectedFillsConsumed = Math.ceil(partialConsumptionMultiplier);
+            expectedFillsConsumed = Math.floor(partialConsumptionMultiplier);
             finalCount = numOfBuySols - Math.floor(partialConsumptionMultiplier);
 
             await consumeFillsSuccess(
@@ -336,7 +336,7 @@ describe("Consume fills tests", () => {
             // we are going to dequeue 2/3 rd of the reminder sol amount.
             maxSolAmount = Math.floor(reminderPartialFillSolAmount * 2/3)
             reminderPartialFillSolAmount -= maxSolAmount;
-            expectedFillsConsumed = 1;
+            expectedFillsConsumed = 0;
             expectedTokenConsumed = maxSolAmount * askPrices[3] / LAMPORTS_PER_SOL;
 
             await consumeFillsSuccess(
@@ -356,7 +356,7 @@ describe("Consume fills tests", () => {
             const partialConsumptionMultiplier = 0.65;
             const solQuantity = Number(DEFAULT_CONFIGS.solQuantity);
             maxSolAmount = reminderPartialFillSolAmount + Math.floor(partialConsumptionMultiplier * solQuantity);
-            expectedFillsConsumed = 2;
+            expectedFillsConsumed = 1;
             const partiallyFilledSolAmount = Math.floor(partialConsumptionMultiplier * solQuantity);
             expectedTokenConsumed = reminderPartialFillSolAmount * askPrices[3] / LAMPORTS_PER_SOL
                 + partiallyFilledSolAmount * askPrices[4] / LAMPORTS_PER_SOL;

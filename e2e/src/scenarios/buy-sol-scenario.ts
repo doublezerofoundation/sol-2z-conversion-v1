@@ -33,13 +33,7 @@ export class BuySolScenario extends CommonScenario {
         const initialProtocolTreasuryBalance2ZBalance = await this.getProtocolTreasury2ZBalance();
 
         const initialFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
-
-        // get ask price
         const askPriceResult = await this.user.getPriceCommand();
-        const askPriceRegex = /conversion rate:\s(\d+.\d+)\s2Z\sper\sSOL/m;
-        const askPriceString = askPriceResult.match(askPriceRegex)?.[1];
-        const askPrice = Number(askPriceString);
-
         // buy sol
         const result = await this.user.buySolCommand(amount);
 
@@ -51,17 +45,20 @@ export class BuySolScenario extends CommonScenario {
 
         const finalFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
 
-        // compute expected values
-        const { solQuantity } = await getConfigurationRegistryAccount(this.admin.session.getProgram());
-        const tokenBalanceChange = askPrice * Number(solQuantity) / LAMPORTS_PER_SOL;
-        const solBalanceChange = Number(solQuantity) / LAMPORTS_PER_SOL;
-
         const tolerance = 0.0001;
 
         const userTokenChange = Math.abs(Number(finalUser2ZBalance) - initialUser2ZBalance);
         const protocolTreasuryTokenChange = Math.abs(Number(finalProtocolTreasury2ZBalance) - initialProtocolTreasuryBalance2ZBalance);
         const userSolChange = Math.abs(Number(finalUserSolBalance) - initialUserSolBalance);
         const journalSolChange = Math.abs(Number(finalJournalSolBalance) - initialJournalSolBalance);
+
+        const askPriceRegex = /conversion rate:\s(\d+.\d+)\s2Z\sper\sSOL/m;
+        const askPriceString = askPriceResult.match(askPriceRegex)?.[1];
+        const askPrice = Number(askPriceString);
+        // compute expected values
+        const { solQuantity } = await getConfigurationRegistryAccount(this.admin.session.getProgram());
+        const tokenBalanceChange = askPrice * Number(solQuantity) / LAMPORTS_PER_SOL;
+        const solBalanceChange = Number(solQuantity) / LAMPORTS_PER_SOL;
 
         // verify balances
         assert.approximately(

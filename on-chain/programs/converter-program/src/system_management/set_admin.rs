@@ -1,8 +1,11 @@
 use anchor_lang::prelude::*;
 use crate::{
-    common::seeds::seed_prefixes::SeedPrefixes,
+    common::{
+        seeds::seed_prefixes::SeedPrefixes,
+        events::system::AdminChanged
+    },
     program::ConverterProgram,
-    program_state::ProgramStateAccount
+    program_state::ProgramStateAccount,
 };
 
 #[derive(Accounts)]
@@ -27,6 +30,10 @@ pub struct SetAdmin<'info> {
 impl<'info> SetAdmin<'info> {
     pub fn process(&mut self, new_admin: Pubkey) -> Result<()> {
         self.program_state.admin = new_admin;
+        emit!(AdminChanged {
+            new_admin: self.program_state.admin,
+            changed_by: self.admin.key()
+        });
         Ok(())
     }
 }

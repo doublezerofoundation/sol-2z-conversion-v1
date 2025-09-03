@@ -71,6 +71,7 @@ impl<'info> DequeueFills<'info> {
                 let fill = *next_entry; // copy the entire fill
                 fills_registry.head = (fills_registry.head + 1) % MAX_FILLS_QUEUE_SIZE as u64;
                 fills_registry.count -= 1;
+                fills_consumed += 1;
                 fill
             } else {
                 // Partial dequeue.
@@ -96,7 +97,6 @@ impl<'info> DequeueFills<'info> {
 
             sol_dequeued += dequeued_fill.sol_in;
             token_2z_dequeued += dequeued_fill.token_2z_out;
-            fills_consumed += 1;
         }
 
         fills_registry.total_sol_pending = fills_registry.total_sol_pending

@@ -4,7 +4,8 @@ use crate::{
     program_state::ProgramStateAccount,
     common::{
         seeds::seed_prefixes::SeedPrefixes,
-        error::DoubleZeroError
+        error::DoubleZeroError,
+        events::config::ConfigChanged
     },
 };
 
@@ -75,6 +76,16 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
             require!(min_discount_rate < max_rate, DoubleZeroError::InvalidMinDiscountRate);
             self.configuration_registry.min_discount_rate = min_discount_rate;
         }
+
+        emit!(ConfigChanged {
+            changed_by: self.admin.key(),
+            oracle_pubkey: self.configuration_registry.oracle_pubkey,
+            sol_quantity: self.configuration_registry.sol_quantity,
+            price_maximum_age: self.configuration_registry.price_maximum_age,
+            coefficient: self.configuration_registry.coefficient,
+            max_discount_rate: self.configuration_registry.max_discount_rate,
+            min_discount_rate: self.configuration_registry.min_discount_rate,
+        });
 
         Ok(())
     }
