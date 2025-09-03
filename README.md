@@ -233,7 +233,7 @@ anchor build && anchor deploy --program-name mock-double-zero-program --program-
 ```
 
 #### Option B: Automated Deployment
-```bash
+Ensure you have generated the keypair in the `.keys` folder. [See Solana Keypair Management](#solana-keypair-management)```bash
 # Deploy on-chain workspace
 ./provision.sh -w on-chain --restart-validator
 
