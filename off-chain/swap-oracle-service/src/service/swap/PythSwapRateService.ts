@@ -1,9 +1,18 @@
 import ISwapRateService from "./ISwapRateService";
-import {PriceRate, TWOZ_PRECISION_DECIMALS} from "../../types/common";
+import {ConfigField, PriceRate, TWOZ_PRECISION_DECIMALS, TYPES} from "../../types/common";
 import {injectable} from "inversify";
+import {inject} from "inversify/lib/esm";
+import {ConfigUtil} from "../../utils/configUtil";
+import {logger} from "../../utils/logger";
+import {PriceServiceUnavailableError} from "../../utils/error";
 
 @injectable()
 export class PythSwapRateService implements ISwapRateService {
+    private MAX_CONFIDENCE_RATIO: number;
+    constructor(@inject(TYPES.ConfigUtil) private configUtil: ConfigUtil,) {
+        this.MAX_CONFIDENCE_RATIO = this.configUtil.get<any>(ConfigField.MAX_CONFIDENCE_RATIO);
+    }
+
     convertPrice(price: string | number, exponent: number): number {
         const priceNum = typeof price === 'string' ? parseInt(price) : price;
         return priceNum * Math.pow(10, exponent);
@@ -16,14 +25,22 @@ export class PythSwapRateService implements ISwapRateService {
         const twozUsdPrice = this.convertPrice(twozPriceData.price, twozPriceData.exponent);
         const twozConfidence = this.convertPrice(twozPriceData.confidence, twozPriceData.exponent);
 
-        const conservativeSolPrice = solUsdPrice - solConfidence; // Lower SOL price
-        const conservativeTwozPrice = twozUsdPrice + twozConfidence; // Higher TWOZ price
+        const solConfidenceRatio = solConfidence / solUsdPrice;
+        const twozConfidenceRatio = twozConfidence / twozUsdPrice;
+        const combinedConfidenceRatio = solConfidenceRatio + twozConfidenceRatio;
 
-        const twozPerSol = conservativeSolPrice / conservativeTwozPrice;
+        logger.debug(`SOL confidence ratio: ${solConfidenceRatio.toFixed(6)}`);
+        logger.debug(`TWOZ confidence ratio: ${twozConfidenceRatio.toFixed(6)}`);
+        logger.debug(`Combined confidence ratio: ${combinedConfidenceRatio.toFixed(6)}`);
+        logger.debug(`Max allowed ratio: ${this.MAX_CONFIDENCE_RATIO}`);
+
+        if (combinedConfidenceRatio > this.MAX_CONFIDENCE_RATIO) {
+            logger.error(`Price data confidence check failed. Combined ratio ${combinedConfidenceRatio.toFixed(6)} exceeds maximum ${this.MAX_CONFIDENCE_RATIO}`);
+            throw new PriceServiceUnavailableError("Price data confidence check failed. Combined ratio exceeds maximum");
+        }
+
+        const twozPerSol = solUsdPrice / twozUsdPrice;
         const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION_DECIMALS));
-
-
-        console.log(`Rate: ${roundedTwozPerSol} TWOZ for 1 SOL`);
         return {
             swapRate: roundedTwozPerSol,
             solPriceUsd: solUsdPrice,

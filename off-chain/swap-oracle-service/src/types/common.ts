@@ -8,6 +8,8 @@ export enum ConfigField {
     PRICING_SERVICES = 'pricingServices',
     PRICE_CACHE_TTL_SECONDS = 'priceCacheTTLSeconds',
     LOG_LEVEL = 'logLevel',
+    MAX_CONFIDENCE_RATIO = 'maxConfidenceRatio',
+
 
 }
 export const TWOZ_PRECISION = 100000000;

@@ -11,3 +11,10 @@ export class ConfigurationError extends Error {
         this.name = 'ConfigurationError';
     }
 }
+
+export class PriceServiceUnavailableError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'PriceServiceUnavailableError';
+    }
+}

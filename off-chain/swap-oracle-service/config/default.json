@@ -2,6 +2,7 @@
   "applicationPort": 8080,
   "priceCacheTTLSeconds": 30,
   "logLevel": "INFO",
+  "maxConfidenceRatio":  0.0004,
   "pricingServices": [
     {
       "name": "pyth",
