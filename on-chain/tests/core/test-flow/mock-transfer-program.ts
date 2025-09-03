@@ -7,7 +7,7 @@ import {
 import {assert} from "chai";
 import {Keypair, PublicKey, Transaction, TransactionInstruction} from "@solana/web3.js";
 import {accountExists, getDefaultKeyPair} from "../utils/accounts";
-import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import * as anchor from "@coral-xyz/anchor";
 import {Program} from "@coral-xyz/anchor";
 import {getTokenBalance} from "../utils/token-utils";
@@ -51,7 +51,7 @@ export async function initializeMockTransferSystemAndVerify(
                 {pubkey: pdas[3], isSigner: false, isWritable: true},
                 {pubkey: pdas[0], isSigner: false, isWritable: true},
                 {pubkey: pdas[1], isSigner: false, isWritable: true},
-                {pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false},
+                {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
                 {pubkey: anchor.web3.SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false},
                 {pubkey: anchor.web3.SystemProgram.programId, isSigner: false, isWritable: false},
                 {pubkey: adminKeyPair.publicKey, isSigner: true, isWritable: true},
@@ -107,7 +107,7 @@ export async function mint2z(
             keys: [
                 {pubkey: recipientTokenAccount, isSigner: false, isWritable: true},
                 {pubkey: getMockDoubleZeroTokenMintPDA(), isSigner: false, isWritable: true},
-                {pubkey: TOKEN_2022_PROGRAM_ID, isSigner: false, isWritable: false},
+                {pubkey: TOKEN_PROGRAM_ID, isSigner: false, isWritable: false},
             ],
             data,
         })

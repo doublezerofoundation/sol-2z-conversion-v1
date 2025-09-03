@@ -1,5 +1,4 @@
 import path from "path";
-import { SystemConfig } from "../account-defs";
 import fs from "fs";
 
 export interface Config {

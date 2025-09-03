@@ -5,7 +5,7 @@ use solana_program::{
     pubkey::Pubkey,
 };
 
-use spl_token_2022::ID as TOKEN_PROGRAM_ID;
+use spl_token::ID as TOKEN_PROGRAM_ID;
 
 use crate::common::{
     seeds::MOCK_2Z_TOKEN_MINT_SEED,
@@ -33,7 +33,7 @@ pub fn mint_2z(
     assert_address(TOKEN_PROGRAM_ID, token_program.key, "token program")?;
 
     invoke_signed(
-        &spl_token_2022::instruction::mint_to(
+        &spl_token::instruction::mint_to(
             token_program.key,
             double_zero_mint.key,
             user_token_account.key,

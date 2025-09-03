@@ -1,4 +1,4 @@
-import {createAccount, TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
+import {createAccount, TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {getDefaultKeyPair} from "./accounts";
 import {Connection, Keypair, PublicKey} from "@solana/web3.js";
 
@@ -14,7 +14,7 @@ export async function createTokenAccount(
         owner,
         Keypair.generate(),
         undefined,
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_PROGRAM_ID
     )
 }
 

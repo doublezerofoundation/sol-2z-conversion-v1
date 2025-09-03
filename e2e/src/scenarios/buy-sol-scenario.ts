@@ -15,7 +15,7 @@ import {getConfig} from "../core/utils/config-util";
 import {getFillsRegistry, getFillsRegistryAccountAddress} from "../core/utils/fills-registry";
 import {OraclePriceData} from "../core/utils/price-oracle";
 import {AnchorError, BN} from "@coral-xyz/anchor";
-import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 
 export class BuySolScenario extends CommonScenario {
     private readonly user: UserClient;
@@ -157,7 +157,7 @@ export class BuySolScenario extends CommonScenario {
             doubleZeroMint: mockProgramPDAs.tokenMint,
             programConfig: mockProgramPDAs.config,
             journal: mockProgramPDAs.journal,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
             revenueDistributionProgram: getConfig().double_zero_program_id,
             signer: this.user.session.getPublicKey()
         })

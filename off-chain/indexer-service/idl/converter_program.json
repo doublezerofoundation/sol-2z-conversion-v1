@@ -1018,6 +1018,19 @@
   ],
   "events": [
     {
+      "name": "AdminChanged",
+      "discriminator": [
+        232,
+        34,
+        31,
+        226,
+        62,
+        18,
+        19,
+        114
+      ]
+    },
+    {
       "name": "BidTooLowEvent",
       "discriminator": [
         213,
@@ -1028,6 +1041,19 @@
         132,
         186,
         87
+      ]
+    },
+    {
+      "name": "ConfigChanged",
+      "discriminator": [
+        147,
+        25,
+        86,
+        98,
+        98,
+        77,
+        78,
+        192
       ]
     },
     {
@@ -1054,6 +1080,19 @@
         103,
         187,
         38
+      ]
+    },
+    {
+      "name": "DenyListAuthoritySet",
+      "discriminator": [
+        143,
+        10,
+        187,
+        24,
+        98,
+        245,
+        190,
+        150
       ]
     },
     {
@@ -1294,6 +1333,22 @@
   ],
   "types": [
     {
+      "name": "AdminChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
       "name": "BidTooLowEvent",
       "type": {
         "kind": "struct",
@@ -1345,6 +1400,42 @@
           {
             "name": "withdraw_authority_bump",
             "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_quantity",
+            "type": "u64"
+          },
+          {
+            "name": "price_maximum_age",
+            "type": "i64"
+          },
+          {
+            "name": "coefficient",
+            "type": "u64"
+          },
+          {
+            "name": "max_discount_rate",
+            "type": "u64"
+          },
+          {
+            "name": "min_discount_rate",
+            "type": "u64"
           }
         ]
       }
@@ -1473,6 +1564,22 @@
           {
             "name": "update_count",
             "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListAuthoritySet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "changed_by",
+            "type": "pubkey"
           }
         ]
       }
