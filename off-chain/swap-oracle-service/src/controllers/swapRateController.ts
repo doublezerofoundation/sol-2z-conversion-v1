@@ -9,6 +9,7 @@ import {HealthMonitoringService} from "../service/monitor/healthMonitoringServic
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
 import {logger} from "../utils/logger";
+import {PriceServiceUnavailableError} from "../utils/error";
 
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 @injectable()
@@ -62,8 +63,17 @@ export default class SwapRateController {
             }
             res.json(result);
         } catch (error) {
-            logger.error('Error in priceRateHandler:', error);
-            res.status(500).json({error: 'Internal server error'});
+            if (error instanceof PriceServiceUnavailableError) {
+                logger.warn('Price data confidence too low:', error.message);
+                res.status(503).json({
+                    error: 'Price data temporarily unavailable',
+                    details: 'Current price data confidence levels exceed acceptable thresholds',
+                    retryAfter: "60 seconds"
+                });
+            } else {
+                logger.error('Error in swapRateHandler:', error);
+                res.status(500).json({error: 'Internal server error'});
+            }
         }
     }
 
@@ -109,39 +119,68 @@ export default class SwapRateController {
                     const result = await service.retrieveSwapRate();
                     return { success: true, data: result, service: service.getPricingServiceType() };
                 } catch (error) {
-                    logger.error(`Error from ${service.getPricingServiceType()}:`, error);
-                    return { success: false, error, service: service.getPricingServiceType() };
+                    const isConfidenceError = error instanceof PriceServiceUnavailableError;
+
+                    if (isConfidenceError) {
+                        logger.warn(`Confidence error from ${service.getPricingServiceType()}:`, error.message);
+                    } else {
+                        logger.error(`Error from ${service.getPricingServiceType()}:`, error);
+                    }
+
+                    return {
+                        success: false,
+                        error,
+                        service: service.getPricingServiceType(),
+                        isConfidenceError
+                    };
                 }
             });
 
             const results = await Promise.allSettled(pricePromises);
             const successfulRates: PriceRate[] = [];
-            const failures: string[] = [];
+            const confidenceFailures: string[] = [];
+            const systemFailures: string[] = [];
             results.forEach((result, index) => {
-                if (result.status === 'fulfilled' && result.value.success && result.value.data) {
-                    successfulRates.push(result.value.data);
+                if (result.status === 'fulfilled') {
+                    const serviceResult = result.value;
+                    if (serviceResult.success && serviceResult.data) {
+                        successfulRates.push(serviceResult.data);
+                    } else {
+                        if (serviceResult.isConfidenceError) {
+                            confidenceFailures.push(serviceResult.service);
+                        } else {
+                            systemFailures.push(serviceResult.service);
+                        }
+                    }
                 } else {
                     const serviceName = this.priceServices[index]?.getPricingServiceType() || `service-${index}`;
-                    failures.push(serviceName);
+                    systemFailures.push(serviceName);
                 }
             });
 
-            logger.info(`Successful rates: ${successfulRates.length}, Failures: ${failures.length}`);
+            logger.info(`Successful rates: ${successfulRates.length}, Confidence failures: ${confidenceFailures.length}, System failures: ${systemFailures.length}`);
 
-            if (successfulRates.length === 0) {
-                throw new Error(`All pricing services failed. Failed services: ${failures.join(', ')}`);
+
+            if (successfulRates.length > 0) {
+                const priceRate = this.selectMostFavorableRate(successfulRates);
+                await this.metricsMonitoringService.putMonitoringData("2Z/Sol-price-rate", priceRate.swapRate);
+                await this.cacheService.add(`${ENV}-swapRate`, priceRate, true);
+                return { priceRate, isCacheHit: false };
             }
 
-            const priceRate = this.selectMostFavorableRate(successfulRates);
+            if (confidenceFailures.length > 0) {
+                throw new PriceServiceUnavailableError(`All pricing services failed confidence check. Services: ${confidenceFailures.join(', ')}`);
+            }
 
+            if (systemFailures.length > 0) {
+                throw new Error(`Pricing services system failures. Failed services: ${systemFailures.join(', ')}.`);
+            }
 
-            await this.metricsMonitoringService.putMonitoringData("2Z/Sol-price-rate", priceRate.swapRate);
-            await this.cacheService.add(`${ENV}-swapRate`, priceRate, true);
-
-            return { priceRate, isCacheHit: false };
         } catch (error) {
-            logger.error('Error retrieving swap rate:', error);
-            this.circuitBreakerService.reportPriceRetrievalFailure();
+            if (!(error instanceof PriceServiceUnavailableError)) {
+                logger.error('Error retrieving swap rate:', error);
+                this.circuitBreakerService.reportPriceRetrievalFailure();
+            }
             throw error;
         }
 

@@ -285,6 +285,7 @@ Create config file: `swap-oracle-service/config/{env-name}.json`
    "applicationPort": 8080, 
    "priceCacheTTLSeconds": 30,
    "logLevel": "INFO",
+   "maxConfidenceRatio":  0.007,
    "pricingServices": [
      {
       "name": "pyth",

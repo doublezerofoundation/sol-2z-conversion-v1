@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "npx ts-mocha -p ./tsconfig.json test/**/*.spec.ts --timeout 10000",
+    "test": "NODE_ENV=test npx ts-mocha -p ./tsconfig.json test/**/*.spec.ts --timeout 10000",
     "prebuild": "npm run test",
     "build": "tsc",
     "dev": "ts-node src/index.ts"
