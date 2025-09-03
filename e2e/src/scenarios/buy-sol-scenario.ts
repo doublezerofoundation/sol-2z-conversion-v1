@@ -33,6 +33,7 @@ export class BuySolScenario extends CommonScenario {
         const initialProtocolTreasuryBalance2ZBalance = await this.getProtocolTreasury2ZBalance();
 
         const initialFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
+        const askPriceResult = await this.user.getPriceCommand();
         // buy sol
         const result = await this.user.buySolCommand(amount);
 
@@ -44,15 +45,13 @@ export class BuySolScenario extends CommonScenario {
 
         const finalFillsRegistry = await getFillsRegistry(this.admin.session.getProgram());
 
-        const tolerance = 0.001;
+        const tolerance = 0.0001;
 
         const userTokenChange = Math.abs(Number(finalUser2ZBalance) - initialUser2ZBalance);
         const protocolTreasuryTokenChange = Math.abs(Number(finalProtocolTreasury2ZBalance) - initialProtocolTreasuryBalance2ZBalance);
         const userSolChange = Math.abs(Number(finalUserSolBalance) - initialUserSolBalance);
         const journalSolChange = Math.abs(Number(finalJournalSolBalance) - initialJournalSolBalance);
 
-        // get ask price
-        const askPriceResult = await this.user.getPriceCommand();
         const askPriceRegex = /conversion rate:\s(\d+.\d+)\s2Z\sper\sSOL/m;
         const askPriceString = askPriceResult.match(askPriceRegex)?.[1];
         const askPrice = Number(askPriceString);
