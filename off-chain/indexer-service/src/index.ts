@@ -7,7 +7,7 @@ import { logger } from './utils/logger';
 // Initialize logger with config
 logger.setLevel(configUtil.getLogLevel());
 
-const PORT = process.env.PORT || configUtil.getApplicationPort();
+const PORT = configUtil.getApplicationPort() || process.env.PORT;
 
 async function startServer() {
     try {

@@ -110,7 +110,7 @@ export class Logger {
           }
      }
 
-     // Set log level 
+     // Set log level
      public setLevel(level: LogLevel): void {
           this.config.level = level;
           this.info(`Log level set to ${LogLevel[level]}`);

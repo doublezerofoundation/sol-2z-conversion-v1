@@ -25,12 +25,12 @@ export class RedisCacheService implements CacheService {
         });
 
         this.redisClient.on("connect", () => {
-            logger.error("Redis client connected");
+            logger.info("Redis client connected");
             this.isConnected = true;
         });
 
         this.redisClient.on("disconnect", () => {
-            logger.error("Redis client disconnected");
+            logger.warn("Redis client disconnected");
             this.isConnected = false;
         });
         logger.info("Redis client configured (not connected yet)");

@@ -268,10 +268,11 @@ Off-chain components use the `config` npm module where the environment name and 
 Create config file: `indexer-service/config/{env-name}.json`
 ```json
 {
-   "RPC_URL": "https://api.devnet.solana.com",
-   "PROGRAM_ID": "program_id",
-   "logLevel": "INFO",
-   "CONCURRENCY": 8
+   "applicationPort": 8080,
+   "rpcUrl": "https://api.devnet.solana.com",
+   "programId": "program_id",
+   "concurrency": 8,
+   "logLevel": "WARN"
 }
 ```
 **Note** Update `PROGRAM_ID ` with public key of the convertor program [Refer](#generate-data-signer-key).
