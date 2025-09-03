@@ -3,7 +3,7 @@ import { Program } from "@coral-xyz/anchor";
 import { SystemConfig, SystemState } from "../account-defs";
 import { getConfigurationRegistryPDA, getProgramStatePDA } from "./pda-helper";
 import { Keypair, PublicKey } from "@solana/web3.js";
-import { createAssociatedTokenAccount, getAssociatedTokenAddressSync, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { createAssociatedTokenAccount, getAssociatedTokenAddressSync, TOKEN_PROGRAM_ID } from "@solana/spl-token";
 
 export const getProgramStateAccount = async (program: Program<ConverterProgram>) => {
     const programStatePDA = await getProgramStatePDA(program.programId);
@@ -29,7 +29,7 @@ export const findOrInitializeAssociatedTokenAccount = async (
     mint: PublicKey,
     program: Program<ConverterProgram>
 ) => {
-    const associatedTokenAddress = getAssociatedTokenAddressSync(mint, ataOwner, false, TOKEN_2022_PROGRAM_ID);
+    const associatedTokenAddress = getAssociatedTokenAddressSync(mint, ataOwner, false, TOKEN_PROGRAM_ID);
 
     const accountInfo = await program.provider.connection.getAccountInfo(associatedTokenAddress);
 
@@ -48,6 +48,6 @@ export const findOrInitializeAssociatedTokenAccount = async (
         {
             commitment: "confirmed"
         },
-        TOKEN_2022_PROGRAM_ID
+        TOKEN_PROGRAM_ID
     );
 }

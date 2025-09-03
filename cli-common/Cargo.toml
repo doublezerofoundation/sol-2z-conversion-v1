@@ -11,7 +11,7 @@ serde_json = { workspace = true }
 solana-transaction-status = { workspace = true }
 base64 = { workspace = true }
 rust_decimal = { workspace = true }
-spl-token-2022 = { workspace = true }
+spl-token = { workspace = true }
 spl-associated-token-account = { workspace = true }
 bytemuck = {workspace = true}
 solana-commitment-config = { workspace = true }

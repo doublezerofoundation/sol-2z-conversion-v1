@@ -1,6 +1,6 @@
 import { setup } from "./core/setup";
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
-import {assert, expect} from "chai";
+import {assert} from "chai";
 import {accountExists, getDefaultKeyPair} from "./core/utils/accounts";
 import {PublicKey} from "@solana/web3.js";
 import {getConfigurationRegistryPDA, getDenyListRegistryPDA, getProgramStatePDA} from "./core/utils/pda-helper";

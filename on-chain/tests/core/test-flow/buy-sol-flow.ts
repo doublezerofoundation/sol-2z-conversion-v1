@@ -5,7 +5,7 @@ import {BN, Program} from "@coral-xyz/anchor";
 import { ConverterProgram } from "../../../target/types/converter_program";
 import {getTokenBalance} from "../utils/token-utils";
 import * as anchor from "@coral-xyz/anchor";
-import {TOKEN_2022_PROGRAM_ID} from "@solana/spl-token";
+import {TOKEN_PROGRAM_ID} from "@solana/spl-token";
 import {getOraclePriceData, OraclePriceData} from "../utils/price-oracle";
 import {DEFAULT_CONFIGS} from "../utils/configuration-registry";
 import {Fill, FillsRegistry, getFillsRegistryAccount, getFillsRegistryAccountAddress} from "../utils/fills-registry";
@@ -157,7 +157,7 @@ export async function prepareBuySolInstruction(
             doubleZeroMint: mockProgramPDAs.tokenMint,
             programConfig: mockProgramPDAs.config,
             journal: mockProgramPDAs.journal,
-            tokenProgram: TOKEN_2022_PROGRAM_ID,
+            tokenProgram: TOKEN_PROGRAM_ID,
             revenueDistributionProgram: MOCK_TRANSFER_PROGRAM,
             signer: signer.publicKey
         })
