@@ -4,6 +4,7 @@ import {configUtil, ConfigUtil} from "../utils/configUtil";
 import {HealthMonitoringService} from "../service/monitor/healthMonitoringService";
 import { injectable, inject } from 'inversify';
 import {TYPES} from "../types/common";
+import {logger} from "../utils/logger";
 
 
 @injectable()
@@ -31,7 +32,7 @@ import {TYPES} from "../types/common";
     private async startMonitoringService() {
         await this.healthMonitoringService.startMonitoring();
         setInterval(async () => {
-            console.log("Health monitoring started", Date.now());
+            logger.info("Health monitoring started", Date.now());
             await this.healthMonitoringService.startMonitoring();
         }, 60000);
     }
@@ -47,7 +48,7 @@ import {TYPES} from "../types/common";
 
     public stopServer(): void {
         this.server.close(() => {
-            console.log('Server has been stopped');
+            logger.info('Server has been stopped');
         });
     }
 

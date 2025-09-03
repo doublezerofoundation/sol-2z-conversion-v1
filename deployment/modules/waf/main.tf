@@ -87,7 +87,7 @@ resource "aws_wafv2_web_acl" "this" {
 
     statement {
       rate_based_statement {
-        limit              = 100
+        limit              = var.rate_limit
         aggregate_key_type = "IP"
         evaluation_window_sec = 120
       }
@@ -144,33 +144,6 @@ resource "aws_wafv2_web_acl" "this" {
   }
 }
 
-# Create AWS WAF IP Set for allow list (whitelist)
-resource "aws_wafv2_ip_set" "allow_list" {
-  name               = "${var.name_prefix}-allow-ip-set"
-  description        = "IP set for allowed IPs"
-  scope              = "REGIONAL"
-  ip_address_version = "IPV4"
-  addresses          = var.allowed_ip_addresses
-
-  tags = {
-    Name        = "${var.name_prefix}-allow-ip-set"
-    Environment = var.environment
-  }
-}
-
-# Create AWS WAF IP Set for deny list (blacklist)
-resource "aws_wafv2_ip_set" "deny_list" {
-  name               = "${var.name_prefix}-deny-ip-set"
-  description        = "IP set for denied IPs"
-  scope              = "REGIONAL"
-  ip_address_version = "IPV4"
-  addresses          = var.denied_ip_addresses
-
-  tags = {
-    Name        = "${var.name_prefix}-deny-ip-set"
-    Environment = var.environment
-  }
-}
 
 # Create S3 bucket for WAF logs
 resource "aws_s3_bucket" "waf_logs" {

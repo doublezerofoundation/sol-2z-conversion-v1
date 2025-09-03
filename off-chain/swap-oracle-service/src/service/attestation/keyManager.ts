@@ -7,6 +7,7 @@ import * as process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
 import bs58 from 'bs58';
 import { injectable } from 'inversify';
+import {logger} from "../../utils/logger";
 
 export interface IKeyManager {
     getKeyPairSigner(): Promise<KeyPairSigner>;
@@ -36,7 +37,7 @@ export class KeyManager implements IKeyManager {
         const value = result.Parameter.Value;
         const privateKeyBytes = bs58.decode(value);
         const cryptoKeyPair = await createKeyPairSignerFromPrivateKeyBytes(privateKeyBytes);
-        console.log(cryptoKeyPair.address)
+        logger.debug(cryptoKeyPair.address)
 
         return cryptoKeyPair;
 

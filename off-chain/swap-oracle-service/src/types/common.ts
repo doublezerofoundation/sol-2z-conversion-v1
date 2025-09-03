@@ -7,6 +7,7 @@ export enum ConfigField {
     PRICING_SERVICE_TYPE = 'pricingServiceType',
     PRICING_SERVICES = 'pricingServices',
     PRICE_CACHE_TTL_SECONDS = 'priceCacheTTLSeconds',
+    LOG_LEVEL = 'logLevel',
 
 }
 export const TWOZ_PRECISION = 100000000;

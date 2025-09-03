@@ -15,15 +15,6 @@ output "web_acl_name" {
   value       = aws_wafv2_web_acl.this.name
 }
 
-output "allow_list_id" {
-  description = "The ID of the WAF IP Set for allowed IPs"
-  value       = aws_wafv2_ip_set.allow_list.id
-}
-
-output "deny_list_id" {
-  description = "The ID of the WAF IP Set for denied IPs"
-  value       = aws_wafv2_ip_set.deny_list.id
-}
 
 output "s3_bucket_name" {
   description = "The name of the S3 bucket for WAF logs"

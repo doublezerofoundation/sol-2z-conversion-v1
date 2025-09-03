@@ -1,9 +1,13 @@
 import express, { Request, Response } from 'express';
 import { recoverHistory } from './core/history';
 import { tailRealTime } from './core/realtime';
-import config from './utils/config';
+import { configUtil } from './utils/configUtil';
+import { logger } from './utils/logger';
 
-const PORT = config.applicationPort;
+// Initialize logger with config
+logger.setLevel(configUtil.getLogLevel());
+
+const PORT = configUtil.getApplicationPort() || process.env.PORT;
 
 async function startServer() {
     try {
@@ -14,29 +18,44 @@ async function startServer() {
         });
         
         // Start the indexer in the background
-        console.log('🚀 Starting indexer service...');
-        console.log(`RPC URL: ${config.RPC_URL}`);
-        console.log(`Program ID: ${config.PROGRAM_ID}`);
+        logger.info('Starting indexer service...');
+        logger.info('Configuration loaded', {
+            rpcUrl: configUtil.getRpcUrl(),
+            programId: configUtil.getProgramId(),
+            concurrency: configUtil.getConcurrency(),
+            port: PORT
+        });
         
         (async () => {
             try {
                 tailRealTime();
-                await recoverHistory();
-                console.log('✅ Historical data recovery completed');
             } catch (error) {
-                console.error('❌ Historical data recovery failed:', error);
+                logger.error('Failed to start real-time indexing', { 
+                    error: error instanceof Error ? error.message : String(error),
+                    component: 'realtime'
+                });
+            }
+
+            try {
+                await recoverHistory();
+            } catch (error) {
+                logger.error('Historical data recovery failed', { 
+                    error: error instanceof Error ? error.message : String(error),
+                    component: 'history',
+                    impact: 'Real-time indexing continues normally'
+                });
             }
         })();
 
         const server = app.listen(PORT, () => {
-            console.log(`Indexer Service started on port ${PORT}`);
+            logger.info(`Indexer Service started on port ${PORT}`);
         });
         
         // Graceful shutdown
         const shutdown = () => {
-            console.log('Shutting down gracefully...');
+            logger.info('Shutting down gracefully...');
             server.close(() => {
-                console.log('Server closed');
+                logger.info('Server closed');
                 process.exit(0);
             });
         };
@@ -45,7 +64,9 @@ async function startServer() {
         process.on('SIGINT', shutdown);
         
     } catch (error) {
-        console.error('Failed to start server:', error);
+        logger.error('Failed to start server', { 
+            error: error instanceof Error ? error.message : String(error) 
+        });
         process.exit(1);
     }
 }

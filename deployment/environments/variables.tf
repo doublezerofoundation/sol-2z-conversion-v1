@@ -28,17 +28,6 @@ variable "waf_default_action" {
   default     = "ALLOW"
 }
 
-variable "allowed_ip_addresses" {
-  description = "List of IP addresses to allow (whitelist)"
-  type        = list(string)
-  default     = []
-}
-
-variable "denied_ip_addresses" {
-  description = "List of IP addresses to deny (blacklist)"
-  type        = list(string)
-  default     = []
-}
 
 variable "waf_enable_logging" {
   description = "Enable WAF logging to S3 bucket"

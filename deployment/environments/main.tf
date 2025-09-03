@@ -74,8 +74,6 @@ module "pricing_waf" {
 
   # WAF configuration
   waf_default_action = var.waf_default_action
-  allowed_ip_addresses = var.allowed_ip_addresses
-  denied_ip_addresses = var.denied_ip_addresses
   enable_logging = var.waf_enable_logging
   log_retention_days = var.log_retention_days
 }
@@ -89,8 +87,6 @@ module "metrics_waf" {
 
   # WAF configuration
   waf_default_action = var.waf_default_action
-  allowed_ip_addresses = var.allowed_ip_addresses
-  denied_ip_addresses = var.denied_ip_addresses
   enable_logging = var.waf_enable_logging
   log_retention_days = var.log_retention_days
 }

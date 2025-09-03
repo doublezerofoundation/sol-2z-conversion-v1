@@ -1,4 +1,5 @@
 import {CircuitBreakerConfig, CircuitBreakerState, CircuitBreakerStats} from "../../types/common";
+import {logger} from "../../utils/logger";
 
 export class CircuitBreaker {
     private state: CircuitBreakerState = CircuitBreakerState.CLOSED;
@@ -19,7 +20,7 @@ export class CircuitBreaker {
     onHealthCheckSuccess(): void {
         if(this.state === CircuitBreakerState.OPEN) {
             this.consecutiveHealthCheckPasses++;
-            console.log(`ConsecutiveHealthCheckPasses: ${this.consecutiveHealthCheckPasses}`);
+            logger.info(`ConsecutiveHealthCheckPasses: ${this.consecutiveHealthCheckPasses}`);
 
             if(this.consecutiveHealthCheckPasses >= this.config.healthCheckAttemptsToClose) {
                 this.closeCircuit();
@@ -38,7 +39,7 @@ export class CircuitBreaker {
 
     private openCircuit(reason: string): void {
         if (this.state === CircuitBreakerState.CLOSED) {
-            console.log(`Opening circuit breaker: ${reason}`);
+            logger.info(`Opening circuit breaker: ${reason}`);
             this.state = CircuitBreakerState.OPEN;
             this.openedAt = Date.now();
             this.consecutiveHealthCheckPasses = 0;
@@ -47,7 +48,7 @@ export class CircuitBreaker {
     }
 
     private closeCircuit(): void {
-        console.log('Closing circuit breaker after successful health checks');
+        logger.info('Closing circuit breaker after successful health checks');
         this.state = CircuitBreakerState.CLOSED;
         this.openedAt = undefined;
         this.consecutiveHealthCheckPasses = 0;
