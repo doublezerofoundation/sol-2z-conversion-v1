@@ -63,8 +63,17 @@ export default class SwapRateController {
             }
             res.json(result);
         } catch (error) {
-            logger.error('Error in priceRateHandler:', error);
-            res.status(500).json({error: 'Internal server error'});
+            if (error instanceof PriceServiceUnavailableError) {
+                logger.warn('Price data confidence too low:', error.message);
+                res.status(503).json({
+                    error: 'Price data temporarily unavailable',
+                    details: 'Current price data confidence levels exceed acceptable thresholds',
+                    retryAfter: "60 seconds"
+                });
+            } else {
+                logger.error('Error in swapRateHandler:', error);
+                res.status(500).json({error: 'Internal server error'});
+            }
         }
     }
 

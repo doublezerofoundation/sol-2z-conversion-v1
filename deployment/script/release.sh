@@ -42,6 +42,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -h|--help)
             help
+            exit 0
             ;;
         *)
             echo "Unknown option: $1"

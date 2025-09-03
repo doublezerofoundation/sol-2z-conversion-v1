@@ -1,7 +1,6 @@
 import ISwapRateService from "./ISwapRateService";
 import {ConfigField, PriceRate, TWOZ_PRECISION_DECIMALS, TYPES} from "../../types/common";
-import {injectable} from "inversify";
-import {inject} from "inversify/lib/esm";
+import {inject, injectable} from "inversify";
 import {ConfigUtil} from "../../utils/configUtil";
 import {logger} from "../../utils/logger";
 import {PriceServiceUnavailableError} from "../../utils/error";
@@ -29,13 +28,13 @@ export class PythSwapRateService implements ISwapRateService {
         const twozConfidenceRatio = twozConfidence / twozUsdPrice;
         const combinedConfidenceRatio = solConfidenceRatio + twozConfidenceRatio;
 
-        logger.debug(`SOL confidence ratio: ${solConfidenceRatio.toFixed(6)}`);
-        logger.debug(`TWOZ confidence ratio: ${twozConfidenceRatio.toFixed(6)}`);
-        logger.debug(`Combined confidence ratio: ${combinedConfidenceRatio.toFixed(6)}`);
+        logger.debug(`SOL confidence ratio: ${solConfidenceRatio.toFixed(8)}`);
+        logger.debug(`TWOZ confidence ratio: ${twozConfidenceRatio.toFixed(8)}`);
+        logger.debug(`Combined confidence ratio: ${combinedConfidenceRatio.toFixed(8)}`);
         logger.debug(`Max allowed ratio: ${this.MAX_CONFIDENCE_RATIO}`);
 
         if (combinedConfidenceRatio > this.MAX_CONFIDENCE_RATIO) {
-            logger.error(`Price data confidence check failed. Combined ratio ${combinedConfidenceRatio.toFixed(6)} exceeds maximum ${this.MAX_CONFIDENCE_RATIO}`);
+            logger.error(`Price data confidence check failed. Combined ratio ${combinedConfidenceRatio.toFixed(8)} exceeds maximum ${this.MAX_CONFIDENCE_RATIO}`);
             throw new PriceServiceUnavailableError("Price data confidence check failed. Combined ratio exceeds maximum");
         }
 
