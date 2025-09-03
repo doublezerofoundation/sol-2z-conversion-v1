@@ -1,5 +1,6 @@
 import config from 'config';
 import { LogLevel } from "./logger";
+import {ConfigField} from "../types/common";
 
 export class ConfigUtil {
     private static instance: ConfigUtil;
@@ -25,7 +26,7 @@ export class ConfigUtil {
     }
 
     public getLogLevel(): LogLevel {
-        const logLevelStr = this.get<string>("LOG_LEVEL") || process.env.LOG_LEVEL || 'INFO';
+        const logLevelStr = this.get<string>(ConfigField.LOG_LEVEL) || process.env.LOG_LEVEL || 'INFO';
         switch (logLevelStr.toUpperCase()) {
             case 'ERROR': return LogLevel.ERROR;
             case 'WARN': return LogLevel.WARN;
