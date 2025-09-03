@@ -9,7 +9,7 @@ import {PriceServiceUnavailableError} from "../../utils/error";
 export class PythSwapRateService implements ISwapRateService {
     private MAX_CONFIDENCE_RATIO: number;
     constructor(@inject(TYPES.ConfigUtil) private configUtil: ConfigUtil,) {
-        this.MAX_CONFIDENCE_RATIO = this.configUtil.get<any>(ConfigField.MAX_CONFIDENCE_RATIO);
+        this.MAX_CONFIDENCE_RATIO = this.configUtil.get<number>(ConfigField.MAX_CONFIDENCE_RATIO);
     }
 
     convertPrice(price: string | number, exponent: number): number {

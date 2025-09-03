@@ -173,7 +173,7 @@ export default class SwapRateController {
             }
 
             if (systemFailures.length > 0) {
-                throw new Error(`Pricing services system failures. Failed services: ${systemFailures.join(', ')}. Confidence failures: ${confidenceFailures.join(', ')}`);
+                throw new Error(`Pricing services system failures. Failed services: ${systemFailures.join(', ')}.`);
             }
 
         } catch (error) {
