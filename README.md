@@ -586,6 +586,51 @@ cargo run -p integration-cli -- dequeue-fills -a <max_sol_amount>
 ```
 
 - `-a`: Maximum SOL amount to dequeue in this operation
+
+
+## Metrics API Usage Examples
+
+The DoubleZero system exposes metrics through RESTful APIs. Below are sample API calls to retrieve system metrics.
+
+Replace the `INVOKE_URL` based on your deployment environment. You can get it from **AWS Console > API Gateway > Stages**.
+
+#### Get Buys Metrics
+Retrieve bucketed buy transaction counts for a date range:
+
+```bash
+# Get daily buys for August 2025
+curl -X GET "<INVOKE_URL>/api/v1/metrics/buys?from=2025-08-01&to=2025-08-02" -H "Accept: application/json"
+
+# Response example:
+{
+  "from": "2025-08-01",
+  "to": "2025-08-02", 
+  "data": [
+    {
+      "bucket": "2025-08-01",
+      "start": "2025-08-01T00:00:00Z",
+      "end": "2025-08-02T00:00:00Z",
+      "buys": 19
+    }, 
+    {
+      "bucket": "2025-08-02", 
+      "start": "2025-08-02T00:00:00Z",
+      "end": "2025-08-03T00:00:00Z",
+      "buys": 14
+    }
+  ]
+}
+```
+
+#### Get Dequeue Metrics
+Retrieve dequeue event counts and SOL amount aggregates:
+
+```bash
+# Get daily dequeue metrics for August 2025
+curl -X GET "<INVOKE_URL>/api/v1/metrics/dequeues?from=2025-08-01&to=2025-08-02" 
+     -H "Accept: application/json"
+```
+
 ## OnChain Testing
 
 ### Unit Tests
