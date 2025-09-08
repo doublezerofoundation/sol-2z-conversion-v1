@@ -1,0 +1,12 @@
+[package]
+name = "integration-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Integration for Double Zero Fee Converter System"
+
+[dependencies]
+anchor-client = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true }
+cli-common = { workspace = true }
+reqwest = { workspace = true }

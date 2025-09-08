@@ -1,0 +1,173 @@
+openapi: 3.0.3
+info:
+  title: Swap Rate API
+  description: API for retrieving swap rates and health status
+  version: 1.0.0
+servers:
+  - url: /
+    description: Local server
+paths:
+  /swap-rate:
+    get:
+      summary: Get swap rate information
+      description: Retrieves the current swap rate with attestation signature
+      tags:
+        - Swap Rate
+      responses:
+        '200':
+          description: Successfully retrieved swap rate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  swapRate:
+                    type: number
+                    description: The swap rate with TWOZ precision applied
+                  timestamp:
+                    type: integer
+                    description: Unix timestamp when the rate was generated
+                  signature:
+                    type: string
+                    description: Attestation signature for the swap rate
+                  solPriceUsd:
+                    type: string
+                    description: SOL price in USD
+                  twozPriceUsd:
+                    type: string
+                    description: TWOZ price in USD
+                  cacheHit:
+                    type: boolean
+                    description: Whether the result was retrieved from cache
+                required:
+                  - swapRate
+                  - timestamp
+                  - signature
+                  - solPriceUsd
+                  - twozPriceUsd
+                  - cacheHit
+              example:
+                swapRate: 19756706
+                timestamp: 1754890525
+                signature: "M9ggy3k+XtNV4OZPtTaBjjQfPBD1..."
+                solPriceUsd: "85.50"
+                twozPriceUsd: "0.05"
+                cacheHit: false
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+        '503':
+          description: Service temporarily unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Service temporarily unavailable"
+                  details:
+                    type: string
+                    example: "Health check failed"
+                  circuitBreakerStats:
+                    type: object
+                    description: Circuit breaker statistics
+                  retryAfter:
+                    type: integer
+                    description: Suggested retry delay in seconds (only for some 503 cases)
+                    example: 60
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Returns the health status of the service and its components
+      tags:
+        - Health
+      responses:
+        '200':
+          description: Health check results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  healthy:
+                    type: boolean
+                    description: Overall health status of the service
+                  healthChecks:
+                    type: array
+                    description: Individual health check results
+                    items:
+                      type: object
+                      properties:
+                        serviceType:
+                          type: string
+                          description: Name of the component being checked
+                        status:
+                          type: string
+                          enum: [healthy, unhealthy]
+                          description: Health status of the component
+                        hermes_connected:
+                          type: boolean
+                          description: status of hermes connection
+                        last_price_update:
+                          type: string
+                          description: Date for last price update from the service
+                  circuitBreaker:
+                    type: object
+                    description: Circuit breaker statistics
+                    properties:
+                      state:
+                        type: string
+                        enum: [closed, open]
+                        description: Current state of the circuit breaker
+                      openedAt:
+                        type: number
+                        description: timestamp when last circuit break happened
+                      lastFailureReason:
+                        type: integer
+                        description: Number of recent successes
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: ISO timestamp of the health check
+                required:
+                  - healthy
+                  - healthChecks
+                  - circuitBreaker
+                  - timestamp
+              example:
+                healthy: true
+                healthChecks:
+                  - serviceType: "pyth"
+                    status: "healthy"
+                    hermes_connected: "true"
+                    last_price_update: "2025-08-11T05:35:25.819Z"
+                circuitBreaker:
+                  state: "closed"
+                  openedAt: "2025-08-11T05:35:25.819Z"
+                  lastFailureReason: "Price fetch failed"
+                timestamp: "2025-08-11T10:30:00.000Z"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Internal server error"
+tags:
+  - name: Swap Rate
+    description: Operations related to swap rate retrieval
+  - name: Health
+    description: Health monitoring operations
+components:
+  schemas: {}

@@ -1,0 +1,13 @@
+.anchor
+.idea
+.DS_Store
+target
+**/*.rs.bk
+node_modules
+test-ledger
+.yarn
+.keys
+logs
+.terraform.lock.hcl
+.terraform
+tfplan

@@ -1,0 +1,13 @@
+[package]
+name = "admin-cli"
+version = "0.1.0"
+edition = "2021"
+description = "Admin CLI for Double Zero Fee Converter System"
+
+[dependencies]
+anchor-client = { workspace = true }
+clap = { workspace = true }
+cli-common = { workspace = true }
+spl-token = { workspace = true }
+solana-commitment-config = { workspace = true }
+solana-system-interface = {workspace = true}
