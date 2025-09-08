@@ -1,0 +1,1858 @@
+{
+  "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
+  "metadata": {
+    "name": "converter_program",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Core program managing all on-chain operations, including 2Z-to-SOL conversions"
+  },
+  "instructions": [
+    {
+      "name": "add_to_deny_list",
+      "discriminator": [
+        186,
+        25,
+        178,
+        60,
+        226,
+        155,
+        198,
+        32
+      ],
+      "accounts": [
+        {
+          "name": "deny_list_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "address",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "buy_sol",
+      "discriminator": [
+        206,
+        59,
+        125,
+        30,
+        202,
+        248,
+        111,
+        49
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fills_registry",
+          "writable": true
+        },
+        {
+          "name": "withdraw_sol_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  116,
+                  104,
+                  100,
+                  114,
+                  97,
+                  119,
+                  95,
+                  115,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "user_token_account",
+          "writable": true
+        },
+        {
+          "name": "protocol_treasury_token_account",
+          "docs": [
+            "TODO: implement address validations after knowing protocol treasury token account"
+          ],
+          "writable": true
+        },
+        {
+          "name": "double_zero_mint",
+          "writable": true
+        },
+        {
+          "name": "program_config"
+        },
+        {
+          "name": "journal",
+          "writable": true
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "revenue_distribution_program"
+        },
+        {
+          "name": "signer",
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "bid_price",
+          "type": "u64"
+        },
+        {
+          "name": "oracle_price_data",
+          "type": {
+            "defined": {
+              "name": "OraclePriceData"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "dequeue_fills",
+      "discriminator": [
+        146,
+        69,
+        6,
+        12,
+        174,
+        95,
+        136,
+        61
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fills_registry",
+          "writable": true
+        },
+        {
+          "name": "signer",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "max_sol_amount",
+          "type": "u64"
+        }
+      ],
+      "returns": {
+        "defined": {
+          "name": "DequeueFillsResult"
+        }
+      }
+    },
+    {
+      "name": "get_conversion_rate",
+      "discriminator": [
+        60,
+        240,
+        48,
+        85,
+        208,
+        15,
+        70,
+        176
+      ],
+      "accounts": [
+        {
+          "name": "signer",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "configuration_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_price_data",
+          "type": {
+            "defined": {
+              "name": "OraclePriceData"
+            }
+          }
+        }
+      ],
+      "returns": "u64"
+    },
+    {
+      "name": "initialize_system",
+      "discriminator": [
+        50,
+        173,
+        248,
+        140,
+        202,
+        35,
+        141,
+        150
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "deny_list_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "fills_registry",
+          "writable": true
+        },
+        {
+          "name": "withdraw_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  119,
+                  105,
+                  116,
+                  104,
+                  100,
+                  114,
+                  97,
+                  119,
+                  95,
+                  115,
+                  111,
+                  108
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program",
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "authority",
+          "docs": [
+            "current upgrade have to sign."
+          ],
+          "writable": true,
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "oracle_pubkey",
+          "type": "pubkey"
+        },
+        {
+          "name": "sol_quantity",
+          "type": "u64"
+        },
+        {
+          "name": "price_maximum_age",
+          "type": "i64"
+        },
+        {
+          "name": "coefficient",
+          "type": "u64"
+        },
+        {
+          "name": "max_discount_rate",
+          "type": "u64"
+        },
+        {
+          "name": "min_discount_rate",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "remove_from_deny_list",
+      "discriminator": [
+        101,
+        131,
+        177,
+        105,
+        217,
+        181,
+        234,
+        27
+      ],
+      "accounts": [
+        {
+          "name": "deny_list_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  101,
+                  110,
+                  121,
+                  95,
+                  108,
+                  105,
+                  115,
+                  116,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "address",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_admin",
+      "discriminator": [
+        251,
+        163,
+        0,
+        52,
+        91,
+        194,
+        187,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program",
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+        },
+        {
+          "name": "program_data"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_admin",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_deny_list_authority",
+      "discriminator": [
+        187,
+        248,
+        13,
+        39,
+        72,
+        109,
+        79,
+        104
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program",
+          "address": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+        },
+        {
+          "name": "program_data"
+        }
+      ],
+      "args": [
+        {
+          "name": "new_authority",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "set_fills_consumer",
+      "discriminator": [
+        145,
+        84,
+        106,
+        54,
+        206,
+        120,
+        35,
+        222
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "new_consumer",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "toggle_system_state",
+      "discriminator": [
+        153,
+        40,
+        83,
+        38,
+        168,
+        176,
+        178,
+        151
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true
+        },
+        {
+          "name": "program_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "set_to",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "update_configuration_registry",
+      "discriminator": [
+        224,
+        131,
+        133,
+        54,
+        236,
+        119,
+        153,
+        223
+      ],
+      "accounts": [
+        {
+          "name": "configuration_registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  121,
+                  115,
+                  116,
+                  101,
+                  109,
+                  95,
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program_state",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  116,
+                  101,
+                  95,
+                  118,
+                  49
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "admin",
+          "signer": true
+        }
+      ],
+      "args": [
+        {
+          "name": "input",
+          "type": {
+            "defined": {
+              "name": "ConfigurationRegistryInput"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "ConfigurationRegistry",
+      "discriminator": [
+        207,
+        237,
+        144,
+        146,
+        162,
+        228,
+        133,
+        243
+      ]
+    },
+    {
+      "name": "DenyListRegistry",
+      "discriminator": [
+        94,
+        220,
+        13,
+        180,
+        204,
+        100,
+        43,
+        215
+      ]
+    },
+    {
+      "name": "FillsRegistry",
+      "discriminator": [
+        13,
+        155,
+        1,
+        212,
+        199,
+        69,
+        251,
+        112
+      ]
+    },
+    {
+      "name": "ProgramStateAccount",
+      "discriminator": [
+        111,
+        193,
+        164,
+        135,
+        94,
+        159,
+        101,
+        67
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AdminChanged",
+      "discriminator": [
+        232,
+        34,
+        31,
+        226,
+        62,
+        18,
+        19,
+        114
+      ]
+    },
+    {
+      "name": "BidTooLowEvent",
+      "discriminator": [
+        213,
+        252,
+        104,
+        68,
+        211,
+        132,
+        186,
+        87
+      ]
+    },
+    {
+      "name": "ConfigChanged",
+      "discriminator": [
+        147,
+        25,
+        86,
+        98,
+        98,
+        77,
+        78,
+        192
+      ]
+    },
+    {
+      "name": "DenyListAddressAdded",
+      "discriminator": [
+        146,
+        165,
+        139,
+        226,
+        44,
+        58,
+        169,
+        244
+      ]
+    },
+    {
+      "name": "DenyListAddressRemoved",
+      "discriminator": [
+        20,
+        148,
+        133,
+        130,
+        100,
+        103,
+        187,
+        38
+      ]
+    },
+    {
+      "name": "DenyListAuthoritySet",
+      "discriminator": [
+        143,
+        10,
+        187,
+        24,
+        98,
+        245,
+        190,
+        150
+      ]
+    },
+    {
+      "name": "FillsConsumerChanged",
+      "discriminator": [
+        9,
+        132,
+        35,
+        8,
+        29,
+        152,
+        169,
+        152
+      ]
+    },
+    {
+      "name": "FillsDequeued",
+      "discriminator": [
+        68,
+        192,
+        9,
+        132,
+        233,
+        184,
+        113,
+        152
+      ]
+    },
+    {
+      "name": "SystemHalted",
+      "discriminator": [
+        183,
+        36,
+        191,
+        209,
+        186,
+        147,
+        171,
+        171
+      ]
+    },
+    {
+      "name": "SystemInitialized",
+      "discriminator": [
+        63,
+        16,
+        185,
+        12,
+        47,
+        160,
+        126,
+        15
+      ]
+    },
+    {
+      "name": "SystemUnhalted",
+      "discriminator": [
+        51,
+        176,
+        216,
+        146,
+        18,
+        193,
+        238,
+        212
+      ]
+    },
+    {
+      "name": "TradeEvent",
+      "discriminator": [
+        189,
+        219,
+        127,
+        211,
+        78,
+        230,
+        97,
+        238
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "UserInsideDenyList",
+      "msg": "User is blocked in the deny list"
+    },
+    {
+      "code": 6001,
+      "name": "UnauthorizedAdmin",
+      "msg": "Unauthorized admin"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAttestation",
+      "msg": "Provided attestation is invalid"
+    },
+    {
+      "code": 6003,
+      "name": "InvalidOraclePublicKey",
+      "msg": "Oracle public key is invalid"
+    },
+    {
+      "code": 6004,
+      "name": "AttestationVerificationError",
+      "msg": "Provided attestation is not authentic"
+    },
+    {
+      "code": 6005,
+      "name": "InvalidDiscountRate",
+      "msg": "Invalid discount rate"
+    },
+    {
+      "code": 6006,
+      "name": "InvalidSolQuantity",
+      "msg": "Invalid SOL quantity"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidAskPrice",
+      "msg": "Invalid ask price"
+    },
+    {
+      "code": 6008,
+      "name": "InvalidMaxDiscountRate",
+      "msg": "Invalid max discount rate"
+    },
+    {
+      "code": 6009,
+      "name": "InvalidMinDiscountRate",
+      "msg": "Invalid min discount rate"
+    },
+    {
+      "code": 6010,
+      "name": "InvalidTradeSlot",
+      "msg": "Invalid trade slot"
+    },
+    {
+      "code": 6011,
+      "name": "InvalidCoefficient",
+      "msg": "Invalid coefficient"
+    },
+    {
+      "code": 6012,
+      "name": "DiscountCalculationError",
+      "msg": "Discount calculation error"
+    },
+    {
+      "code": 6013,
+      "name": "InvalidOracleSwapRate",
+      "msg": "Invalid oracle swap rate"
+    },
+    {
+      "code": 6014,
+      "name": "InvalidTimestamp",
+      "msg": "Invalid timestamp"
+    },
+    {
+      "code": 6015,
+      "name": "BidTooLow",
+      "msg": "Provided bid is too low"
+    },
+    {
+      "code": 6016,
+      "name": "StalePrice",
+      "msg": "Provided attestation is outdated"
+    },
+    {
+      "code": 6017,
+      "name": "DenyListFull",
+      "msg": "Deny list is full"
+    },
+    {
+      "code": 6018,
+      "name": "AlreadyExistsInDenyList",
+      "msg": "Address already added to deny list"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidSystemState",
+      "msg": "Invalid system state"
+    },
+    {
+      "code": 6020,
+      "name": "InvalidConversionRate",
+      "msg": "Invalid conversion rate"
+    },
+    {
+      "code": 6021,
+      "name": "AddressNotInDenyList",
+      "msg": "Address not found in deny list"
+    },
+    {
+      "code": 6022,
+      "name": "SystemIsHalted",
+      "msg": "System is halted"
+    },
+    {
+      "code": 6023,
+      "name": "ArithmeticError",
+      "msg": "Arithmetic error has occurred"
+    },
+    {
+      "code": 6024,
+      "name": "UnauthorizedFillConsumer",
+      "msg": "User is not authorized to do fills consumption"
+    },
+    {
+      "code": 6025,
+      "name": "UnauthorizedDenyListAuthority",
+      "msg": "Unauthorized deny list authority"
+    },
+    {
+      "code": 6026,
+      "name": "RegistryFull",
+      "msg": "Fills registry is full — cannot enqueue"
+    },
+    {
+      "code": 6027,
+      "name": "EmptyFillsRegistry",
+      "msg": "Fills registry is empty — cannot consume"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidMaxSolAmount",
+      "msg": "Provided SOL amount for consumption is invalid"
+    },
+    {
+      "code": 6029,
+      "name": "SingleTradePerSlot",
+      "msg": "Only one trade is allowed per slot"
+    },
+    {
+      "code": 6030,
+      "name": "AskPriceCalculationError",
+      "msg": "Error when calculating ask price"
+    }
+  ],
+  "types": [
+    {
+      "name": "AdminChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BidTooLowEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bid_amount",
+            "type": "u64"
+          },
+          {
+            "name": "ask_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "BumpRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "configuration_registry_bump",
+            "type": "u8"
+          },
+          {
+            "name": "program_state_bump",
+            "type": "u8"
+          },
+          {
+            "name": "deny_list_registry_bump",
+            "type": "u8"
+          },
+          {
+            "name": "withdraw_authority_bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "oracle_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_quantity",
+            "type": "u64"
+          },
+          {
+            "name": "price_maximum_age",
+            "type": "i64"
+          },
+          {
+            "name": "coefficient",
+            "type": "u64"
+          },
+          {
+            "name": "max_discount_rate",
+            "type": "u64"
+          },
+          {
+            "name": "min_discount_rate",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigurationRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oracle_pubkey",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_quantity",
+            "type": "u64"
+          },
+          {
+            "name": "price_maximum_age",
+            "type": "i64"
+          },
+          {
+            "name": "fills_consumer",
+            "type": "pubkey"
+          },
+          {
+            "name": "coefficient",
+            "type": "u64"
+          },
+          {
+            "name": "max_discount_rate",
+            "type": "u64"
+          },
+          {
+            "name": "min_discount_rate",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigurationRegistryInput",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "oracle_pubkey",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "sol_quantity",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "price_maximum_age",
+            "type": {
+              "option": "i64"
+            }
+          },
+          {
+            "name": "coefficient",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "max_discount_rate",
+            "type": {
+              "option": "u64"
+            }
+          },
+          {
+            "name": "min_discount_rate",
+            "type": {
+              "option": "u64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListAddressAdded",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "added_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "address",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListAddressRemoved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "removed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "address",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListAuthoritySet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "new_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DenyListRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "denied_addresses",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "last_updated",
+            "type": "i64"
+          },
+          {
+            "name": "update_count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DequeueFillsResult",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "token_2z_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "fills_consumed",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Fill",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_in",
+            "type": "u64"
+          },
+          {
+            "name": "token_2z_out",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FillsConsumerChanged",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "changed_by",
+            "type": "pubkey"
+          },
+          {
+            "name": "new_consumer",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FillsDequeued",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "requester",
+            "type": "pubkey"
+          },
+          {
+            "name": "sol_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "token_2z_dequeued",
+            "type": "u64"
+          },
+          {
+            "name": "fills_consumed",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FillsRegistry",
+      "serialization": "bytemuck",
+      "repr": {
+        "kind": "c"
+      },
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "total_sol_pending",
+            "type": "u64"
+          },
+          {
+            "name": "total_2z_pending",
+            "type": "u64"
+          },
+          {
+            "name": "fills",
+            "type": {
+              "array": [
+                {
+                  "defined": {
+                    "name": "Fill"
+                  }
+                },
+                650000
+              ]
+            }
+          },
+          {
+            "name": "head",
+            "type": "u64"
+          },
+          {
+            "name": "tail",
+            "type": "u64"
+          },
+          {
+            "name": "count",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "OraclePriceData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "swap_rate",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "signature",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProgramStateAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "fills_registry_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "is_halted",
+            "type": "bool"
+          },
+          {
+            "name": "bump_registry",
+            "type": {
+              "defined": {
+                "name": "BumpRegistry"
+              }
+            }
+          },
+          {
+            "name": "last_trade_slot",
+            "type": "u64"
+          },
+          {
+            "name": "deny_list_authority",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SystemHalted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "halted_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "SystemInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": []
+      }
+    },
+    {
+      "name": "SystemUnhalted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "unhalted_by",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TradeEvent",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "sol_amount",
+            "type": "u64"
+          },
+          {
+            "name": "token_amount",
+            "type": "u64"
+          },
+          {
+            "name": "bid_price",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "buyer",
+            "type": "pubkey"
+          },
+          {
+            "name": "epoch",
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}

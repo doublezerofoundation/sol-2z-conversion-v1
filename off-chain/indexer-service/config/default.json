@@ -1,0 +1,7 @@
+{
+  "applicationPort": 8080,
+  "rpcUrl": "https://api.devnet.solana.com",
+  "programId": "4tTAV7CjbtQ2omiPNcBvSDFfYLy6PvBW1xFeFHuqs969",
+  "concurrency": 8,
+  "logLevel": "INFO"
+}
