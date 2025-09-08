@@ -10,17 +10,6 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "allowed_ip_addresses" {
-  description = "List of IP addresses to allow (whitelist)"
-  type        = list(string)
-  default     = []
-}
-
-variable "denied_ip_addresses" {
-  description = "List of IP addresses to deny (blacklist)"
-  type        = list(string)
-  default     = []
-}
 
 variable "enable_logging" {
   description = "Enable WAF logging to S3 bucket"

@@ -19,8 +19,6 @@ asg_desired_capacity = 2
 
 # WAF Configuration
 waf_default_action = "ALLOW"
-allowed_ip_addresses = []
-denied_ip_addresses  = []
 
 # API Gateway Configuration
 cors_allow_origins = ["*"]

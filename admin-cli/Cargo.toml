@@ -8,6 +8,6 @@ description = "Admin CLI for Double Zero Fee Converter System"
 anchor-client = { workspace = true }
 clap = { workspace = true }
 cli-common = { workspace = true }
-spl-token-2022 = { workspace = true }
+spl-token = { workspace = true }
 solana-commitment-config = { workspace = true }
 solana-system-interface = {workspace = true}

@@ -1,13 +1,12 @@
 use std::{error::Error, str::FromStr};
 use anchor_client::{
     anchor_lang::prelude::Pubkey,
-    solana_sdk::native_token::LAMPORTS_PER_SOL,
     solana_client::rpc_client::RpcClient
 };
 use crate::{
-    constant::{TOKEN_UNITS, MAX_FILLS_QUEUE_SIZE},
+    constant::{MAX_FILLS_QUEUE_SIZE},
     structs::FillsRegistry,
-    utils::{pda_helper, ui},
+    utils::{pda_helper, ui, fixed_point_utils::{convert_sol_value, convert_token_value}},
     config::Config
 };
 use solana_commitment_config::CommitmentConfig;
@@ -33,9 +32,9 @@ pub fn view_fills_registry() -> Result<(), Box<dyn Error>> {
     println!("{} Head: {}", ui::BULLET, fills_registry.head);
     println!("{} Tail: {}", ui::BULLET, fills_registry.tail);
     println!("{} Total Unprocessed SOL Volume {}, In Lamports {}",
-             ui::BULLET, fills_registry.total_sol_pending / LAMPORTS_PER_SOL, fills_registry.total_sol_pending);
+             ui::BULLET, convert_sol_value(fills_registry.total_sol_pending), fills_registry.total_sol_pending);
     println!("{} Total Unprocessed 2Z Volume {}, With Decimals {}",
-             ui::BULLET, fills_registry.total_2z_pending / TOKEN_UNITS, fills_registry.total_2z_pending);
+             ui::BULLET, convert_token_value(fills_registry.total_2z_pending), fills_registry.total_2z_pending);
     println!("\n");
     println!("{} Pending Fills", ui::LABEL);
 
@@ -48,7 +47,7 @@ pub fn view_fills_registry() -> Result<(), Box<dyn Error>> {
         // Circular queue indexing
         let idx = (fills_registry.head as usize + i) % MAX_FILLS_QUEUE_SIZE;
         let fill = &fills_registry.fills[idx];
-        let fill_quantity = fill.sol_in / LAMPORTS_PER_SOL;
+        let fill_quantity = convert_sol_value(fill.sol_in);
         println!("Fill {}: sol_in:{} token_2z_out:{}", i, fill_quantity, fill.token_2z_out);
     }
     Ok(())

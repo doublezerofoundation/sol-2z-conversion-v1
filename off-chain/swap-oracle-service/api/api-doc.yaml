@@ -79,6 +79,10 @@ paths:
                   circuitBreakerStats:
                     type: object
                     description: Circuit breaker statistics
+                  retryAfter:
+                    type: integer
+                    description: Suggested retry delay in seconds (only for some 503 cases)
+                    example: 60
   /health:
     get:
       summary: Health check endpoint

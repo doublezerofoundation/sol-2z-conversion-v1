@@ -1,4 +1,4 @@
-import { PRICE_ORACLE_END_POINT } from "../constants";
+import {getConfig} from "./config-util";
 
 export interface OraclePriceData {
     swapRate: number;
@@ -9,7 +9,7 @@ export interface OraclePriceData {
 }
 
 export const getOraclePriceData = async (): Promise<OraclePriceData> => {
-    const response = await fetch(PRICE_ORACLE_END_POINT, {
+    const response = await fetch(getConfig().price_oracle_end_point, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -18,6 +18,5 @@ export const getOraclePriceData = async (): Promise<OraclePriceData> => {
     if (!response.ok) {
         throw new Error(`Failed to fetch price oracle data: ${response.statusText}`);
     }
-    const data = await response.json() as OraclePriceData;
-    return data;
+    return await response.json() as OraclePriceData;
 }

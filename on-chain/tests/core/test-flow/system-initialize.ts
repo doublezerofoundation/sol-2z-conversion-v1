@@ -2,7 +2,7 @@ import {
     getConfigurationRegistryPDA,
     getDenyListRegistryPDA,
     getProgramDataAccountPDA,
-    getProgramStatePDA, getWithdrawAuthorityPDA
+    getProgramStatePDA,
 } from "../utils/pda-helper";
 import {assert, expect} from "chai";
 import {Keypair, PublicKey} from "@solana/web3.js";

@@ -84,7 +84,7 @@ pub async fn buy_sol(bid_price: String, from_address: Option<String>) -> Result<
         AccountMeta::new(token_mint_account_pda, false),
         AccountMeta::new(config_pda, false),
         AccountMeta::new(journal_pda, false),
-        AccountMeta::new(spl_token_2022::id(), false),
+        AccountMeta::new(spl_token::id(), false),
         AccountMeta::new(revenue_distribution_program, false),
         AccountMeta::new(payer_pub_key, true),
     ];

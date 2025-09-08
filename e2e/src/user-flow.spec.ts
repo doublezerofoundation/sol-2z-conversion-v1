@@ -17,13 +17,11 @@ import {getConfig, updateConfig} from "./core/utils/config-util";
 describe("User Flow Tests", () => {
     let deployer: AdminClient;
     let nonDeployerAdmin: AdminClient;
-    let invalidAdmin: AdminClient;
     let user: UserClient;
 
     before(async () => {
         deployer = await AdminClient.create(DEFAULT_KEYPAIR_PATH);
         nonDeployerAdmin = await AdminClient.create()
-        invalidAdmin = await AdminClient.create()
         user = await UserClient.create();
 
         // Initialize the system

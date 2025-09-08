@@ -67,7 +67,7 @@ export function createProcessorMocks(stubs: {
     parseLogsStub?: SinonStub;
 }) {
      return {
-          '../utils/config': require('../mock/config-util'),
+          '../utils/configUtil': require('../mock/config-util'),
           '../utils/ddb/events': {
                writeSolanaEvent: stubs.writeSolanaEvent || stub(),
                writeFillDequeue: stubs.writeFillDequeue || stub(),
@@ -121,7 +121,7 @@ export function createRealtimeMocks(stubs: {
                saveLastSignature: stubs.saveLastSignature || stub(),
                isRecovering: stubs.isRecovering || stub()
           },
-          '../utils/config': require('../mock/config-util'),
+          '../utils/configUtil': require('../mock/config-util'),
      };
 }
 
@@ -143,7 +143,7 @@ export function createHistoryMocks(stubs: {
                },
                PublicKey: MockPublicKey
           },
-          '../utils/config': require('../mock/config-util'),
+          '../utils/configUtil': require('../mock/config-util'),
           './state': {
                getLastSignature: stubs.getLastSignature || stub(),
                endRecovery: stubs.endRecovery || stub()

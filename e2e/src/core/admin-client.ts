@@ -69,12 +69,11 @@ export class AdminClient {
     }
 
     public async mockTokenMintCommand(amount: number, toUser: PublicKey): Promise<void> {
-        const mockProgram = this.session.getMockProgram();
         const ata = await findOrInitializeAssociatedTokenAccount(
             this.session.getKeypair(),
             toUser,
-            await getMockDoubleZeroTokenMintPDA(mockProgram.programId),
-            mockProgram
+            await getMockDoubleZeroTokenMintPDA(),
+            this.session.getProgram()
         );
         await this.session.executeCliCommand(`mock-token-mint -a ${amount} -t ${ata}`);
     }

@@ -52,7 +52,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
         AccountMeta::new(journal_account, false),
         AccountMeta::new(token_mint_account_pda, false),
         AccountMeta::new(protocol_treasury_token_account_pda, false),
-        AccountMeta::new(spl_token_2022::id(), false),
+        AccountMeta::new(spl_token::id(), false),
         AccountMeta::new(sysvar::rent::ID, false),
         AccountMeta::new(system_program::ID, false),
         AccountMeta::new(payer.pubkey(), true),
@@ -86,7 +86,7 @@ pub fn mint_to_account(recipient_pub_key: Pubkey, amount: String) -> Result<(), 
     let accounts = vec![
         AccountMeta::new(recipient_pub_key, false),
         AccountMeta::new(token_mint_account_pda, false),
-        AccountMeta::new(spl_token_2022::id(), false),
+        AccountMeta::new(spl_token::id(), false),
     ];
 
     let mint_ix = Instruction {

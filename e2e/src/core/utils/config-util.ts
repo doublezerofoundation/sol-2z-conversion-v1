@@ -1,14 +1,16 @@
 import path from "path";
-import { SystemConfig } from "../account-defs";
 import fs from "fs";
 
 export interface Config {
+    rpc_url: string;
+    double_zero_program_id: string;
     oracle_pubkey: string;
     sol_quantity: number;
     max_discount_rate: number;
     min_discount_rate: number;
     coefficient: number;
     price_maximum_age: number;
+    price_oracle_end_point: string;
 }
 
 export const getConfig = (): Config => {

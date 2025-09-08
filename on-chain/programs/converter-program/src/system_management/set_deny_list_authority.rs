@@ -1,5 +1,6 @@
 use crate::common::seeds::seed_prefixes::SeedPrefixes;
 use anchor_lang::prelude::*;
+use crate::common::events::system::DenyListAuthoritySet;
 use crate::program_state::ProgramStateAccount;
 use crate::program::ConverterProgram;
 
@@ -25,6 +26,10 @@ pub struct SetDenyListAuthority<'info> {
 impl<'info> SetDenyListAuthority<'info> {
     pub fn process(&mut self, new_authority: Pubkey) -> Result<()> {
         self.program_state.deny_list_authority = new_authority;
+        emit!(DenyListAuthoritySet {
+            new_authority,
+            changed_by: self.admin.key()
+        });
         Ok(())
     }
 }

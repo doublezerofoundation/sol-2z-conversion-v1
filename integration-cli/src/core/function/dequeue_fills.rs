@@ -16,7 +16,7 @@ use cli_common::{
     utils::{
         env_var::load_payer_from_env,
         pda_helper,
-        fixed_point_utils::parse_sol_value,
+        fixed_point_utils::{parse_sol_value, convert_sol_value},
         ui::{LABEL, BULLET}
     },
 };
@@ -24,8 +24,6 @@ use std::{
     error::Error,
     str::FromStr
 };
-use anchor_client::solana_sdk::native_token::LAMPORTS_PER_SOL;
-use cli_common::utils::pda_helper::get_fills_registry_address;
 
 pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
     let config = Config::load()?;
@@ -40,7 +38,7 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
     // Getting necessary accounts.
     let configuration_registry_pda = pda_helper::get_configuration_registry_pda(program_id).0;
     let program_state_pda = pda_helper::get_program_state_pda(program_id).0;
-    let fills_registry = get_fills_registry_address(program_id, config.rpc_url)?;
+    let fills_registry = pda_helper::get_fills_registry_address(program_id, config.rpc_url)?;
 
     println!("{LABEL} Fills registry address: {}", fills_registry);
     println!("{LABEL} Configuration registry PDA: {}", configuration_registry_pda);
@@ -60,7 +58,7 @@ pub fn dequeue_fills(max_sol_value: String) -> Result<(), Box<dyn Error>> {
     };
     println!("Dequeue fills has been sent to on-chain for max_sol_value: {}", max_sol_value);
     let result_bps: DequeueFillsResult = send_instruction_with_return_data(dequeue_fills_ix)?;
-    let sol_quantity = result_bps.sol_dequeued / LAMPORTS_PER_SOL;
+    let sol_quantity = convert_sol_value(result_bps.sol_dequeued);
     println!("{BULLET} SOL amount dequeued: {}", sol_quantity);
     println!("{BULLET} 2Z token amount dequeued: {}", result_bps.token_2z_dequeued);
     println!("{BULLET} No of fills Consumed: {}", result_bps.fills_consumed);

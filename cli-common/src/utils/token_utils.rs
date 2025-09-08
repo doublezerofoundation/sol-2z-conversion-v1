@@ -13,7 +13,7 @@ pub fn find_or_initialize_associated_token_account(payer: Keypair, mint: Pubkey,
     let associated_token_account = get_associated_token_address_with_program_id(
         &payer.pubkey(),      // owner
         &mint,           // mint
-        &spl_token_2022::id(), // program_id
+        &spl_token::id(), // program_id
     );
 
     // Check if the account exists
@@ -27,7 +27,7 @@ pub fn find_or_initialize_associated_token_account(payer: Keypair, mint: Pubkey,
         &payer.pubkey(),      // funding address
         &payer.pubkey(),      // wallet address
         &mint,           // mint address
-        &spl_token_2022::id(), // program id
+        &spl_token::id(), // program id
     );
 
     send_batch_instructions(vec![create_ata_instruction])?;

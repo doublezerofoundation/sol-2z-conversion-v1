@@ -3,6 +3,7 @@ import {HealthCheckResult, HealthStatus, TYPES} from "../../types/common";
 import {PricingServiceFactory} from "../../factory/serviceFactory";
 import { injectable, inject } from 'inversify';
 import {CircuitBreakerService} from "./circuitBreakerService";
+import {logger} from "../../utils/logger";
 
 
 @injectable()
@@ -23,9 +24,9 @@ export class HealthMonitoringService {
             this.pricingServices.forEach(priceService => {
                 priceService.init();
             });
-            console.log(`Initialized ${this.pricingServices.length} pricing services for health monitoring`);
+            logger.info(`Initialized ${this.pricingServices.length} pricing services for health monitoring`);
         } catch (error) {
-            console.error('Failed to initialize pricing services for health monitoring:', error);
+            logger.error('Failed to initialize pricing services for health monitoring:', error);
             this.pricingServices = [];
         }
     }
@@ -36,9 +37,9 @@ export class HealthMonitoringService {
             return await priceService.getHealth();
         });
 
-        console.log("Price data requested")
+        logger.debug("Price data requested")
         this.monitoringData = await Promise.all(pricePromises);
-        console.log(this.monitoringData)
+        logger.debug("Monitoring Data:", this.monitoringData)
         const hasUnhealthy = this.monitoringData.some(healthCheck =>
             healthCheck.status === HealthStatus.UN_HEALTHY);
 
@@ -55,9 +56,9 @@ export class HealthMonitoringService {
     }
 
     async getHealthStatus(): Promise<boolean> {
-        console.log(this.monitoringData)
+        logger.debug("Monitoring Data:",this.monitoringData)
         if(!this.circuitBreakerService.canExecute()){
-            console.log('Circuit breaker is open, health status is false');
+            logger.info('Circuit breaker is open, health status is false');
             return false;
         }
         return  this.monitoringData.some(healthCheck => healthCheck.status === HealthStatus.HEALTHY);

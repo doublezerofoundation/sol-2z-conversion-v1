@@ -233,6 +233,7 @@ anchor build && anchor deploy --program-name mock-double-zero-program --program-
 ```
 
 #### Option B: Automated Deployment
+Ensure you have generated the keypair in the `.keys` folder. [See Solana Keypair Management](#solana-keypair-management)
 ```bash
 # Deploy on-chain workspace
 ./provision.sh -w on-chain --restart-validator
@@ -268,9 +269,11 @@ Off-chain components use the `config` npm module where the environment name and 
 Create config file: `indexer-service/config/{env-name}.json`
 ```json
 {
-  "RPC_URL": "https://api.devnet.solana.com",
-  "PROGRAM_ID": "program_id",
-  "CONCURRENCY": 8
+   "applicationPort": 8080,
+   "rpcUrl": "https://api.devnet.solana.com",
+   "programId": "program_id",
+   "concurrency": 8,
+   "logLevel": "WARN"
 }
 ```
 **Note** Update `PROGRAM_ID ` with public key of the convertor program [Refer](#generate-data-signer-key).
@@ -279,10 +282,12 @@ Create config file: `indexer-service/config/{env-name}.json`
 Create config file: `swap-oracle-service/config/{env-name}.json`
 ```json
 {
-  "applicationPort": 8080, 
-  "priceCacheTTLSeconds": 30,
-  "pricingServices": [
-    {
+   "applicationPort": 8080, 
+   "priceCacheTTLSeconds": 30,
+   "logLevel": "INFO",
+   "maxConfidenceRatio":  0.007,
+   "pricingServices": [
+     {
       "name": "pyth",
       "type": "pyth", 
       "endpoint": "https://hermes.pyth.network",
