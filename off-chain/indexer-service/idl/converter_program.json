@@ -1,5 +1,5 @@
 {
-  "address": "9VXbHTyZnz4PvJpjkLow4yL1nfLAPUx6UA6BGXg4E57e",
+  "address": "E9CCdmPsryJSg23cXicPaApQpjnfXAgHjP9oahbWZDqm",
   "metadata": {
     "name": "converter_program",
     "version": "0.1.0",
@@ -542,7 +542,7 @@
         },
         {
           "name": "program",
-          "address": "9VXbHTyZnz4PvJpjkLow4yL1nfLAPUx6UA6BGXg4E57e"
+          "address": "E9CCdmPsryJSg23cXicPaApQpjnfXAgHjP9oahbWZDqm"
         },
         {
           "name": "program_data"
@@ -697,7 +697,7 @@
         },
         {
           "name": "program",
-          "address": "9VXbHTyZnz4PvJpjkLow4yL1nfLAPUx6UA6BGXg4E57e"
+          "address": "E9CCdmPsryJSg23cXicPaApQpjnfXAgHjP9oahbWZDqm"
         },
         {
           "name": "program_data"
@@ -750,7 +750,7 @@
         },
         {
           "name": "program",
-          "address": "9VXbHTyZnz4PvJpjkLow4yL1nfLAPUx6UA6BGXg4E57e"
+          "address": "E9CCdmPsryJSg23cXicPaApQpjnfXAgHjP9oahbWZDqm"
         },
         {
           "name": "program_data"

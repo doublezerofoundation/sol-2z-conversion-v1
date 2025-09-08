@@ -29,7 +29,7 @@ use migration::migrate_v1_to_v2::*;
 #[cfg(feature = "test")]
 use migration::rollback_v2_to_v1::*;
 
-declare_id!("9VXbHTyZnz4PvJpjkLow4yL1nfLAPUx6UA6BGXg4E57e");
+declare_id!("E9CCdmPsryJSg23cXicPaApQpjnfXAgHjP9oahbWZDqm");
 #[program]
 pub mod converter_program {
     use super::*;
