@@ -6,8 +6,13 @@
   "author": "MeridianLabs",
   "main": "index.js",
   "scripts": {
-    "admin-flow": "mocha -r ts-node/esm 'src/admin-flow.spec.ts'",
-    "user-flow": "mocha -r ts-node/esm 'src/user-flow.spec.ts'"
+    "admin-flow": "mocha -r ts-node/register 'src/admin-flow.spec.ts'",
+    "user-flow": "mocha -r ts-node/register 'src/user-flow.spec.ts'"
+  },
+  "overrides": {
+    "strip-ansi": "7.1.2",
+    "color-convert": "2.0.1",
+    "color-name": "1.1.4"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.31.1",
@@ -19,7 +24,7 @@
     "@types/chai": "^4.3.5",
     "@types/mocha": "^10.0.1",
     "@types/node": "^20.11.30",
-    "mocha": "^10.2.0",
+    "mocha": "11.7.1",
     "solana-test-validator-js": "^1.0.2",
     "ts-node": "^10.9.1",
     "typescript": "^5.0.4"
