@@ -11,3 +11,4 @@ logs
 .terraform.lock.hcl
 .terraform
 tfplan
+off-chain/indexer-service/lambda-build/
