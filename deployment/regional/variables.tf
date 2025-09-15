@@ -20,9 +20,11 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-
-
-
+variable "oracle_pricing_key" {
+  description = "Admin keypair for SSM parameter - Base58 Key"
+  type        = string
+  sensitive   = true
+}
 
 variable "ecr_repository_name" {
   description = "Name of the ECR repository"
