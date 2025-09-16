@@ -65,6 +65,17 @@ module "network" {
   vpc_cidr           = var.vpc_cidr
 }
 
+module "ssm_param" {
+  source     = "../modules/ssm"
+  name       = "/${var.environment}/double-zero/oracle-pricing-key"
+  value      = var.oracle_pricing_key
+  type       = "SecureString"
+  aws_region = var.aws_region
+  tags = {
+    Environment = "Dev"
+  }
+}
+
 # Web Application Firewall (WAF) for Pricing Service
 module "pricing_waf" {
   source = "../modules/waf"
