@@ -21,11 +21,7 @@ variable "vpc_cidr" {
 }
 
 
-variable "oracle_pricing_key" {
-  description = "Admin keypair for SSM parameter"
-  type        = string
-  default     = "Secret base 58 encoded admin kaypair string"
-}
+
 
 
 variable "ecr_repository_name" {
