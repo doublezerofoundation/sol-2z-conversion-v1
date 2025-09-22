@@ -6,6 +6,7 @@ import { updateConfigsAndVerify, updateConfigsAndVerifyFail } from "./core/test-
 import { initializeSystemIfNeeded } from "./core/test-flow/system-initialize";
 import {setFillsConsumerAndVerify, setFillsConsumerExpectUnauthorized} from "./core/test-flow/set-fills-consumer";
 import {ErrorMsg} from "./core/constants";
+import {PublicKey} from "@solana/web3.js";
 
 describe("Configuration Registry Update Tests", async () => {
   const program = await setup();
@@ -33,6 +34,7 @@ describe("Configuration Registry Update Tests", async () => {
       coefficient: new anchor.BN(100),
       maxDiscountRate: new anchor.BN(5600),
       minDiscountRate: new anchor.BN(440),
+      revenueDistributionProgram: new PublicKey("122TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww")
     };
     await updateConfigsAndVerify(
       program,

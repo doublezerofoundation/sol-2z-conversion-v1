@@ -7,7 +7,7 @@ use cli_common::config::Config;
 pub struct AdminConfig {
     pub rpc_url: String,
     pub program_id: String,
-    pub double_zero_program_id: String,
+    pub double_zero_program_id: Pubkey,
     pub oracle_pubkey: Pubkey,
     pub sol_quantity: u64,
     pub price_maximum_age: i64,
@@ -23,7 +23,7 @@ impl AdminConfig {
         Ok(AdminConfig {
             rpc_url: raw_config.rpc_url,
             program_id: raw_config.program_id,
-            double_zero_program_id: raw_config.double_zero_program_id,
+            double_zero_program_id: Pubkey::from_str(&raw_config.double_zero_program_id)?,
             oracle_pubkey:  Pubkey::from_str(&raw_pub_key)?,
             sol_quantity: raw_config.sol_quantity.ok_or("Missing sol_quantity in config file")?,
             price_maximum_age: raw_config.price_maximum_age.ok_or("Missing price_maximum_age in config file")?,

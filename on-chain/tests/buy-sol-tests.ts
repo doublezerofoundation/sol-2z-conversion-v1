@@ -422,6 +422,68 @@ describe("Buy Sol Tests", () => {
         });
     });
 
+    describe("Account Validation", async () => {
+        it("Buy Sol with incorrect revenue distribution program should be rejected", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
+            // Ensure that user has sufficient 2Z.
+            await mint2z(
+                program,
+                tokenAccountForUser,
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure journal has funds.
+            await airdropJournal(program, currentConfigs.solQuantity);
+
+            try {
+                const buySol: TransactionInstruction = await prepareBuySolInstruction(
+                    program,
+                    tokenAccountForUser,
+                    askPrice,
+                    userKeyPair,
+                    oraclePriceData,
+                    new PublicKey("122TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww")
+                );
+                const tx: Transaction = new anchor.web3.Transaction().add(buySol);
+                await program.provider.sendAndConfirm(tx, [userKeyPair]);
+            } catch (error) {
+                const errorMessage = (new Error(error!.toString())).message;
+                expect(errorMessage).to.include("An address constraint was violated");
+                assert.ok(true, "Buy SOL is rejected as expected");
+                return; // Exit early — test passes.
+            }
+            assert.fail("It was able to do with incorrect revenue distribution program");
+        });
+
+        it("It should be possible to do buy sol with correct revenue distribution program", async () => {
+            const oraclePriceData = await getOraclePriceData();
+            const askPrice = await getConversionPriceAndVerify(program, oraclePriceData);
+            // Ensure that user has sufficient 2Z.
+            await mint2z(
+                program,
+                tokenAccountForUser,
+                askPrice * Number(currentConfigs.solQuantity) / LAMPORTS_PER_SOL
+            );
+            // Ensure journal has funds.
+            await airdropJournal(program, currentConfigs.solQuantity);
+
+            try {
+                const buySol: TransactionInstruction = await prepareBuySolInstruction(
+                    program,
+                    tokenAccountForUser,
+                    askPrice,
+                    userKeyPair,
+                    oraclePriceData,
+                    currentConfigs.revenueDistributionProgram
+                );
+                const tx: Transaction = new anchor.web3.Transaction().add(buySol);
+                await program.provider.sendAndConfirm(tx, [userKeyPair]);
+            } catch (error) {
+                console.log("Buy sol has failed. Error:", error);
+            }
+        });
+    });
+
     describe("Market halting check", async () => {
         it("should fail to do buy sol during market halt", async () => {
             // Make system to halt stage

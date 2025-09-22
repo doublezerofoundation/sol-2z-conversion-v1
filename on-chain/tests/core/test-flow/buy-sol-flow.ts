@@ -139,6 +139,7 @@ export async function prepareBuySolInstruction(
     bidPrice: number,
     signer: Keypair,
     oraclePriceData: OraclePriceData,
+    revenueDistributionProgram = MOCK_TRANSFER_PROGRAM
 ): Promise<TransactionInstruction> {
     const mockProgramPDAs = getMockProgramPDAs();
     const fillsRegistryAddress: PublicKey = await getFillsRegistryAccountAddress(program);
@@ -158,7 +159,7 @@ export async function prepareBuySolInstruction(
             programConfig: mockProgramPDAs.config,
             journal: mockProgramPDAs.journal,
             tokenProgram: TOKEN_PROGRAM_ID,
-            revenueDistributionProgram: MOCK_TRANSFER_PROGRAM,
+            revenueDistributionProgram,
             signer: signer.publicKey
         })
         .signers([signer])
