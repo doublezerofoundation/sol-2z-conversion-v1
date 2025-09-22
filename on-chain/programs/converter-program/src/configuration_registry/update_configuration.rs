@@ -12,6 +12,7 @@ use crate::{
 #[derive(AnchorSerialize, AnchorDeserialize)]
 pub struct ConfigurationRegistryInput {
     pub oracle_pubkey: Option<Pubkey>,
+    pub revenue_distribution_program: Option<Pubkey>,
     pub sol_quantity: Option<u64>,
     pub price_maximum_age: Option<i64>, //in seconds
     pub coefficient: Option<u64>,
@@ -45,6 +46,9 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
 
         if let Some(oracle_pubkey) = input.oracle_pubkey {
             self.configuration_registry.oracle_pubkey = oracle_pubkey;
+        }
+        if let Some(program_key) = input.revenue_distribution_program {
+            self.configuration_registry.revenue_distribution_program = program_key;
         }
         if let Some(sol_quantity) = input.sol_quantity {
             self.configuration_registry.sol_quantity = sol_quantity;
