@@ -8,6 +8,7 @@ use crate::constant::MAX_FILLS_QUEUE_SIZE;
 #[derive(Debug, AnchorDeserialize)]
 pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey,
+    pub revenue_distribution_program: Pubkey,
     pub sol_quantity: u64,
     pub price_maximum_age: i64,
     pub fills_consumer: Pubkey,

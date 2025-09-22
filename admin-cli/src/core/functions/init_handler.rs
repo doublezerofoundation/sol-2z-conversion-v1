@@ -45,6 +45,7 @@ pub fn init() -> Result<(), Box<dyn Error>> {
     data_initialize = [
         data_initialize,
         admin_config.oracle_pubkey.to_bytes().to_vec(),
+        admin_config.double_zero_program_id.to_bytes().to_vec(),
         admin_config.sol_quantity.to_le_bytes().to_vec(),
         admin_config.price_maximum_age.to_le_bytes().to_vec(),
         admin_config.coefficient.to_le_bytes().to_vec(),
