@@ -133,7 +133,7 @@ impl<'info> BuySol<'info> {
         if bid_price < ask_price {
             emit!(BidTooLowEvent {
                 sol_amount: sol_quantity,
-                buy_sol: bid_price,
+                bid_price,
                 ask_price,
                 timestamp: clock.unix_timestamp,
                 buyer: self.signer.key(),
