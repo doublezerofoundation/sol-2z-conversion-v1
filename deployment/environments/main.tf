@@ -72,7 +72,7 @@ module "ssm_param" {
   type       = "SecureString"
   aws_region = var.aws_region
   tags = {
-    Environment = "Dev"
+    Environment = var.environment
   }
 }
 
