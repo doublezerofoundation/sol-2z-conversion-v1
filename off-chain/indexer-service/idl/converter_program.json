@@ -198,13 +198,12 @@
         {
           "name": "protocol_treasury_token_account",
           "docs": [
-            "TODO: implement address validations after knowing protocol treasury token account"
+            "will be checked in revenue_distribution_program"
           ],
           "writable": true
         },
         {
-          "name": "double_zero_mint",
-          "writable": true
+          "name": "double_zero_mint"
         },
         {
           "name": "program_config"
@@ -563,6 +562,10 @@
       "args": [
         {
           "name": "oracle_pubkey",
+          "type": "pubkey"
+        },
+        {
+          "name": "revenue_distrubution_program",
           "type": "pubkey"
         },
         {
@@ -1450,6 +1453,10 @@
             "type": "pubkey"
           },
           {
+            "name": "revenue_distribution_program",
+            "type": "pubkey"
+          },
+          {
             "name": "sol_quantity",
             "type": "u64"
           },
@@ -1483,6 +1490,12 @@
         "fields": [
           {
             "name": "oracle_pubkey",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "revenue_distribution_program",
             "type": {
               "option": "pubkey"
             }
