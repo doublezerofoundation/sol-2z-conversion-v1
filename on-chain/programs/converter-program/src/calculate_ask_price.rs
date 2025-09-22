@@ -20,7 +20,6 @@ use crate::{
         structs::OraclePriceData, attestation_utils::verify_attestation,
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::DenyListRegistry,
     program_state::ProgramStateAccount,
 };
 
@@ -37,11 +36,6 @@ pub struct CalculateAskPrice<'info> {
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
-    #[account(
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
-        bump = program_state.bump_registry.deny_list_registry_bump,
-    )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
 }
 
 impl<'info> CalculateAskPrice<'info> {
