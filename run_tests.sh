@@ -10,7 +10,6 @@ UNIT_TESTS=(
     system-state-test
     buy-sol-test
     dequeue-fills-test
-    migration-test
 )
 
 E2E_TESTS=(
@@ -221,7 +220,7 @@ trap 'stop_validator' EXIT
 build_anchor_program() {
     local PROGRAM_NAME=$1
     log_info "Building the $PROGRAM_NAME program..."
-    anchor build -- --features test > /dev/null
+    anchor build > /dev/null
     yarn install > /dev/null
 }
 

@@ -35,7 +35,7 @@ pub struct CalculateAskPrice<'info> {
         seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
-    pub configuration_registry: Account<'info, ConfigurationRegistry>,
+    pub configuration_registry: Account<'info, ConfigurationRegistry>
 }
 
 impl<'info> CalculateAskPrice<'info> {
