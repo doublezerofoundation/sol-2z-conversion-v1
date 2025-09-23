@@ -16,7 +16,7 @@ use crate::{
             BPS
         },
         error::DoubleZeroError,
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         structs::OraclePriceData, attestation_utils::verify_attestation,
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -28,17 +28,17 @@ use crate::{
 pub struct CalculateAskPrice<'info> {
     pub signer: Signer<'info>,
     #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        seeds = [seeds::CONFIGURATION_REGISTRY],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
+        seeds = [seeds::DENY_LIST_REGISTRY],
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,

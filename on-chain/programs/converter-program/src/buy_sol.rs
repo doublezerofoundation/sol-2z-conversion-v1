@@ -9,7 +9,7 @@ use anchor_lang::{
 use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked};
 use crate::{
     common::{
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         error::DoubleZeroError,
         attestation_utils::verify_attestation,
         events::{
@@ -31,18 +31,18 @@ use crate::{
 #[derive(Accounts)]
 pub struct BuySol<'info> {
     #[account(
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        seeds = [seeds::CONFIGURATION_REGISTRY],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
         mut,
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
     #[account(
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
+        seeds = [seeds::DENY_LIST_REGISTRY],
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
@@ -52,7 +52,7 @@ pub struct BuySol<'info> {
     )]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
-        seeds = [SeedPrefixes::WithdrawAuthority.as_bytes()],
+        seeds = [seeds::WITHDRAW_AUTHORITY],
         bump = program_state.bump_registry.withdraw_authority_bump,
     )]
     pub withdraw_sol_authority: SystemAccount<'info>,
@@ -193,7 +193,7 @@ impl<'info> BuySol<'info> {
                 self.signer.to_account_info(),
             ],
             &[&[
-                SeedPrefixes::WithdrawAuthority.as_bytes(),
+                seeds::WITHDRAW_AUTHORITY,
                 &[self.program_state.bump_registry.withdraw_authority_bump],
             ]],
         )?;
