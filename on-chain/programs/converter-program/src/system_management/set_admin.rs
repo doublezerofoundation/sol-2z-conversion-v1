@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use crate::{
     common::{
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         events::system::AdminChanged
     },
     program::ConverterProgram,
@@ -13,7 +13,7 @@ pub struct SetAdmin<'info> {
     pub admin: Signer<'info>,
     #[account(
         mut,
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,

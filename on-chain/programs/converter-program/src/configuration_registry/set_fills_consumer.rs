@@ -3,7 +3,7 @@ use crate::{
     program_state::ProgramStateAccount,
     configuration_registry::configuration_registry::ConfigurationRegistry,
     common::{
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         events::fill_consumer::*,
         error::DoubleZeroError
     },
@@ -14,12 +14,12 @@ use crate::{
 pub struct SetFillsConsumer<'info> {
     #[account(
         mut,
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        seeds = [seeds::CONFIGURATION_REGISTRY],
         bump = program_state.bump_registry.configuration_registry_bump
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,

@@ -1,6 +1,8 @@
-use crate::common::seeds::seed_prefixes::SeedPrefixes;
 use anchor_lang::prelude::*;
-use crate::common::events::system::DenyListAuthoritySet;
+use crate::common::{
+    seeds,
+    events::system::DenyListAuthoritySet
+};
 use crate::program_state::ProgramStateAccount;
 use crate::program::ConverterProgram;
 
@@ -9,7 +11,7 @@ pub struct SetDenyListAuthority<'info> {
     pub admin: Signer<'info>,
     #[account(
         mut,
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
