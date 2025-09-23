@@ -143,17 +143,6 @@ resource "aws_route_table_association" "private" {
   route_table_id = aws_route_table.private.id
 }
 
-module "ssm_param" {
-  source     = "../modules/ssm"
-  name       = "/double-zero/oracle-pricing-key"
-  value      = var.oracle_pricing_key
-  type       = "SecureString"
-  aws_region = var.aws_region
-  tags = {
-    Environment = "Dev"
-  }
-}
-
 module "pricing_ecr" {
   source = "../modules/ecr"
   ecr_repository_name       = "double-zero-oracle-pricing-service"
