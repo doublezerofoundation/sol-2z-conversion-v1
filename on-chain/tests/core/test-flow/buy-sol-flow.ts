@@ -151,7 +151,7 @@ export async function prepareBuySolInstruction(
             signature: oraclePriceData.signature,
         }
     )
-        .accounts({
+        .accountsPartial({
             fillsRegistry: fillsRegistryAddress,
             userTokenAccount: senderTokenAccount,
             protocolTreasuryTokenAccount: mockProgramPDAs.protocolTreasury,
