@@ -5,6 +5,7 @@ import {
 import {GetParameterCommand, GetParameterCommandInput, SSMClient} from "@aws-sdk/client-ssm";
 import * as process from "node:process";
 const AWS_REGION:string = process.env.AWS_REGION || 'us-east-1';
+const ENV:string = process.env.ENVIRONMENT || 'dev';
 import bs58 from 'bs58';
 import { injectable } from 'inversify';
 import {logger} from "../../utils/logger";
@@ -26,7 +27,7 @@ export class KeyManager implements IKeyManager {
 
     private async loadKeyPairSignerFromParameterStore(): Promise<KeyPairSigner> {
         const params:GetParameterCommandInput = {
-            Name: `/double-zero/oracle-pricing-key`,
+            Name: `/${ENV}/double-zero/oracle-pricing-key`,
             WithDecryption: true
         }
 
