@@ -50,7 +50,7 @@ impl<'info> ConfigurationRegistryUpdate<'info> {
             self.configuration_registry.sol_quantity = sol_quantity;
         }
         if let Some(price_maximum_age) = input.price_maximum_age {
-            require!(price_maximum_age >= 0, DoubleZeroError::InvalidPriceMaximumAge);
+            require!(price_maximum_age > 0, DoubleZeroError::InvalidPriceMaximumAge);
             self.configuration_registry.price_maximum_age = price_maximum_age;
         }
 

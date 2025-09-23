@@ -91,7 +91,7 @@ impl<'info> InitializeSystem<'info> {
         require!(max_discount_rate <= 10_000, DoubleZeroError::InvalidMaxDiscountRate);
         require!(coefficient <= 100_000_000, DoubleZeroError::InvalidCoefficient);
         require!(min_discount_rate < max_discount_rate, DoubleZeroError::InvalidMinDiscountRate);
-        require!(price_maximum_age >= 0, DoubleZeroError::InvalidPriceMaximumAge);
+        require!(price_maximum_age > 0, DoubleZeroError::InvalidPriceMaximumAge);
 
         self.configuration_registry.oracle_pubkey = oracle_pubkey;
         self.configuration_registry.sol_quantity = sol_quantity;
