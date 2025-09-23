@@ -118,7 +118,7 @@ describe("Configuration Registry Update Tests", async () => {
         ErrorMsg.INVALID_PRICE_MAXIMUM_AGE
     );
 
-    // Revert: Set coefficient to default
+    // Revert: Set config to default
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
