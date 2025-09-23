@@ -4,7 +4,6 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace, Debug)]
 pub struct ConfigurationRegistry {
     pub oracle_pubkey: Pubkey, // Public key of the swap oracle service
-    pub revenue_distribution_program: Pubkey,
     pub sol_quantity: u64,
     pub price_maximum_age: i64, // Maximum acceptable age for oracle price data
     pub fills_consumer: Pubkey,

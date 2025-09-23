@@ -39,7 +39,6 @@ pub mod converter_program {
     pub fn initialize_system(
         ctx: Context<InitializeSystem>,
         oracle_pubkey: Pubkey,
-        revenue_distribution_program: Pubkey,
         sol_quantity: u64,
         price_maximum_age: i64,
         coefficient: u64,
@@ -50,7 +49,6 @@ pub mod converter_program {
         // Calling Init instruction
         ctx.accounts.process(
             oracle_pubkey,
-            revenue_distribution_program,
             sol_quantity,
             price_maximum_age,
             coefficient,

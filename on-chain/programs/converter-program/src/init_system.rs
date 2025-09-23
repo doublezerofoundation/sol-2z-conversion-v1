@@ -65,7 +65,6 @@ impl<'info> InitializeSystem<'info> {
     pub fn process(
         &mut self,
         oracle_pubkey: Pubkey,
-        revenue_distribution_program: Pubkey,
         sol_quantity: u64,
         price_maximum_age: i64,
         coefficient: u64,
@@ -94,7 +93,6 @@ impl<'info> InitializeSystem<'info> {
         require!(min_discount_rate < max_discount_rate, DoubleZeroError::InvalidMinDiscountRate);
 
         self.configuration_registry.oracle_pubkey = oracle_pubkey;
-        self.configuration_registry.revenue_distribution_program = revenue_distribution_program;
         self.configuration_registry.sol_quantity = sol_quantity;
         self.configuration_registry.price_maximum_age = price_maximum_age;
         self.configuration_registry.coefficient = coefficient;

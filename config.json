@@ -1,7 +1,7 @@
 {
   "rpc_url": "http://127.0.0.1:8899",
   "program_id": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
-  "double_zero_program_id": "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww",
+  "double_zero_program_id": "dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4",
   "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
   "sol_quantity": 25000000000,
   "price_maximum_age": 324,

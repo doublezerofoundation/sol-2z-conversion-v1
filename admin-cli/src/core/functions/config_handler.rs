@@ -39,7 +39,6 @@ pub fn update_config() -> Result<(), Box<dyn Error>> {
     let mut account_data = hash(UPDATE_CONFIGURATION_REGISTRY_INSTRUCTION).to_bytes()[..8].to_vec();
     let input = ConfigurationRegistryInput {
         oracle_pubkey: Some(admin_config.oracle_pubkey),
-        revenue_distribution_program: Some(admin_config.double_zero_program_id),
         sol_quantity: Some(admin_config.sol_quantity),
         price_maximum_age: Some(admin_config.price_maximum_age),
         coefficient: Some(admin_config.coefficient),

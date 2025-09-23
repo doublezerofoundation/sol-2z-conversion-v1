@@ -12,7 +12,7 @@ import {DEFAULT_CONFIGS, SystemConfig} from "./core/utils/configuration-registry
 import {updateConfigsAndVerify} from "./core/test-flow/change-configs";
 import {getConversionPriceAndVerify} from "./core/test-flow/conversion-price";
 import {getOraclePriceData, getOraclePriceDataFor} from "./core/utils/price-oracle";
-import {BPS, ErrorMsg, Events, TOKEN_UNITS} from "./core/constants";
+import {BPS, ErrorMsg, Events, MOCK_TRANSFER_PROGRAM, TOKEN_UNITS} from "./core/constants";
 import {airdropJournal} from "./core/utils/mock-transfer-program-utils";
 import {addToDenyListAndVerify, removeFromDenyListAndVerify, setDenyListAuthorityAndVerify} from "./core/test-flow/deny-list";
 import {toggleSystemStateAndVerify} from "./core/test-flow/system-state";
@@ -474,7 +474,7 @@ describe("Buy Sol Tests", () => {
                     askPrice,
                     userKeyPair,
                     oraclePriceData,
-                    currentConfigs.revenueDistributionProgram
+                    MOCK_TRANSFER_PROGRAM
                 );
                 const tx: Transaction = new anchor.web3.Transaction().add(buySol);
                 await program.provider.sendAndConfirm(tx, [userKeyPair]);

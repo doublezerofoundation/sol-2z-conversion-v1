@@ -27,6 +27,7 @@ use crate::{
     fills_registry::fills_registry::{FillsRegistry, Fill},
     calculate_ask_price::calculate_conversion_rate
 };
+const REVENUE_DISTRIBUTION_PROGRAM_ID: Pubkey = pubkey!("dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4");
 
 #[derive(Accounts)]
 pub struct BuySol<'info> {
@@ -77,7 +78,7 @@ pub struct BuySol<'info> {
     pub journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
     /// CHECK: program address
-    #[account(address = configuration_registry.revenue_distribution_program)]
+    #[account(address = REVENUE_DISTRIBUTION_PROGRAM_ID)]
     pub revenue_distribution_program: UncheckedAccount<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,

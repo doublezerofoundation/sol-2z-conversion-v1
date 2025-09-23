@@ -6,7 +6,6 @@ use anchor_client::{
 #[derive(AnchorSerialize, AnchorDeserialize, Debug)]
 pub struct ConfigurationRegistryInput {
     pub oracle_pubkey: Option<Pubkey>,
-    pub revenue_distribution_program: Option<Pubkey>,
     pub sol_quantity: Option<u64>,
     pub price_maximum_age: Option<i64>,
     pub coefficient: Option<u64>,

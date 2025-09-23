@@ -46,7 +46,6 @@ export async function systemInitializeAndVerify(
     try {
         tx = await program.methods.initializeSystem(
             inputConfigs.oraclePubkey,
-            inputConfigs.revenueDistributionProgram,
             inputConfigs.solQuantity,
             inputConfigs.priceMaximumAge,
             inputConfigs.coefficient,
@@ -107,7 +106,6 @@ export async function systemInitializeFail(
     try {
         await program.methods.initializeSystem(
             configRegistryValues.oraclePubkey,
-            configRegistryValues.revenueDistributionProgram,
             configRegistryValues.solQuantity,
             configRegistryValues.priceMaximumAge,
             configRegistryValues.coefficient,
