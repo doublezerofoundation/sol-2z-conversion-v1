@@ -127,7 +127,7 @@ Update the `oracle_pubkey` with `Public key` in config.json
 This keypair is used for signing price data in the swap-oracle service.
 
 > [!NOTE]
-> `Base58 secret Key` used by swap-oracle service we have to update it in parameter store when regional setup done.
+> `Base58 secret Key` used by swap-oracle service we have to update it in parameter store when environment setup done.
 
 ### On Chain Configuration Setup
 
@@ -154,7 +154,7 @@ Create `config.json` at the project root with the following structure:
 - **double_zero_program_id**: Public key of the mock transfer program (which is created by earlier step Generate Programs key )
 - **sol_quantity**: Amount of SOL per transaction (in Lamports)
 - **coefficient**: Discount calculation curve coefficient (see formula below)
-- **price_oracle_end_point**: swap-oracle-service endpoint which is created after environment creation( used by User cli to get swap rate. So doesnt need to be set at deployment to blockchain) 
+- **price_oracle_end_point**: swap-oracle-service endpoint which is created after environment creation( used by User cli to get swap rate. So doesnt need to be set at deployment to blockchain)
 
 
 
@@ -356,10 +356,6 @@ When using `--workspace deployment`, specify one of:
 - ECR repositories
 - CloudWatch log groups
 
-
-> [!NOTE]
-> Update AWS Parameter Store value of `/double-zero/oracle-pricing-key` with the Base58 encoded secret key. [Refer](#generate-data-signer-key).
-
 ### Step 3: Artifact Publishing
 
 #### Publish Application Artifacts
@@ -384,6 +380,10 @@ When using `--workspace deployment`, specify one of:
 - Application load balancers
 - Auto Scaling Groups
 - Deploys applications with specified release tag
+
+
+> [!NOTE]
+> Update AWS Parameter Store value of `<env>/double-zero/oracle-pricing-key` with the Base58 encoded secret key. [Refer](#generate-data-signer-key).
 
 ## Phase 3: System Operations
 
