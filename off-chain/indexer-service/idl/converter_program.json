@@ -216,7 +216,8 @@
           "name": "token_program"
         },
         {
-          "name": "revenue_distribution_program"
+          "name": "revenue_distribution_program",
+          "address": "dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4"
         },
         {
           "name": "signer",
@@ -562,10 +563,6 @@
       "args": [
         {
           "name": "oracle_pubkey",
-          "type": "pubkey"
-        },
-        {
-          "name": "revenue_distribution_program",
           "type": "pubkey"
         },
         {
@@ -1453,10 +1450,6 @@
             "type": "pubkey"
           },
           {
-            "name": "revenue_distribution_program",
-            "type": "pubkey"
-          },
-          {
             "name": "sol_quantity",
             "type": "u64"
           },
@@ -1490,12 +1483,6 @@
         "fields": [
           {
             "name": "oracle_pubkey",
-            "type": {
-              "option": "pubkey"
-            }
-          },
-          {
-            "name": "revenue_distribution_program",
             "type": {
               "option": "pubkey"
             }
