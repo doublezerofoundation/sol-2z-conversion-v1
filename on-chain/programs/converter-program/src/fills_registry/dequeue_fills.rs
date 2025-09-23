@@ -3,7 +3,7 @@ use anchor_lang::{
 };
 use crate::{
     common::{
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         error::DoubleZeroError,
         events::fill_consumer::FillsDequeued,
         constant::MAX_FILLS_QUEUE_SIZE
@@ -20,12 +20,12 @@ use crate::{
 #[derive(Accounts)]
 pub struct DequeueFills<'info> {
     #[account(
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        seeds = [seeds::CONFIGURATION_REGISTRY],
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,

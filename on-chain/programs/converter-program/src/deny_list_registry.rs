@@ -2,7 +2,7 @@ use crate::{
     program_state::ProgramStateAccount,
     common::{
         constant::MAX_DENY_LIST_SIZE,
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         error::DoubleZeroError,
         events::deny_list::{DenyListAddressAdded, DenyListAddressRemoved},
     }
@@ -22,13 +22,13 @@ pub struct DenyListRegistry {
 pub struct UpdateDenyList<'info> {
     #[account(
         mut,
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
+        seeds = [seeds::DENY_LIST_REGISTRY],
         bump = program_state.bump_registry.deny_list_registry_bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     // Program state, to verify admin
     #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
