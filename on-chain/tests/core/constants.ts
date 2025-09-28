@@ -1,7 +1,7 @@
 import {PublicKey} from "@solana/web3.js";
 
 export const BPF_UPGRADEABLE_LOADER_ID = new PublicKey("BPFLoaderUpgradeab1e11111111111111111111111");
-export const MOCK_TRANSFER_PROGRAM = new PublicKey("8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww");
+export const MOCK_TRANSFER_PROGRAM = new PublicKey("dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4");
 export const TOKEN_UNITS = 10 ** 8;
 export const BPS = 100; // basis points
 
@@ -37,6 +37,7 @@ export namespace ErrorMsg {
     export const SYSTEM_HALTED = "System is halted";
     export const RAW_CONSTRAINT_VIOLATION = "A raw constraint was violated";
     export const INVALID_COEFFICIENT = "InvalidCoefficient";
+    export const INVALID_PRICE_MAXIMUM_AGE = "InvalidPriceMaximumAge";
     export const INVALID_MAX_DISCOUNT_RATE = "Invalid max discount rate";
     export const UNAUTHORIZED_ADMIN = "Unauthorized admin";
     export const STALE_PRICE = "Provided attestation is outdated";

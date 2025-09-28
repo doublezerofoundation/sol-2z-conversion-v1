@@ -155,7 +155,6 @@ export class BuySolScenario extends CommonScenario {
             programConfig: mockProgramPDAs.config,
             journal: mockProgramPDAs.journal,
             tokenProgram: TOKEN_PROGRAM_ID,
-            revenueDistributionProgram: getConfig().double_zero_program_id,
             signer: this.user.session.getPublicKey()
         })
         .signers([this.user.session.getKeypair()]);

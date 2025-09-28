@@ -96,4 +96,7 @@ pub enum DoubleZeroError {
 
     #[msg("Error when calculating ask price")]
     AskPriceCalculationError, //6030
+    
+    #[msg("Provided price maximum age value is invalid")]
+    InvalidPriceMaximumAge, //6031
 }
