@@ -108,16 +108,30 @@ describe("Configuration Registry Update Tests", async () => {
     await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
   });
 
-    describe("Set fills consumer Tests", async () => {
-        it("Non-admin cannot add a fills consumer", async () => {
-            const nonAdmin = anchor.web3.Keypair.generate();
-            const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
-            await setFillsConsumerExpectUnauthorized(program, nonAdmin, fillsConsumer);
-        });
+  it("Should fail to update with invalid price maximum age", async () => {
 
-        it("Admin can add a fills consumer", async () => {
-            const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
-            await setFillsConsumerAndVerify(program, getDefaultKeyPair(), fillsConsumer);
-        });
-    });
+    // Set price max age to less than zero value
+    await updateConfigsAndVerifyFail(program, {
+          ...DEFAULT_CONFIGS,
+          priceMaximumAge: new anchor.BN(-2)
+        },
+        ErrorMsg.INVALID_PRICE_MAXIMUM_AGE
+    );
+
+    // Revert: Set config to default
+    await updateConfigsAndVerify(program, DEFAULT_CONFIGS);
+  });
+
+  describe("Set fills consumer Tests", async () => {
+      it("Non-admin cannot add a fills consumer", async () => {
+          const nonAdmin = anchor.web3.Keypair.generate();
+          const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
+          await setFillsConsumerExpectUnauthorized(program, nonAdmin, fillsConsumer);
+      });
+
+      it("Admin can add a fills consumer", async () => {
+          const fillsConsumer = anchor.web3.Keypair.generate().publicKey;
+          await setFillsConsumerAndVerify(program, getDefaultKeyPair(), fillsConsumer);
+      });
+  });
 });
