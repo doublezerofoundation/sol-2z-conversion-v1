@@ -3,7 +3,7 @@ use crate::{
     common::{
         constant::DISCRIMINATOR_SIZE,
         events::init::SystemInitialized,
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         error::DoubleZeroError
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
@@ -20,7 +20,7 @@ pub struct InitializeSystem<'info> {
         init,
         payer = authority,
         space = DISCRIMINATOR_SIZE + ConfigurationRegistry::INIT_SPACE,
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        seeds = [seeds::CONFIGURATION_REGISTRY],
         bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
@@ -28,7 +28,7 @@ pub struct InitializeSystem<'info> {
         init,
         payer = authority,
         space = DISCRIMINATOR_SIZE + ProgramStateAccount::INIT_SPACE,
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
@@ -36,14 +36,14 @@ pub struct InitializeSystem<'info> {
         init,
         payer = authority,
         space = DISCRIMINATOR_SIZE + DenyListRegistry::INIT_SPACE,
-        seeds = [SeedPrefixes::DenyListRegistry.as_bytes()],
+        seeds = [seeds::DENY_LIST_REGISTRY],
         bump,
     )]
     pub deny_list_registry: Account<'info, DenyListRegistry>,
     #[account(zero)]
     pub fills_registry: AccountLoader<'info, FillsRegistry>,
     #[account(
-        seeds = [SeedPrefixes::WithdrawAuthority.as_bytes()],
+        seeds = [seeds::WITHDRAW_AUTHORITY],
         bump
     )]
     pub withdraw_authority: SystemAccount<'info>,

@@ -25,5 +25,3 @@ admin-change-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/admin
 system-state-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/system-state-tests.ts"
 buy-sol-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/buy-sol-tests.ts"
 dequeue-fills-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/dequeue-fills-tests.ts"
-migration-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/migration-tests.ts"
-

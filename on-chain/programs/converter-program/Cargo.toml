@@ -10,7 +10,6 @@ name = "converter_program"
 
 [features]
 default = []
-test = []
 cpi = ["no-entrypoint"]
 no-entrypoint = []
 no-idl = []

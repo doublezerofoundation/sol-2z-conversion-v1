@@ -4,7 +4,7 @@ use crate::{
     common::{
         error::DoubleZeroError,
         events::system::{SystemHalted, SystemUnhalted},
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
     },
     program_state::ProgramStateAccount,
 };
@@ -14,7 +14,7 @@ pub struct SystemState<'info> {
     pub admin: Signer<'info>,
     #[account(
         mut,
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,

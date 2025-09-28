@@ -3,7 +3,7 @@ use crate::{
     configuration_registry::configuration_registry::ConfigurationRegistry,
     program_state::ProgramStateAccount,
     common::{
-        seeds::seed_prefixes::SeedPrefixes,
+        seeds,
         error::DoubleZeroError,
         events::config::ConfigChanged
     },
@@ -23,12 +23,12 @@ pub struct ConfigurationRegistryInput {
 pub struct ConfigurationRegistryUpdate<'info> {
     #[account(
         mut,
-        seeds = [SeedPrefixes::ConfigurationRegistry.as_bytes()],
+        seeds = [seeds::CONFIGURATION_REGISTRY],
         bump = program_state.bump_registry.configuration_registry_bump
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
     #[account(
-        seeds = [SeedPrefixes::ProgramState.as_bytes()],
+        seeds = [seeds::PROGRAM_STATE],
         bump = program_state.bump_registry.program_state_bump,
     )]
     pub program_state: Account<'info, ProgramStateAccount>,
