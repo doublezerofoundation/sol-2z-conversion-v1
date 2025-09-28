@@ -37,6 +37,7 @@ export namespace ErrorMsg {
     export const SYSTEM_HALTED = "System is halted";
     export const RAW_CONSTRAINT_VIOLATION = "A raw constraint was violated";
     export const INVALID_COEFFICIENT = "InvalidCoefficient";
+    export const INVALID_PRICE_MAXIMUM_AGE = "InvalidPriceMaximumAge";
     export const INVALID_MAX_DISCOUNT_RATE = "Invalid max discount rate";
     export const UNAUTHORIZED_ADMIN = "Unauthorized admin";
     export const STALE_PRICE = "Provided attestation is outdated";
