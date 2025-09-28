@@ -11,7 +11,7 @@ use cli_common::{
     transaction_executor::{get_account_data, send_instruction_with_return_data},
     utils::{
         pda_helper::{
-            get_configuration_registry_pda, get_deny_list_registry_pda, get_program_state_pda,
+            get_configuration_registry_pda, get_program_state_pda,
         },
         ui,
         env_var::load_payer_from_env,
@@ -53,13 +53,11 @@ pub async fn get_price() -> Result<(), Box<dyn Error>> {
     let program_id = Pubkey::from_str(&user_config.program_id)?;
     let program_state_pda = get_program_state_pda(program_id).0;
     let configuration_registry_pda = get_configuration_registry_pda(program_id).0;
-    let deny_list_reg_pda = get_deny_list_registry_pda(program_id).0;
 
     let accounts = vec![
         AccountMeta::new(payer.pubkey(), true),
         AccountMeta::new(program_state_pda, false),
         AccountMeta::new(configuration_registry_pda, false),
-        AccountMeta::new_readonly(deny_list_reg_pda, false),
     ];
 
     let ix = Instruction {
