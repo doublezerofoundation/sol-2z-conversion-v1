@@ -198,13 +198,12 @@
         {
           "name": "protocol_treasury_token_account",
           "docs": [
-            "TODO: implement address validations after knowing protocol treasury token account"
+            "will be checked in revenue_distribution_program"
           ],
           "writable": true
         },
         {
-          "name": "double_zero_mint",
-          "writable": true
+          "name": "double_zero_mint"
         },
         {
           "name": "program_config"
@@ -217,7 +216,8 @@
           "name": "token_program"
         },
         {
-          "name": "revenue_distribution_program"
+          "name": "revenue_distribution_program",
+          "address": "dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4"
         },
         {
           "name": "signer",

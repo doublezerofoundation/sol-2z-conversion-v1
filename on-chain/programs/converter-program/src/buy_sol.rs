@@ -6,8 +6,7 @@ use anchor_lang::{
         program::invoke_signed
     }
 };
-use anchor_spl::token_interface;
-use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface, TransferChecked};
+use anchor_spl::token_interface::{self, Mint, TokenAccount, TokenInterface, TransferChecked};
 use crate::{
     common::{
         seeds::seed_prefixes::SeedPrefixes,
@@ -19,7 +18,7 @@ use crate::{
         structs::OraclePriceData,
         constant::{
             MAX_FILLS_QUEUE_SIZE,
-            TOKEN_DECIMALS
+            TOKEN_DECIMALS,
         }
     },
     program_state::ProgramStateAccount,
@@ -28,6 +27,7 @@ use crate::{
     fills_registry::fills_registry::{FillsRegistry, Fill},
     calculate_ask_price::calculate_conversion_rate
 };
+const REVENUE_DISTRIBUTION_PROGRAM_ID: Pubkey = pubkey!("dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4");
 
 #[derive(Accounts)]
 pub struct BuySol<'info> {
@@ -63,22 +63,22 @@ pub struct BuySol<'info> {
         constraint = user_token_account.owner == signer.key()
     )]
     pub user_token_account: InterfaceAccount<'info, TokenAccount>,
-    /// TODO: implement address validations after knowing protocol treasury token account
+    /// will be checked in revenue_distribution_program
     #[account(
         mut,
         token::mint = double_zero_mint,
     )]
     pub protocol_treasury_token_account: InterfaceAccount<'info, TokenAccount>,
-    /// CHECK: program address - TODO: implement address validations after knowing DoubleZero Token Mint
-    #[account(mut)]
+    /// CHECK: will be checked in revenue_distribution_program
     pub double_zero_mint: InterfaceAccount<'info, Mint>,
-    /// CHECK: program address - TODO: implement address validations after client informs actual programId
+    /// CHECK: will be checked in revenue_distribution_program
     pub program_config: UncheckedAccount<'info>,
-    /// CHECK: program address - TODO: implement address validations after client informs actual address
+    /// CHECK: will be checked in revenue_distribution_program
     #[account(mut)]
     pub journal: UncheckedAccount<'info>,
     pub token_program: Interface<'info, TokenInterface>,
-    /// CHECK: program address - TODO: implement address validations after client informs actual address
+    /// CHECK: program address
+    #[account(address = REVENUE_DISTRIBUTION_PROGRAM_ID)]
     pub revenue_distribution_program: UncheckedAccount<'info>,
     #[account(mut)]
     pub signer: Signer<'info>,
