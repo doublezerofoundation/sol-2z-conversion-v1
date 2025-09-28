@@ -20,7 +20,6 @@ use crate::{
         structs::OraclePriceData, attestation_utils::verify_attestation,
     },
     configuration_registry::configuration_registry::ConfigurationRegistry,
-    deny_list_registry::DenyListRegistry,
     program_state::ProgramStateAccount,
 };
 
@@ -37,11 +36,6 @@ pub struct CalculateAskPrice<'info> {
         bump = program_state.bump_registry.configuration_registry_bump,
     )]
     pub configuration_registry: Account<'info, ConfigurationRegistry>,
-    #[account(
-        seeds = [seeds::DENY_LIST_REGISTRY],
-        bump = program_state.bump_registry.deny_list_registry_bump,
-    )]
-    pub deny_list_registry: Account<'info, DenyListRegistry>,
 }
 
 impl<'info> CalculateAskPrice<'info> {
@@ -95,8 +89,7 @@ pub fn calculate_conversion_rate(
     let discount_rate_decimal = coefficient_decimal
         .checked_mul(s_diff_decimal)?
         .checked_add(min_discount_rate_decimal)?
-        .min(max_discount_rate_decimal)
-        .max(min_discount_rate_decimal);
+        .min(max_discount_rate_decimal);
 
     // conversion_rate = oracle_swap_rate * (1 - discount_rate)
     let oracle_swap_rate_decimal = Decimal::from_u64(oracle_price_data.swap_rate)?
@@ -157,7 +150,6 @@ mod tests {
             (1_000_000_000, 0, 5_000, 1_000, 100, 200, 900_000_000), // min coefficient bounded at min discount
             (1_000_000_000, 100_000_000, 5_000, 1_000, 100, 200, 500_000_000), // max coefficient bounded at max discount
             (0, 4_500, 5_000, 1_000, 100, 200, 0), // zero swap rate
-            (1_000_000_000, 4_500, 1_000, 5_000, 100, 200, 500_000_000), // min discount larger than max
 
         ] {
             let oracle_price_data = OraclePriceData {

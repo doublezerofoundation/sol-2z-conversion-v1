@@ -102,7 +102,7 @@ print_status_bar() {
 VALIDATOR_PID=""
 LEDGER_DIR=""
 
-start_validator() {
+start_validator_with_mock_transfer_program() {
     local RPC_PORT=$1
     shift
     local RPC_URL="http://127.0.0.1:$RPC_PORT"
@@ -114,9 +114,12 @@ start_validator() {
     mkdir -p "$LEDGER_DIR"
 
     log_info "Starting validator on $RPC_URL with ledger $LEDGER_DIR"
+    log_info "Mock Transfer program also deployed"
 
     solana-test-validator \
         --reset \
+        --bpf-program dzrevZC94tBLwuHw1dyynZxaXTWyp7yocsinyEVPtt4 \
+         ./mock-double-zero-program/target/deploy/mock_transfer_program.so \
         --quiet \
         --rpc-port "$RPC_PORT" \
         --ledger "$LEDGER_DIR" \
@@ -137,7 +140,7 @@ start_validator() {
         log_warning "Validator didn’t start properly, retrying once..."
         stop_validator
         sleep 2
-        start_validator "$RPC_PORT" "$@"
+        start_validator_with_mock_transfer_program "$RPC_PORT" "$@"
     fi
 }
 
@@ -253,26 +256,6 @@ deploy_anchor_program() {
     rm -f "$KEYPAIR_FILE"
 }
 
-deploy_mock_program() {
-    local RPC_URL=$1
-    local MOCK_PROGRAM_PRIVATE_KEY="[41,100,166,45,2,252,199,133,111,34,143,135,15,162,37,112,
-    66,179,228,45,86,90,71,52,1,98,138,127,212,132,153,139,110,106,250,31,25,233,164,66,37,154,
-    30,122,115,179,246,155,232,105,154,14,237,244,119,175,13,188,194,6,3,40,42,2]"
-    # Create a temporary keypair file
-    local KEYPAIR_FILE
-    KEYPAIR_FILE=$(mktemp)
-    # Write the private key to the temp file
-    echo "$MOCK_PROGRAM_PRIVATE_KEY" > "$KEYPAIR_FILE"
-    log_info "Deploying mock transfer program"
-    solana program deploy \
-        target/deploy/mock_transfer_program.so \
-        --program-id "$KEYPAIR_FILE" \
-        --url "$RPC_URL"
-
-    # Remove the temp file after deployment
-    rm -f "$KEYPAIR_FILE"
-}
-
 # -------------------- CLI Management --------------------
 build_cli() {
     log_info "Running cargo build for the CLIs..."
@@ -306,11 +289,10 @@ run_test() {
     if [ "$TEST_SCRIPT" == "user-flow" ]; then
         EXTRA_ARGS="--ticks-per-slot 300"
     fi
-    start_validator $RPC_PORT $EXTRA_ARGS
+    start_validator_with_mock_transfer_program $RPC_PORT $EXTRA_ARGS
 
     # Deploy the programs to the validator
     cd $SCRIPT_DIR/mock-double-zero-program || exit 1
-    deploy_mock_program $RPC_URL
     cd $SCRIPT_DIR/on-chain || exit 1
     deploy_anchor_program $RPC_URL "converter-program" || { log_error "Deploy failed"; exit 1; }
 
