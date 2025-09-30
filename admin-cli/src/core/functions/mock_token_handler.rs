@@ -23,6 +23,7 @@ use cli_common::{
         ui,
     },
 };
+use cli_common::utils::token_utils::find_or_initialize_associated_token_account1;
 use crate::core::{
     common::instruction::{MOCK_SYSTEM_INITIALIZE, MOCK_TOKEN_MINT_INSTRUCTION},
     config::AdminConfig,
@@ -108,7 +109,14 @@ pub fn mint(to_pub_key: Option<String>, amount: String) -> Result<(), Box<dyn Er
     let token_mint_account_pda = pda_helper::get_token_mint_pda(mock_program_id).0;
 
     let recipient_pub_key = match to_pub_key {
-        Some(ref key_str) => Pubkey::from_str(key_str)?,
+        Some(ref key_str) => {
+            find_or_initialize_associated_token_account1(
+                Pubkey::from_str(key_str)?,
+                payer,
+                token_mint_account_pda,
+                admin_config.rpc_url
+            )?
+        },
         None => find_or_initialize_associated_token_account(
             payer,
             token_mint_account_pda,
