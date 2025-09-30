@@ -16,4 +16,4 @@ no-entrypoint = []
 solana-program = { workspace = true }
 borsh = { workspace = true }
 thiserror = { workspace = true }
-spl-token = { workspace = true, features = ["no-entrypoint"] }
+spl-token-2022 = { workspace = true, features = ["no-entrypoint"] }

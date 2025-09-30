@@ -22,7 +22,7 @@ use solana_program::{
     sysvar,
 };
 
-use spl_token::{
+use spl_token_2022::{
     instruction::{initialize_account, initialize_mint},
     state::{Account, Mint},
     ID as TOKEN_PROGRAM_ID,
