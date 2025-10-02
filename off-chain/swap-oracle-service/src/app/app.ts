@@ -34,7 +34,7 @@ import {logger} from "../utils/logger";
         setInterval(async () => {
             logger.info("Health monitoring started", Date.now());
             await this.healthMonitoringService.startMonitoring();
-        }, 60000);
+        }, 30000);
     }
 
 
