@@ -7,7 +7,7 @@ export class CircuitBreakerService {
     private circuitBreaker: CircuitBreaker;
 
     constructor() {
-        this.circuitBreaker = new CircuitBreaker({healthCheckAttemptsToClose:5})
+        this.circuitBreaker = new CircuitBreaker({healthCheckAttemptsToClose:3})
     }
 
     reportHealthCheckFailure(): void {
