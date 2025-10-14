@@ -1,0 +1,17 @@
+{
+  "applicationPort": 8080,
+  "priceCacheTTLSeconds": 30,
+  "logLevel": "INFO",
+  "maxConfidenceRatio":  0.003,
+  "pricingServices": [
+    {
+      "name": "pyth",
+      "type": "pyth",
+      "endpoint": "https://hermes.pyth.network",
+      "priceFeedIds": {
+        "SOL/USD": "0xef0d8b6fda2ceba41da15d4095d1da392a0d2f8ed0c6c7bc0f4cfac8c280b56d",
+        "2Z/USD": "0xf2b3ab1c49e35e881003c3c0482d18b181a1560b697b844c24c8f85aba1cab95"
+      }
+    }
+  ]
+}
