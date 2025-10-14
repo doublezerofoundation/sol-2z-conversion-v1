@@ -40,16 +40,6 @@ output "log_group_arn" {
   value       = aws_cloudwatch_log_group.api_gateway.arn
 }
 
-output "default_route_id" {
-  description = "The ID of the default route"
-  value       = aws_api_gateway_resource.proxy.id
-}
-
-output "default_integration_id" {
-  description = "The ID of the default integration"
-  value       = aws_api_gateway_integration.default.id
-}
-
 output "custom_domain_name" {
   description = "The custom domain name for the API Gateway"
   value       = var.custom_domain_name != "" ? aws_api_gateway_domain_name.this[0].domain_name : null
