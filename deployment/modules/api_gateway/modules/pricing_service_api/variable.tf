@@ -20,7 +20,12 @@ variable "connection_id" {
 
 variable "api_id" {
   description = "The ID of Parent api resource"
-  type = string
+  type        = string
+}
+
+variable "api_name" {
+  description = "The name of the API"
+  type        = string
 }
 
 variable "parent_id" {

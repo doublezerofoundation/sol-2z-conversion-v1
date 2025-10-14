@@ -110,22 +110,23 @@ resource "aws_api_gateway_resource" "v1" {
 }
 
 
-module "pricing_service"  {
-  count  = var.enable_pricing_service ? 1 : 0
-  source = "./modules/pricing_service_api"
-  api_id = aws_api_gateway_rest_api.this.id
-  connection_id = var.connection_id
+module "pricing_service" {
+  count           = var.enable_pricing_service ? 1 : 0
+  source          = "./modules/pricing_service_api"
+  api_id          = aws_api_gateway_rest_api.this.id
+  api_name        = aws_api_gateway_rest_api.this.name
+  connection_id   = var.connection_id
   connection_type = var.connection_type
-  nlb_dns_name = var.nlb_dns_name
-  parent_id = aws_api_gateway_resource.v1.id
+  nlb_dns_name    = var.nlb_dns_name
+  parent_id       = aws_api_gateway_resource.v1.id
 }
 
 module "metrics_service" {
-  count  = var.enable_metrics_api ? 1 : 0
-  source = "./modules/metrics_service_api"
-  api_id = aws_api_gateway_rest_api.this.id
+  count             = var.enable_metrics_api ? 1 : 0
+  source            = "./modules/metrics_service_api"
+  api_id            = aws_api_gateway_rest_api.this.id
   lambda_invoke_arn = var.metrics_lambda_invoke_arn
-  parent_id = aws_api_gateway_resource.v1.id
+  parent_id         = aws_api_gateway_resource.v1.id
 }
 
 # Create CloudWatch Log Group for API Gateway
@@ -182,16 +183,16 @@ resource "aws_api_gateway_stage" "this" {
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway.arn
     format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      resourcePath   = "$context.resourcePath"
-      status         = "$context.status"
-      protocol       = "$context.protocol"
-      responseLength = "$context.responseLength"
+      requestId          = "$context.requestId"
+      ip                 = "$context.identity.sourceIp"
+      requestTime        = "$context.requestTime"
+      httpMethod         = "$context.httpMethod"
+      resourcePath       = "$context.resourcePath"
+      status             = "$context.status"
+      protocol           = "$context.protocol"
+      responseLength     = "$context.responseLength"
       integrationLatency = "$context.integrationLatency"
-      responseLatency = "$context.responseLatency"
+      responseLatency    = "$context.responseLatency"
     })
   }
 
@@ -210,8 +211,8 @@ resource "aws_api_gateway_method_settings" "all" {
   method_path = "*/*"
 
   settings {
-    metrics_enabled = true
-    logging_level   = "INFO"
+    metrics_enabled        = true
+    logging_level          = "INFO"
     throttling_burst_limit = var.throttling_burst_limit
     throttling_rate_limit  = var.throttling_rate_limit
   }
