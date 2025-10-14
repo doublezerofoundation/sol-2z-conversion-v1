@@ -15,48 +15,6 @@ resource "aws_api_gateway_rest_api" "this" {
   }
 }
 
-# Create a resource for the root path
-resource "aws_api_gateway_resource" "proxy" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
-  path_part   = "{proxy+}"
-}
-
-# Create a method for the proxy resource
-resource "aws_api_gateway_method" "proxy" {
-  rest_api_id   = aws_api_gateway_rest_api.this.id
-  resource_id   = aws_api_gateway_resource.proxy.id
-  http_method   = "ANY"
-  authorization = "NONE"
-
-  request_parameters = {
-    "method.request.path.proxy" = true
-  }
-}
-
-# Create default integration for API Gateway
-resource "aws_api_gateway_integration" "default" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  resource_id = aws_api_gateway_resource.proxy.id
-  http_method = aws_api_gateway_method.proxy.http_method
-
-  # Conditional configuration based on integration type
-  integration_http_method = var.integration_type == "LAMBDA" ? "POST" : "ANY"
-  type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP"
-  uri                     = var.integration_type == "LAMBDA" ? var.metrics_lambda_invoke_arn : "http://${var.nlb_dns_name}/{method.request.path.proxy}"
-
-  # Connection settings only apply to HTTP integration
-  connection_type = var.integration_type == "LAMBDA" ? null : var.connection_type
-  connection_id   = var.integration_type == "LAMBDA" ? null : var.connection_id
-
-  # Request parameters only apply to HTTP integration
-  request_parameters = var.integration_type == "LAMBDA" ? null : {
-    "integration.request.path.proxy" = "method.request.path.proxy"
-  }
-}
-
-
-
 # Create a method for the root resource
 resource "aws_api_gateway_method" "root" {
   rest_api_id   = aws_api_gateway_rest_api.this.id
@@ -81,51 +39,22 @@ resource "aws_api_gateway_integration" "root" {
   connection_id   = var.integration_type == "LAMBDA" ? null : var.connection_id
 }
 
-# Enable CORS for the proxy resource
-resource "aws_api_gateway_method_response" "proxy_options" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  resource_id = aws_api_gateway_resource.proxy.id
-  http_method = aws_api_gateway_method.proxy.http_method
-  status_code = "200"
-
-  response_parameters = {
-    "method.response.header.Access-Control-Allow-Headers" = true
-    "method.response.header.Access-Control-Allow-Methods" = true
-    "method.response.header.Access-Control-Allow-Origin"  = true
-  }
-}
-
-# Create 'api' resource
-resource "aws_api_gateway_resource" "api" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  parent_id   = aws_api_gateway_rest_api.this.root_resource_id
-  path_part   = "api"
-}
-
-# Create 'v1' resource under 'api'
-resource "aws_api_gateway_resource" "v1" {
-  rest_api_id = aws_api_gateway_rest_api.this.id
-  parent_id   = aws_api_gateway_resource.api.id
-  path_part   = "v1"
-}
-
-
-module "pricing_service"  {
-  count  = var.enable_pricing_service ? 1 : 0
-  source = "./modules/pricing_service_api"
-  api_id = aws_api_gateway_rest_api.this.id
-  connection_id = var.connection_id
+module "pricing_service" {
+  count           = var.enable_pricing_service ? 1 : 0
+  source          = "./modules/pricing_service_api"
+  api_id          = aws_api_gateway_rest_api.this.id
+  connection_id   = var.connection_id
   connection_type = var.connection_type
-  nlb_dns_name = var.nlb_dns_name
-  parent_id = aws_api_gateway_resource.v1.id
+  nlb_dns_name    = var.nlb_dns_name
+  parent_id       = aws_api_gateway_rest_api.this.root_resource_id
 }
 
 module "metrics_service" {
-  count  = var.enable_metrics_api ? 1 : 0
-  source = "./modules/metrics_service_api"
-  api_id = aws_api_gateway_rest_api.this.id
+  count             = var.enable_metrics_api ? 1 : 0
+  source            = "./modules/metrics_service_api"
+  api_id            = aws_api_gateway_rest_api.this.id
   lambda_invoke_arn = var.metrics_lambda_invoke_arn
-  parent_id = aws_api_gateway_resource.v1.id
+  parent_id         = aws_api_gateway_rest_api.this.root_resource_id
 }
 
 # Create CloudWatch Log Group for API Gateway
@@ -150,9 +79,6 @@ resource "aws_api_gateway_deployment" "this" {
     # are possible, such as using the filesha1() function against the
     # Terraform configuration files.
     redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.proxy.id,
-      aws_api_gateway_method.proxy.id,
-      aws_api_gateway_integration.default.id,
       aws_api_gateway_method.root.id,
       aws_api_gateway_integration.root.id,
       var.enable_pricing_service ? try(module.pricing_service[0], null) : null,
@@ -166,8 +92,6 @@ resource "aws_api_gateway_deployment" "this" {
   }
 
   depends_on = [
-    aws_api_gateway_method.proxy,
-    aws_api_gateway_integration.default,
     aws_api_gateway_method.root,
     aws_api_gateway_integration.root,
   ]
@@ -182,16 +106,16 @@ resource "aws_api_gateway_stage" "this" {
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway.arn
     format = jsonencode({
-      requestId      = "$context.requestId"
-      ip             = "$context.identity.sourceIp"
-      requestTime    = "$context.requestTime"
-      httpMethod     = "$context.httpMethod"
-      resourcePath   = "$context.resourcePath"
-      status         = "$context.status"
-      protocol       = "$context.protocol"
-      responseLength = "$context.responseLength"
+      requestId          = "$context.requestId"
+      ip                 = "$context.identity.sourceIp"
+      requestTime        = "$context.requestTime"
+      httpMethod         = "$context.httpMethod"
+      resourcePath       = "$context.resourcePath"
+      status             = "$context.status"
+      protocol           = "$context.protocol"
+      responseLength     = "$context.responseLength"
       integrationLatency = "$context.integrationLatency"
-      responseLatency = "$context.responseLatency"
+      responseLatency    = "$context.responseLatency"
     })
   }
 
@@ -210,8 +134,8 @@ resource "aws_api_gateway_method_settings" "all" {
   method_path = "*/*"
 
   settings {
-    metrics_enabled = true
-    logging_level   = "INFO"
+    metrics_enabled        = true
+    logging_level          = "INFO"
     throttling_burst_limit = var.throttling_burst_limit
     throttling_rate_limit  = var.throttling_rate_limit
   }
