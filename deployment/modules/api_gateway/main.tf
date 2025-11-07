@@ -31,7 +31,7 @@ resource "aws_api_gateway_integration" "root" {
 
   # Conditional configuration based on integration type
   integration_http_method = var.integration_type == "LAMBDA" ? "POST" : "ANY"
-  type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP"
+  type                    = var.integration_type == "LAMBDA" ? "AWS_PROXY" : "HTTP_PROXY"
   uri                     = var.integration_type == "LAMBDA" ? var.metrics_lambda_invoke_arn : "http://${var.nlb_dns_name}/"
 
   # Connection settings only apply to HTTP integration
