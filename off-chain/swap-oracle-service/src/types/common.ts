@@ -9,6 +9,7 @@ export enum ConfigField {
     PRICE_CACHE_TTL_SECONDS = 'priceCacheTTLSeconds',
     LOG_LEVEL = 'logLevel',
     MAX_CONFIDENCE_RATIO = 'maxConfidenceRatio',
+    MAX_PRICE_AGE_SECONDS = 'maxPriceAgeSeconds',
 
 
 }
@@ -50,6 +51,9 @@ export interface PriceRate {
     solPriceUsd: number;
     twozPriceUsd: number;
     last_price_update: string;
+    publishTime?: number;          // Effective publish time (min of both feeds, Unix seconds)
+    solPublishTime?: number;       // SOL/USD feed publish_time
+    twozPublishTime?: number;      // 2Z/USD feed publish_time
 }
 
 export type HealthCheckResult = PythHealthCheckResponse

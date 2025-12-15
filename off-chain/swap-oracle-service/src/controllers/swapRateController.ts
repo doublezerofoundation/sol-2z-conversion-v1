@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import {IPricingService} from "../service/pricing/IPricingService";
-import {HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
+import {ConfigField, HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestation/attestationService";
 import {CacheService} from "../service/cache/cacheService";
@@ -9,7 +9,8 @@ import {HealthMonitoringService} from "../service/monitor/healthMonitoringServic
 import {inject, injectable} from "inversify";
 import {CircuitBreakerService} from "../service/monitor/circuitBreakerService";
 import {logger} from "../utils/logger";
-import {PriceServiceUnavailableError} from "../utils/error";
+import {PriceServiceUnavailableError, PriceStalenessError} from "../utils/error";
+import {ConfigUtil} from "../utils/configUtil";
 
 const ENV:string = process.env.ENVIRONMENT || 'dev';
 @injectable()
@@ -23,6 +24,7 @@ export default class SwapRateController {
         @inject(TYPES.MetricsMonitoringService) private metricsMonitoringService: IMetricsMonitoringService,
         @inject(TYPES.HealthMonitoringService) private healthMonitoringService: HealthMonitoringService,
         @inject(TYPES.CircuitBreakerService) private circuitBreakerService: CircuitBreakerService,
+        @inject(TYPES.ConfigUtil) private configUtil: ConfigUtil,
 
     ) {
         this.initializePricingService();
@@ -63,7 +65,24 @@ export default class SwapRateController {
             }
             res.json(result);
         } catch (error) {
-            if (error instanceof PriceServiceUnavailableError) {
+            if (error instanceof PriceStalenessError) {
+                logger.warn('Price data is stale:', {
+                    message: error.message,
+                    feedId: error.feedId,
+                    publishTime: error.publishTime,
+                    ageSeconds: error.ageSeconds,
+                    maxAgeSeconds: error.maxAgeSeconds
+                });
+                res.status(503).json({
+                    error: 'Price data too old',
+                    details: error.message,
+                    feedId: error.feedId,
+                    publishTime: error.publishTime,
+                    ageSeconds: error.ageSeconds,
+                    maxAgeSeconds: error.maxAgeSeconds,
+                    retryAfter: "30 seconds"
+                });
+            } else if (error instanceof PriceServiceUnavailableError) {
                 logger.warn('Price data confidence too low:', error.message);
                 res.status(503).json({
                     error: 'Price data temporarily unavailable',
@@ -110,9 +129,33 @@ export default class SwapRateController {
     private async getSwapRate(): Promise<{ priceRate: PriceRate; isCacheHit: boolean }> {
         const cachedSwapRate: PriceRate = await this.cacheService.get(`${ENV}-swapRate`);
 
-        if (cachedSwapRate) {
+        // Validate cached entry for staleness
+        if (cachedSwapRate && cachedSwapRate.publishTime) {
+            const maxAge = this.configUtil.get<number>(ConfigField.MAX_PRICE_AGE_SECONDS) || 60;
+            const nowUnix = Math.floor(Date.now() / 1000);
+            const cacheAge = nowUnix - cachedSwapRate.publishTime;
+            
+            if (cacheAge <= maxAge) {
+                logger.debug('Returning fresh cached price', {
+                    cacheAge,
+                    maxAge,
+                    publishTime: cachedSwapRate.publishTime
+                });
+                return { priceRate: cachedSwapRate, isCacheHit: true };
+            }
+            
+            logger.warn('Cached price is stale, refetching', {
+                cacheAge,
+                maxAge,
+                publishTime: cachedSwapRate.publishTime
+            });
+            // Fall through to refetch
+        } else if (cachedSwapRate) {
+            // Legacy cache entry without publishTime - return it for now but warn
+            logger.warn('Cached entry missing publishTime field, returning anyway (legacy data)');
             return { priceRate: cachedSwapRate, isCacheHit: true };
         }
+        
         try {
             const pricePromises = this.priceServices.map(async (service) => {
                 try {

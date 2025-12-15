@@ -18,3 +18,16 @@ export class PriceServiceUnavailableError extends Error {
         this.name = 'PriceServiceUnavailableError';
     }
 }
+
+export class PriceStalenessError extends PriceServiceUnavailableError {
+    constructor(
+        message: string,
+        public readonly feedId: string,
+        public readonly publishTime: number,
+        public readonly ageSeconds: number,
+        public readonly maxAgeSeconds: number
+    ) {
+        super(message);
+        this.name = 'PriceStalenessError';
+    }
+}

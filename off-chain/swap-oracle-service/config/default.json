@@ -1,6 +1,7 @@
 {
   "applicationPort": 8080,
   "priceCacheTTLSeconds": 30,
+  "maxPriceAgeSeconds": 60,
   "logLevel": "INFO",
   "maxConfidenceRatio":  0.004,
   "pricingServices": [

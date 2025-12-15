@@ -4,6 +4,11 @@ import ISwapRateService from "../src/service/swap/ISwapRateService";
 import {assert, expect} from "chai";
 import {PriceServiceUnavailableError} from "../src/utils/error";
 
+const addPublishTime = (priceData: any) => {
+    const nowUnix = Math.floor(Date.now() / 1000);
+    return { ...priceData, publishTime: nowUnix - 10 };
+};
+
 const successTestData = [
     {
         name: "Basic 2:1 ratio",
@@ -221,8 +226,8 @@ describe('SwapRateService', () => {
         successTestData.forEach((testData) => {
             it(`should calculate correct swap rate: ${testData.name}`, async () => {
                 const result = await swapRateService.swapRateCalculation(
-                    testData.solPriceData,
-                    testData.twozPriceData
+                    addPublishTime(testData.solPriceData),
+                    addPublishTime(testData.twozPriceData)
                 );
 
                 console.log(`Test: ${testData.name}`);
@@ -242,42 +247,42 @@ describe('SwapRateService', () => {
             if (testData.shouldPass) {
                 it(`should pass confidence check: ${testData.name}`, async () => {
                     const result = await swapRateService.swapRateCalculation(
-                        testData.solPriceData,
-                        testData.twozPriceData
+                    addPublishTime(testData.solPriceData),
+                    addPublishTime(testData.twozPriceData)
+                );
+                expect(result.swapRate).to.be.approximately(testData.expectedSwapRate!, 0.000001);
+            });
+        } else {
+            it(`should fail confidence check: ${testData.name}`, async () => {
+                try {
+                    const result = await swapRateService.swapRateCalculation(
+                        addPublishTime(testData.solPriceData),
+                        addPublishTime(testData.twozPriceData)
                     );
-                    expect(result.swapRate).to.be.approximately(testData.expectedSwapRate!, 0.000001);
-                });
-            } else {
-                it(`should fail confidence check: ${testData.name}`, async () => {
-                    try {
-                        const result = await swapRateService.swapRateCalculation(
-                            testData.solPriceData,
-                            testData.twozPriceData
-                        );
-                        console.log(result)
-                        console.log(`Test: ${testData.name}`);
-                        assert.fail('Expected PriceServiceUnavailableError to be thrown');
-                    } catch (error) {
-                        expect(error).to.be.instanceOf(PriceServiceUnavailableError);
-                    }
-                });
-            }
-        });
+                    console.log(result)
+                    console.log(`Test: ${testData.name}`);
+                    assert.fail('Expected PriceServiceUnavailableError to be thrown');
+                } catch (error) {
+                    expect(error).to.be.instanceOf(PriceServiceUnavailableError);
+                }
+            });
+        }
     });
+});
 
     describe('Edge cases and data type handling', () => {
         edgeCaseTestData.forEach((testData) => {
-            it(`should handle edge case: ${testData.name}`, async () => {
-                const result = await swapRateService.swapRateCalculation(
-                    testData.solPriceData,
-                    testData.twozPriceData
-                );
+        it(`should handle edge case: ${testData.name}`, async () => {
+            const result = await swapRateService.swapRateCalculation(
+                addPublishTime(testData.solPriceData),
+                addPublishTime(testData.twozPriceData)
+            );
 
-                expect(result.swapRate).to.be.approximately(testData.expectedSwapRate, 0.000001);
-                expect(result.solPriceUsd).to.be.a('number');
-                expect(result.twozPriceUsd).to.be.a('number');
-            });
+            expect(result.swapRate).to.be.approximately(testData.expectedSwapRate, 0.000001);
+            expect(result.solPriceUsd).to.be.a('number');
+            expect(result.twozPriceUsd).to.be.a('number');
         });
+    });
     });
 
     describe('Price conversion validation', () => {
@@ -325,7 +330,10 @@ describe('SwapRateService', () => {
                 confidence: 0
             };
 
-            const result = await swapRateService.swapRateCalculation(solPriceData, twozPriceData);
+            const result = await swapRateService.swapRateCalculation(
+                addPublishTime(solPriceData),
+                addPublishTime(twozPriceData)
+            );
             expect(result.swapRate).to.equal(1);
         });
 
@@ -342,7 +350,10 @@ describe('SwapRateService', () => {
             };
 
             try {
-                await swapRateService.swapRateCalculation(solPriceData, twozPriceData);
+                await swapRateService.swapRateCalculation(
+                    addPublishTime(solPriceData),
+                    addPublishTime(twozPriceData)
+                );
                 assert.fail('Expected PriceServiceUnavailableError to be thrown');
             } catch (error) {
                 expect(error).to.be.instanceOf(PriceServiceUnavailableError);
@@ -363,16 +374,23 @@ describe('SwapRateService', () => {
                 confidence: 500
             };
 
-            const result = await swapRateService.swapRateCalculation(solPriceData, twozPriceData);
+            const result = await swapRateService.swapRateCalculation(
+                addPublishTime(solPriceData),
+                addPublishTime(twozPriceData)
+            );
 
             expect(result).to.have.property('swapRate');
             expect(result).to.have.property('solPriceUsd');
             expect(result).to.have.property('twozPriceUsd');
             expect(result).to.have.property('last_price_update');
+            expect(result).to.have.property('publishTime');
+            expect(result).to.have.property('solPublishTime');
+            expect(result).to.have.property('twozPublishTime');
             expect(result.swapRate).to.be.a('number');
             expect(result.solPriceUsd).to.be.a('number');
             expect(result.twozPriceUsd).to.be.a('number');
             expect(result.last_price_update).to.be.a('string');
+            expect(result.publishTime).to.be.a('number');
             expect(result.solPriceUsd).to.equal(1.5);
             expect(result.twozPriceUsd).to.equal(1.0);
             expect(result.swapRate).to.equal(1.5);
