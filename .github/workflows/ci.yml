@@ -1,0 +1,38 @@
+name: ci
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  onchain-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: Swatinem/rust-cache@v2
+      - name: Install agave solana tools
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v3.0.12/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+      - name: Install Anchor
+        run: |
+          curl -L https://github.com/solana-foundation/anchor/releases/download/v0.32.1/anchor-0.32.1-x86_64-unknown-linux-gnu -o /usr/local/bin/anchor
+          chmod +x /usr/local/bin/anchor
+      - name: Generate solana keypair
+        run: |
+          solana-keygen new --no-bip39-passphrase
+      - run: |
+          ./provision.sh -w run-tests --test-type unit
+
+  offchain-swap-oracle-service:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: off-chain/swap-oracle-service
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npm run test
+      - run: npm run build
