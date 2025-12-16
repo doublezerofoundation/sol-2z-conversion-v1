@@ -100,6 +100,9 @@ export async function buySolAndVerify(
     const fillEntry: Fill = fillsRegistryAfter.fills.slice(-1)[0];
     assert.equal(fillEntry.solIn, solBalanceChange);
     assert.approximately(fillEntry.token2ZOut, tokenBalanceChange, 10 ** 4);
+
+    // Ensure that we can trade in the next slot.
+    await new Promise(resolve => setTimeout(resolve, 400));
 }
 
 export async function buySolFail(
