@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import {IPricingService} from "../service/pricing/IPricingService";
-import {ConfigField, HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
+import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestation/attestationService";
 import {CacheService} from "../service/cache/cacheService";
@@ -131,7 +131,7 @@ export default class SwapRateController {
 
         // Validate cached entry for staleness
         if (cachedSwapRate && cachedSwapRate.publishTime) {
-            const maxAge = this.configUtil.get<number>(ConfigField.MAX_PRICE_AGE_SECONDS) || 60;
+            const maxAge = this.configUtil.get<number>(ConfigField.MAX_PRICE_AGE_SECONDS) || DEFAULT_MAX_PRICE_AGE_SECONDS;
             const nowUnix = Math.floor(Date.now() / 1000);
             const cacheAge = nowUnix - cachedSwapRate.publishTime;
             

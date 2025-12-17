@@ -123,60 +123,6 @@ describe('Price staleness validation tests', () => {
         }
     });
 
-    it("Should reject future timestamp (clock skew) for SOL", async () => {
-        const nowUnix = Math.floor(Date.now() / 1000);
-        
-        const solPriceData = {
-            price: '20000000000',
-            confidence: '100000000',
-            exponent: -8,
-            publishTime: nowUnix + 120 
-        };
-        
-        const twozPriceData = {
-            price: '100000000',
-            confidence: '50000000',
-            exponent: -8,
-            publishTime: nowUnix - 20
-        };
-        
-        try {
-            swapRateService.swapRateCalculation(solPriceData, twozPriceData);
-            assert.fail('Should have thrown PriceStalenessError for future timestamp');
-        } catch (error) {
-            assert.instanceOf(error, PriceStalenessError);
-            assert.equal((error as PriceStalenessError).feedId, 'SOL/USD');
-            assert.include((error as PriceStalenessError).message, 'future timestamp');
-        }
-    });
-
-    it("Should reject future timestamp (clock skew) for 2Z", async () => {
-        const nowUnix = Math.floor(Date.now() / 1000);
-        
-        const solPriceData = {
-            price: '20000000000',
-            confidence: '100000000',
-            exponent: -8,
-            publishTime: nowUnix - 20
-        };
-        
-        const twozPriceData = {
-            price: '100000000',
-            confidence: '50000000',
-            exponent: -8,
-            publishTime: nowUnix + 90
-        };
-        
-        try {
-            swapRateService.swapRateCalculation(solPriceData, twozPriceData);
-            assert.fail('Should have thrown PriceStalenessError for future timestamp');
-        } catch (error) {
-            assert.instanceOf(error, PriceStalenessError);
-            assert.equal((error as PriceStalenessError).feedId, '2Z/USD');
-            assert.include((error as PriceStalenessError).message, 'future timestamp');
-        }
-    });
-
     it("Should accept price at exactly 60s age (boundary test)", async () => {
         const nowUnix = Math.floor(Date.now() / 1000);
         

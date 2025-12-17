@@ -1,5 +1,5 @@
 import ISwapRateService from "./ISwapRateService";
-import {ConfigField, PriceRate, TWOZ_PRECISION_DECIMALS, TYPES} from "../../types/common";
+import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, PriceRate, TWOZ_PRECISION_DECIMALS, TYPES} from "../../types/common";
 import {inject, injectable} from "inversify";
 import {ConfigUtil} from "../../utils/configUtil";
 import {logger} from "../../utils/logger";
@@ -12,7 +12,7 @@ export class PythSwapRateService implements ISwapRateService {
     
     constructor(@inject(TYPES.ConfigUtil) private configUtil: ConfigUtil,) {
         this.MAX_CONFIDENCE_RATIO = this.configUtil.get<number>(ConfigField.MAX_CONFIDENCE_RATIO);
-        this.MAX_PRICE_AGE_SECONDS = this.configUtil.get<number>(ConfigField.MAX_PRICE_AGE_SECONDS) || 60;
+        this.MAX_PRICE_AGE_SECONDS = this.configUtil.get<number>(ConfigField.MAX_PRICE_AGE_SECONDS) || DEFAULT_MAX_PRICE_AGE_SECONDS;
     }
 
     convertPrice(price: string | number, exponent: number): number {
@@ -44,21 +44,6 @@ export class PythSwapRateService implements ISwapRateService {
                 this.MAX_PRICE_AGE_SECONDS
             );
         }
-        if (solAge < -60) {
-            logger.error('SOL price data has future timestamp (clock skew)', {
-                feedId: 'SOL/USD',
-                publishTime: solPriceData.publishTime,
-                ageSeconds: solAge,
-                maxAgeSeconds: this.MAX_PRICE_AGE_SECONDS
-            });
-            throw new PriceStalenessError(
-                `SOL price data has future timestamp (clock skew: ${-solAge}s)`,
-                'SOL/USD',
-                solPriceData.publishTime,
-                solAge,
-                this.MAX_PRICE_AGE_SECONDS
-            );
-        }
         
         // Validate 2Z/USD publish time (staleness check)
         if (!twozPriceData.publishTime) {
@@ -75,21 +60,6 @@ export class PythSwapRateService implements ISwapRateService {
             });
             throw new PriceStalenessError(
                 `2Z price data is stale (age: ${twozAge}s, max: ${this.MAX_PRICE_AGE_SECONDS}s)`,
-                '2Z/USD',
-                twozPriceData.publishTime,
-                twozAge,
-                this.MAX_PRICE_AGE_SECONDS
-            );
-        }
-        if (twozAge < -60) {
-            logger.error('2Z price data has future timestamp (clock skew)', {
-                feedId: '2Z/USD',
-                publishTime: twozPriceData.publishTime,
-                ageSeconds: twozAge,
-                maxAgeSeconds: this.MAX_PRICE_AGE_SECONDS
-            });
-            throw new PriceStalenessError(
-                `2Z price data has future timestamp (clock skew: ${-twozAge}s)`,
                 '2Z/USD',
                 twozPriceData.publishTime,
                 twozAge,
