@@ -33,6 +33,16 @@ describe('Pricing Service testcases', () => {
         assert.isNumber(swapRateResult.solPriceUsd, 'solPriceUsd should be a number');
         assert.isNumber(swapRateResult.twozPriceUsd, 'twozPriceUsd should be a number');
         assert.isString(swapRateResult.last_price_update, 'last_price_update should be a string');
+        
+        // Verify publishTime fields are present
+        assert.isNumber(swapRateResult.publishTime, 'publishTime should be a number');
+        assert.isNumber(swapRateResult.solPublishTime, 'solPublishTime should be a number');
+        assert.isNumber(swapRateResult.twozPublishTime, 'twozPublishTime should be a number');
+        
+        // Verify publishTime is recent (within last 2 minutes for live Hermes)
+        const nowUnix = Math.floor(Date.now() / 1000);
+        const age = nowUnix - swapRateResult.publishTime!;
+        assert.isTrue(age >= 0 && age < 120, `publishTime should be recent (age: ${age}s)`);
     })
 
 

@@ -110,7 +110,7 @@ export default class PythPricingService extends PricingServiceBase {
                     confidence: priceData.parsed[0].price.conf,
                     price: priceData.parsed[0].price.price,
                     exponent: priceData.parsed[0].price.expo,
-                    timestamp: priceData.parsed[0].price.publish_time
+                    publishTime: priceData.parsed[0].price.publish_time
                 }
                 try {
                     await this.cacheService.add(

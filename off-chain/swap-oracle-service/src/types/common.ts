@@ -9,11 +9,13 @@ export enum ConfigField {
     PRICE_CACHE_TTL_SECONDS = 'priceCacheTTLSeconds',
     LOG_LEVEL = 'logLevel',
     MAX_CONFIDENCE_RATIO = 'maxConfidenceRatio',
+    MAX_PRICE_AGE_SECONDS = 'maxPriceAgeSeconds',
 
 
 }
 export const TWOZ_PRECISION = 100000000;
 export const TWOZ_PRECISION_DECIMALS = 8;
+export const DEFAULT_MAX_PRICE_AGE_SECONDS = 60;
 export enum PriceFeed {
     BTC_USD = 'BTC/USD',
     SOL_USD = 'SOL/USD',
@@ -50,6 +52,9 @@ export interface PriceRate {
     solPriceUsd: number;
     twozPriceUsd: number;
     last_price_update: string;
+    publishTime?: number;          // Effective publish time (min of both feeds, Unix seconds)
+    solPublishTime?: number;       // SOL/USD feed publish_time
+    twozPublishTime?: number;      // 2Z/USD feed publish_time
 }
 
 export type HealthCheckResult = PythHealthCheckResponse
