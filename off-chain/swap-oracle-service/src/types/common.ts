@@ -14,8 +14,10 @@ export enum ConfigField {
 
 }
 export const TWOZ_PRECISION = 100000000;
+export const TWOZ_PRECISION_BIGINT = BigInt(100000000);
 export const TWOZ_PRECISION_DECIMALS = 8;
 export const DEFAULT_MAX_PRICE_AGE_SECONDS = 60;
+export const PRICE_SCALE_BIGINT = BigInt('1000000000000');
 export enum PriceFeed {
     BTC_USD = 'BTC/USD',
     SOL_USD = 'SOL/USD',

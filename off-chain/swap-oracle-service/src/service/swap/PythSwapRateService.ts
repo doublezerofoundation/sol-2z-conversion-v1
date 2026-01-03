@@ -1,9 +1,12 @@
 import ISwapRateService from "./ISwapRateService";
-import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, PriceRate, TWOZ_PRECISION_DECIMALS, TYPES} from "../../types/common";
+import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, PriceRate, TWOZ_PRECISION_BIGINT, PRICE_SCALE_BIGINT, TYPES} from "../../types/common";
 import {inject, injectable} from "inversify";
 import {ConfigUtil} from "../../utils/configUtil";
 import {logger} from "../../utils/logger";
 import {PriceServiceUnavailableError, PriceStalenessError} from "../../utils/error";
+
+// Maximum value for u64 (2^64 - 1)
+const U64_MAX = BigInt('18446744073709551615');
 
 @injectable()
 export class PythSwapRateService implements ISwapRateService {
@@ -18,6 +21,39 @@ export class PythSwapRateService implements ISwapRateService {
     convertPrice(price: string | number, exponent: number): number {
         const priceNum = typeof price === 'string' ? parseInt(price) : price;
         return priceNum * Math.pow(10, exponent);
+    }
+
+    convertPriceToBigInt(price: string | number, exponent: number): bigint {
+        const priceNum = typeof price === 'string' ? BigInt(price) : BigInt(Math.floor(price));
+        // Normalize to 1e12 scale: price * 10^(12 + exponent)
+        const scaledExponent = 12 + exponent;
+        if (scaledExponent >= 0) {
+            return priceNum * (BigInt(10) ** BigInt(scaledExponent));
+        } else {
+            // For negative scaled exponents, divide (should be rare)
+            return priceNum / (BigInt(10) ** BigInt(-scaledExponent));
+        }
+    }
+
+    // Use BigInt arithmetic to avoid IEEE 754 float precision issues in JSON serialization
+    calculateSwapRateInteger(solPriceData: any, twozPriceData: any): bigint {
+        const solNormalized = this.convertPriceToBigInt(solPriceData.price, solPriceData.exponent);
+        const twozNormalized = this.convertPriceToBigInt(twozPriceData.price, twozPriceData.exponent);
+
+        if (twozNormalized === BigInt(0)) {
+            throw new PriceServiceUnavailableError('TWOZ price is zero, cannot compute swap rate');
+        }
+
+        const swapRateScaled = (solNormalized * TWOZ_PRECISION_BIGINT) / twozNormalized;
+
+        if (swapRateScaled <= BigInt(0)) {
+            throw new PriceServiceUnavailableError('Computed swap rate is non-positive');
+        }
+        if (swapRateScaled > U64_MAX) {
+            throw new PriceServiceUnavailableError(`Computed swap rate ${swapRateScaled} overflows u64`);
+        }
+
+        return swapRateScaled;
     }
 
     swapRateCalculation(solPriceData: any, twozPriceData: any): PriceRate {
@@ -93,14 +129,30 @@ export class PythSwapRateService implements ISwapRateService {
             throw new PriceServiceUnavailableError("Price data confidence check failed. Combined ratio exceeds maximum");
         }
 
-        const twozPerSol = solUsdPrice / twozUsdPrice;
-        const roundedTwozPerSol = parseFloat(twozPerSol.toFixed(TWOZ_PRECISION_DECIMALS));
+        const swapRateScaled = this.calculateSwapRateInteger(solPriceData, twozPriceData);
+        const swapRateNumber = Number(swapRateScaled);
+        
+        if (!Number.isSafeInteger(swapRateNumber)) {
+            logger.error('Swap rate exceeds JavaScript safe integer range', {
+                swapRate: swapRateScaled.toString()
+            });
+            throw new PriceServiceUnavailableError(
+                `Swap rate ${swapRateScaled} exceeds safe integer range for JSON serialization`
+            );
+        }
         
         // Use the oldest (most conservative) publish time
         const effectivePublishTime = Math.min(solPriceData.publishTime, twozPriceData.publishTime);
         
+        logger.debug('Computed integer swap rate', {
+            swapRateScaled: swapRateScaled.toString(),
+            swapRateNumber,
+            solPriceUsd: solUsdPrice,
+            twozPriceUsd: twozUsdPrice
+        });
+        
         return {
-            swapRate: roundedTwozPerSol,
+            swapRate: swapRateNumber,
             solPriceUsd: solUsdPrice,
             twozPriceUsd: twozUsdPrice,
             last_price_update: new Date().toUTCString(),

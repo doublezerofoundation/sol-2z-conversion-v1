@@ -16,6 +16,12 @@ export class AttestationService implements IAttestationService {
 
     async createAttestation(data: AttestationData):Promise<string> {
         const { swapRate, timestamp } = data;
+        
+        // Must sign an integer to match on-chain u64 attestation verification
+        if (!Number.isInteger(swapRate)) {
+            throw new Error(`Attestation requires integer swapRate, got: ${swapRate}`);
+        }
+        
         const messageString = `${swapRate}|${timestamp}`;
         logger.debug("messageString: ", messageString)
 
