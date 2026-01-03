@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import {IPricingService} from "../service/pricing/IPricingService";
-import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
+import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestation/attestationService";
 import {CacheService} from "../service/cache/cacheService";
@@ -51,7 +51,16 @@ export default class SwapRateController {
 
             const { priceRate, isCacheHit } = await this.getSwapRate();
             const timestamp = Math.floor(Date.now() / 1000);
-            const swapRate = priceRate.swapRate * TWOZ_PRECISION
+            const swapRate = priceRate.swapRate;
+            
+            if (!Number.isInteger(swapRate)) {
+                logger.error('swapRate is not an integer, this should never happen', {
+                    swapRate,
+                    swapRateType: typeof swapRate
+                });
+                res.status(500).json({ error: 'Internal computation error: non-integer swap rate' });
+                return;
+            }
 
             const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
             const result = {

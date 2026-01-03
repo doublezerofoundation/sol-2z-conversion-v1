@@ -22,10 +22,10 @@ const successTestData = [
             exponent: -6,
             confidence: 5000
         },
-        expectedSwapRate: 2
+        expectedSwapRate: 200000000
     },
     {
-        name: "Fractional ratio with 6 decimal precision",
+        name: "Fractional ratio with integer precision",
         solPriceData: {
             price: 2500000,
             exponent: -6,
@@ -36,7 +36,7 @@ const successTestData = [
             exponent: -6,
             confidence: 3000
         },
-        expectedSwapRate: 1.666667 // Rounded to 6 decimal places
+        expectedSwapRate: 166666666 // (2500000/1500000) * 1e8 = 166666666 (integer division truncates)
     },
     {
         name: "Less than 1 ratio",
@@ -50,7 +50,7 @@ const successTestData = [
             exponent: -6,
             confidence: 4440
         },
-        expectedSwapRate: 0.545455 // Rounded to 6 decimal places
+        expectedSwapRate: 54545454 // (3000000/5500000) * 1e8 = 54545454 (integer division)
     },
     {
         name: "Very small values with negative exponents",
@@ -64,7 +64,7 @@ const successTestData = [
             exponent: -8,
             confidence: 200000 // $0.002
         },
-        expectedSwapRate: 150
+        expectedSwapRate: 15000000000
     },
     {
         name: "Equal prices should give 1:1 ratio",
@@ -78,7 +78,7 @@ const successTestData = [
             exponent: -6,
             confidence: 1000
         },
-        expectedSwapRate: 1
+        expectedSwapRate: 100000000
     },
     {
         name: "High precision decimal result",
@@ -92,7 +92,7 @@ const successTestData = [
             exponent: -6,
             confidence: 2000
         },
-        expectedSwapRate: 0.125000 // 1.234567 / 9.876543 ≈ 0.125
+        expectedSwapRate: 12499991 // (1234567/9876543) * 1e8 = 12499991 (BigInt integer division)
     }
 ];
 
@@ -152,7 +152,7 @@ const confidenceFailureTestData = [
             confidence: 3500 // $0.0035 = 0.35% confidence ratio
         },
         shouldPass: true,
-        expectedSwapRate: 1
+        expectedSwapRate: 100000000
     },
     {
         name: "Just over threshold (should fail)",
@@ -183,7 +183,7 @@ const edgeCaseTestData = [
             exponent: -6,
             confidence: 0
         },
-        expectedSwapRate: 2
+        expectedSwapRate: 200000000
     },
     {
         name: "Very small prices with high exponents",
@@ -197,7 +197,7 @@ const edgeCaseTestData = [
             exponent: -12,
             confidence: 0
         },
-        expectedSwapRate: 1
+        expectedSwapRate: 100000000
     },
     {
         name: "String price inputs",
@@ -211,7 +211,7 @@ const edgeCaseTestData = [
             exponent: -6,
             confidence: "500"
         },
-        expectedSwapRate: 2
+        expectedSwapRate: 200000000
     }
 ];
 
@@ -234,7 +234,9 @@ describe('SwapRateService', () => {
                 console.log(`Calculated swapRate: ${result.swapRate}`);
                 console.log(`Expected swapRate: ${testData.expectedSwapRate}`);
 
-                expect(result.swapRate).to.be.approximately(testData.expectedSwapRate, 0.000001);
+                // swapRate must be an integer (scaled by 1e8)
+                expect(Number.isInteger(result.swapRate)).to.be.true;
+                expect(result.swapRate).to.equal(testData.expectedSwapRate);
                 expect(result.solPriceUsd).to.be.a('number');
                 expect(result.twozPriceUsd).to.be.a('number');
                 expect(result.last_price_update).to.be.a('string');
@@ -250,7 +252,7 @@ describe('SwapRateService', () => {
                     addPublishTime(testData.solPriceData),
                     addPublishTime(testData.twozPriceData)
                 );
-                expect(result.swapRate).to.be.approximately(testData.expectedSwapRate!, 0.000001);
+                expect(result.swapRate).to.equal(testData.expectedSwapRate);
             });
         } else {
             it(`should fail confidence check: ${testData.name}`, async () => {
@@ -278,7 +280,9 @@ describe('SwapRateService', () => {
                 addPublishTime(testData.twozPriceData)
             );
 
-            expect(result.swapRate).to.be.approximately(testData.expectedSwapRate, 0.000001);
+            // swapRate must be an integer
+            expect(Number.isInteger(result.swapRate)).to.be.true;
+            expect(result.swapRate).to.equal(testData.expectedSwapRate);
             expect(result.solPriceUsd).to.be.a('number');
             expect(result.twozPriceUsd).to.be.a('number');
         });
@@ -334,7 +338,8 @@ describe('SwapRateService', () => {
                 addPublishTime(solPriceData),
                 addPublishTime(twozPriceData)
             );
-            expect(result.swapRate).to.equal(1);
+            expect(Number.isInteger(result.swapRate)).to.be.true;
+            expect(result.swapRate).to.equal(100000000);
         });
 
         it('should reject when combined confidence ratio exceeds 0.7%', async () => {
@@ -387,14 +392,107 @@ describe('SwapRateService', () => {
             expect(result).to.have.property('solPublishTime');
             expect(result).to.have.property('twozPublishTime');
             expect(result.swapRate).to.be.a('number');
+            expect(Number.isInteger(result.swapRate)).to.be.true;
             expect(result.solPriceUsd).to.be.a('number');
             expect(result.twozPriceUsd).to.be.a('number');
             expect(result.last_price_update).to.be.a('string');
             expect(result.publishTime).to.be.a('number');
             expect(result.solPriceUsd).to.equal(1.5);
             expect(result.twozPriceUsd).to.equal(1.0);
-            expect(result.swapRate).to.equal(1.5);
+            expect(result.swapRate).to.equal(150000000);
             expect(() => new Date(result.last_price_update)).to.not.throw();
+        });
+    });
+
+    describe('JSON Integer Serialization (Regression)', () => {
+        it('swapRate must be an integer for all realistic price combinations', async () => {
+            const testCases = [
+                { sol: { price: '10783061600', exponent: -8 }, twoz: { price: '100000000', exponent: -8 } },
+                { sol: { price: '15000000000', exponent: -8 }, twoz: { price: '139000000', exponent: -8 } },
+                { sol: { price: '8765432100', exponent: -8 }, twoz: { price: '123456789', exponent: -8 } },
+                { sol: { price: '99999999', exponent: -6 }, twoz: { price: '33333333', exponent: -6 } },
+            ];
+
+            for (const tc of testCases) {
+                const result = await swapRateService.swapRateCalculation(
+                    addPublishTime({ ...tc.sol, confidence: 1000 }),
+                    addPublishTime({ ...tc.twoz, confidence: 1000 })
+                );
+
+                expect(Number.isInteger(result.swapRate), 
+                    `swapRate ${result.swapRate} must be an integer for SOL=${tc.sol.price} TWOZ=${tc.twoz.price}`
+                ).to.be.true;
+            }
+        });
+
+        it('JSON.stringify of swapRate must not contain a decimal point', async () => {
+            const solPriceData = { price: '10783061600', exponent: -8, confidence: 1000 };
+            const twozPriceData = { price: '100000000', exponent: -8, confidence: 1000 };
+
+            const result = await swapRateService.swapRateCalculation(
+                addPublishTime(solPriceData),
+                addPublishTime(twozPriceData)
+            );
+
+            const jsonOutput = JSON.stringify({ swapRate: result.swapRate });
+            
+            expect(jsonOutput).to.not.include('.');
+            
+            expect(jsonOutput).to.match(/"swapRate":\d+}/);
+        });
+
+        it('swapRate fits in JavaScript safe integer range for JSON serialization', async () => {
+            const solPriceData = { price: '15000000000', exponent: -8, confidence: 500000 };
+            const twozPriceData = { price: '100000000', exponent: -8, confidence: 200000 };
+
+            const result = await swapRateService.swapRateCalculation(
+                addPublishTime(solPriceData),
+                addPublishTime(twozPriceData)
+            );
+
+            expect(Number.isSafeInteger(result.swapRate)).to.be.true;
+            expect(result.swapRate).to.be.greaterThan(0);
+            expect(result.swapRate).to.be.lessThan(Number.MAX_SAFE_INTEGER);
+        });
+
+        it('attestation message must use integer format matching on-chain expectations', async () => {
+            const solPriceData = { price: '15000000000', exponent: -8, confidence: 500000 };
+            const twozPriceData = { price: '100000000', exponent: -8, confidence: 200000 };
+
+            const result = await swapRateService.swapRateCalculation(
+                addPublishTime(solPriceData),
+                addPublishTime(twozPriceData)
+            );
+
+            const timestamp = Math.floor(Date.now() / 1000);
+            const messageString = `${result.swapRate}|${timestamp}`;
+            
+            expect(messageString).to.not.include('.');
+            
+            expect(messageString).to.match(/^\d+\|\d+$/);
+        });
+
+        it('should handle edge case prices that historically caused float issues', async () => {
+            // These specific values are known to cause IEEE 754 precision issues
+            const problematicCases = [
+                { name: 'Near powers of 2', sol: '134217728', twoz: '16777216', expo: -6 },
+                { name: 'Repeating decimal division', sol: '100000000', twoz: '30000000', expo: -6 },
+                { name: 'Large values near float precision limit', sol: '9007199254740992', twoz: '1000000000000', expo: -12 },
+            ];
+
+            for (const tc of problematicCases) {
+                const result = await swapRateService.swapRateCalculation(
+                    addPublishTime({ price: tc.sol, exponent: parseInt(tc.expo.toString()), confidence: 0 }),
+                    addPublishTime({ price: tc.twoz, exponent: parseInt(tc.expo.toString()), confidence: 0 })
+                );
+
+                expect(Number.isInteger(result.swapRate),
+                    `${tc.name}: swapRate ${result.swapRate} must be integer`
+                ).to.be.true;
+
+                const json = JSON.stringify({ swapRate: result.swapRate });
+                expect(json).to.not.include('.', `${tc.name}: JSON must not have decimal`);
+            }
         });
     });
 });
