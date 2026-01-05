@@ -104,8 +104,8 @@ export const TYPES = {
 };
 
 export interface AttestationData {
-    swapRate: number;
-    timestamp: number;
+    swapRate: bigint;
+    timestamp: bigint;
 }
 
 export interface AttestationResult {

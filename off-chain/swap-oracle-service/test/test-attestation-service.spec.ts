@@ -14,28 +14,28 @@ describe('Attestation Service', () => {
 
 
     it("Signature verification should be failed When swap rate modified", async()=>{
-        let swapRate = 1000;
-        let timestamp = 1635160000;
+        let swapRate = BigInt(1000);
+        let timestamp = BigInt(1635160000);
         const attestaion = container.get<IAttestationService>(TYPES.AttestationService);
         const signature = await attestaion.createAttestation({swapRate, timestamp})
-        swapRate = 9000;
-        const verified = await verifySwapSignature(swapRate, timestamp, signature);
+        const verifyRate = BigInt(9000);
+        const verified = await verifySwapSignature(verifyRate, timestamp, signature);
         assert.isFalse(verified)
     })
 
     it("Signature verification should be failed When TimeStamp modified", async()=>{
-        let swapRate = 1000;
-        let timestamp = 1635160000;
+        let swapRate = BigInt(1000);
+        let timestamp = BigInt(1635160000);
         const attestaion = container.get<IAttestationService>(TYPES.AttestationService);
         const signature = await attestaion.createAttestation({swapRate, timestamp})
-        timestamp = 1635160002;
-        const verified = await verifySwapSignature(swapRate, timestamp, signature);
+        const verifyTimestamp = BigInt(1635160002);
+        const verified = await verifySwapSignature(swapRate, verifyTimestamp, signature);
         assert.isFalse(verified)
     })
 
     it("Signature verification should be failed When Signature modified", async()=>{
-        let swapRate = 1000;
-        let timestamp = 1635160000;
+        let swapRate = BigInt(1000);
+        let timestamp = BigInt(1635160000);
         const attestaion = container.get<IAttestationService>(TYPES.AttestationService);
         let signature = await attestaion.createAttestation({swapRate, timestamp})
         console.log("Signature1: ", signature, "")
@@ -46,8 +46,8 @@ describe('Attestation Service', () => {
     })
 
     it("Signature verification should be success", async()=>{
-        let swapRate = 1000;
-        let timestamp = 1635160000;
+        let swapRate = BigInt(1000);
+        let timestamp = BigInt(1635160000);
         const attestaion = container.get<IAttestationService>(TYPES.AttestationService);
         const signature = await attestaion.createAttestation({swapRate, timestamp})
         const verified = await verifySwapSignature(swapRate, timestamp, signature);
@@ -57,7 +57,7 @@ describe('Attestation Service', () => {
 
 })
 
-async function verifySwapSignature(swapRate: number, timestamp: number, signature: string) {
+async function verifySwapSignature(swapRate: bigint, timestamp: bigint, signature: string) {
     console.log("Signature2: ", signature, "")
     const messageString = `${swapRate}|${timestamp}`;
     console.log("messageString: ", messageString)

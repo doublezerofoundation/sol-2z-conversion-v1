@@ -37,6 +37,10 @@ export default class SwapRateController {
         })
     }
 
+    private calculateScaledSwapRate(swapRate: number): number {
+        return Math.floor(swapRate * TWOZ_PRECISION);
+    }
+
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
             if (!await this.healthMonitoringService.getHealthStatus()) {
@@ -51,11 +55,14 @@ export default class SwapRateController {
 
             const { priceRate, isCacheHit } = await this.getSwapRate();
             const timestamp = Math.floor(Date.now() / 1000);
-            const swapRate = priceRate.swapRate * TWOZ_PRECISION
+            const swapRate = this.calculateScaledSwapRate(priceRate.swapRate);
 
-            const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
+            const signedBytes = await this.attestationService.createAttestation({
+                swapRate: BigInt(swapRate),
+                timestamp: BigInt(timestamp)
+            });
             const result = {
-                swapRate : swapRate,
+                swapRate: swapRate,
                 timestamp: timestamp,
                 signature: signedBytes,
                 solPriceUsd: priceRate.solPriceUsd.toString(),
