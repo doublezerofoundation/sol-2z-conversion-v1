@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import {IPricingService} from "../service/pricing/IPricingService";
-import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
+import {calculateScaledSwapRate, ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestation/attestationService";
 import {CacheService} from "../service/cache/cacheService";
@@ -37,10 +37,6 @@ export default class SwapRateController {
         })
     }
 
-    private calculateScaledSwapRate(swapRate: number): number {
-        return Math.floor(swapRate * TWOZ_PRECISION);
-    }
-
     swapRateHandler = async (req: Request, res: Response): Promise<void> => {
         try {
             if (!await this.healthMonitoringService.getHealthStatus()) {
@@ -55,14 +51,14 @@ export default class SwapRateController {
 
             const { priceRate, isCacheHit } = await this.getSwapRate();
             const timestamp = Math.floor(Date.now() / 1000);
-            const swapRate = this.calculateScaledSwapRate(priceRate.swapRate);
+            const swapRate = calculateScaledSwapRate(priceRate.swapRate);
 
             const signedBytes = await this.attestationService.createAttestation({
-                swapRate: BigInt(swapRate),
+                swapRate,
                 timestamp: BigInt(timestamp)
             });
             const result = {
-                swapRate: swapRate,
+                swapRate: Number(swapRate),
                 timestamp: timestamp,
                 signature: signedBytes,
                 solPriceUsd: priceRate.solPriceUsd.toString(),

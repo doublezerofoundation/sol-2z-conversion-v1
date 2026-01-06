@@ -16,6 +16,10 @@ export enum ConfigField {
 export const TWOZ_PRECISION = 100000000;
 export const TWOZ_PRECISION_DECIMALS = 8;
 export const DEFAULT_MAX_PRICE_AGE_SECONDS = 60;
+
+export function calculateScaledSwapRate(swapRate: number): bigint {
+    return BigInt(Math.floor(swapRate * TWOZ_PRECISION));
+}
 export enum PriceFeed {
     BTC_USD = 'BTC/USD',
     SOL_USD = 'SOL/USD',
