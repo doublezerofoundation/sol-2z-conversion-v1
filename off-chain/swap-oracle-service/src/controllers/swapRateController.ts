@@ -1,6 +1,6 @@
 import {Request, Response} from 'express';
 import {IPricingService} from "../service/pricing/IPricingService";
-import {ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TWOZ_PRECISION, TYPES} from "../types/common";
+import {calculateScaledSwapRate, ConfigField, DEFAULT_MAX_PRICE_AGE_SECONDS, HealthCheckResult, PriceRate, TYPES} from "../types/common";
 import {PricingServiceFactory} from "../factory/serviceFactory";
 import {AttestationService} from "../service/attestation/attestationService";
 import {CacheService} from "../service/cache/cacheService";
@@ -51,11 +51,14 @@ export default class SwapRateController {
 
             const { priceRate, isCacheHit } = await this.getSwapRate();
             const timestamp = Math.floor(Date.now() / 1000);
-            const swapRate = priceRate.swapRate * TWOZ_PRECISION
+            const swapRate = calculateScaledSwapRate(priceRate.swapRate);
 
-            const signedBytes = await this.attestationService.createAttestation({swapRate, timestamp})
+            const signedBytes = await this.attestationService.createAttestation({
+                swapRate,
+                timestamp: BigInt(timestamp)
+            });
             const result = {
-                swapRate : swapRate,
+                swapRate: Number(swapRate),
                 timestamp: timestamp,
                 signature: signedBytes,
                 solPriceUsd: priceRate.solPriceUsd.toString(),
