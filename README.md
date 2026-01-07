@@ -136,7 +136,7 @@ Create `config.json` at the project root with the following structure:
 ```json
 {
   "rpc_url": "http://127.0.0.1:8899",
-  "program_id": "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z",
+  "program_id": "9DRcqsJUCo8CL2xDCXpogwzLEVKRDzSyNtVgXqsXHfDs",
   "double_zero_program_id": "8S2TYzrr1emJMeQ4FUgKhsLyux3vpMhMojMTNKzPebww",
   "oracle_pubkey": "3FsydTFGUYNQJH7hx97wJiVYhtiDK3gx4ujXNyf1t8Rj",
   "sol_quantity": 25000000000,
@@ -197,7 +197,7 @@ check the `Anchor.toml`
 #### Converter program
 ```bash 
 [programs.localnet]
-converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z" # update public key of the program
+converter_program = "9DRcqsJUCo8CL2xDCXpogwzLEVKRDzSyNtVgXqsXHfDs" # update public key of the program
 
 [provider]
 cluster = "localnet"  # point to correct cluster (Devnet, Mainnet) 
