@@ -7,7 +7,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-converter_program = "YrQk4TE5Bi6Hsi4u2LbBNwjZUWEaSUaCDJdapJbCE4z"
+converter_program = "9DRcqsJUCo8CL2xDCXpogwzLEVKRDzSyNtVgXqsXHfDs"
 
 [registry]
 url = "https://api.apr.dev"
